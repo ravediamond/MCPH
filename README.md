@@ -135,5 +135,6 @@ Ce projet est sous licence MIT.
 
 ```
 export NODE_TLS_REJECT_UNAUTHORIZED=0
+rm -rf .next
 npm run dev
 ```
