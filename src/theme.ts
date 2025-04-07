@@ -1,6 +1,7 @@
-import { extendTheme } from '@chakra-ui/react';
+import { extendTheme, theme as baseTheme } from '@chakra-ui/react';
 
-const colors = {
+const customColors = {
+    ...baseTheme.colors,
     brand: {
         50: '#e6f7ff',
         100: '#bae7ff',
@@ -16,7 +17,7 @@ const colors = {
 };
 
 const theme = extendTheme({
-    colors,
+    colors: customColors,
     fonts: {
         heading: 'Inter, system-ui, sans-serif',
         body: 'Inter, system-ui, sans-serif',
