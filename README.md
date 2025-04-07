@@ -49,3 +49,91 @@ MCP Registry est un projet visant à créer un équivalent de PyPI pour le proto
    ```bash
    git clone https://github.com/votre-utilisateur/mcp-registry.git
    cd mcp-registry
+   ```
+
+2. **Installer les dépendances :**
+   ```bash
+   npm install
+   # ou
+   yarn install
+   ```
+
+3. **Configurer les variables d'environnement :**
+   - Créez un fichier `.env.local` à la racine du projet
+   - Copiez le contenu de `.env.local.example` et remplissez les valeurs
+
+4. **Configurer Supabase :**
+   - Créez un nouveau projet dans Supabase
+   - Créez une table `mcps` avec les champs suivants :
+     - `id` (uuid, primary key)
+     - `created_at` (timestamp with timezone)
+     - `name` (text)
+     - `description` (text)
+     - `deployment_url` (text)
+     - `documentation_url` (text, optional)
+     - `version` (text)
+     - `author` (text)
+     - `tags` (array)
+     - `user_id` (uuid, foreign key to auth.users)
+   - Configurez les permissions appropriées pour la table
+
+5. **Lancer le serveur de développement :**
+   ```bash
+   npm run dev
+   # ou
+   yarn dev
+   ```
+
+6. **Accéder à l'application :**
+   Ouvrez votre navigateur et allez à `http://localhost:3000`
+
+## Déploiement
+
+1. **Créez un compte Vercel si vous n'en avez pas déjà un :**
+   [https://vercel.com/signup](https://vercel.com/signup)
+
+2. **Installez l'outil Vercel CLI :**
+   ```bash
+   npm install -g vercel
+   ```
+
+3. **Déployez l'application :**
+   ```bash
+   vercel
+   ```
+
+4. **Configurez les variables d'environnement dans Vercel :**
+   - Ajoutez les mêmes variables d'environnement que dans votre fichier `.env.local`
+
+## Structure du projet
+
+```
+mcp-registry/
+├── public/           # Fichiers statiques
+├── src/
+│   ├── components/   # Composants réutilisables
+│   ├── lib/          # Utilitaires et clients (Supabase)
+│   ├── pages/        # Pages de l'application
+│   │   ├── api/      # Endpoints API
+│   │   ├── mcp/      # Pages liées aux MCP
+│   │   └── ...
+│   └── theme.ts      # Configuration du thème Chakra UI
+├── .env.local        # Variables d'environnement (à créer)
+└── ...
+```
+
+## Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou à soumettre une pull request.
+
+## Licence
+
+Ce projet est sous licence MIT.
+
+
+## DEV
+
+```
+export NODE_TLS_REJECT_UNAUTHORIZED=0
+npm run dev
+```
