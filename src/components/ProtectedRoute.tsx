@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
+import { Flex, Text } from '@chakra-ui/react';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -18,9 +19,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
     if (isLoading) {
         return (
-            <div className="flex min-h-screen items-center justify-center">
-                <p className="text-lg">Loading...</p>
-            </div>
+            <Flex minH="100vh" align="center" justify="center">
+                <Text fontSize="lg">Loading...</Text>
+            </Flex>
         );
     }
 
