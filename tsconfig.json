@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "lib/*": [
-        "lib/*"
+        "lib/*",
+        "components/*"
       ]
     },
     "lib": [
