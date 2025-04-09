@@ -3,7 +3,7 @@
 import { Box, Container, Heading, Text, VStack, Flex } from '@chakra-ui/react';
 import SearchBar from '../components/SearchBar';
 import FeatureList from '../components/FeatureList';
-import LoginButton from '../components/LoginButton';
+import LoginModal from '../components/LoginModal';
 
 export default function Home() {
     return (
@@ -15,9 +15,10 @@ export default function Home() {
                         MCP Registry
                     </Heading>
                     <Text fontSize="lg" color="gray.600" maxW="container.md" mx="auto">
-                        MCP Registry is a project aimed at creating the equivalent of PyPI for the Model Context Protocol (MCP).
-                        Instead of hosting packages, this project references MCP deployment URLs to enable agent systems, such as ChatGPT,
-                        to leverage APIs and tools using a commenting protocol.
+                        MCP Registry is a project aimed at creating the equivalent of PyPI
+                        for the Model Context Protocol (MCP). Instead of hosting packages, this
+                        project references MCP deployment URLs to enable agent systems,
+                        such as ChatGPT, to leverage APIs and tools using a commenting protocol.
                     </Text>
                 </Box>
 
@@ -34,9 +35,9 @@ export default function Home() {
                     <FeatureList />
                 </Box>
 
-                {/* Action Section */}
+                {/* Action Section with Login Modal */}
                 <Flex justify="center">
-                    <LoginButton />
+                    <LoginModal />
                 </Flex>
             </VStack>
         </Container>
