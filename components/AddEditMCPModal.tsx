@@ -1,29 +1,4 @@
 import { useState, useEffect } from 'react';
-import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalCloseButton,
-    ModalBody,
-    ModalFooter,
-    Button,
-    Input,
-    FormControl,
-    FormLabel,
-    Text,
-    VStack,
-    Spinner,
-    Textarea,
-    HStack,
-    Tag,
-    TagLabel,
-    TagCloseButton,
-    Flex,
-    Box,
-    InputGroup,
-    InputRightElement,
-} from '@chakra-ui/react';
 import { supabase } from 'lib/supabaseClient';
 
 interface AddEditMCPModalProps {
@@ -193,114 +168,179 @@ export default function AddEditMCPModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="lg">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Add New MCP</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <VStack spacing={4} align="stretch">
-                        <FormControl isRequired>
-                            <FormLabel>GitHub Repository URL</FormLabel>
-                            <Input
-                                value={repositoryUrl}
-                                onChange={(e) => setRepositoryUrl(e.target.value)}
-                                onBlur={handleRepoBlur}
-                                placeholder="https://github.com/yourrepo"
-                            />
-                            {loadingRepoInfo && <Spinner size="sm" mt={2} />}
-                        </FormControl>
+        isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                {/* Overlay */}
+                <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
 
-                        <FormControl isRequired>
-                            <FormLabel>Name</FormLabel>
-                            <Input
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="MCP Name"
-                            />
-                        </FormControl>
+                {/* Modal Content */}
+                <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 z-10">
+                    {/* Header */}
+                    <div className="px-6 py-4 border-b border-gray-200">
+                        <h2 className="text-xl font-semibold text-gray-800">Add New MCP</h2>
+                        <button
+                            onClick={onClose}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                            aria-label="Close"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
 
-                        <FormControl isRequired>
-                            <FormLabel>Version</FormLabel>
-                            <Input
-                                value={version}
-                                onChange={(e) => setVersion(e.target.value)}
-                                placeholder="e.g., 1.0.0"
-                            />
-                        </FormControl>
-
-                        <FormControl>
-                            <FormLabel>Description</FormLabel>
-                            <Textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Detailed description of your MCP"
-                                resize="vertical"
-                            />
-                        </FormControl>
-
-                        <FormControl>
-                            <FormLabel>MCP Deployment URL (optional)</FormLabel>
-                            <Input
-                                value={deploymentUrl}
-                                onChange={(e) => setDeploymentUrl(e.target.value)}
-                                placeholder="https://your-mcp-deployment.com"
-                            />
-                        </FormControl>
-
-                        <FormControl>
-                            <FormLabel>Tags/Categories</FormLabel>
-                            <InputGroup size="md">
-                                <Input
-                                    value={tagInput}
-                                    onChange={handleTagInputChange}
-                                    onKeyDown={handleTagKeyDown}
-                                    placeholder="Enter tags (comma or enter to add)"
+                    {/* Body */}
+                    <div className="px-6 py-4">
+                        <div className="flex flex-col space-y-4">
+                            {/* GitHub Repository URL */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    GitHub Repository URL<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={repositoryUrl}
+                                    onChange={(e) => setRepositoryUrl(e.target.value)}
+                                    onBlur={handleRepoBlur}
+                                    placeholder="https://github.com/yourrepo"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                <InputRightElement width="4.5rem">
-                                    <Button h="1.75rem" size="sm" onClick={addTag}>
+                                {loadingRepoInfo && (
+                                    <div className="mt-2">
+                                        <div className="w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Name<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="MCP Name"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            {/* Version */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Version<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={version}
+                                    onChange={(e) => setVersion(e.target.value)}
+                                    placeholder="e.g., 1.0.0"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Description
+                                </label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Detailed description of your MCP"
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                ></textarea>
+                            </div>
+
+                            {/* Deployment URL */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    MCP Deployment URL (optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={deploymentUrl}
+                                    onChange={(e) => setDeploymentUrl(e.target.value)}
+                                    placeholder="https://your-mcp-deployment.com"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            {/* Tags */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Tags/Categories
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={tagInput}
+                                        onChange={handleTagInputChange}
+                                        onKeyDown={handleTagKeyDown}
+                                        placeholder="Enter tags (comma or enter to add)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <button
+                                        onClick={addTag}
+                                        className="absolute right-1 top-1 h-8 px-3 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                                    >
                                         Add
-                                    </Button>
-                                </InputRightElement>
-                            </InputGroup>
+                                    </button>
+                                </div>
 
-                            {tags.length > 0 && (
-                                <Flex wrap="wrap" mt={2} gap={2}>
-                                    {tags.map((tag, index) => (
-                                        <Tag
-                                            size="md"
-                                            key={index}
-                                            borderRadius="full"
-                                            variant="solid"
-                                            colorScheme="blue"
-                                        >
-                                            <TagLabel>{tag}</TagLabel>
-                                            <TagCloseButton onClick={() => removeTag(index)} />
-                                        </Tag>
-                                    ))}
-                                </Flex>
+                                {tags.length > 0 && (
+                                    <div className="flex flex-wrap mt-2 gap-2">
+                                        {tags.map((tag, index) => (
+                                            <span
+                                                key={index}
+                                                className="inline-flex items-center rounded-full bg-blue-500 px-3 py-1 text-sm text-white"
+                                            >
+                                                {tag}
+                                                <button
+                                                    onClick={() => removeTag(index)}
+                                                    className="ml-1 text-white hover:text-gray-200"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Add relevant tags for better discoverability
+                                </p>
+                            </div>
+
+                            {/* Error Message */}
+                            {errorMsg && (
+                                <p className="text-red-500 text-sm mt-2">
+                                    {errorMsg}
+                                </p>
                             )}
-                            <Text fontSize="xs" color="gray.500" mt={1}>
-                                Add relevant tags for better discoverability
-                            </Text>
-                        </FormControl>
+                        </div>
+                    </div>
 
-                        {errorMsg && (
-                            <Text color="red.500" mt={2}>
-                                {errorMsg}
-                            </Text>
-                        )}
-                    </VStack>
-                </ModalBody>
-                <ModalFooter>
-                    <Button colorScheme="blue" mr={3} onClick={handleSubmit}>
-                        Submit
-                    </Button>
-                    <Button variant="ghost" onClick={onClose}>
-                        Cancel
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
+                    {/* Footer */}
+                    <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        >
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
     );
 }

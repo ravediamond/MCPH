@@ -1,24 +1,5 @@
-import React, { useState } from 'react';
-import {
-    Box,
-    Heading,
-    Text,
-    Flex,
-    Tag,
-    HStack,
-    Badge,
-    Icon,
-    IconButton,
-    useDisclosure,
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    Button
-} from '@chakra-ui/react';
-import { EditIcon, ExternalLinkIcon, DeleteIcon } from '@chakra-ui/icons';
+import React, { useState, useRef } from 'react';
+import { FiExternalLink, FiEdit, FiTrash2 } from 'react-icons/fi';
 import { supabase } from 'lib/supabaseClient';
 
 interface MCPCardProps {
@@ -30,8 +11,8 @@ interface MCPCardProps {
 
 export default function MCPCard({ mcp, onClick, editable, onDelete }: MCPCardProps) {
     const [isDeleting, setIsDeleting] = useState(false);
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const cancelRef = React.useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const cancelRef = useRef(null);
 
     // Handle click on the card without triggering for delete button
     const handleCardClick = (e: React.MouseEvent) => {
@@ -40,6 +21,9 @@ export default function MCPCard({ mcp, onClick, editable, onDelete }: MCPCardPro
             onClick();
         }
     };
+
+    const onOpen = () => setIsOpen(true);
+    const onClose = () => setIsOpen(false);
 
     // Handle delete confirmation
     const handleDeleteConfirm = async () => {
@@ -66,115 +50,102 @@ export default function MCPCard({ mcp, onClick, editable, onDelete }: MCPCardPro
     };
 
     return (
-        <Box
-            borderWidth="1px"
-            borderRadius="md"
-            p={4}
-            w="100%"
-            cursor="pointer"
-            _hover={{ shadow: 'md' }}
+        <div
+            className="border rounded-md p-4 w-full cursor-pointer hover:shadow-md relative"
             onClick={handleCardClick}
-            position="relative"
         >
-            <Heading as="h3" size="md" mb={2}>
+            <h3 className="font-bold text-lg mb-2">
                 {mcp.name || 'Untitled MCP'}
-            </Heading>
+            </h3>
 
             {/* Version badge */}
             {mcp.version && (
-                <Badge colorScheme="green" mb={2}>v{mcp.version}</Badge>
+                <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mb-2">
+                    v{mcp.version}
+                </span>
             )}
 
-            <Text fontSize="sm" color="gray.600" mb={3}>
+            <p className="text-sm text-gray-600 mb-3">
                 {mcp.description || 'No description provided'}
-            </Text>
+            </p>
 
             {/* Tags display */}
             {mcp.tags && mcp.tags.length > 0 && (
-                <HStack spacing={2} mt={2} mb={2} flexWrap="wrap">
+                <div className="flex flex-wrap gap-2 mt-2 mb-2">
                     {mcp.tags.map((tag: string, index: number) => (
-                        <Tag
+                        <span
                             key={index}
-                            size="sm"
-                            colorScheme="blue"
-                            borderRadius="full"
-                            mt={1}
+                            className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1"
                         >
                             {tag}
-                        </Tag>
+                        </span>
                     ))}
-                </HStack>
+                </div>
             )}
 
             {/* Deployment URL indicator */}
             {mcp.deployment_url && (
-                <Text fontSize="xs" color="blue.500" mt={2}>
-                    <Icon as={ExternalLinkIcon} mr={1} />
+                <p className="text-xs text-blue-500 mt-2 flex items-center">
+                    <FiExternalLink className="mr-1" />
                     Deployment available
-                </Text>
+                </p>
             )}
 
             {editable && (
-                <Flex justify="flex-end" mt={2} className="delete-action">
-                    <IconButton
+                <div className="flex justify-end mt-2 delete-action">
+                    <button
                         aria-label="Edit MCP"
-                        icon={<EditIcon />}
-                        size="sm"
-                        variant="ghost"
-                        mr={2}
+                        className="p-1 text-gray-500 hover:text-gray-700 mr-2"
                         onClick={(e) => {
                             e.stopPropagation();
                             // You can implement edit functionality here
                             console.log('Edit MCP');
                         }}
-                    />
-                    <IconButton
+                    >
+                        <FiEdit />
+                    </button>
+                    <button
                         aria-label="Delete MCP"
-                        icon={<DeleteIcon />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="red"
+                        className="p-1 text-red-500 hover:text-red-700"
                         onClick={(e) => {
                             e.stopPropagation();
                             onOpen();
                         }}
-                    />
-                </Flex>
+                    >
+                        <FiTrash2 />
+                    </button>
+                </div>
             )}
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog
-                isOpen={isOpen}
-                leastDestructiveRef={cancelRef}
-                onClose={onClose}
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Delete MCP
-                        </AlertDialogHeader>
+            {isOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+                        <h2 className="text-lg font-bold mb-4">Delete MCP</h2>
 
-                        <AlertDialogBody>
+                        <div className="mb-6">
                             Are you sure you want to delete "{mcp.name}"? This action cannot be undone.
-                        </AlertDialogBody>
+                        </div>
 
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
-                                Cancel
-                            </Button>
-                            <Button
-                                colorScheme="red"
-                                onClick={handleDeleteConfirm}
-                                ml={3}
-                                isLoading={isDeleting}
-                                loadingText="Deleting"
+                        <div className="flex justify-end gap-2">
+                            <button
+                                ref={cancelRef}
+                                className="px-4 py-2 border rounded-md hover:bg-gray-100"
+                                onClick={onClose}
                             >
-                                Delete
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
-        </Box>
+                                Cancel
+                            </button>
+                            <button
+                                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                onClick={handleDeleteConfirm}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

@@ -1,93 +1,96 @@
 'use client';
 
-import { Box, Container, Heading, Text, VStack, Flex, Stack, Divider } from '@chakra-ui/react';
 import SearchBar from 'components/SearchBar';
 import FeatureList from 'components/FeatureList';
 import LoginModal from 'components/LoginModal';
 
-export default function Home() {
-    return (
-        <Container maxW="container.lg" py={16}>
-            <VStack spacing={12} align="stretch">
-                {/* Hero Section */}
-                <Box textAlign="center" py={10}>
-                    <Heading as="h1" size="3xl" mb={4}>
-                        MCPH
-                    </Heading>
-                    <Text fontSize="xl" color="gray.600" maxW="2xl" mx="auto">
-                        Welcome to MCPH, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools. Whether you're a developer or an AI system, MCPH simplifies the process of integration and innovation.
-                    </Text>
-                </Box>
+// export default function Home() {
+//     return (
+//         <div className="container mx-auto max-w-screen-lg py-16">
+//             <div className="flex flex-col gap-12 items-stretch">
+//                 {/* Hero Section */}
+//                 <div className="text-center py-10">
+//                     <h1 className="text-5xl font-bold mb-4">
+//                         MCPH
+//                     </h1>
+//                     <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+//                         Welcome to MCPH, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools. Whether you're a developer or an AI system, MCPH simplifies the process of integration and innovation.
+//                     </p>
+//                 </div>
 
-                {/* Search Section */}
-                <Box textAlign="center">
-                    <SearchBar />
-                </Box>
+//                 {/* Search Section */}
+//                 <div className="text-center">
+//                     <SearchBar />
+//                 </div>
 
-                {/* Features Section */}
-                <Box textAlign="center">
-                    <Heading as="h2" size="xl" mb={6}>
-                        Explore Our Key Features
-                    </Heading>
-                    <Text fontSize="lg" color="gray.600" maxW="2xl" mx="auto" mb={4}>
-                        Discover a range of functionalities designed to enhance your MCP experience. Our platform ensures you can securely authenticate, seamlessly integrate GitHub repositories, and tap into a robust API for AI-powered interactions.
-                    </Text>
-                    <FeatureList />
-                </Box>
+//                 {/* Features Section */}
+//                 <div className="text-center">
+//                     <h2 className="text-4xl font-bold mb-6">
+//                         Explore Our Key Features
+//                     </h2>
+//                     <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+//                         Discover a range of functionalities designed to enhance your MCP experience. Our platform ensures you can securely authenticate, seamlessly integrate GitHub repositories, and tap into a robust API for AI-powered interactions.
+//                     </p>
+//                     <FeatureList />
+//                 </div>
 
-                <Divider />
+//                 <hr className="border-gray-200" />
 
-                {/* How It Works Section */}
-                <Box textAlign="center" py={6}>
-                    <Heading as="h2" size="xl" mb={4}>
-                        How It Works
-                    </Heading>
-                    <Text fontSize="lg" color="gray.600" maxW="2xl" mx="auto" mb={4}>
-                        Getting started with MCPH is simple and straightforward. Follow these steps to become part of our growing community:
-                    </Text>
-                    <Stack spacing={4} direction={{ base: 'column', md: 'row' }} justify="center">
-                        <Box p={4}>
-                            <Heading as="h3" size="md" mb={2}>
-                                1. Sign Up & Profile Setup
-                            </Heading>
-                            <Text fontSize="md" color="gray.500">
-                                Create your account and easily manage your profile.
-                            </Text>
-                        </Box>
-                        <Box p={4}>
-                            <Heading as="h3" size="md" mb={2}>
-                                2. Submit Your MCP
-                            </Heading>
-                            <Text fontSize="md" color="gray.500">
-                                Connect your GitHub repository to automatically import your README and documentation.
-                            </Text>
-                        </Box>
-                        <Box p={4}>
-                            <Heading as="h3" size="md" mb={2}>
-                                3. Explore & Integrate
-                            </Heading>
-                            <Text fontSize="md" color="gray.500">
-                                Search our catalog to find and integrate the right tools for your projects.
-                            </Text>
-                        </Box>
-                    </Stack>
-                </Box>
+//                 {/* How It Works Section */}
+//                 <div className="text-center py-6">
+//                     <h2 className="text-4xl font-bold mb-4">
+//                         How It Works
+//                     </h2>
+//                     <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+//                         Getting started with MCPH is simple and straightforward. Follow these steps to become part of our growing community:
+//                     </p>
+//                     <div className="flex flex-col md:flex-row gap-4 justify-center">
+//                         <div className="p-4">
+//                             <h3 className="text-lg font-medium mb-2">
+//                                 1. Sign Up & Profile Setup
+//                             </h3>
+//                             <p className="text-md text-gray-500">
+//                                 Create your account and easily manage your profile.
+//                             </p>
+//                         </div>
+//                         <div className="p-4">
+//                             <h3 className="text-lg font-medium mb-2">
+//                                 2. Submit Your MCP
+//                             </h3>
+//                             <p className="text-md text-gray-500">
+//                                 Connect your GitHub repository to automatically import your README and documentation.
+//                             </p>
+//                         </div>
+//                         <div className="p-4">
+//                             <h3 className="text-lg font-medium mb-2">
+//                                 3. Explore & Integrate
+//                             </h3>
+//                             <p className="text-md text-gray-500">
+//                                 Search our catalog to find and integrate the right tools for your projects.
+//                             </p>
+//                         </div>
+//                     </div>
+//                 </div>
 
-                <Divider />
+//                 <hr className="border-gray-200" />
 
-                {/* Call to Action Section */}
-                <Box textAlign="center">
-                    <Heading as="h2" size="xl" mb={4}>
-                        Ready to Get Started?
-                    </Heading>
-                    <Text fontSize="lg" color="gray.600" maxW="2xl" mx="auto" mb={6}>
-                        Join our community today and harness the full potential of the Model Context Protocol. Dive into a platform that makes integrations seamless and innovation unstoppable.
-                    </Text>
-                    <Flex justify="center">
-                        <LoginModal />
-                    </Flex>
-                </Box>
-            </VStack>
-        </Container>
-    );
+//                 {/* Call to Action Section */}
+//                 <div className="text-center">
+//                     <h2 className="text-4xl font-bold mb-4">
+//                         Ready to Get Started?
+//                     </h2>
+//                     <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+//                         Join our community today and harness the full potential of the Model Context Protocol. Dive into a platform that makes integrations seamless and innovation unstoppable.
+//                     </p>
+//                     <div className="flex justify-center">
+//                         <LoginModal />
+//                     </div>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// }
+
+export default function Page() {
+    return <h1 className="text-3xl font-bold underline">Hello, Next.js!</h1>
 }

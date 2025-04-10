@@ -1,5 +1,4 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import '../styles/globals.css';
+import './globals.css';
 
 export const metadata = {
     title: 'MCP Hub',
@@ -12,11 +11,9 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-            <body>
-                <ChakraProvider>
-                    {children}
-                </ChakraProvider>
+        <html lang="en" className="h-full">
+            <body className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col">
+                {children}
             </body>
         </html>
     );

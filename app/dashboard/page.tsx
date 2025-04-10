@@ -3,16 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from 'lib/supabaseClient';
-import {
-    Box,
-    Button,
-    Heading,
-    Text,
-    VStack,
-    Flex,
-    Spinner,
-    SimpleGrid,
-} from '@chakra-ui/react';
 import AddEditMCPModal from 'components/AddEditMCPModal';
 import MCPCard from 'components/MCPCard';
 
@@ -87,63 +77,70 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <Box p={8} textAlign="center">
-                <Spinner size="xl" />
-            </Box>
+            <div className="p-8 text-center">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
         );
     }
 
     return (
-        <Box p={8}>
-            <VStack spacing={10} align="center">
+        <div className="p-8">
+            <div className="flex flex-col items-center space-y-10">
                 {/* Welcome / Header Section */}
-                <Heading as="h1" size="2xl" mb={2}>
+                <h1 className="text-4xl font-bold mb-2">
                     Dashboard
-                </Heading>
+                </h1>
                 {session && session.user ? (
-                    <Text fontSize="lg">
+                    <p className="text-lg">
                         Welcome back, <strong>{session.user.email}</strong>!
-                    </Text>
+                    </p>
                 ) : (
-                    <Text fontSize="lg">No user session found.</Text>
+                    <p className="text-lg">No user session found.</p>
                 )}
 
                 {/* Button to Create a New MCP */}
-                <Button colorScheme="blue" onClick={() => setShowAddModal(true)}>
+                <button
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    onClick={() => setShowAddModal(true)}
+                >
                     Create New MCP
-                </Button>
+                </button>
 
                 {/* Button to Explore MCPs */}
-                <Button onClick={() => router.push('/')} colorScheme="purple">
+                <button
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
+                    onClick={() => router.push('/')}
+                >
                     Explore MCPs
-                </Button>
+                </button>
 
                 {/* Logout Button */}
-                <Flex justify="center" mt={8} gap={4}>
-                    <Button onClick={() => router.push('/profile')} colorScheme="teal">
+                <div className="flex justify-center mt-8 gap-4">
+                    <button
+                        className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded"
+                        onClick={() => router.push('/profile')}
+                    >
                         My Profile
-                    </Button>
-                    <Button onClick={handleLogout} colorScheme="red">
+                    </button>
+                    <button
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                        onClick={handleLogout}
+                    >
                         Logout
-                    </Button>
-                </Flex>
+                    </button>
+                </div>
 
                 {/* Display Added MCPs as Cards */}
-                <Box width="100%" mt={10}>
-                    <Heading as="h2" size="lg" mb={4}>
+                <div className="w-full mt-10">
+                    <h2 className="text-2xl font-bold mb-4">
                         My MCPs
-                    </Heading>
+                    </h2>
                     {mcps.length > 0 ? (
-                        <SimpleGrid columns={[1, 2, 3]} spacing={6}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {mcps.map((mcp) => (
-                                <Box
+                                <div
                                     key={mcp.id}
-                                    borderWidth="1px"
-                                    borderRadius="lg"
-                                    overflow="hidden"
-                                    p={4}
-                                    shadow="md"
-                                    _hover={{ shadow: 'lg', cursor: 'pointer' }}
+                                    className="border border-gray-200 rounded-lg overflow-hidden p-4 shadow-md hover:shadow-lg hover:cursor-pointer"
                                     onClick={() => router.push(`/mcp/${mcp.id}`)}
                                 >
                                     <MCPCard
@@ -151,18 +148,17 @@ export default function Dashboard() {
                                         onClick={() => router.push(`/mcp/${mcp.id}`)}
                                         editable={true}
                                         onDelete={() => {
-                                            // Filter out the deleted MCP from the state
                                             setMcps(mcps.filter(m => m.id !== mcp.id));
                                         }}
                                     />
-                                </Box>
+                                </div>
                             ))}
-                        </SimpleGrid>
+                        </div>
                     ) : (
-                        <Text>No MCPs added yet.</Text>
+                        <p className="text-lg">No MCPs added yet.</p>
                     )}
-                </Box>
-            </VStack>
+                </div>
+            </div>
 
             {/* Add/Edit MCP Modal */}
             {session && showAddModal && (
@@ -171,10 +167,9 @@ export default function Dashboard() {
                     onClose={() => setShowAddModal(false)}
                     onSuccess={() => {
                         // Optionally refresh or update state after creating a new MCP.
-                        // Since we're monitoring "showAddModal", closing the modal triggers a fetch.
                     }}
                 />
             )}
-        </Box>
+        </div>
     );
 }

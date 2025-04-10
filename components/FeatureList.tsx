@@ -1,7 +1,6 @@
 'use client';
 
-import { Box, SimpleGrid, Text, Icon, Heading } from '@chakra-ui/react';
-import { CheckCircleIcon } from '@chakra-ui/icons';
+import { CheckIcon } from '@heroicons/react/24/solid';
 
 export default function FeatureList() {
     const features = [
@@ -23,25 +22,21 @@ export default function FeatureList() {
     ];
 
     return (
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mt={4}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
             {features.map((feature, index) => (
-                <Box
+                <div
                     key={index}
-                    p={6}
-                    borderWidth="1px"
-                    borderRadius="md"
-                    _hover={{ shadow: 'md' }}
-                    textAlign="center"
+                    className="p-6 border rounded-md hover:shadow-md text-center transition-shadow"
                 >
-                    <Icon as={CheckCircleIcon} color="green.500" w={8} h={8} mb={4} />
-                    <Heading as="h3" size="md" mb={2}>
+                    <CheckIcon className="w-8 h-8 mb-4 text-green-500 mx-auto" />
+                    <h3 className="text-lg font-semibold mb-2">
                         {feature.title}
-                    </Heading>
-                    <Text fontSize="sm" color="gray.600">
+                    </h3>
+                    <p className="text-sm text-gray-600">
                         {feature.description}
-                    </Text>
-                </Box>
+                    </p>
+                </div>
             ))}
-        </SimpleGrid>
+        </div>
     );
 }

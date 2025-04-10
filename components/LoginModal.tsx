@@ -1,23 +1,12 @@
-import React from 'react';
-import {
-    Button,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalCloseButton,
-    ModalBody,
-    ModalFooter,
-    Text,
-    useDisclosure,
-    Icon,
-} from '@chakra-ui/react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { FaGithub } from 'react-icons/fa';
-import { ElementType } from 'react';
 
 export default function LoginModal() {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [isOpen, setIsOpen] = useState(false);
+
+    const onOpen = () => setIsOpen(true);
+    const onClose = () => setIsOpen(false);
 
     const handleLogin = async () => {
         const { error } = await supabase.auth.signInWithOAuth({
@@ -33,44 +22,66 @@ export default function LoginModal() {
 
     return (
         <>
-            <Button colorScheme="blue" onClick={onOpen}>
+            <button
+                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded"
+                onClick={onOpen}
+            >
                 Login
-            </Button>
+            </button>
 
-            <Modal isOpen={isOpen} onClose={onClose} isCentered>
-                <ModalOverlay />
-                <ModalContent borderRadius="lg" boxShadow="xl">
-                    <ModalHeader borderBottomWidth="1px">Login with GitHub</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Text mb={4}>
-                            Proceed to login with your GitHub account by clicking the button below.
-                        </Text>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button
-                            // Overriding the styling to use a GitHub-like color
-                            bg="#24292e"
-                            color="white"
-                            mr={3}
-                            _hover={{ bg: "#1b1f23" }}
-                            _active={{ bg: "#141619" }}
-                            leftIcon={
-                                <Icon as={FaGithub as unknown as ElementType} />
-                            }
-                            onClick={() => {
-                                handleLogin();
-                                onClose();
-                            }}
-                        >
-                            Continue with GitHub
-                        </Button>
-                        <Button variant="ghost" onClick={onClose}>
-                            Cancel
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    {/* Modal Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                        onClick={onClose}
+                    />
+
+                    {/* Modal Content */}
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden relative">
+                        {/* Header */}
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-lg font-medium">Login with GitHub</h3>
+                            <button
+                                onClick={onClose}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+                                aria-label="Close"
+                            >
+                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-6 py-4">
+                            <p className="mb-4">
+                                Proceed to login with your GitHub account by clicking the button below.
+                            </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-3 bg-gray-50 flex justify-end space-x-3">
+                            <button
+                                className="bg-[#24292e] hover:bg-[#1b1f23] active:bg-[#141619] text-white px-4 py-2 rounded flex items-center"
+                                onClick={() => {
+                                    handleLogin();
+                                    onClose();
+                                }}
+                            >
+                                <FaGithub className="mr-2" />
+                                Continue with GitHub
+                            </button>
+                            <button
+                                className="text-gray-700 bg-transparent hover:bg-gray-100 px-4 py-2 rounded"
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
