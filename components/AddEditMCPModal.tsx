@@ -14,6 +14,15 @@ import {
     Text,
     VStack,
     Spinner,
+    Textarea,
+    HStack,
+    Tag,
+    TagLabel,
+    TagCloseButton,
+    Flex,
+    Box,
+    InputGroup,
+    InputRightElement,
 } from '@chakra-ui/react';
 import { supabase } from 'lib/supabaseClient';
 
@@ -36,6 +45,10 @@ export default function AddEditMCPModal({
     const [errorMsg, setErrorMsg] = useState('');
     const [loadingRepoInfo, setLoadingRepoInfo] = useState(false);
     const [author, setAuthor] = useState('');
+    // New state variables
+    const [deploymentUrl, setDeploymentUrl] = useState('');
+    const [tagInput, setTagInput] = useState('');
+    const [tags, setTags] = useState<string[]>([]);
 
     // Fetch current user's email to auto-fill author
     useEffect(() => {
@@ -48,6 +61,34 @@ export default function AddEditMCPModal({
         }
         fetchUser();
     }, []);
+
+    // Handle tag input
+    const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTagInput(e.target.value);
+    };
+
+    const addTag = () => {
+        if (tagInput.trim()) {
+            // Check if the tag already exists
+            if (!tags.includes(tagInput.trim().toLowerCase())) {
+                setTags([...tags, tagInput.trim().toLowerCase()]);
+            }
+            setTagInput('');
+        }
+    };
+
+    const handleTagKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            addTag();
+        }
+    };
+
+    const removeTag = (index: number) => {
+        const newTags = [...tags];
+        newTags.splice(index, 1);
+        setTags(newTags);
+    };
 
     // Automatically fetch repository details when the URL input loses focus
     const handleRepoBlur = async () => {
@@ -107,8 +148,8 @@ export default function AddEditMCPModal({
             setErrorMsg('Repository URL is required.');
             return;
         }
-        if (!version.trim()) {
-            setErrorMsg('Version is required.');
+        if (!version.trim() || !version.match(/^\d+\.\d+\.\d+$/)) {
+            setErrorMsg('Version is required and must follow semantic versioning (e.g., 1.0.0).');
             return;
         }
         setErrorMsg('');
@@ -129,8 +170,10 @@ export default function AddEditMCPModal({
                 repository_url: repositoryUrl.trim(),
                 version: version.trim(),
                 description: description.trim(),
+                deployment_url: deploymentUrl.trim() || null,
                 author: author,
                 user_id: user.id,
+                tags: tags.length > 0 ? tags : null,
             });
         if (error) {
             console.error('Error adding MCP:', error);
@@ -142,13 +185,15 @@ export default function AddEditMCPModal({
             // Reset form fields
             setName('');
             setRepositoryUrl('');
+            setDeploymentUrl('');
             setVersion('1.0.0');
             setDescription('');
+            setTags([]);
         }
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} size="lg">
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>Add New MCP</ModalHeader>
@@ -165,6 +210,7 @@ export default function AddEditMCPModal({
                             />
                             {loadingRepoInfo && <Spinner size="sm" mt={2} />}
                         </FormControl>
+
                         <FormControl isRequired>
                             <FormLabel>Name</FormLabel>
                             <Input
@@ -173,6 +219,7 @@ export default function AddEditMCPModal({
                                 placeholder="MCP Name"
                             />
                         </FormControl>
+
                         <FormControl isRequired>
                             <FormLabel>Version</FormLabel>
                             <Input
@@ -181,14 +228,63 @@ export default function AddEditMCPModal({
                                 placeholder="e.g., 1.0.0"
                             />
                         </FormControl>
+
                         <FormControl>
-                            <FormLabel>Description (optional)</FormLabel>
-                            <Input
+                            <FormLabel>Description</FormLabel>
+                            <Textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                placeholder="Short description"
+                                placeholder="Detailed description of your MCP"
+                                resize="vertical"
                             />
                         </FormControl>
+
+                        <FormControl>
+                            <FormLabel>MCP Deployment URL (optional)</FormLabel>
+                            <Input
+                                value={deploymentUrl}
+                                onChange={(e) => setDeploymentUrl(e.target.value)}
+                                placeholder="https://your-mcp-deployment.com"
+                            />
+                        </FormControl>
+
+                        <FormControl>
+                            <FormLabel>Tags/Categories</FormLabel>
+                            <InputGroup size="md">
+                                <Input
+                                    value={tagInput}
+                                    onChange={handleTagInputChange}
+                                    onKeyDown={handleTagKeyDown}
+                                    placeholder="Enter tags (comma or enter to add)"
+                                />
+                                <InputRightElement width="4.5rem">
+                                    <Button h="1.75rem" size="sm" onClick={addTag}>
+                                        Add
+                                    </Button>
+                                </InputRightElement>
+                            </InputGroup>
+
+                            {tags.length > 0 && (
+                                <Flex wrap="wrap" mt={2} gap={2}>
+                                    {tags.map((tag, index) => (
+                                        <Tag
+                                            size="md"
+                                            key={index}
+                                            borderRadius="full"
+                                            variant="solid"
+                                            colorScheme="blue"
+                                        >
+                                            <TagLabel>{tag}</TagLabel>
+                                            <TagCloseButton onClick={() => removeTag(index)} />
+                                        </Tag>
+                                    ))}
+                                </Flex>
+                            )}
+                            <Text fontSize="xs" color="gray.500" mt={1}>
+                                Add relevant tags for better discoverability
+                            </Text>
+                        </FormControl>
+
                         {errorMsg && (
                             <Text color="red.500" mt={2}>
                                 {errorMsg}

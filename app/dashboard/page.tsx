@@ -14,6 +14,7 @@ import {
     SimpleGrid,
 } from '@chakra-ui/react';
 import AddEditMCPModal from 'components/AddEditMCPModal';
+import MCPCard from 'components/MCPCard';
 
 export default function Dashboard() {
     const [session, setSession] = useState<any>(null);
@@ -118,7 +119,10 @@ export default function Dashboard() {
                 </Button>
 
                 {/* Logout Button */}
-                <Flex justify="center" mt={8}>
+                <Flex justify="center" mt={8} gap={4}>
+                    <Button onClick={() => router.push('/profile')} colorScheme="teal">
+                        My Profile
+                    </Button>
                     <Button onClick={handleLogout} colorScheme="red">
                         Logout
                     </Button>
@@ -142,18 +146,15 @@ export default function Dashboard() {
                                     _hover={{ shadow: 'lg', cursor: 'pointer' }}
                                     onClick={() => router.push(`/mcp/${mcp.id}`)}
                                 >
-                                    <Heading fontSize="xl" mb={2}>
-                                        {mcp.name}
-                                    </Heading>
-                                    <Text mb={2}>Version: {mcp.version}</Text>
-                                    <Text mb={2}>
-                                        {mcp.description
-                                            ? mcp.description
-                                            : 'No description provided.'}
-                                    </Text>
-                                    <Text fontSize="sm" color="gray.500">
-                                        Repository: {mcp.repository_url}
-                                    </Text>
+                                    <MCPCard
+                                        mcp={mcp}
+                                        onClick={() => router.push(`/mcp/${mcp.id}`)}
+                                        editable={true}
+                                        onDelete={() => {
+                                            // Filter out the deleted MCP from the state
+                                            setMcps(mcps.filter(m => m.id !== mcp.id));
+                                        }}
+                                    />
                                 </Box>
                             ))}
                         </SimpleGrid>
