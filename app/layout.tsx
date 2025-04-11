@@ -1,5 +1,6 @@
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import Layout from 'components/layout/Layout';
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
 
 // Load fonts
@@ -28,6 +29,7 @@ export default function RootLayout({
     return (
         <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable}`}>
             <body className="antialiased text-neutral-900 bg-neutral-50">
+                <Toaster position="top-center" />
                 <Layout>{children}</Layout>
             </body>
         </html>

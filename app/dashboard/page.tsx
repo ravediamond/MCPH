@@ -84,92 +84,100 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="p-8">
-            <div className="flex flex-col items-center space-y-10">
-                {/* Welcome / Header Section */}
-                <h1 className="text-4xl font-bold mb-2">
-                    Dashboard
-                </h1>
-                {session && session.user ? (
-                    <p className="text-lg">
-                        Welcome back, <strong>{session.user.email}</strong>!
-                    </p>
-                ) : (
-                    <p className="text-lg">No user session found.</p>
+        <div className="min-h-screen bg-gray-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-50 via-gray-100 to-gray-200">
+            <div className="max-w-7xl mx-auto p-8">
+                <div className="flex flex-col items-center space-y-8">
+                    {/* Header Section */}
+                    <div className="text-center space-y-4 mb-8">
+                        <h1 className="text-4xl font-bold text-gray-800">
+                            My Dashboard
+                        </h1>
+                        {session && session.user ? (
+                            <p className="text-lg text-gray-600">
+                                Welcome back, <span className="font-semibold">{session.user.email}</span>
+                            </p>
+                        ) : (
+                            <p className="text-lg text-gray-600">No user session found.</p>
+                        )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap justify-center gap-4">
+                        <button
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200 flex items-center space-x-2"
+                            onClick={() => setShowAddModal(true)}
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Create New MCP</span>
+                        </button>
+                        <button
+                            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200"
+                            onClick={() => router.push('/')}
+                        >
+                            Explore MCPs
+                        </button>
+                    </div>
+
+                    {/* Profile and Logout Buttons */}
+                    <div className="flex gap-4">
+                        <button
+                            className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200"
+                            onClick={() => router.push('/profile')}
+                        >
+                            My Profile
+                        </button>
+                        <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition duration-200"
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </button>
+                    </div>
+
+                    {/* MCPs Section */}
+                    <div className="w-full mt-12">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+                            My MCPs
+                        </h2>
+                        {mcps.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {mcps.map((mcp) => (
+                                    <div
+                                        key={mcp.id}
+                                        className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition duration-200"
+                                    >
+                                        <MCPCard
+                                            mcp={mcp}
+                                            onClick={() => router.push(`/mcp/${mcp.id}`)}
+                                            editable={true}
+                                            onDelete={() => {
+                                                setMcps(mcps.filter(m => m.id !== mcp.id));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center p-8 bg-white rounded-lg shadow-md">
+                                <p className="text-lg text-gray-600">No MCPs added yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Modal */}
+                {session && showAddModal && (
+                    <AddEditMCPModal
+                        isOpen={showAddModal}
+                        onClose={() => setShowAddModal(false)}
+                        onSuccess={() => {
+                            // Optionally refresh or update state after creating a new MCP
+                        }}
+                    />
                 )}
-
-                {/* Button to Create a New MCP */}
-                <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                    onClick={() => setShowAddModal(true)}
-                >
-                    Create New MCP
-                </button>
-
-                {/* Button to Explore MCPs */}
-                <button
-                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded"
-                    onClick={() => router.push('/')}
-                >
-                    Explore MCPs
-                </button>
-
-                {/* Logout Button */}
-                <div className="flex justify-center mt-8 gap-4">
-                    <button
-                        className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded"
-                        onClick={() => router.push('/profile')}
-                    >
-                        My Profile
-                    </button>
-                    <button
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </button>
-                </div>
-
-                {/* Display Added MCPs as Cards */}
-                <div className="w-full mt-10">
-                    <h2 className="text-2xl font-bold mb-4">
-                        My MCPs
-                    </h2>
-                    {mcps.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {mcps.map((mcp) => (
-                                <div
-                                    key={mcp.id}
-                                    className="border border-gray-200 rounded-lg overflow-hidden p-4 shadow-md hover:shadow-lg hover:cursor-pointer"
-                                    onClick={() => router.push(`/mcp/${mcp.id}`)}
-                                >
-                                    <MCPCard
-                                        mcp={mcp}
-                                        onClick={() => router.push(`/mcp/${mcp.id}`)}
-                                        editable={true}
-                                        onDelete={() => {
-                                            setMcps(mcps.filter(m => m.id !== mcp.id));
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-lg">No MCPs added yet.</p>
-                    )}
-                </div>
             </div>
-
-            {/* Add/Edit MCP Modal */}
-            {session && showAddModal && (
-                <AddEditMCPModal
-                    isOpen={showAddModal}
-                    onClose={() => setShowAddModal(false)}
-                    onSuccess={() => {
-                        // Optionally refresh or update state after creating a new MCP.
-                    }}
-                />
-            )}
         </div>
     );
 }

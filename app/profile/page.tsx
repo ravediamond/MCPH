@@ -3,21 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from 'lib/supabaseClient';
-import {
-    Box,
-    Button,
-    FormControl,
-    FormLabel,
-    Heading,
-    Input,
-    VStack,
-    Spinner,
-    useToast,
-    Text,
-    Flex,
-    Avatar,
-    Textarea,
-} from '@chakra-ui/react';
+import toast from 'react-hot-toast';
+import Image from 'next/image';
+
 
 export default function Profile() {
     const [session, setSession] = useState<any>(null);
@@ -30,7 +18,21 @@ export default function Profile() {
         website: '',
     });
     const router = useRouter();
-    const toast = useToast();
+
+    useEffect(() => {
+        const getSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                router.push('/');
+            } else {
+                setSession(session);
+                await fetchProfile(session.user.id);
+            }
+            setLoading(false);
+        };
+
+        getSession();
+    }, []);
 
     useEffect(() => {
         const getSession = async () => {
@@ -77,7 +79,7 @@ export default function Profile() {
                     username: '',
                     bio: '',
                     website: '',
-                    id: userId
+                    id: userId,
                 });
             } else if (data) {
                 setProfile(data);
@@ -115,21 +117,10 @@ export default function Profile() {
 
             if (error) throw error;
 
-            toast({
-                title: 'Profile updated',
-                status: 'success',
-                duration: 3000,
-                isClosable: true,
-            });
-
+            // Using react-hot-toast's API
+            toast.success('Profile updated', { duration: 3000 });
         } catch (error: any) {
-            toast({
-                title: 'Error updating profile',
-                description: error.message,
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-            });
+            toast.error(`Error updating profile: ${error.message}`, { duration: 3000 });
         } finally {
             setSaving(false);
         }
@@ -137,95 +128,102 @@ export default function Profile() {
 
     if (loading) {
         return (
-            <Box p={8} textAlign="center">
-                <Spinner size="xl" />
-            </Box>
+            <div className="p-8 text-center">
+                <div className="spinner" />
+                {/* You can replace <div className="spinner" /> with your own spinner */}
+            </div>
         );
     }
 
     return (
-        <Box p={8} maxWidth="800px" mx="auto">
-            <VStack spacing={8} align="stretch">
-                <Heading as="h1" size="xl" textAlign="center">
-                    My Profile
-                </Heading>
+        <div className="p-8 max-w-3xl mx-auto">
+            <div className="space-y-8">
+                <h1 className="text-center text-3xl font-bold">My Profile</h1>
 
-                <Flex direction="column" align="center" mb={6}>
-                    <Avatar
-                        size="2xl"
-                        name={profile.full_name || session?.user?.email}
-                        mb={4}
+                <div className="flex flex-col items-center mb-6">
+                    <img
+                        src="/path/to/avatar.jpg"
+                        alt={profile.full_name || session?.user?.email}
+                        className="rounded-full h-24 w-24 mb-4"
                     />
-                    <Text fontSize="lg" color="gray.500">
-                        {session?.user?.email}
-                    </Text>
-                </Flex>
+                    <p className="text-lg text-gray-500">{session?.user?.email}</p>
+                </div>
 
-                <form onSubmit={handleSubmit}>
-                    <VStack spacing={6} align="stretch">
-                        <FormControl id="fullName">
-                            <FormLabel>Full Name</FormLabel>
-                            <Input
-                                type="text"
-                                name="full_name"
-                                value={profile.full_name || ''}
-                                onChange={handleChange}
-                                placeholder="Your full name"
-                            />
-                        </FormControl>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                            Full Name
+                        </label>
+                        <input
+                            type="text"
+                            name="full_name"
+                            value={profile.full_name || ''}
+                            onChange={handleChange}
+                            placeholder="Your full name"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
 
-                        <FormControl id="username">
-                            <FormLabel>Username</FormLabel>
-                            <Input
-                                type="text"
-                                name="username"
-                                value={profile.username || ''}
-                                onChange={handleChange}
-                                placeholder="Your username"
-                            />
-                        </FormControl>
+                    <div>
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={profile.username || ''}
+                            onChange={handleChange}
+                            placeholder="Your username"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
 
-                        <FormControl id="bio">
-                            <FormLabel>Bio</FormLabel>
-                            <Textarea
-                                name="bio"
-                                value={profile.bio || ''}
-                                onChange={handleChange}
-                                placeholder="Tell us about yourself"
-                                rows={4}
-                            />
-                        </FormControl>
+                    <div>
+                        <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                            Bio
+                        </label>
+                        <textarea
+                            name="bio"
+                            value={profile.bio || ''}
+                            onChange={handleChange}
+                            placeholder="Tell us about yourself"
+                            rows={4}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
 
-                        <FormControl id="website">
-                            <FormLabel>Website</FormLabel>
-                            <Input
-                                type="url"
-                                name="website"
-                                value={profile.website || ''}
-                                onChange={handleChange}
-                                placeholder="https://your-website.com"
-                            />
-                        </FormControl>
+                    <div>
+                        <label htmlFor="website" className="block text-sm font-medium text-gray-700">
+                            Website
+                        </label>
+                        <input
+                            type="url"
+                            name="website"
+                            value={profile.website || ''}
+                            onChange={handleChange}
+                            placeholder="https://your-website.com"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                    </div>
 
-                        <Flex justify="space-between" mt={6}>
-                            <Button
-                                onClick={() => router.push('/dashboard')}
-                                variant="outline"
-                            >
-                                Back to Dashboard
-                            </Button>
-                            <Button
-                                colorScheme="blue"
-                                type="submit"
-                                isLoading={saving}
-                                loadingText="Saving"
-                            >
-                                Save Profile
-                            </Button>
-                        </Flex>
-                    </VStack>
+                    <div className="flex justify-between mt-6">
+                        <button
+                            type="button"
+                            onClick={() => router.push('/dashboard')}
+                            className="px-4 py-2 border rounded-md"
+                        >
+                            Back to Dashboard
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                            disabled={saving}
+                        >
+                            {saving ? 'Saving' : 'Save Profile'}
+                        </button>
+                    </div>
                 </form>
-            </VStack>
-        </Box>
+            </div>
+        </div>
     );
 }

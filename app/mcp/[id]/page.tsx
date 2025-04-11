@@ -2,14 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from 'lib/supabaseClient';
-import {
-    Box,
-    Container,
-    Heading,
-    Text,
-    Spinner,
-    SimpleGrid,
-} from '@chakra-ui/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 'github-markdown-css/github-markdown.css';
@@ -122,94 +114,93 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             if (!src.match(/^(https?:\/\/)/)) {
                 src = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${src}`;
             }
-            return <img {...props} src={src} alt={props.alt} style={{ maxWidth: '100%' }} />;
+            return <img {...props} src={src} alt={props.alt} className="max-w-full" />;
         },
     };
 
     if (loading) {
         return (
-            <Box p={8} textAlign="center">
-                <Spinner size="xl" />
-            </Box>
+            <div className="p-8 text-center">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                    <span className="sr-only">Loading...</span>
+                </div>
+            </div>
         );
     }
 
     if (!mcp) {
         return (
-            <Box p={8} textAlign="center">
-                <Text>MCP not found.</Text>
-            </Box>
+            <div className="p-8 text-center">
+                <p>MCP not found.</p>
+            </div>
         );
     }
 
     return (
-        <Container maxW="container.lg" py={16}>
+        <div className="max-w-screen-lg mx-auto py-16 px-4">
             {/* MCP Basic Information */}
-            <Heading as="h1" mb={4}>
+            <h1 className="text-3xl font-bold mb-4">
                 {mcp.title || 'MCP Detail'}
-            </Heading>
-            <Text mb={4}>{mcp.description || 'No description available.'}</Text>
-            <Text fontSize="sm" color="gray.600" mb={4}>
-                GitHub Repository: <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer">{mcp.repository_url}</a>
-            </Text>
+            </h1>
+            <p className="mb-4">{mcp.description || 'No description available.'}</p>
+            <p className="text-sm text-gray-600 mb-4">
+                GitHub Repository: <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{mcp.repository_url}</a>
+            </p>
 
             {/* Repository Metrics section styled similar to PyPI */}
-            <Box
-                my={8}
-                p={6}
-                borderWidth="1px"
-                borderRadius="md"
-                boxShadow="sm"
-                bg="gray.50"
-            >
-                <Heading as="h3" size="md" mb={4}>
+            <div className="my-8 p-6 border border-gray-200 rounded-md shadow-sm bg-gray-50">
+                <h3 className="text-lg font-medium mb-4">
                     Repository Metrics
-                </Heading>
+                </h3>
                 {repoData ? (
-                    <SimpleGrid columns={[1, 2, 3]} spacing={4}>
-                        <Text>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <p>
                             <strong>Stars:</strong> {repoData.stargazers_count}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>Forks:</strong> {repoData.forks_count}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>Open Issues:</strong> {repoData.open_issues_count}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>Watchers:</strong>{' '}
                             {repoData.subscribers_count || repoData.watchers_count}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>Primary Language:</strong>{' '}
                             {repoData.language || 'N/A'}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>License:</strong>{' '}
                             {repoData.license?.spdx_id || 'None'}
-                        </Text>
-                        <Text>
+                        </p>
+                        <p>
                             <strong>Last Updated:</strong>{' '}
                             {new Date(repoData.updated_at).toLocaleDateString()}
-                        </Text>
-                    </SimpleGrid>
+                        </p>
+                    </div>
                 ) : (
-                    <Spinner size="sm" />
+                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                        <span className="sr-only">Loading...</span>
+                    </div>
                 )}
-            </Box>
+            </div>
 
             {/* README display */}
             {loadingReadme ? (
-                <Spinner size="lg" />
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
+                    <span className="sr-only">Loading...</span>
+                </div>
             ) : readme ? (
-                <Box mt={8} className="markdown-body">
+                <div className="mt-8 markdown-body">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
                         {readme}
                     </ReactMarkdown>
-                </Box>
+                </div>
             ) : (
-                <Text>No README available.</Text>
+                <p>No README available.</p>
             )}
-        </Container>
+        </div>
     );
 }
