@@ -11,6 +11,7 @@
         "@heroicons/react": "^2.2.0",
         "@supabase/supabase-js": "^2.49.4",
         "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/typography": "^0.5.16",
         "bufferutil": "^4.0.9",
         "github-markdown-css": "^5.8.1",
         "next": "^15.3.0",

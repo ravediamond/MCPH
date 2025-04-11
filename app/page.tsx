@@ -1,93 +1,136 @@
 'use client';
 
-import SearchBar from 'components/SearchBar';
-import FeatureList from 'components/FeatureList';
-import LoginModal from 'components/LoginModal';
-
+import Link from 'next/link';
+import Button from 'components/ui/Button';
+import Card from 'components/ui/Card';
+import { MagnifyingGlassIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
 export default function Home() {
+    // Sample MCP data
+    const featuredMCPs = [
+        {
+            id: 1,
+            name: 'Weather API',
+            description: 'Get real-time weather information for any location',
+            author: 'OpenWeatherMap',
+            tags: ['weather', 'api', 'geolocation'],
+            downloads: 12345,
+        },
+        {
+            id: 2,
+            name: 'Calculator Tool',
+            description: 'Perform complex mathematical calculations',
+            author: 'MathTools Inc',
+            tags: ['math', 'calculator', 'numerical'],
+            downloads: 8763,
+        },
+        {
+            id: 3,
+            name: 'Image Generator',
+            description: 'Create images from text descriptions',
+            author: 'AI Visuals',
+            tags: ['ai', 'images', 'generation'],
+            downloads: 10932,
+        },
+    ];
+
     return (
-        <div className="container mx-auto max-w-screen-lg py-16">
-            <div className="flex flex-col gap-12 items-stretch">
-                {/* Hero Section */}
-                <div className="text-center py-10">
-                    <h1 className="text-5xl font-bold mb-4">
-                        MCPH
-                    </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Welcome to MCPH, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools. Whether you're a developer or an AI system, MCPH simplifies the process of integration and innovation.
-                    </p>
-                </div>
+        <div className="space-y-12 py-4">
+            {/* Hero Section */}
+            <section className="text-center py-16 px-4">
+                <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                    <span className="text-primary-600">MCP</span> Registry
+                </h1>
+                <p className="text-xl text-neutral-600 max-w-2xl mx-auto mb-8">
+                    Discover and connect to Model Context Protocol endpoints to extend your AI's capabilities.
+                </p>
 
-                {/* Search Section */}
-                <div className="text-center">
-                    <SearchBar />
-                </div>
-
-                {/* Features Section */}
-                <div className="text-center">
-                    <h2 className="text-4xl font-bold mb-6">
-                        Explore Our Key Features
-                    </h2>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
-                        Discover a range of functionalities designed to enhance your MCP experience. Our platform ensures you can securely authenticate, seamlessly integrate GitHub repositories, and tap into a robust API for AI-powered interactions.
-                    </p>
-                    <FeatureList />
-                </div>
-
-                <hr className="border-gray-200" />
-
-                {/* How It Works Section */}
-                <div className="text-center py-6">
-                    <h2 className="text-4xl font-bold mb-4">
-                        How It Works
-                    </h2>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
-                        Getting started with MCPH is simple and straightforward. Follow these steps to become part of our growing community:
-                    </p>
-                    <div className="flex flex-col md:flex-row gap-4 justify-center">
-                        <div className="p-4">
-                            <h3 className="text-lg font-medium mb-2">
-                                1. Sign Up & Profile Setup
-                            </h3>
-                            <p className="text-md text-gray-500">
-                                Create your account and easily manage your profile.
-                            </p>
+                <div className="max-w-2xl mx-auto relative">
+                    <div className="flex">
+                        <div className="relative flex-grow">
+                            <input
+                                type="text"
+                                placeholder="Search MCP endpoints..."
+                                className="w-full pl-10 pr-4 py-3 rounded-l-md border-y border-l border-neutral-300 focus:ring-2 focus:ring-primary-300 focus:border-primary-300"
+                            />
+                            <MagnifyingGlassIcon className="absolute left-3 top-3.5 h-5 w-5 text-neutral-500" />
                         </div>
-                        <div className="p-4">
-                            <h3 className="text-lg font-medium mb-2">
-                                2. Submit Your MCP
-                            </h3>
-                            <p className="text-md text-gray-500">
-                                Connect your GitHub repository to automatically import your README and documentation.
-                            </p>
-                        </div>
-                        <div className="p-4">
-                            <h3 className="text-lg font-medium mb-2">
-                                3. Explore & Integrate
-                            </h3>
-                            <p className="text-md text-gray-500">
-                                Search our catalog to find and integrate the right tools for your projects.
-                            </p>
-                        </div>
+                        <Button variant="primary" size="lg" className="rounded-l-none">
+                            Search
+                        </Button>
                     </div>
                 </div>
 
-                <hr className="border-gray-200" />
+                <div className="mt-6 flex justify-center gap-4">
+                    <Button variant="outline">Browse All MCPs</Button>
+                    <Button variant="primary">Submit MCP</Button>
+                </div>
+            </section>
 
-                {/* Call to Action Section */}
-                <div className="text-center">
-                    <h2 className="text-4xl font-bold mb-4">
-                        Ready to Get Started?
-                    </h2>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-                        Join our community today and harness the full potential of the Model Context Protocol. Dive into a platform that makes integrations seamless and innovation unstoppable.
-                    </p>
-                    <div className="flex justify-center">
-                        <LoginModal />
+            {/* Featured MCPs */}
+            <section>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold">Featured MCPs</h2>
+                    <Link href="/browse" className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1">
+                        View all <ArrowRightIcon className="h-4 w-4" />
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredMCPs.map((mcp) => (
+                        <Card key={mcp.id} hoverable>
+                            <Card.Body>
+                                <h3 className="text-lg font-semibold mb-2">{mcp.name}</h3>
+                                <p className="text-neutral-600 text-sm mb-3">{mcp.description}</p>
+                                <div className="flex flex-wrap gap-1 mb-3">
+                                    {mcp.tags.map((tag) => (
+                                        <span key={tag} className="bg-neutral-100 text-neutral-700 text-xs px-2 py-1 rounded-md">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-neutral-500">By {mcp.author}</span>
+                                    <span className="text-xs text-neutral-500">{mcp.downloads.toLocaleString()} downloads</span>
+                                </div>
+                            </Card.Body>
+                            <Card.Footer className="flex justify-end">
+                                <Link href={`/mcp/${mcp.id}`}>
+                                    <Button variant="primary" size="sm">View Details</Button>
+                                </Link>
+                            </Card.Footer>
+                        </Card>
+                    ))}
+                </div>
+            </section>
+
+            {/* How It Works */}
+            <section className="bg-white rounded-lg shadow-soft p-8">
+                <h2 className="text-2xl font-bold mb-6 text-center">How MCP Registry Works</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="text-center">
+                        <div className="bg-primary-100 text-primary-600 h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="font-bold text-lg">1</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Register Your MCP</h3>
+                        <p className="text-neutral-600">Create an account and submit your Model Context Protocol endpoint</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-primary-100 text-primary-600 h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="font-bold text-lg">2</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Share Documentation</h3>
+                        <p className="text-neutral-600">Add details about how your MCP works and its capabilities</p>
+                    </div>
+                    <div className="text-center">
+                        <div className="bg-primary-100 text-primary-600 h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="font-bold text-lg">3</span>
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">Enhance AI Systems</h3>
+                        <p className="text-neutral-600">Let AI agents discover and use your tools to enhance their capabilities</p>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

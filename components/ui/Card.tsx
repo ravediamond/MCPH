@@ -3,24 +3,35 @@ import React from 'react';
 interface CardProps {
     children: React.ReactNode;
     className?: string;
+    hoverable?: boolean;
 }
 
-export const Card = ({ children, className = '' }: CardProps) => {
+export default function Card({ children, className = '', hoverable = false }: CardProps) {
     return (
-        <div className={`bg-white dark:bg-gray-800 shadow rounded-lg ${className}`}>
+        <div
+            className={`
+        bg-white 
+        border border-neutral-200 
+        rounded-lg 
+        shadow-soft 
+        overflow-hidden
+        ${hoverable ? 'transition-all duration-200 hover:shadow-medium hover:border-neutral-300' : ''}
+        ${className}
+      `}
+        >
             {children}
         </div>
     );
-};
+}
 
 interface CardHeaderProps {
     children: React.ReactNode;
     className?: string;
 }
 
-export const CardHeader = ({ children, className = '' }: CardHeaderProps) => {
+Card.Header = function CardHeader({ children, className = '' }: CardHeaderProps) {
     return (
-        <div className={`px-6 py-4 border-b border-gray-200 dark:border-gray-700 ${className}`}>
+        <div className={`px-5 py-4 border-b border-neutral-200 ${className}`}>
             {children}
         </div>
     );
@@ -31,9 +42,9 @@ interface CardBodyProps {
     className?: string;
 }
 
-export const CardBody = ({ children, className = '' }: CardBodyProps) => {
+Card.Body = function CardBody({ children, className = '' }: CardBodyProps) {
     return (
-        <div className={`px-6 py-4 ${className}`}>
+        <div className={`px-5 py-4 ${className}`}>
             {children}
         </div>
     );
@@ -44,9 +55,9 @@ interface CardFooterProps {
     className?: string;
 }
 
-export const CardFooter = ({ children, className = '' }: CardFooterProps) => {
+Card.Footer = function CardFooter({ children, className = '' }: CardFooterProps) {
     return (
-        <div className={`px-6 py-4 border-t border-gray-200 dark:border-gray-700 ${className}`}>
+        <div className={`px-5 py-4 bg-neutral-50 border-t border-neutral-200 ${className}`}>
             {children}
         </div>
     );

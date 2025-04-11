@@ -23,10 +23,10 @@ export default function LoginModal() {
     return (
         <>
             <button
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded"
+                className="text-sm font-medium bg-neutral-800 text-white px-4 py-2 rounded-md hover:bg-neutral-700 transition-colors"
                 onClick={onOpen}
             >
-                Login
+                Login with GitHub
             </button>
 
             {isOpen && (
