@@ -11,6 +11,7 @@ import {
     Bars3Icon,
 } from "@heroicons/react/24/outline";
 import Button from "components/ui/Button";
+import MCPCard from "components/MCPCard";  // Import the MCPCard
 
 export default function BrowsePage() {
     const router = useRouter();
@@ -27,8 +28,7 @@ export default function BrowsePage() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // For categories, if you have real ones they can be fetched as well,
-    // but here we keep the dummy array for demonstration.
+    // Dummy categories for demonstration.
     const categories = [
         "All",
         "Technology",
@@ -43,7 +43,6 @@ export default function BrowsePage() {
         setLoading(true);
         setError(null);
         try {
-            // Our API will return all items if no search query is provided.
             const url = searchQuery.trim()
                 ? `/api/search?q=${encodeURIComponent(searchQuery)}`
                 : `/api/search`;
@@ -66,27 +65,23 @@ export default function BrowsePage() {
         fetchItems();
     }, [searchQuery]);
 
-    // Handler to redirect (or update state) with the search query.
+    // Handler to update the URL search query.
     const handleSearch = () => {
-        // Update the URL.
         if (!searchQuery.trim()) {
             router.push("/browse");
         } else {
             router.push(`/browse?q=${encodeURIComponent(searchQuery)}`);
         }
-        // Fetch new items (the useEffect above will do this)
-        // or you can call fetchItems() directly here.
     };
 
-    // Optional: Trigger search on Enter key.
+    // Trigger search on Enter key.
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             handleSearch();
         }
     };
 
-    // Local filtering by category if needed.
-    // (This happens on top of the fetched data.)
+    // Filter items by category and search query.
     const filteredItems = items.filter((item) => {
         const matchesCategory =
             activeFilter === "All" || item.tags?.includes(activeFilter);
@@ -137,15 +132,13 @@ export default function BrowsePage() {
                         <div className="flex items-center border border-neutral-200 rounded-lg">
                             <button
                                 onClick={() => setView("grid")}
-                                className={`p-2 rounded-l-lg ${view === "grid" ? "bg-blue-500 text-white" : "text-neutral-500"
-                                    }`}
+                                className={`p-2 rounded-l-lg ${view === "grid" ? "bg-blue-500 text-white" : "text-neutral-500"}`}
                             >
                                 <Squares2X2Icon className="h-5 w-5" />
                             </button>
                             <button
                                 onClick={() => setView("list")}
-                                className={`p-2 rounded-r-lg ${view === "list" ? "bg-blue-500 text-white" : "text-neutral-500"
-                                    }`}
+                                className={`p-2 rounded-r-lg ${view === "list" ? "bg-blue-500 text-white" : "text-neutral-500"}`}
                             >
                                 <Bars3Icon className="h-5 w-5" />
                             </button>
@@ -173,7 +166,7 @@ export default function BrowsePage() {
                 {loading && <p>Loading...</p>}
                 {error && <p className="text-red-500">{error}</p>}
 
-                {/* Content Grid / List */}
+                {/* Content Grid / List using MCPCard */}
                 <div
                     className={
                         view === "grid"
@@ -188,31 +181,21 @@ export default function BrowsePage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                             >
-                                <div className={view === "list" ? "w-1/3" : "w-full"}>
-                                    <img
-                                        src={item.image}
-                                        alt={item.name}
-                                        className="w-full h-48 object-cover"
-                                    />
-                                </div>
-                                <div className="p-4">
-                                    <span className="text-xs font-semibold text-blue-500">
-                                        {item.category}
-                                    </span>
-                                    <h3 className="text-lg font-bold text-neutral-800 mt-1">
-                                        {item.name}
-                                    </h3>
-                                    <p className="text-neutral-600 text-sm mt-2">
-                                        {item.description}
-                                    </p>
-                                    <div className="mt-4">
-                                        <Button variant="primary" size="sm">
-                                            View Details →
-                                        </Button>
-                                    </div>
-                                </div>
+                                <MCPCard
+                                    mcp={item}
+                                    onClick={() => {
+                                        // For example, redirect to a details page.
+                                        router.push(`/details/${item.id}`);
+                                    }}
+                                    editable={true}
+                                    onDelete={() => {
+                                        // Remove the deleted item from state.
+                                        setItems((prevItems) =>
+                                            prevItems.filter((i) => i.id !== item.id)
+                                        );
+                                    }}
+                                />
                             </motion.div>
                         ))
                     ) : (

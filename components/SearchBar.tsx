@@ -9,8 +9,15 @@ export default function SearchBar() {
 
     const handleSearch = () => {
         if (!query.trim()) return;
-
         router.push(`/browse?q=${encodeURIComponent(query)}`);
+    };
+
+    // New handler for keydown events on the input field
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();  // Prevents form submission if the input is inside a form
+            handleSearch();
+        }
     };
 
     return (
@@ -21,6 +28,7 @@ export default function SearchBar() {
                 placeholder="Search features..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}  // Added the onKeyDown handler here
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 <button
