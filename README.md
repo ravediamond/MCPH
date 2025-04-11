@@ -32,6 +32,8 @@ Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring M
 
 - **Seamless Deployment:** In the future, easily deploy both official and open-source MCPs on our platform.
 - **Advanced Versioning & Documentation:** More robust version management and extra documentation features for the growing ecosystem.
+- **Task cutomized MCP usage planning** Better MCP by giving an optimized list of MCP to use depending on the task.
+- **Usabe based Monetisation:** Give an usage based monetization system for the MCP developers.
 
 ---
 
