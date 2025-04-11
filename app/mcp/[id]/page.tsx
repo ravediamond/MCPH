@@ -5,6 +5,7 @@ import { supabase } from 'lib/supabaseClient';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import 'github-markdown-css/github-markdown.css';
+import { FaStar, FaCodeBranch, FaExclamationCircle, FaEye, FaCode, FaFileAlt, FaCalendarAlt, FaGithub, FaExternalLinkAlt } from 'react-icons/fa';
 
 interface MCPDetailProps {
     params: { id: string };
@@ -114,15 +115,16 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             if (!src.match(/^(https?:\/\/)/)) {
                 src = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${src}`;
             }
-            return <img {...props} src={src} alt={props.alt} className="max-w-full" />;
+            return <img {...props} src={src} alt={props.alt} className="max-w-full rounded-md" />;
         },
     };
 
     if (loading) {
         return (
-            <div className="p-8 text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                    <span className="sr-only">Loading...</span>
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center space-y-4">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-600 font-medium">Loading MCP details...</p>
                 </div>
             </div>
         );
@@ -130,77 +132,144 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
     if (!mcp) {
         return (
-            <div className="p-8 text-center">
-                <p>MCP not found.</p>
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="bg-white shadow-md rounded-lg p-6 text-center max-w-md">
+                    <FaExclamationCircle className="mx-auto text-red-500 text-4xl mb-4" />
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">MCP Not Found</h2>
+                    <p className="text-gray-600">The requested MCP could not be found. Please check the ID and try again.</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="max-w-screen-lg mx-auto py-16 px-4">
-            {/* MCP Basic Information */}
-            <h1 className="text-3xl font-bold mb-4">
-                {mcp.title || 'MCP Detail'}
-            </h1>
-            <p className="mb-4">{mcp.description || 'No description available.'}</p>
-            <p className="text-sm text-gray-600 mb-4">
-                GitHub Repository: <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{mcp.repository_url}</a>
-            </p>
-
-            {/* Repository Metrics section styled similar to PyPI */}
-            <div className="my-8 p-6 border border-gray-200 rounded-md shadow-sm bg-gray-50">
-                <h3 className="text-lg font-medium mb-4">
-                    Repository Metrics
-                </h3>
-                {repoData ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <p>
-                            <strong>Stars:</strong> {repoData.stargazers_count}
-                        </p>
-                        <p>
-                            <strong>Forks:</strong> {repoData.forks_count}
-                        </p>
-                        <p>
-                            <strong>Open Issues:</strong> {repoData.open_issues_count}
-                        </p>
-                        <p>
-                            <strong>Watchers:</strong>{' '}
-                            {repoData.subscribers_count || repoData.watchers_count}
-                        </p>
-                        <p>
-                            <strong>Primary Language:</strong>{' '}
-                            {repoData.language || 'N/A'}
-                        </p>
-                        <p>
-                            <strong>License:</strong>{' '}
-                            {repoData.license?.spdx_id || 'None'}
-                        </p>
-                        <p>
-                            <strong>Last Updated:</strong>{' '}
-                            {new Date(repoData.updated_at).toLocaleDateString()}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                )}
+        <div className="bg-gray-50 min-h-screen pb-16">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-10 px-4 shadow-md">
+                <div className="max-w-screen-xl mx-auto">
+                    <h1 className="text-4xl font-bold mb-4">
+                        {mcp.title || 'MCP Detail'}
+                    </h1>
+                    <p className="text-lg mb-4 opacity-90 max-w-3xl">{mcp.description || 'No description available.'}</p>
+                    <a
+                        href={mcp.repository_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
+                    >
+                        <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
+                    </a>
+                </div>
             </div>
 
-            {/* README display */}
-            {loadingReadme ? (
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" role="status">
-                    <span className="sr-only">Loading...</span>
+            <div className="max-w-screen-xl mx-auto px-4 mt-8">
+                <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+                    {/* Sidebar with Metrics */}
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-8">
+                            <div className="p-6 border-b border-gray-100">
+                                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                    <FaGithub /> Repository Info
+                                </h3>
+                            </div>
+                            {repoData ? (
+                                <div className="p-6 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center text-gray-700 gap-2">
+                                            <FaStar className="text-yellow-500" />
+                                            <span>Stars</span>
+                                        </div>
+                                        <span className="font-semibold">{repoData.stargazers_count.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center text-gray-700 gap-2">
+                                            <FaCodeBranch className="text-green-600" />
+                                            <span>Forks</span>
+                                        </div>
+                                        <span className="font-semibold">{repoData.forks_count.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center text-gray-700 gap-2">
+                                            <FaExclamationCircle className="text-orange-500" />
+                                            <span>Issues</span>
+                                        </div>
+                                        <span className="font-semibold">{repoData.open_issues_count.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center text-gray-700 gap-2">
+                                            <FaEye className="text-blue-600" />
+                                            <span>Watchers</span>
+                                        </div>
+                                        <span className="font-semibold">{(repoData.subscribers_count || repoData.watchers_count).toLocaleString()}</span>
+                                    </div>
+                                    <div className="border-t border-gray-100 pt-4 mt-4">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center text-gray-700 gap-2">
+                                                <FaCode />
+                                                <span>Language</span>
+                                            </div>
+                                            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
+                                                {repoData.language || 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center text-gray-700 gap-2">
+                                                <FaFileAlt />
+                                                <span>License</span>
+                                            </div>
+                                            <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full font-medium">
+                                                {repoData.license?.spdx_id || 'None'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center text-gray-700 gap-2">
+                                                <FaCalendarAlt />
+                                                <span>Updated</span>
+                                            </div>
+                                            <span className="text-gray-800 font-medium">
+                                                {new Date(repoData.updated_at).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-6 flex justify-center">
+                                    <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* README display */}
+                    <div className="lg:col-span-2 mt-8 lg:mt-0">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100">
+                                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                                    <FaFileAlt /> README
+                                </h3>
+                            </div>
+                            <div className="p-6">
+                                {loadingReadme ? (
+                                    <div className="flex justify-center py-12">
+                                        <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                ) : readme ? (
+                                    <div className="markdown-body bg-transparent border-0 prose prose-blue max-w-none">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+                                            {readme}
+                                        </ReactMarkdown>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 text-gray-500">
+                                        <FaFileAlt className="mx-auto text-4xl mb-4 opacity-30" />
+                                        <p>No README available for this repository.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            ) : readme ? (
-                <div className="mt-8 markdown-body">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
-                        {readme}
-                    </ReactMarkdown>
-                </div>
-            ) : (
-                <p>No README available.</p>
-            )}
+            </div>
         </div>
     );
 }
