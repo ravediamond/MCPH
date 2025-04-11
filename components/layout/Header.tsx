@@ -22,9 +22,6 @@ export default function Header() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        <Link href="/submit" className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1">
-                            Submit MCP
-                        </Link>
                         <Link href="/about" className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1">
                             About
                         </Link>
