@@ -14,6 +14,8 @@ export default function AddEditMCPModal({
 }: AddEditMCPModalProps) {
     // Form state for the MCP details
     const [repositoryUrl, setRepositoryUrl] = useState('');
+    const [ownerUsername, setOwnerUsername] = useState(''); // New state for owner username
+    const [repositoryName, setRepositoryName] = useState(''); // New state for repository name
     const [name, setName] = useState('');
     const [version, setVersion] = useState('1.0.0'); // Default value
     const [description, setDescription] = useState('');
@@ -81,6 +83,10 @@ export default function AddEditMCPModal({
         const owner = match[1];
         const repo = match[2];
 
+        // Store the extracted owner and repo name
+        setOwnerUsername(owner);
+        setRepositoryName(repo);
+
         try {
             // Fetch repository details from GitHub
             const repoResponse = await fetch(
@@ -143,6 +149,8 @@ export default function AddEditMCPModal({
             .insert({
                 name: name.trim(),
                 repository_url: repositoryUrl.trim(),
+                owner_username: ownerUsername,
+                repository_name: repositoryName,
                 version: version.trim(),
                 description: description.trim(),
                 deployment_url: deploymentUrl.trim() || null,
@@ -160,6 +168,8 @@ export default function AddEditMCPModal({
             // Reset form fields
             setName('');
             setRepositoryUrl('');
+            setOwnerUsername('');
+            setRepositoryName('');
             setDeploymentUrl('');
             setVersion('1.0.0');
             setDescription('');

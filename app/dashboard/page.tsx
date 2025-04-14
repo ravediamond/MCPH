@@ -102,48 +102,50 @@ export default function Dashboard() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap justify-center gap-4">
+                    <div className="flex flex-col items-center gap-4">
                         <Button
-                            variant="primary"
-                            className="px-6 py-3 flex items-center space-x-2"
+                            variant="outline"
+                            className="px-6 py-3 w-full max-w-xs border-green-500 text-green-700 hover:bg-green-50"
                             onClick={() => setShowAddModal(true)}
                         >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>Create New MCP</span>
+                            <div className="flex items-center space-x-2">
+                                <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>Create New MCP</span>
+                            </div>
                         </Button>
+
                         <Button
-                            variant="primary"
-                            className="px-6 py-3"
+                            variant="outline"
+                            className="px-6 py-3 w-full max-w-xs border-blue-500 text-blue-700 hover:bg-blue-50"
                             onClick={() => router.push('/browse')}
                         >
                             Explore MCPs
                         </Button>
-                    </div>
 
-                    {/* Profile and Logout Buttons */}
-                    <div className="flex gap-4">
                         <Button
                             variant="outline"
-                            className="px-6 py-3"
+                            className="px-6 py-3 w-full max-w-xs"
                             onClick={() => router.push('/profile')}
                         >
                             My Profile
                         </Button>
+
                         <Button
                             variant="outline"
-                            className="px-6 py-3"
+                            className="px-6 py-3 w-full max-w-xs"
                             onClick={handleLogout}
                         >
                             Logout
                         </Button>
                     </div>
+
 
                     {/* MCPs Section */}
                     <div className="w-full mt-12">

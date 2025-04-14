@@ -14,8 +14,10 @@ import {
   FaFileAlt,
   FaCalendarAlt,
   FaGithub,
-  FaExternalLinkAlt
+  FaExternalLinkAlt,
+  FaSync
 } from 'react-icons/fa';
+import { refreshReadmeIfNeeded } from 'services/githubService';
 
 interface MCPDetailProps {
   params: { id: string };
@@ -25,6 +27,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const { id } = params;
   const [mcp, setMCP] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readme, setReadme] = useState<string>('');
   const [repoInfo, setRepoInfo] = useState<{
     owner: string;
@@ -36,6 +39,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     branch: 'main', // Default branch; update as needed.
   });
   const [repoData, setRepoData] = useState<any>(null);
+  const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
 
   // Fetch the MCP record from Supabase.
   useEffect(() => {
@@ -45,32 +49,54 @@ export default function MCPDetail({ params }: MCPDetailProps) {
         .select('*')
         .eq('id', id)
         .single();
+
       if (error) {
         console.error('Error fetching MCP:', error);
       } else {
         setMCP(data);
+
+        // Refresh the README if needed.
+        try {
+          setRefreshing(true);
+          const refreshedMcp = await refreshReadmeIfNeeded(data);
+          if (refreshedMcp !== data) {
+            setMCP(refreshedMcp);
+          }
+        } catch (refreshError) {
+          console.error('Error refreshing README:', refreshError);
+        } finally {
+          setRefreshing(false);
+        }
       }
       setLoading(false);
     }
     fetchMCP();
   }, [id]);
 
-  // Once the MCP record is available, extract repo info and set the cached README.
+  // Extract repository information: use dedicated fields if available,
+  // otherwise parse the repository_url.
   useEffect(() => {
-    if (mcp && mcp.repository_url) {
-      // Remove trailing slashes and extract owner & repo names.
-      const githubUrl = mcp.repository_url.replace(/\/+$/, '');
-      const parts = githubUrl.split('/');
-      const owner = parts[parts.length - 2];
-      const repo = parts[parts.length - 1];
-      // Update repoInfo state.
+    if (mcp) {
+      let owner = '';
+      let repo = '';
+
+      if (mcp.owner_username && mcp.repository_name) {
+        owner = mcp.owner_username;
+        repo = mcp.repository_name;
+      } else if (mcp.repository_url) {
+        const githubUrl = mcp.repository_url.replace(/\/+$/, '');
+        const parts = githubUrl.split('/');
+        owner = parts[parts.length - 2];
+        repo = parts[parts.length - 1];
+      }
+
       setRepoInfo({ owner, repo, branch: 'main' });
-      // Directly set the cached README from the Supabase MCP record.
       setReadme(mcp.readme || '');
+      setLastRefreshed(mcp.last_refreshed || null);
     }
   }, [mcp]);
 
-  // Fetch GitHub repository metadata (metrics) based on repoInfo.
+  // Fetch GitHub repository metadata based on repoInfo.
   useEffect(() => {
     async function fetchRepoData() {
       if (repoInfo.owner && repoInfo.repo) {
@@ -91,7 +117,29 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     fetchRepoData();
   }, [repoInfo]);
 
-  // Custom renderer for Markdown images. Converts relative image paths to absolute GitHub raw URLs.
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    if (!mcp || refreshing) return;
+
+    try {
+      setRefreshing(true);
+      // Force a refresh by setting last_refreshed to null.
+      const refreshedMcp = await refreshReadmeIfNeeded({
+        ...mcp,
+        last_refreshed: null
+      });
+      setMCP(refreshedMcp);
+      setReadme(refreshedMcp.readme || '');
+      setLastRefreshed(refreshedMcp.last_refreshed || null);
+    } catch (error) {
+      console.error('Error manually refreshing README:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Custom Markdown image renderer that resolves relative image paths
+  // to absolute GitHub raw URLs.
   const renderers = {
     img: ({ node, ...props }: any) => {
       let src: string = props.src || '';
@@ -125,6 +173,17 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     );
   }
 
+  // Format the last refreshed date.
+  const formatRefreshDate = (dateString: string | null): string => {
+    if (!dateString) return 'Never';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header Section */}
@@ -147,7 +206,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       <div className="max-w-screen-xl mx-auto px-4 mt-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Sidebar with Metrics */}
+          {/* Sidebar with Repository Metrics */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-8">
               <div className="p-6 border-b border-gray-100">
@@ -225,27 +284,48 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             </div>
           </div>
 
-          {/* README display */}
+          {/* README Display Section */}
           <div className="lg:col-span-2 mt-8 lg:mt-0">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   <FaFileAlt /> README
                 </h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500">
+                    Last updated: {formatRefreshDate(lastRefreshed)}
+                  </span>
+                  <button
+                    onClick={handleManualRefresh}
+                    disabled={refreshing}
+                    className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                    title="Refresh README from GitHub"
+                  >
+                    <FaSync className={refreshing ? 'animate-spin' : ''} />
+                  </button>
+                </div>
               </div>
               <div className="p-6">
+                {refreshing && !readme && (
+                  <div className="flex justify-center py-12">
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-gray-600">Fetching latest README...</p>
+                    </div>
+                  </div>
+                )}
                 {readme ? (
                   <div className="markdown-body bg-transparent border-0 prose prose-blue max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
                       {readme}
                     </ReactMarkdown>
                   </div>
-                ) : (
+                ) : !refreshing ? (
                   <div className="text-center py-12 text-gray-500">
                     <FaFileAlt className="mx-auto text-4xl mb-4 opacity-30" />
                     <p>No README available for this repository.</p>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
