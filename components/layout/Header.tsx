@@ -54,11 +54,11 @@ export default function Header() {
                     <div className="md:hidden py-5 space-y-5 border-t border-blue-50 bg-white animate-fadeIn">
                         <nav className="flex flex-col space-y-4">
                             <Link
-                                href="/submit"
+                                href="/browse"
                                 className="text-neutral-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-md transition-all"
                                 onClick={() => setIsMenuOpen(false)}
                             >
-                                Submit MCP
+                                Browse MCPs
                             </Link>
                             <Link
                                 href="/about"
