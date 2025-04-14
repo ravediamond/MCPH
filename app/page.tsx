@@ -22,6 +22,11 @@ export default function Home() {
                     <div className="max-w-4xl mx-auto mb-8">
                         {/* Use the SearchBar component here */}
                         <SearchBar />
+                        <div className="text-center mt-4">
+                            <Link href="/browse" className="text-blue-600 hover:text-blue-800 font-medium">
+                                Or browse all available MCPs →
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
