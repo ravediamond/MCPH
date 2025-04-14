@@ -5,7 +5,9 @@
     "paths": {
       "lib/*": [
         "lib/*",
-        "components/*"
+        "components/*",
+        "services/*",
+        "types/*"
       ]
     },
     "lib": [

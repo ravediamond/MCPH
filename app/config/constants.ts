@@ -1,0 +1,4 @@
+export const README_REFRESH_THRESHOLD_MS =
+  process.env.README_REFRESH_THRESHOLD_MS
+    ? Number(process.env.README_REFRESH_THRESHOLD_MS)
+    : 24 * 60 * 60 * 1000;

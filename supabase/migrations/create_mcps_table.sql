@@ -10,6 +10,8 @@ create table public.mcps (
     author text not null,            -- submission author (could be distinct from repository owner)
     user_id uuid references auth.users(id),
     readme text,                     -- OPTIONAL: store fetched README (e.g., for caching or additional processing)
+    last_refreshed timestamptz,      -- Timestamp when the README was fetched
+    owner_username text,             -- GitHub repository owner's username
     
     -- Constraints to help enforce data quality
     constraint name_length check (char_length(name) >= 3),
