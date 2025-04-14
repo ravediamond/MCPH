@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import LoginModal from '../LoginModal';
+import LoginModal from 'components/ui/LoginModal';
+import BrandIcon from 'components/ui/BrandIcon';
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,18 +15,23 @@ export default function Header() {
                 <div className="flex items-center justify-between h-20">
                     {/* Logo */}
                     <div className="flex-shrink-0">
-                        <Link href="/" className="text-xl font-semibold flex items-center gap-2 transition-colors">
-                            <span className="bg-blue-600 text-white px-2 py-1 rounded">MCP</span>
-                            <span className="text-neutral-800">Registry</span>
+                        <Link href="/" className="flex items-center gap-2 transition-colors">
+                            <BrandIcon />
                         </Link>
                     </div>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        <Link href="/about" className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1">
+                        <Link
+                            href="/about"
+                            className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1"
+                        >
                             About
                         </Link>
-                        <Link href="/docs" className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1">
+                        <Link
+                            href="/docs"
+                            className="text-neutral-700 hover:text-blue-600 transition-colors font-medium border-b-2 border-transparent hover:border-blue-600 py-1"
+                        >
                             Documentation
                         </Link>
                     </nav>
@@ -38,9 +44,7 @@ export default function Header() {
                     {/* Mobile Menu Button */}
                     <div className="flex md:hidden">
                         <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-neutral-500 hover:text-blue-600 transition-colors">
-                            {isMenuOpen
-                                ? <FaTimes className="h-6 w-6" />
-                                : <FaBars className="h-6 w-6" />}
+                            {isMenuOpen ? <FaTimes className="h-6 w-6" /> : <FaBars className="h-6 w-6" />}
                         </button>
                     </div>
                 </div>

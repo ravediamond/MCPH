@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from 'lib/supabaseClient';
 import { FaGithub } from 'react-icons/fa';
 
 export default function LoginModal() {
