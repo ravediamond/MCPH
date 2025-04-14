@@ -12,4 +12,5 @@ export interface MCP {
   readme?: string;         // Cached README content
   last_refreshed?: string; // Timestamp when the README was fetched
   owner_username?: string; // Owner's GitHub username
+  claimed?: boolean;       // Whether the MCP has been claimed by its owner
 }

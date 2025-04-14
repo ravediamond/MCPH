@@ -15,9 +15,11 @@ import {
   FaCalendarAlt,
   FaGithub,
   FaExternalLinkAlt,
-  FaSync
+  FaSync,
+  FaCheckCircle
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
+import { MCP } from 'types/mcp';
 
 interface MCPDetailProps {
   params: { id: string };
@@ -25,7 +27,7 @@ interface MCPDetailProps {
 
 export default function MCPDetail({ params }: MCPDetailProps) {
   const { id } = params;
-  const [mcp, setMCP] = useState<any>(null);
+  const [mcp, setMCP] = useState<MCP | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readme, setReadme] = useState<string>('');
@@ -40,6 +42,41 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   });
   const [repoData, setRepoData] = useState<any>(null);
   const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isOwner, setIsOwner] = useState<boolean>(false);
+  const [claimLoading, setClaimLoading] = useState<boolean>(false);
+  const [claimError, setClaimError] = useState<string | null>(null);
+
+  // Fetch the current user session
+  useEffect(() => {
+    async function fetchUserSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUser(session.user);
+
+        // Get the user's GitHub identity if they're logged in
+        if (session.user) {
+          const { data: identities, error } = await supabase
+            .from('identities')
+            .select('identity_data')
+            .eq('user_id', session.user.id)
+            .eq('provider', 'github')
+            .single();
+
+          if (!error && identities) {
+            const githubUsername = identities.identity_data.user_name;
+            // Store the GitHub username in the user object
+            setCurrentUser({
+              ...session.user,
+              githubUsername
+            });
+          }
+        }
+      }
+    }
+
+    fetchUserSession();
+  }, []);
 
   // Fetch the MCP record from Supabase.
   useEffect(() => {
@@ -73,6 +110,13 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     fetchMCP();
   }, [id]);
 
+  // Check if the current user is the owner of this MCP's repository
+  useEffect(() => {
+    if (mcp && currentUser && currentUser.githubUsername) {
+      setIsOwner(currentUser.githubUsername === mcp.owner_username);
+    }
+  }, [mcp, currentUser]);
+
   // Extract repository information: use dedicated fields if available,
   // otherwise parse the repository_url.
   useEffect(() => {
@@ -95,6 +139,43 @@ export default function MCPDetail({ params }: MCPDetailProps) {
       setLastRefreshed(mcp.last_refreshed || null);
     }
   }, [mcp]);
+
+  // Function to handle claiming an MCP
+  const handleClaimMCP = async () => {
+    if (!mcp || !currentUser || !isOwner) return;
+
+    setClaimLoading(true);
+    setClaimError(null);
+
+    try {
+      const response = await fetch('/api/mcps/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mcpId: mcp.id })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to claim MCP');
+      }
+
+      // Update the local state with the claimed MCP
+      setMCP({
+        ...mcp,
+        claimed: true,
+        user_id: currentUser.id
+      });
+
+    } catch (error) {
+      console.error('Error claiming MCP:', error);
+      setClaimError(error instanceof Error ? error.message : 'An unknown error occurred');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   // Fetch GitHub repository metadata based on repoInfo.
   useEffect(() => {
@@ -184,23 +265,69 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     }
   };
 
+  // Determine if the current MCP is claimable by the user
+  const isClaimable = isOwner && currentUser && !mcp.claimed;
+  const isClaimedByCurrentUser = mcp.claimed && currentUser && mcp.user_id === currentUser.id;
+
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-10 px-4 shadow-md">
         <div className="max-w-screen-xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">{mcp.title || 'MCP Detail'}</h1>
+          <h1 className="text-4xl font-bold mb-4">{mcp.name || 'MCP Detail'}</h1>
           <p className="text-lg mb-4 opacity-90 max-w-3xl">
             {mcp.description || 'No description available.'}
           </p>
-          <a
-            href={mcp.repository_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
-          >
-            <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
-          </a>
+          <div className="flex flex-wrap gap-3 items-center">
+            <a
+              href={mcp.repository_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
+            >
+              <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
+            </a>
+
+            {/* Claim MCP Button */}
+            {isClaimable && (
+              <button
+                onClick={handleClaimMCP}
+                disabled={claimLoading}
+                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 disabled:opacity-50"
+              >
+                {claimLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Claiming...
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle className="text-lg" /> Claim this MCP
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Claimed Status */}
+            {isClaimedByCurrentUser && (
+              <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-md">
+                <FaCheckCircle className="text-lg" /> You've claimed this MCP
+              </div>
+            )}
+
+            {mcp.claimed && !isClaimedByCurrentUser && (
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-md">
+                <FaCheckCircle className="text-lg" /> Claimed by author
+              </div>
+            )}
+          </div>
+
+          {/* Error message */}
+          {claimError && (
+            <div className="mt-3 p-3 bg-red-100 text-red-800 rounded-md">
+              <p className="font-medium">Error: {claimError}</p>
+            </div>
+          )}
         </div>
       </div>
 
