@@ -48,24 +48,30 @@ export default function Dashboard() {
     }, [router]);
 
     // Fetch MCP records for the currently logged-in user
-    useEffect(() => {
-        const fetchMcps = async () => {
-            if (session?.user) {
-                const { data, error } = await supabase
-                    .from('mcps')
-                    .select('*')
-                    .eq('user_id', session.user.id);
+    const fetchMcps = async () => {
+        if (session?.user) {
+            const { data, error } = await supabase
+                .from('mcps')
+                .select('*')
+                .eq('user_id', session.user.id);
 
-                if (error) {
-                    console.error('Error fetching MCPs:', error);
-                } else {
-                    setMcps(data);
-                }
+            if (error) {
+                console.error('Error fetching MCPs:', error);
+            } else {
+                setMcps(data);
             }
-        };
+        }
+    };
 
+    useEffect(() => {
         fetchMcps();
     }, [session, showAddModal]); // Re-fetch when session updates or after closing the modal
+
+    const handleDeleteMCP = async (mcpId: string) => {
+        // The actual deletion is handled by the MCPCard component
+        // This function will be called after successful deletion to refresh the list
+        await fetchMcps();
+    };
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -163,9 +169,7 @@ export default function Dashboard() {
                                             mcp={mcp}
                                             onClick={() => router.push(`/mcp/${mcp.id}`)}
                                             editable={true}
-                                            onDelete={() => {
-                                                setMcps(mcps.filter((m) => m.id !== mcp.id));
-                                            }}
+                                            onDelete={() => handleDeleteMCP(mcp.id)}
                                         />
                                     </div>
                                 ))}
@@ -184,7 +188,8 @@ export default function Dashboard() {
                         isOpen={showAddModal}
                         onClose={() => setShowAddModal(false)}
                         onSuccess={() => {
-                            // Optionally refresh or update state after creating a new MCP
+                            // Refresh MCP list after creating a new MCP
+                            fetchMcps();
                         }}
                     />
                 )}
