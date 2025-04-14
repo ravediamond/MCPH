@@ -47,3 +47,12 @@ Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring M
 ---
 
 We’re all about making integrations fun and accessible. Dive in, explore, and let your imagination run wild with what you can build. Happy integrating! 🎉
+
+
+# Dev
+
+## Add admin user
+
+INSERT INTO public.profiles (id, username, is_admin)
+VALUES ('USER_ID', 'admin', true)
+ON CONFLICT (id) DO UPDATE SET is_admin = true;

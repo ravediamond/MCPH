@@ -34,6 +34,33 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
 }
 
 /**
+ * Fetches README content from GitHub for a specific repository
+ * @param owner GitHub repository owner username
+ * @param repo GitHub repository name
+ * @returns Promise resolving to the README content as a string
+ */
+export async function fetchReadmeFromGitHub(owner: string, repo: string): Promise<string> {
+  // Build the GitHub API URL for the README endpoint
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      Accept: 'application/vnd.github.v3.raw',
+      // Use GitHub token if available for higher rate limits
+      ...(process.env.GITHUB_TOKEN && {
+        Authorization: `token ${process.env.GITHUB_TOKEN}`
+      })
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
+  }
+
+  return await response.text();
+}
+
+/**
  * Checks if a README needs refreshing based on its last_refreshed timestamp
  * @param lastRefreshed ISO timestamp when the README was last fetched
  * @returns boolean indicating if the README should be refreshed
