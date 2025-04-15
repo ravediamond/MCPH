@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from 'lib/supabaseClient';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -17,12 +17,14 @@ import {
   FaExternalLinkAlt,
   FaSync,
   FaCheckCircle,
-  FaComment
+  FaComment,
+  FaTrashAlt
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
 // Import SupabaseProvider
 import SupabaseProvider from 'app/supabase-provider';
+import { useRouter } from 'next/navigation';
 
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
@@ -60,6 +62,10 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const [claimError, setClaimError] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'readme' | 'reviews'>('readme');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const cancelRef = useRef(null);
+  const router = useRouter();
 
   // Fetch the current user session
   useEffect(() => {
@@ -135,6 +141,32 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     }
     fetchMCP();
   }, [id]);
+
+  // Function to handle MCP deletion
+  const handleDeleteMCP = async () => {
+    if (!mcp) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('mcps')
+        .delete()
+        .eq('id', mcp.id);
+
+      if (error) {
+        console.error('Error deleting MCP:', error);
+        alert('Failed to delete MCP. Please try again.');
+      } else {
+        setIsDeleteModalOpen(false);
+        // Redirect to dashboard or homepage after deletion
+        router.push('/dashboard');
+      }
+    } catch (error) {
+      console.error('Error during deletion:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Function to increment view count
   const incrementViewCount = async (mcpId: string) => {
@@ -310,56 +342,74 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const isClaimable = isOwner && currentUser && !mcp.claimed;
   const isClaimedByCurrentUser = mcp.claimed && currentUser && mcp.user_id === currentUser.id;
 
+  // Determine if the user can delete the MCP (owner or admin)
+  const canDeleteMCP = isAdminUser || (mcp.claimed && isClaimedByCurrentUser) || (!mcp.claimed && isOwner);
+
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Header Section */}
       <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-10 px-4 shadow-md">
         <div className="max-w-screen-xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">{mcp.name || 'MCP Detail'}</h1>
-          <p className="text-lg mb-4 opacity-90 max-w-3xl">
-            {mcp.description || 'No description available.'}
-          </p>
-          <div className="flex flex-wrap gap-3 items-center">
-            <a
-              href={mcp.repository_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
-            >
-              <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
-            </a>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold mb-4">{mcp.name || 'MCP Detail'}</h1>
+              <p className="text-lg mb-4 opacity-90 max-w-3xl">
+                {mcp.description || 'No description available.'}
+              </p>
+              <div className="flex flex-wrap gap-3 items-center">
+                <a
+                  href={mcp.repository_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
+                >
+                  <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
+                </a>
 
-            {/* Claim MCP Button */}
-            {isClaimable && (
-              <button
-                onClick={handleClaimMCP}
-                disabled={claimLoading}
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 disabled:opacity-50"
-              >
-                {claimLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Claiming...
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle className="text-lg" /> Claim this MCP
-                  </>
+                {/* Claim MCP Button */}
+                {isClaimable && (
+                  <button
+                    onClick={handleClaimMCP}
+                    disabled={claimLoading}
+                    className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 disabled:opacity-50"
+                  >
+                    {claimLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Claiming...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheckCircle className="text-lg" /> Claim this MCP
+                      </>
+                    )}
+                  </button>
                 )}
+
+                {/* Claimed Status */}
+                {isClaimedByCurrentUser && (
+                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-md">
+                    <FaCheckCircle className="text-lg" /> You've claimed this MCP
+                  </div>
+                )}
+
+                {mcp.claimed && !isClaimedByCurrentUser && (
+                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-md">
+                    <FaCheckCircle className="text-lg" /> Claimed by author
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Delete button - Only shown to owner or admin */}
+            {canDeleteMCP && (
+              <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200 flex items-center gap-2"
+                aria-label="Delete MCP"
+              >
+                <FaTrashAlt /> Delete MCP
               </button>
-            )}
-
-            {/* Claimed Status */}
-            {isClaimedByCurrentUser && (
-              <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-md">
-                <FaCheckCircle className="text-lg" /> You've claimed this MCP
-              </div>
-            )}
-
-            {mcp.claimed && !isClaimedByCurrentUser && (
-              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-md">
-                <FaCheckCircle className="text-lg" /> Claimed by author
-              </div>
             )}
           </div>
 
@@ -574,6 +624,35 @@ export default function MCPDetail({ params }: MCPDetailProps) {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+            <h2 className="text-lg font-bold mb-4">Delete MCP</h2>
+            <p className="mb-6">
+              Are you sure you want to delete "{mcp.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                ref={cancelRef}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
+                onClick={handleDeleteMCP}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
