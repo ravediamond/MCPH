@@ -271,6 +271,12 @@ export default function AdminDashboard() {
                         >
                             Manage Users
                         </button>
+                        <button
+                            onClick={() => router.push('/admin/tags')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                        >
+                            Manage Tags
+                        </button>
                     </div>
                 </div>
             </div>
