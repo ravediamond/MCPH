@@ -78,14 +78,14 @@ export default function MCPDetail({ params }: MCPDetailProps) {
               githubUsername
             });
           }
-          
+
           // Check if the user is an admin
           const { data: profile } = await supabase
             .from('profiles')
             .select('is_admin')
             .eq('id', session.user.id)
             .single();
-          
+
           setIsAdminUser(!!profile?.is_admin);
         }
       }
@@ -426,7 +426,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                 </div>
               )}
             </div>
-            
+
             {/* Version History Panel - Moved to the left */}
             {mcp && mcp.id && (
               <VersionHistoryPanel
