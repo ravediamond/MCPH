@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Button from 'components/ui/Button';
+import MCPCard from 'components/MCPCard';
+import { MCP } from 'types/mcp';
 
 export default function Profile() {
     const [session, setSession] = useState<any>(null);
@@ -14,6 +16,9 @@ export default function Profile() {
     const [saving, setSaving] = useState<boolean>(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState<boolean>(false);
+    const [activeTab, setActiveTab] = useState<'profile' | 'mcps'>('profile');
+    const [userMcps, setUserMcps] = useState<MCP[]>([]);
+    const [mcpsLoading, setMcpsLoading] = useState<boolean>(true);
     const [profile, setProfile] = useState<any>({
         full_name: '',
         username: '',
@@ -33,6 +38,7 @@ export default function Profile() {
             } else {
                 setSession(session);
                 await fetchProfile(session.user.id);
+                await fetchUserMcps(session.user.id);
             }
             setLoading(false);
         };
@@ -78,6 +84,30 @@ export default function Profile() {
             }
         } catch (error) {
             console.error('Error:', error);
+        }
+    };
+
+    const fetchUserMcps = async (userId: string) => {
+        setMcpsLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('mcps')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching user MCPs:', error);
+                toast.error('Failed to load your MCPs');
+                setUserMcps([]);
+            } else {
+                setUserMcps(data || []);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('An error occurred while loading your MCPs');
+        } finally {
+            setMcpsLoading(false);
         }
     };
 
@@ -161,6 +191,28 @@ export default function Profile() {
         }
     };
 
+    const handleDeleteMcp = async (id: string) => {
+        if (!session?.user) return;
+
+        try {
+            const { error } = await supabase
+                .from('mcps')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                throw error;
+            }
+
+            // Update the local state to remove the deleted MCP
+            setUserMcps(userMcps.filter(mcp => mcp.id !== id));
+            toast.success('MCP deleted successfully');
+        } catch (error: any) {
+            console.error('Error deleting MCP:', error);
+            toast.error(`Failed to delete MCP: ${error.message}`);
+        }
+    };
+
     if (loading) {
         return (
             <div className="p-8 flex flex-col items-center justify-center min-h-[60vh]">
@@ -237,7 +289,7 @@ export default function Profile() {
                         </motion.div>
                     </div>
 
-                    {/* Form Content */}
+                    {/* Profile Info and Navigation Tabs */}
                     <div className="pt-20 md:pt-24 px-6 md:px-10 pb-8">
                         <div className="text-center mb-6">
                             <p className="text-sm text-neutral-500">
@@ -245,134 +297,255 @@ export default function Profile() {
                             </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label
-                                        htmlFor="fullName"
-                                        className="block text-sm font-medium text-neutral-700"
-                                    >
-                                        Full Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="full_name"
-                                        id="fullName"
-                                        value={profile.full_name || ''}
-                                        onChange={handleChange}
-                                        placeholder="Your full name"
-                                        className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
-                                    />
-                                </div>
+                        {/* Navigation Tabs */}
+                        <div className="flex border-b border-neutral-200 mb-6">
+                            <button
+                                className={`py-3 px-4 font-medium text-sm flex-1 ${activeTab === 'profile'
+                                        ? 'text-blue-600 border-b-2 border-blue-600'
+                                        : 'text-neutral-500 hover:text-neutral-800'
+                                    }`}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                Profile Details
+                            </button>
+                            <button
+                                className={`py-3 px-4 font-medium text-sm flex-1 ${activeTab === 'mcps'
+                                        ? 'text-blue-600 border-b-2 border-blue-600'
+                                        : 'text-neutral-500 hover:text-neutral-800'
+                                    }`}
+                                onClick={() => setActiveTab('mcps')}
+                            >
+                                My MCPs
+                            </button>
+                        </div>
 
-                                <div className="space-y-2">
-                                    <label
-                                        htmlFor="username"
-                                        className="block text-sm font-medium text-neutral-700"
-                                    >
-                                        Username
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="username"
-                                        id="username"
-                                        value={profile.username || ''}
-                                        onChange={handleChange}
-                                        placeholder="Your username"
-                                        className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label
-                                    htmlFor="bio"
-                                    className="block text-sm font-medium text-neutral-700"
-                                >
-                                    Bio
-                                </label>
-                                <textarea
-                                    name="bio"
-                                    id="bio"
-                                    value={profile.bio || ''}
-                                    onChange={handleChange}
-                                    placeholder="Tell us about yourself"
-                                    rows={4}
-                                    className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all resize-none"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label
-                                    htmlFor="website"
-                                    className="block text-sm font-medium text-neutral-700"
-                                >
-                                    Website
-                                </label>
-                                <input
-                                    type="url"
-                                    name="website"
-                                    id="website"
-                                    value={profile.website || ''}
-                                    onChange={handleChange}
-                                    placeholder="https://your-website.com"
-                                    className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
-                                />
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row justify-between pt-6 gap-4">
-                                <Button
-                                    variant="outline"
-                                    className="px-6 py-3"
-                                    onClick={() => router.push('/dashboard')}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-5 w-5 mr-2"
-                                        viewBox="0 0 20 20"
-                                        fill="currentColor"
-                                    >
-                                        <path
-                                            fillRule="evenodd"
-                                            d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
-                                            clipRule="evenodd"
+                        {/* Profile Tab Content */}
+                        {activeTab === 'profile' && (
+                            <form onSubmit={handleSubmit} className="space-y-8">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label
+                                            htmlFor="fullName"
+                                            className="block text-sm font-medium text-neutral-700"
+                                        >
+                                            Full Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="full_name"
+                                            id="fullName"
+                                            value={profile.full_name || ''}
+                                            onChange={handleChange}
+                                            placeholder="Your full name"
+                                            className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
                                         />
-                                    </svg>
-                                    Back to Dashboard
-                                </Button>
+                                    </div>
 
-                                <Button
-                                    variant="primary"
-                                    className={`px-6 py-3 flex items-center justify-center ${saving ? 'opacity-75 cursor-not-allowed' : ''
-                                        }`}
-                                    disabled={saving}
-                                    type="submit"
-                                >
-                                    {saving ? (
-                                        <>
-                                            <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
-                                            Saving Changes...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5 mr-2"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            Save Profile
-                                        </>
-                                    )}
-                                </Button>
+                                    <div className="space-y-2">
+                                        <label
+                                            htmlFor="username"
+                                            className="block text-sm font-medium text-neutral-700"
+                                        >
+                                            Username
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="username"
+                                            id="username"
+                                            value={profile.username || ''}
+                                            onChange={handleChange}
+                                            placeholder="Your username"
+                                            className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="bio"
+                                        className="block text-sm font-medium text-neutral-700"
+                                    >
+                                        Bio
+                                    </label>
+                                    <textarea
+                                        name="bio"
+                                        id="bio"
+                                        value={profile.bio || ''}
+                                        onChange={handleChange}
+                                        placeholder="Tell us about yourself"
+                                        rows={4}
+                                        className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all resize-none"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label
+                                        htmlFor="website"
+                                        className="block text-sm font-medium text-neutral-700"
+                                    >
+                                        Website
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="website"
+                                        id="website"
+                                        value={profile.website || ''}
+                                        onChange={handleChange}
+                                        placeholder="https://your-website.com"
+                                        className="block w-full px-4 py-3 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm transition-all"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row justify-between pt-6 gap-4">
+                                    <Button
+                                        variant="outline"
+                                        className="px-6 py-3"
+                                        onClick={() => router.push('/dashboard')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 mr-2"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        Back to Dashboard
+                                    </Button>
+
+                                    <Button
+                                        variant="primary"
+                                        className={`px-6 py-3 flex items-center justify-center ${saving ? 'opacity-75 cursor-not-allowed' : ''
+                                            }`}
+                                        disabled={saving}
+                                        type="submit"
+                                    >
+                                        {saving ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin mr-2"></div>
+                                                Saving Changes...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5 mr-2"
+                                                    viewBox="0 0 20 20"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                                Save Profile
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        )}
+
+                        {/* MCPs Tab Content */}
+                        {activeTab === 'mcps' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-xl font-bold text-neutral-800">Your MCPs</h2>
+                                    <Button
+                                        variant="primary"
+                                        className="px-4 py-2"
+                                        onClick={() => router.push('/admin/mcps')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 mr-2"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        Add New MCP
+                                    </Button>
+                                </div>
+
+                                {mcpsLoading ? (
+                                    <div className="flex justify-center items-center py-12">
+                                        <div className="w-10 h-10 border-4 border-t-blue-600 border-blue-200 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : userMcps.length === 0 ? (
+                                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-8 text-center">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-12 w-12 mx-auto text-neutral-400"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                            />
+                                        </svg>
+                                        <h3 className="mt-4 text-lg font-medium text-neutral-700">No MCPs Found</h3>
+                                        <p className="mt-2 text-neutral-500">
+                                            You haven't submitted any MCPs yet.
+                                        </p>
+                                        <Button
+                                            variant="primary"
+                                            className="mt-6 px-4 py-2"
+                                            onClick={() => router.push('/admin/mcps')}
+                                        >
+                                            Submit Your First MCP
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        {userMcps.map((mcp) => (
+                                            <MCPCard
+                                                key={mcp.id}
+                                                mcp={mcp}
+                                                onClick={() => router.push(`/mcp/${mcp.id}`)}
+                                                editable
+                                                onDelete={() => handleDeleteMcp(mcp.id!)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="mt-8 pt-6 border-t border-neutral-200">
+                                    <Button
+                                        variant="outline"
+                                        className="px-6 py-3"
+                                        onClick={() => router.push('/dashboard')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 mr-2"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        Back to Dashboard
+                                    </Button>
+                                </div>
                             </div>
-                        </form>
+                        )}
                     </div>
                 </div>
             </motion.div>
