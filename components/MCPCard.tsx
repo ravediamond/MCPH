@@ -59,6 +59,7 @@ export default function MCPCard({
       return {
         domainTags: [],
         deploymentTags: [],
+        providerTags: [],
         customTags: [],
       };
     }
@@ -66,11 +67,12 @@ export default function MCPCard({
     return {
       domainTags: mcp.tags.filter((tag: string) => tag.startsWith('domain:')).map((tag: string) => tag.replace('domain:', '')),
       deploymentTags: mcp.tags.filter((tag: string) => tag.startsWith('deployment:')).map((tag: string) => tag.replace('deployment:', '')),
-      customTags: mcp.tags.filter((tag: string) => !tag.startsWith('domain:') && !tag.startsWith('deployment:'))
+      providerTags: mcp.tags.filter((tag: string) => tag.startsWith('provider:')).map((tag: string) => tag.replace('provider:', '')),
+      customTags: mcp.tags.filter((tag: string) => !tag.startsWith('domain:') && !tag.startsWith('deployment:') && !tag.startsWith('provider:'))
     };
   };
 
-  const { domainTags, deploymentTags, customTags } = processTags();
+  const { domainTags, deploymentTags, providerTags, customTags } = processTags();
 
   // Helper function to get deployment icon
   const getDeploymentIcon = (type: string) => {
@@ -131,6 +133,20 @@ export default function MCPCard({
             <span
               key={`domain-${index}`}
               className="text-sm bg-blue-50 text-blue-600 px-2 py-1 rounded-full break-words"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Provider Tags */}
+      {providerTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {providerTags.map((tag: string, index: number) => (
+            <span
+              key={`provider-${index}`}
+              className="text-sm bg-yellow-50 text-yellow-600 px-2 py-1 rounded-full break-words"
             >
               {tag}
             </span>

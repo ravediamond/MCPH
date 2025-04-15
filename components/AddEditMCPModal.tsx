@@ -40,10 +40,12 @@ export default function AddEditMCPModal({
     const [customTags, setCustomTags] = useState<string[]>([]);
     const [selectedDomainTags, setSelectedDomainTags] = useState<string[]>([]);
     const [selectedDeploymentTypes, setSelectedDeploymentTypes] = useState<string[]>([]);
+    const [selectedProviderType, setSelectedProviderType] = useState<string>('Community'); // Default to Community
 
     // State for database tags
     const [domainCategories, setDomainCategories] = useState<TagItem[]>([]);
     const [deploymentTypes, setDeploymentTypes] = useState<TagItem[]>([]);
+    const [providerTypes, setProviderTypes] = useState<TagItem[]>([]);
     const [loadingTags, setLoadingTags] = useState(false);
 
     // Fetch current user's email to auto-fill author
@@ -91,6 +93,16 @@ export default function AddEditMCPModal({
                     console.error('Error fetching deployment tags:', deploymentError);
                 } else {
                     setDeploymentTypes(deploymentData || []);
+                }
+
+                // Fetch provider types
+                const { data: providerData, error: providerError } = await supabase
+                    .rpc('get_tags_by_category', { category_name: 'provider' });
+
+                if (providerError) {
+                    console.error('Error fetching provider types:', providerError);
+                } else {
+                    setProviderTypes(providerData || []);
                 }
             } catch (error) {
                 console.error('Error fetching tags:', error);
@@ -255,7 +267,8 @@ export default function AddEditMCPModal({
         // Combine all tags with prefixes for domain and deployment types
         const formattedDomainTags = selectedDomainTags.map(tag => `domain:${tag}`);
         const formattedDeploymentTags = selectedDeploymentTypes.map(type => `deployment:${type}`);
-        const allTags = [...formattedDomainTags, ...formattedDeploymentTags, ...customTags];
+        const formattedProviderTag = [`provider:${selectedProviderType}`]; // Add the provider tag
+        const allTags = [...formattedDomainTags, ...formattedDeploymentTags, ...formattedProviderTag, ...customTags];
 
         // Insert the new MCP entry into the 'mcps' table
         const { error } = await supabase
@@ -449,6 +462,37 @@ export default function AddEditMCPModal({
                                                 onClick={() => toggleDeploymentType(type.name)}
                                                 className={`text-xs py-1 px-2 rounded-full border ${selectedDeploymentTypes.includes(type.name)
                                                     ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {type.icon} {type.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Provider Type */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Provider Type
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    Select whether this MCP is officially provided by a service provider or is a community contribution.
+                                </p>
+                                {loadingTags ? (
+                                    <div className="flex items-center justify-center p-2">
+                                        <div className="w-4 h-4 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {providerTypes.map((type) => (
+                                            <button
+                                                key={type.id}
+                                                type="button"
+                                                onClick={() => setSelectedProviderType(type.name)}
+                                                className={`text-xs py-1 px-2 rounded-full border ${selectedProviderType === type.name
+                                                    ? 'bg-purple-500 text-white border-purple-500'
                                                     : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
                                                     }`}
                                             >

@@ -38,6 +38,7 @@ export default function BrowsePage() {
     // Tags state
     const [deploymentTags, setDeploymentTags] = useState<Tag[]>([]);
     const [domainTags, setDomainTags] = useState<Tag[]>([]);
+    const [providerTags, setProviderTags] = useState<Tag[]>([]);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [loadingTags, setLoadingTags] = useState(false);
 
@@ -65,6 +66,14 @@ export default function BrowsePage() {
 
                 if (!domainError) {
                     setDomainTags(domainData || []);
+                }
+
+                // Fetch provider tags
+                const { data: providerData, error: providerError } = await supabase
+                    .rpc('get_tags_by_category', { category_name: 'provider' });
+
+                if (!providerError) {
+                    setProviderTags(providerData || []);
                 }
             } catch (error) {
                 console.error('Error fetching tags:', error);
@@ -215,6 +224,34 @@ export default function BrowsePage() {
                     </div>
                 </div>
 
+                {/* Provider Type Section */}
+                <div className="mb-4">
+                    <h2 className="text-base font-semibold text-gray-700 mb-2">Provider Type</h2>
+                    <div className="flex flex-wrap gap-2">
+                        {loadingTags ? (
+                            <div className="w-full text-center py-2">
+                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-500 border-r-2 border-blue-500 border-b-2 border-blue-500 border-l-2 border-transparent"></div>
+                            </div>
+                        ) : providerTags.length > 0 ? (
+                            providerTags.map((tag) => (
+                                <button
+                                    key={tag.id}
+                                    onClick={() => toggleTag(tag.name, 'provider')}
+                                    className={`inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-colors
+                                        ${selectedTags.includes(`provider:${tag.name}`)
+                                            ? 'bg-yellow-500 text-white border-yellow-500'
+                                            : 'bg-white text-yellow-700 border-yellow-200 hover:bg-yellow-50'
+                                        }`}
+                                >
+                                    {getTagIcon(tag)} {tag.name}
+                                </button>
+                            ))
+                        ) : (
+                            <span className="text-sm text-gray-500">No provider types available</span>
+                        )}
+                    </div>
+                </div>
+
                 {/* Domain Tags */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
@@ -258,7 +295,7 @@ export default function BrowsePage() {
                 {selectedTags.length > 0 && (
                     <div className="mb-4 p-3 bg-blue-50 rounded-lg">
                         <p className="text-sm text-blue-800">
-                            <span className="font-medium">Active filters:</span> {selectedTags.map(tag => tag.replace(/^(domain|deployment):/, '')).join(', ')}
+                            <span className="font-medium">Active filters:</span> {selectedTags.map(tag => tag.replace(/^(domain|deployment|provider):/, '')).join(', ')}
                         </p>
                     </div>
                 )}
