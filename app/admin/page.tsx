@@ -158,54 +158,54 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold mb-8">MCP Admin Dashboard</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-semibold mb-2">MCP Entries</h2>
-                    <p className="text-4xl font-bold">{mcpCount}</p>
-                    <p className="text-sm text-gray-500 mt-2">Total MCP entries in the system</p>
+                <div className="bg-blue-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-blue-100 dark:border-gray-600">
+                    <h2 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">MCP Entries</h2>
+                    <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{mcpCount}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Total MCP entries in the system</p>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-semibold mb-2">Stale READMEs</h2>
-                    <p className="text-4xl font-bold">{staleReadmes.length}</p>
-                    <p className="text-sm text-gray-500 mt-2">READMEs not refreshed in the last 7 days</p>
+                <div className="bg-purple-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-purple-100 dark:border-gray-600">
+                    <h2 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Stale READMEs</h2>
+                    <p className="text-4xl font-bold text-purple-600 dark:text-purple-400">{staleReadmes.length}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">READMEs not refreshed in the last 7 days</p>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-semibold mb-2">Recent Errors</h2>
-                    <p className="text-4xl font-bold">{recentErrors.length}</p>
-                    <p className="text-sm text-gray-500 mt-2">API errors in the last 24 hours</p>
+                <div className="bg-green-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-green-100 dark:border-gray-600">
+                    <h2 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Recent Errors</h2>
+                    <p className="text-4xl font-bold text-green-600 dark:text-green-400">{recentErrors.length}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">API errors in the last 24 hours</p>
                 </div>
             </div>
 
             <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-4">Stale READMEs</h2>
                 {staleReadmes.length > 0 ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-100 dark:bg-gray-700">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Repository</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Last Refreshed</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Repository</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Last Refreshed</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 {staleReadmes.map((mcp) => (
-                                    <tr key={mcp.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">{mcp.name}</td>
+                                    <tr key={mcp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{mcp.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                                            <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                                 {mcp.repository_url}
                                             </a>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
                                             {mcp.last_refreshed ? new Date(mcp.last_refreshed).toLocaleString() : 'Never'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <button
                                                 onClick={() => mcp.id && handleRefreshReadme(mcp.id)}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mr-2"
+                                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm"
                                             >
                                                 Refresh README
                                             </button>
@@ -216,8 +216,8 @@ export default function AdminDashboard() {
                         </table>
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                        <p>No stale READMEs found. All READMEs are up-to-date!</p>
+                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                        <p className="text-gray-800 dark:text-gray-200">No stale READMEs found. All READMEs are up-to-date!</p>
                     </div>
                 )}
             </div>
@@ -225,55 +225,55 @@ export default function AdminDashboard() {
             <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-4">Recent Error Logs</h2>
                 {recentErrors.length > 0 ? (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-100 dark:bg-gray-700">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Timestamp</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Error Type</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Message</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Timestamp</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Error Type</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Message</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 {recentErrors.map((error) => (
-                                    <tr key={error.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                    <tr key={error.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
                                             {new Date(error.created_at).toLocaleString()}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">{error.type}</td>
-                                        <td className="px-6 py-4">{error.message}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{error.type}</td>
+                                        <td className="px-6 py-4 text-gray-800 dark:text-gray-200">{error.message}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                        <p>No recent errors found. Everything is running smoothly!</p>
+                    <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                        <p className="text-gray-800 dark:text-gray-200">No recent errors found. Everything is running smoothly!</p>
                     </div>
                 )}
             </div>
 
             <div>
                 <h2 className="text-2xl font-bold mb-4">MCP Management</h2>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <p className="mb-4">Use this section to manage and override MCP ownership claims.</p>
-                    <div className="flex space-x-4">
+                <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                    <p className="mb-4 text-gray-800 dark:text-gray-200">Use this section to manage and override MCP ownership claims.</p>
+                    <div className="flex flex-wrap gap-4">
                         <button
                             onClick={() => router.push('/admin/mcps')}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
+                            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md shadow-sm"
                         >
                             Manage MCPs
                         </button>
                         <button
                             onClick={() => router.push('/admin/users')}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-sm"
                         >
                             Manage Users
                         </button>
                         <button
                             onClick={() => router.push('/admin/tags')}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm"
                         >
                             Manage Tags
                         </button>

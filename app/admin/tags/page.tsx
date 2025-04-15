@@ -308,25 +308,25 @@ export default function AdminTags() {
                 <h1 className="text-3xl font-bold">Tag Management</h1>
                 <button
                     onClick={() => router.push('/admin')}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                 >
                     Back to Dashboard
                 </button>
             </div>
 
-            <div className="mb-6 flex justify-between items-center">
+            <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex space-x-4">
                     <button
                         onClick={() => setActiveTab('tags')}
-                        className={`px-4 py-2 rounded ${activeTab === 'tags' ?
-                            'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                        className={`px-4 py-2 rounded-md shadow-sm ${activeTab === 'tags' ?
+                            'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
                     >
                         Tags
                     </button>
                     <button
                         onClick={() => setActiveTab('categories')}
-                        className={`px-4 py-2 rounded ${activeTab === 'categories' ?
-                            'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                        className={`px-4 py-2 rounded-md shadow-sm ${activeTab === 'categories' ?
+                            'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}`}
                     >
                         Categories
                     </button>
@@ -335,7 +335,7 @@ export default function AdminTags() {
                 <input
                     type="text"
                     placeholder="Search..."
-                    className="w-64 p-2 border rounded"
+                    className="w-full sm:w-64 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -343,14 +343,14 @@ export default function AdminTags() {
                 {activeTab === 'tags' ? (
                     <button
                         onClick={openAddTagModal}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-sm flex items-center"
                     >
                         <span className="mr-1">+</span> Add Tag
                     </button>
                 ) : (
                     <button
                         onClick={openAddCategoryModal}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center"
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-sm flex items-center"
                     >
                         <span className="mr-1">+</span> Add Category
                     </button>
@@ -358,36 +358,36 @@ export default function AdminTags() {
             </div>
 
             {activeTab === 'tags' && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Icon</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Icon</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredTags.map((tag) => (
-                                <tr key={tag.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{tag.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {tag.tag_category?.name || 'Unknown'}
+                                <tr key={tag.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{tag.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                        {tag.tag_category?.name || <span className="italic text-gray-500 dark:text-gray-400">Unknown</span>}
                                     </td>
-                                    <td className="px-6 py-4 max-w-xs truncate">{tag.description}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{tag.icon || '-'}</td>
+                                    <td className="px-6 py-4 max-w-xs truncate text-gray-800 dark:text-gray-200">{tag.description}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-2xl">{tag.icon || <span className="text-sm text-gray-500 dark:text-gray-400">-</span>}</td>
                                     <td className="px-6 py-4 whitespace-nowrap space-x-2">
                                         <button
                                             onClick={() => openEditTagModal(tag)}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDeleteTag(tag.id)}
-                                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
                                         >
                                             Delete
                                         </button>
@@ -396,7 +396,7 @@ export default function AdminTags() {
                             ))}
                             {filteredTags.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center">
+                                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                         No tags found
                                     </td>
                                 </tr>
@@ -407,34 +407,36 @@ export default function AdminTags() {
             )}
 
             {activeTab === 'categories' && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 dark:bg-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-100 dark:bg-gray-700">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tags Count</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tags Count</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredCategories.map((category) => (
-                                <tr key={category.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{category.name}</td>
-                                    <td className="px-6 py-4 max-w-xs truncate">{category.description}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        {tags.filter(tag => tag.category_id === category.id).length}
+                                <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{category.name}</td>
+                                    <td className="px-6 py-4 max-w-xs truncate text-gray-800 dark:text-gray-200">{category.description}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                        <span className="px-2.5 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs font-medium">
+                                            {tags.filter(tag => tag.category_id === category.id).length}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap space-x-2">
                                         <button
                                             onClick={() => openEditCategoryModal(category)}
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
                                         >
                                             Edit
                                         </button>
                                         <button
                                             onClick={() => handleDeleteCategory(category.id)}
-                                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
                                         >
                                             Delete
                                         </button>
@@ -443,7 +445,7 @@ export default function AdminTags() {
                             ))}
                             {filteredCategories.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-4 text-center">
+                                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                         No categories found
                                     </td>
                                 </tr>
@@ -456,17 +458,17 @@ export default function AdminTags() {
             {/* Tag Modal */}
             {isTagModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-                        <h2 className="text-2xl font-bold mb-4">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
                             {editingTag ? 'Edit Tag' : 'Add New Tag'}
                         </h2>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Category:
                             </label>
                             <select
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newTag.category_id}
                                 onChange={(e) => setNewTag({ ...newTag, category_id: Number(e.target.value) })}
                             >
@@ -479,23 +481,23 @@ export default function AdminTags() {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Name:
                             </label>
                             <input
                                 type="text"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newTag.name}
                                 onChange={(e) => setNewTag({ ...newTag, name: e.target.value })}
                             />
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Description:
                             </label>
                             <textarea
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newTag.description}
                                 onChange={(e) => setNewTag({ ...newTag, description: e.target.value })}
                                 rows={3}
@@ -503,12 +505,12 @@ export default function AdminTags() {
                         </div>
 
                         <div className="mb-6">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Icon (emoji or symbol):
                             </label>
                             <input
                                 type="text"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newTag.icon}
                                 onChange={(e) => setNewTag({ ...newTag, icon: e.target.value })}
                                 placeholder="Example: 🚀, ☁️, 🔧"
@@ -518,13 +520,13 @@ export default function AdminTags() {
                         <div className="flex justify-end space-x-3">
                             <button
                                 onClick={() => setIsTagModalOpen(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveTag}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm"
                             >
                                 Save
                             </button>
@@ -536,29 +538,29 @@ export default function AdminTags() {
             {/* Category Modal */}
             {isCategoryModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-                        <h2 className="text-2xl font-bold mb-4">
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
                             {editingCategory ? 'Edit Category' : 'Add New Category'}
                         </h2>
 
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Name:
                             </label>
                             <input
                                 type="text"
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newCategory.name}
                                 onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                             />
                         </div>
 
                         <div className="mb-6">
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                                 Description:
                             </label>
                             <textarea
-                                className="w-full p-2 border rounded"
+                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                                 value={newCategory.description}
                                 onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                                 rows={3}
@@ -568,13 +570,13 @@ export default function AdminTags() {
                         <div className="flex justify-end space-x-3">
                             <button
                                 onClick={() => setIsCategoryModalOpen(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleSaveCategory}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm"
                             >
                                 Save
                             </button>

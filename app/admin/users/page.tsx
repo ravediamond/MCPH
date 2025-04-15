@@ -143,7 +143,7 @@ export default function AdminUsers() {
                 <h1 className="text-3xl font-bold">User Management</h1>
                 <button
                     onClick={() => router.push('/admin')}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                 >
                     Back to Dashboard
                 </button>
@@ -153,44 +153,46 @@ export default function AdminUsers() {
                 <input
                     type="text"
                     placeholder="Search users by email or GitHub username..."
-                    className="w-full p-2 border rounded"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-100 dark:bg-gray-700">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">GitHub Username</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">MCPs</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Admin</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">GitHub Username</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">MCPs</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Admin</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Created</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredUsers.map((user) => (
-                            <tr key={user.id}>
-                                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    {user.github_username || 'Not linked'}
+                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                    {user.github_username || <span className="italic text-gray-500 dark:text-gray-400">Not linked</span>}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">{user.mcp_count}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.mcp_count}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_admin ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_admin
+                                        ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100'
+                                        : 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200'}`}>
                                         {user.is_admin ? 'Yes' : 'No'}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
                                     {new Date(user.created_at).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <button
                                         onClick={() => openUserModal(user)}
-                                        className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm"
+                                        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
                                     >
                                         Manage User
                                     </button>
@@ -204,26 +206,31 @@ export default function AdminUsers() {
             {/* User Management Modal */}
             {isModalOpen && selectedUser && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-                        <h2 className="text-2xl font-bold mb-4">Manage User</h2>
-                        <p className="mb-4">
-                            <strong>Email:</strong> {selectedUser.email}<br />
-                            <strong>GitHub Username:</strong> {selectedUser.github_username || 'Not linked'}<br />
-                            <strong>MCPs:</strong> {selectedUser.mcp_count}<br />
-                            <strong>Created:</strong> {new Date(selectedUser.created_at).toLocaleString()}<br />
-                            <strong>Admin Status:</strong> {selectedUser.is_admin ? 'Administrator' : 'Regular User'}
-                        </p>
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Manage User</h2>
+                        <div className="mb-6 text-gray-700 dark:text-gray-300">
+                            <p className="mb-2"><span className="font-semibold">Email:</span> {selectedUser.email}</p>
+                            <p className="mb-2"><span className="font-semibold">GitHub Username:</span> {selectedUser.github_username || <span className="italic text-gray-500 dark:text-gray-400">Not linked</span>}</p>
+                            <p className="mb-2"><span className="font-semibold">MCPs:</span> {selectedUser.mcp_count}</p>
+                            <p className="mb-2"><span className="font-semibold">Created:</span> {new Date(selectedUser.created_at).toLocaleString()}</p>
+                            <p className="mb-2">
+                                <span className="font-semibold">Admin Status:</span>{' '}
+                                <span className={selectedUser.is_admin ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-600 dark:text-gray-400'}>
+                                    {selectedUser.is_admin ? 'Administrator' : 'Regular User'}
+                                </span>
+                            </p>
+                        </div>
 
                         <div className="flex justify-end space-x-3 mt-6">
                             <button
                                 onClick={() => setIsModalOpen(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                             >
                                 Close
                             </button>
                             <button
                                 onClick={handleToggleAdmin}
-                                className={`${selectedUser.is_admin ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white px-4 py-2 rounded`}
+                                className={`${selectedUser.is_admin ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-md shadow-sm`}
                             >
                                 {selectedUser.is_admin ? 'Remove Admin Privileges' : 'Grant Admin Privileges'}
                             </button>
