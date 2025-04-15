@@ -39,12 +39,18 @@ export default function VersionHistoryPanel({
 
         try {
             const response = await fetch(`/api/mcps/version-history?mcpId=${mcpId}`);
-            const data = await response.json();
 
+            // Check if the response was successful before attempting to parse JSON
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to fetch version history');
+                const errorMessage = `Failed to fetch version history: ${response.status} ${response.statusText}`;
+                console.error(errorMessage);
+                throw new Error(errorMessage);
             }
 
+            // Parse the JSON response
+            const data = await response.json();
+
+            // Make sure versionHistory is always an array, even if empty
             setVersionHistory(data.versionHistory || []);
         } catch (err) {
             console.error('Error fetching version history:', err);

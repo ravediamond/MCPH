@@ -71,3 +71,6 @@ EXECUTE FUNCTION public.record_initial_mcp_version();
 
 -- Add a comment explaining the table's purpose
 COMMENT ON TABLE public.mcp_versions IS 'Stores version history for MCPs, including change details and who made the changes';
+
+-- Add index for faster querying by user
+CREATE INDEX IF NOT EXISTS mcp_versions_changed_by_idx ON public.mcp_versions(changed_by);

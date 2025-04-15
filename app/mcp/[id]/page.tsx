@@ -16,7 +16,8 @@ import {
   FaGithub,
   FaExternalLinkAlt,
   FaSync,
-  FaCheckCircle
+  FaCheckCircle,
+  FaComment
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
@@ -24,8 +25,9 @@ import { MCP } from 'types/mcp';
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
 
-// Import the new component
+// Import components
 import VersionHistoryPanel from 'components/VersionHistoryPanel';
+import Reviews from 'components/Reviews';
 
 interface MCPDetailProps {
   params: { id: string };
@@ -53,6 +55,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const [claimLoading, setClaimLoading] = useState<boolean>(false);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'readme' | 'reviews'>('readme');
 
   // Fetch the current user session
   useEffect(() => {
@@ -385,6 +388,25 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                     </div>
                     <span className="font-semibold">{mcp.view_count?.toLocaleString() || '0'}</span>
                   </div>
+
+                  {/* Rating Info */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-gray-700 gap-2">
+                      <FaStar className="text-yellow-500" />
+                      <span>Rating</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="font-semibold mr-1">
+                        {mcp.avg_rating ? mcp.avg_rating.toFixed(1) : 'N/A'}
+                      </span>
+                      {mcp.review_count ? (
+                        <span className="text-xs text-gray-500">
+                          ({mcp.review_count} {mcp.review_count === 1 ? 'review' : 'reviews'})
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
                       <FaStar className="text-yellow-500" />
@@ -463,50 +485,84 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             )}
           </div>
 
-          {/* README Display Section - Now takes the right side */}
+          {/* Right side content with tabs for README and Reviews */}
           <div className="lg:col-span-2 mt-8 lg:mt-0">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  <FaFileAlt /> README
-                </h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500">
-                    Last updated: {formatRefreshDate(lastRefreshed)}
-                  </span>
-                  <button
-                    onClick={handleManualRefresh}
-                    disabled={refreshing}
-                    className="text-blue-600 hover:text-blue-800 transition-colors p-1"
-                    title="Refresh README from GitHub"
-                  >
-                    <FaSync className={refreshing ? 'animate-spin' : ''} />
-                  </button>
+            {/* Tab Navigation */}
+            <div className="flex border-b border-gray-200 mb-4">
+              <button
+                onClick={() => setActiveTab('readme')}
+                className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'readme'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                <FaFileAlt className="mr-2" /> README
+              </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'reviews'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                <FaComment className="mr-2" /> Reviews {mcp.review_count ? `(${mcp.review_count})` : ''}
+              </button>
+            </div>
+
+            {/* README Tab Content */}
+            {activeTab === 'readme' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <FaFileAlt /> README
+                  </h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-500">
+                      Last updated: {formatRefreshDate(lastRefreshed)}
+                    </span>
+                    <button
+                      onClick={handleManualRefresh}
+                      disabled={refreshing}
+                      className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                      title="Refresh README from GitHub"
+                    >
+                      <FaSync className={refreshing ? 'animate-spin' : ''} />
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6">
+                  {refreshing && !readme && (
+                    <div className="flex justify-center py-12">
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-gray-600">Fetching latest README...</p>
+                      </div>
+                    </div>
+                  )}
+                  {readme ? (
+                    <div className={`markdown-body bg-transparent border-0 prose prose-blue max-w-none ${styles['markdown-dark']}`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+                        {readme}
+                      </ReactMarkdown>
+                    </div>
+                  ) : !refreshing ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <FaFileAlt className="mx-auto text-4xl mb-4 opacity-30" />
+                      <p>No README available for this repository.</p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
-              <div className="p-6">
-                {refreshing && !readme && (
-                  <div className="flex justify-center py-12">
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <p className="text-gray-600">Fetching latest README...</p>
-                    </div>
-                  </div>
-                )}
-                {readme ? (
-                  <div className={`markdown-body bg-transparent border-0 prose prose-blue max-w-none ${styles['markdown-dark']}`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
-                      {readme}
-                    </ReactMarkdown>
-                  </div>
-                ) : !refreshing ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <FaFileAlt className="mx-auto text-4xl mb-4 opacity-30" />
-                    <p>No README available for this repository.</p>
-                  </div>
-                ) : null}
+            )}
+
+            {/* Reviews Tab Content */}
+            {activeTab === 'reviews' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6">
+                  {mcp && mcp.id && <Reviews mcpId={mcp.id} />}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
