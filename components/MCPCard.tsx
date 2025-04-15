@@ -63,11 +63,20 @@ export default function MCPCard({
         <h3 className="font-bold text-gray-800 text-lg break-words max-w-full">
           {mcp.name || 'Untitled MCP'}
         </h3>
-        {mcp.version && (
-          <span className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full mt-2 md:mt-0 ml-auto md:ml-2">
-            v{mcp.version}
-          </span>
-        )}
+        <div className="flex items-center gap-2 ml-auto">
+          {/* MCPH Owned Badge */}
+          {mcp.is_mcph_owned && (
+            <span className="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
+              MCPH Owned
+            </span>
+          )}
+          {/* Version Badge */}
+          {mcp.version && (
+            <span className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
+              v{mcp.version}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Description */}
@@ -118,7 +127,9 @@ export default function MCPCard({
           )}
         </div>
         {mcp.author && (
-          <p className="text-sm text-gray-500 break-all">by {mcp.author}</p>
+          <p className="text-sm text-gray-500 break-all">
+            by {mcp.is_mcph_owned ? 'MCPH' : mcp.author}
+          </p>
         )}
       </div>
 
@@ -176,9 +187,8 @@ export default function MCPCard({
                 Cancel
               </button>
               <button
-                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${
-                  isDeleting ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
                 onClick={handleDeleteConfirm}
                 disabled={isDeleting}
               >

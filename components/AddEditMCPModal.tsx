@@ -22,18 +22,30 @@ export default function AddEditMCPModal({
     const [errorMsg, setErrorMsg] = useState('');
     const [loadingRepoInfo, setLoadingRepoInfo] = useState(false);
     const [author, setAuthor] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false); // State to check if user is admin
+    const [isMCPHOwned, setIsMCPHOwned] = useState(false); // State to track MCPH ownership option
     // New state variables
     const [deploymentUrl, setDeploymentUrl] = useState('');
     const [tagInput, setTagInput] = useState('');
     const [tags, setTags] = useState<string[]>([]);
 
     // Fetch current user's email to auto-fill author
+    // and check if the user is an admin
     useEffect(() => {
         async function fetchUser() {
             const { data: userData } = await supabase.auth.getUser();
             const user = userData?.user;
             if (user && user.email) {
                 setAuthor(user.email);
+
+                // Check if user is admin
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single();
+
+                setIsAdmin(!!profile?.is_admin);
             }
         }
         fetchUser();
@@ -157,6 +169,7 @@ export default function AddEditMCPModal({
                 author: author,
                 user_id: user.id,
                 tags: tags.length > 0 ? tags : null,
+                is_mcph_owned: isMCPHOwned, // Add MCPH ownership flag
             });
         if (error) {
             console.error('Error adding MCP:', error);
@@ -174,6 +187,7 @@ export default function AddEditMCPModal({
             setVersion('1.0.0');
             setDescription('');
             setTags([]);
+            setIsMCPHOwned(false); // Reset MCPH ownership flag
         }
     };
 
@@ -324,6 +338,24 @@ export default function AddEditMCPModal({
                                     Add relevant tags for better discoverability
                                 </p>
                             </div>
+
+                            {/* MCPH Ownership */}
+                            {isAdmin && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        MCPH Ownership
+                                    </label>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isMCPHOwned}
+                                            onChange={(e) => setIsMCPHOwned(e.target.checked)}
+                                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <span className="ml-2 text-sm text-gray-700">Set as MCPH owned</span>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Error Message */}
                             {errorMsg && (
