@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
-import { fetchReadmeFromGitHub } from 'services/githubService';
+import { fetchReadmeFromGitHub, handleGitHubResponse } from 'services/githubService';
 
 export async function POST(request: Request) {
     try {
@@ -89,6 +89,25 @@ export async function POST(request: Request) {
                 message: 'README refreshed successfully'
             });
         } catch (error: any) {
+            // Check if this is a rate limit error
+            if (error.message && error.message.includes('rate limit exceeded')) {
+                // Log rate limit specifically
+                await logError('GitHub Rate Limit', `Rate limit exceeded while refreshing MCP ${mcpId}`, error);
+                
+                // Extract reset time if available in the error message
+                let resetTime = 'some time';
+                const resetMatch = error.message.match(/Reset time: ([^.]+)/);
+                if (resetMatch && resetMatch[1]) {
+                    resetTime = resetMatch[1];
+                }
+                
+                return NextResponse.json({
+                    error: 'GitHub API rate limit exceeded',
+                    details: `Please try again after ${resetTime}. This is a GitHub limitation.`,
+                    isRateLimit: true
+                }, { status: 429 }); // Use 429 Too Many Requests for rate limiting
+            }
+            
             await logError('README refresh', `Failed to fetch README for MCP ${mcpId}`, error);
             return NextResponse.json({
                 error: 'Failed to fetch README from GitHub',

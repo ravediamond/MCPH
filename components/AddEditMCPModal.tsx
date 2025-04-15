@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from 'lib/supabaseClient';
+import { extractRateLimitInfo } from 'services/githubService';
 
 interface TagItem {
     id: number;
@@ -174,10 +175,36 @@ export default function AddEditMCPModal({
             const repoResponse = await fetch(
                 `https://api.github.com/repos/${owner}/${repo}`
             );
+            
+            // Extract rate limit information from headers
+            const rateLimitInfo = extractRateLimitInfo(repoResponse.headers);
+            
+            // Handle rate limit specific errors
             if (!repoResponse.ok) {
-                setErrorMsg('Failed to fetch repository details.');
-                return;
+                if (repoResponse.status === 403 && rateLimitInfo && rateLimitInfo.remaining === 0) {
+                    const resetDate = new Date(rateLimitInfo.reset * 1000).toLocaleString();
+                    setErrorMsg(
+                        `GitHub API rate limit exceeded. Please try again after ${resetDate}. ` +
+                        `This is a GitHub limitation to prevent abuse.`
+                    );
+                    setLoadingRepoInfo(false);
+                    return;
+                } else if (repoResponse.status === 404) {
+                    setErrorMsg('Repository not found. Please check the URL and try again.');
+                    setLoadingRepoInfo(false);
+                    return;
+                } else {
+                    setErrorMsg(`GitHub API error: ${repoResponse.status} - ${repoResponse.statusText}`);
+                    setLoadingRepoInfo(false);
+                    return;
+                }
             }
+
+            // If rate limit is low but not exhausted, show a warning
+            if (rateLimitInfo && rateLimitInfo.remaining < 5) {
+                console.warn(`GitHub API rate limit warning: ${rateLimitInfo.remaining}/${rateLimitInfo.limit} requests remaining`);
+            }
+            
             const repoData = await repoResponse.json();
             setName(repoData.name || '');
             setDescription(repoData.description || '');

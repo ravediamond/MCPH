@@ -1,3 +1,73 @@
+// Rate limit interface for GitHub API responses
+interface GitHubRateLimitInfo {
+  limit: number;
+  remaining: number;
+  reset: number;
+  used: number;
+  resource: string;
+}
+
+/**
+ * Extracts rate limit information from GitHub API response headers
+ * @param headers Response headers from GitHub API call
+ * @returns Rate limit information object or null if headers aren't available
+ */
+export function extractRateLimitInfo(headers: Headers): GitHubRateLimitInfo | null {
+  if (!headers) return null;
+  
+  try {
+    return {
+      limit: parseInt(headers.get('x-ratelimit-limit') || '0', 10),
+      remaining: parseInt(headers.get('x-ratelimit-remaining') || '0', 10),
+      reset: parseInt(headers.get('x-ratelimit-reset') || '0', 10),
+      used: parseInt(headers.get('x-ratelimit-used') || '0', 10),
+      resource: headers.get('x-ratelimit-resource') || 'core'
+    };
+  } catch (error) {
+    console.warn('Failed to parse GitHub rate limit headers:', error);
+    return null;
+  }
+}
+
+/**
+ * Handle GitHub API response and check for rate limiting
+ * @param response Fetch API Response object
+ * @returns Response if successful
+ * @throws Error with detailed message for rate limit or other API errors
+ */
+export async function handleGitHubResponse(response: Response): Promise<Response> {
+  // Extract rate limit info regardless of success/failure
+  const rateLimitInfo = extractRateLimitInfo(response.headers);
+  
+  if (response.ok) {
+    // Log remaining rate limit if it's getting low (less than 10% remaining)
+    if (rateLimitInfo && rateLimitInfo.limit > 0 && rateLimitInfo.remaining < rateLimitInfo.limit * 0.1) {
+      console.warn(`GitHub API rate limit warning: ${rateLimitInfo.remaining}/${rateLimitInfo.limit} remaining requests`);
+    }
+    return response;
+  }
+  
+  // Handle specific error cases
+  if (response.status === 403 && rateLimitInfo && rateLimitInfo.remaining === 0) {
+    const resetDate = new Date(rateLimitInfo.reset * 1000).toLocaleString();
+    throw new Error(
+      `GitHub API rate limit exceeded. Limit: ${rateLimitInfo.limit}, ` +
+      `Used: ${rateLimitInfo.used}, Reset time: ${resetDate}. ` + 
+      `Consider adding a GitHub token to increase rate limits.`
+    );
+  } else if (response.status === 404) {
+    throw new Error('GitHub repository or resource not found. Please check the repository URL.');
+  } else {
+    // For other error types, try to get the detailed message from the response
+    try {
+      const errorData = await response.json();
+      throw new Error(`GitHub API error (${response.status}): ${errorData.message || response.statusText}`);
+    } catch (e) {
+      throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
+    }
+  }
+}
+
 export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: string, repositoryName?: string): Promise<{ readme: string; ownerUsername: string }> {
   let owner: string;
   let repo: string;
@@ -19,16 +89,17 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
 
   const response = await fetch(apiUrl, {
     headers: {
-      Accept: 'application/vnd.github.v3.raw'
-      // Optionally include authorization headers if you have a GitHub token:
-      // Authorization: `token ${process.env.GITHUB_TOKEN}`,
+      Accept: 'application/vnd.github.v3.raw',
+      // Use GitHub token if available for higher rate limits
+      ...(process.env.GITHUB_TOKEN && {
+        Authorization: `token ${process.env.GITHUB_TOKEN}`
+      })
     }
   });
 
-  if (!response.ok) {
-    throw new Error(`GitHub API error: ${response.statusText}`);
-  }
-
+  // Process the response with the new handler
+  await handleGitHubResponse(response);
+  
   const readme = await response.text();
   return { readme, ownerUsername: owner };
 }
@@ -53,10 +124,9 @@ export async function fetchReadmeFromGitHub(owner: string, repo: string): Promis
     }
   });
 
-  if (!response.ok) {
-    throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
-  }
-
+  // Process the response with the new handler
+  await handleGitHubResponse(response);
+  
   return await response.text();
 }
 
