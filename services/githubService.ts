@@ -14,7 +14,7 @@ interface GitHubRateLimitInfo {
  */
 export function extractRateLimitInfo(headers: Headers): GitHubRateLimitInfo | null {
   if (!headers) return null;
-  
+
   try {
     return {
       limit: parseInt(headers.get('x-ratelimit-limit') || '0', 10),
@@ -38,7 +38,7 @@ export function extractRateLimitInfo(headers: Headers): GitHubRateLimitInfo | nu
 export async function handleGitHubResponse(response: Response): Promise<Response> {
   // Extract rate limit info regardless of success/failure
   const rateLimitInfo = extractRateLimitInfo(response.headers);
-  
+
   if (response.ok) {
     // Log remaining rate limit if it's getting low (less than 10% remaining)
     if (rateLimitInfo && rateLimitInfo.limit > 0 && rateLimitInfo.remaining < rateLimitInfo.limit * 0.1) {
@@ -46,13 +46,13 @@ export async function handleGitHubResponse(response: Response): Promise<Response
     }
     return response;
   }
-  
+
   // Handle specific error cases
   if (response.status === 403 && rateLimitInfo && rateLimitInfo.remaining === 0) {
     const resetDate = new Date(rateLimitInfo.reset * 1000).toLocaleString();
     throw new Error(
       `GitHub API rate limit exceeded. Limit: ${rateLimitInfo.limit}, ` +
-      `Used: ${rateLimitInfo.used}, Reset time: ${resetDate}. ` + 
+      `Used: ${rateLimitInfo.used}, Reset time: ${resetDate}. ` +
       `Consider adding a GitHub token to increase rate limits.`
     );
   } else if (response.status === 404) {
@@ -99,7 +99,7 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
 
   // Process the response with the new handler
   await handleGitHubResponse(response);
-  
+
   const readme = await response.text();
   return { readme, ownerUsername: owner };
 }
@@ -126,7 +126,7 @@ export async function fetchReadmeFromGitHub(owner: string, repo: string): Promis
 
   // Process the response with the new handler
   await handleGitHubResponse(response);
-  
+
   return await response.text();
 }
 

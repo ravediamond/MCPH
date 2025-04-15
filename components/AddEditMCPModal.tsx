@@ -175,10 +175,10 @@ export default function AddEditMCPModal({
             const repoResponse = await fetch(
                 `https://api.github.com/repos/${owner}/${repo}`
             );
-            
+
             // Extract rate limit information from headers
             const rateLimitInfo = extractRateLimitInfo(repoResponse.headers);
-            
+
             // Handle rate limit specific errors
             if (!repoResponse.ok) {
                 if (repoResponse.status === 403 && rateLimitInfo && rateLimitInfo.remaining === 0) {
@@ -204,7 +204,7 @@ export default function AddEditMCPModal({
             if (rateLimitInfo && rateLimitInfo.remaining < 5) {
                 console.warn(`GitHub API rate limit warning: ${rateLimitInfo.remaining}/${rateLimitInfo.limit} requests remaining`);
             }
-            
+
             const repoData = await repoResponse.json();
             setName(repoData.name || '');
             setDescription(repoData.description || '');
@@ -417,8 +417,8 @@ export default function AddEditMCPModal({
                                                 type="button"
                                                 onClick={() => toggleDomainTag(category.name)}
                                                 className={`text-xs py-1 px-2 rounded-full border ${selectedDomainTags.includes(category.name)
-                                                        ? 'bg-blue-500 text-white border-blue-500'
-                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                                    ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
                                                     }`}
                                             >
                                                 {category.name}
@@ -448,8 +448,8 @@ export default function AddEditMCPModal({
                                                 type="button"
                                                 onClick={() => toggleDeploymentType(type.name)}
                                                 className={`text-xs py-1 px-2 rounded-full border ${selectedDeploymentTypes.includes(type.name)
-                                                        ? 'bg-blue-500 text-white border-blue-500'
-                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                                    ? 'bg-blue-500 text-white border-blue-500'
+                                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
                                                     }`}
                                             >
                                                 {type.icon} {type.name}
