@@ -24,6 +24,9 @@ import { MCP } from 'types/mcp';
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
 
+// Import the new component
+import VersionHistoryPanel from 'components/VersionHistoryPanel';
+
 interface MCPDetailProps {
   params: { id: string };
 }
@@ -49,6 +52,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const [isOwner, setIsOwner] = useState<boolean>(false);
   const [claimLoading, setClaimLoading] = useState<boolean>(false);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
 
   // Fetch the current user session
   useEffect(() => {
@@ -74,6 +78,15 @@ export default function MCPDetail({ params }: MCPDetailProps) {
               githubUsername
             });
           }
+          
+          // Check if the user is an admin
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+          
+          setIsAdminUser(!!profile?.is_admin);
         }
       }
     }
@@ -336,9 +349,10 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       <div className="max-w-screen-xl mx-auto px-4 mt-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Sidebar with Repository Metrics */}
+          {/* Sidebar with Repository Metrics and Version History */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden sticky top-8">
+            {/* Repository Info Panel */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
               <div className="p-6 border-b border-gray-100">
                 <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   <FaGithub /> Repository Info
@@ -412,9 +426,19 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                 </div>
               )}
             </div>
+            
+            {/* Version History Panel - Moved to the left */}
+            {mcp && mcp.id && (
+              <VersionHistoryPanel
+                mcpId={mcp.id}
+                currentVersion={mcp.version}
+                isOwner={isClaimedByCurrentUser}
+                isAdmin={isAdminUser}
+              />
+            )}
           </div>
 
-          {/* README Display Section */}
+          {/* README Display Section - Now takes the right side */}
           <div className="lg:col-span-2 mt-8 lg:mt-0">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">

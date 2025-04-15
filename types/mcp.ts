@@ -18,3 +18,17 @@ export interface MCP {
     email: string;
   };
 }
+
+// Interface for version history entries
+export interface MCPVersion {
+  id?: string;
+  created_at?: string;
+  mcp_id: string;
+  version: string;
+  change_summary?: string;
+  change_details?: string;
+  changed_by?: string;
+  user?: {
+    email: string;
+  };
+}
