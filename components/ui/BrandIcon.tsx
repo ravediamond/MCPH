@@ -5,8 +5,8 @@ const BrandIcon = () => {
         <Image
             src="/icon-transparent.png"
             alt="MCP Hub Icon"
-            width={128}
-            height={128}
+            width={180}
+            height={180}
             className="bg-transparent"
         />
     );
