@@ -16,7 +16,7 @@ export default function Header() {
     const pathname = usePathname();
 
     const isActive = (path: string) => pathname === path;
-    
+
     return (
         <header className="bg-white border-b border-blue-50 sticky top-0 z-10 shadow-sm">
             <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
@@ -60,14 +60,14 @@ export default function Header() {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <button 
+                        <button
                             onClick={() => setShowSearch(!showSearch)}
                             className="text-neutral-700 hover:text-blue-600 transition-colors p-2"
                             aria-label="Search"
                         >
                             <FaSearch className="w-5 h-5" />
                         </button>
-                        
+
                         {session ? (
                             <Link
                                 href="/profile"
@@ -92,8 +92,8 @@ export default function Header() {
                 {/* Search Bar (shown when toggle is clicked) */}
                 {showSearch && (
                     <div className="py-3 border-t border-blue-50 animate-fadeIn">
-                        <SearchBar 
-                            placeholder="Search MCPs..." 
+                        <SearchBar
+                            placeholder="Search MCPs..."
                             className="mb-0"
                         />
                     </div>
@@ -104,12 +104,12 @@ export default function Header() {
                     <div className="md:hidden py-5 space-y-5 border-t border-blue-50 bg-white animate-fadeIn">
                         {/* Mobile Search */}
                         <div className="px-4">
-                            <SearchBar 
-                                placeholder="Search MCPs..." 
+                            <SearchBar
+                                placeholder="Search MCPs..."
                                 className="mb-0"
                             />
                         </div>
-                        
+
                         <nav className="flex flex-col space-y-4">
                             <Link
                                 href="/browse"

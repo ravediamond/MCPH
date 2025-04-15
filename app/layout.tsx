@@ -1,7 +1,7 @@
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import Layout from 'components/layout/Layout';
 import { Toaster } from 'react-hot-toast';
-import SupabaseProvider from './supabase-provider'; 
+import SupabaseProvider from './supabase-provider';
 import './globals.css';
 
 // Load fonts
