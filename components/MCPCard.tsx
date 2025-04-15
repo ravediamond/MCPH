@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { FiExternalLink, FiTrash2 } from 'react-icons/fi';
-import { FaGithub, FaStar } from 'react-icons/fa';
+import { FaGithub, FaStar, FaEye } from 'react-icons/fa';
 import { supabase } from 'lib/supabaseClient';
 
 interface MCPCardProps {
@@ -187,15 +187,26 @@ export default function MCPCard({
         )}
       </div>
 
-      {/* Additional Repository Data: Number of Stars */}
-      {mcp.stars !== undefined && (
-        <div className="flex items-center gap-1 mt-3">
-          <FaStar className="text-yellow-500" size={18} />
-          <span className="text-sm text-gray-700">
-            {mcp.stars} {mcp.stars === 1 ? 'star' : 'stars'}
-          </span>
-        </div>
-      )}
+      {/* Additional Repository Data: Number of Stars and Views */}
+      <div className="flex items-center gap-4 mt-3">
+        {mcp.stars !== undefined && (
+          <div className="flex items-center gap-1">
+            <FaStar className="text-yellow-500" size={18} />
+            <span className="text-sm text-gray-700">
+              {mcp.stars} {mcp.stars === 1 ? 'star' : 'stars'}
+            </span>
+          </div>
+        )}
+
+        {mcp.view_count !== undefined && (
+          <div className="flex items-center gap-1">
+            <FaEye className="text-blue-500" size={18} />
+            <span className="text-sm text-gray-700">
+              {mcp.view_count} {mcp.view_count === 1 ? 'view' : 'views'}
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Editable Action Buttons */}
       {editable && (

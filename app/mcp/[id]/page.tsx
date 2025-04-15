@@ -115,6 +115,9 @@ export default function MCPDetail({ params }: MCPDetailProps) {
           if (refreshedMcp !== data) {
             setMCP(refreshedMcp);
           }
+
+          // Increment view count
+          incrementViewCount(id);
         } catch (refreshError) {
           console.error('Error refreshing README:', refreshError);
         } finally {
@@ -125,6 +128,21 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     }
     fetchMCP();
   }, [id]);
+
+  // Function to increment view count
+  const incrementViewCount = async (mcpId: string) => {
+    try {
+      await fetch('/api/mcps/view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ mcpId })
+      });
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+    }
+  };
 
   // Check if the current user is the owner of this MCP's repository
   useEffect(() => {
@@ -362,6 +380,13 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                 <div className="p-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
+                      <FaEye className="text-blue-600" />
+                      <span>MCPHub Views</span>
+                    </div>
+                    <span className="font-semibold">{mcp.view_count?.toLocaleString() || '0'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center text-gray-700 gap-2">
                       <FaStar className="text-yellow-500" />
                       <span>Stars</span>
                     </div>
@@ -383,8 +408,8 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
-                      <FaEye className="text-blue-600" />
-                      <span>Watchers</span>
+                      <FaEye className="text-purple-600" />
+                      <span>GitHub Watchers</span>
                     </div>
                     <span className="font-semibold">
                       {(repoData.subscribers_count || repoData.watchers_count).toLocaleString()}

@@ -14,6 +14,7 @@ export interface MCP {
   owner_username?: string; // Owner's GitHub username
   claimed?: boolean;       // Whether the MCP has been claimed by its owner
   is_mcph_owned?: boolean; // Whether the MCP is owned by MCPH (organization ownership)
+  view_count?: number;     // Number of times this MCP has been viewed
   profiles?: {             // Added profiles property for join data
     email: string;
   };
