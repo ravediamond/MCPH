@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-    MagnifyingGlassIcon,
     Squares2X2Icon,
     Bars3Icon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Button from "components/ui/Button";
 import MCPCard from "components/MCPCard";
+import SearchBar from "components/SearchBar";
 import { supabase } from "lib/supabaseClient";
 
 // Tag interface to match our DB structure
@@ -103,22 +103,6 @@ export default function BrowsePage() {
         fetchItems();
     }, [searchQuery]);
 
-    // Handler to update the URL search query.
-    const handleSearch = () => {
-        if (!searchQuery.trim()) {
-            router.push("/browse");
-        } else {
-            router.push(`/browse?q=${encodeURIComponent(searchQuery)}`);
-        }
-    };
-
-    // Trigger search on Enter key.
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-            handleSearch();
-        }
-    };
-
     // Toggle tag selection
     const toggleTag = (tag: string, prefix?: string) => {
         const tagWithPrefix = prefix ? `${prefix}:${tag}` : tag;
@@ -167,27 +151,21 @@ export default function BrowsePage() {
                 {/* Header */}
                 <div className="mb-8 text-center">
                     <h1 className="text-3xl font-bold text-neutral-800 mb-2">
-                        Browse Content
+                        Browse MCPs
                     </h1>
                     <p className="text-neutral-600">
-                        Discover and explore the latest content in our hub
+                        Discover and explore the latest MCPs in our hub
                     </p>
                 </div>
 
                 {/* Search */}
                 <div className="flex flex-col lg:flex-row gap-4 mb-6">
                     <div className="relative flex-grow">
-                        <input
-                            type="text"
+                        <SearchBar
+                            initialQuery={initialQuery}
+                            onSearch={(query) => setSearchQuery(query)}
                             placeholder="Search for content..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            className="w-full pl-12 pr-4 py-5 rounded-lg border border-neutral-200 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-lg shadow-sm"
-                        />
-                        <MagnifyingGlassIcon
-                            className="absolute left-4 top-5 h-6 w-6 text-neutral-400 cursor-pointer"
-                            onClick={handleSearch}
+                            className="mb-0"
                         />
                     </div>
 

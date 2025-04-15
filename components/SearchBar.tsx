@@ -1,15 +1,43 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function SearchBar() {
+interface SearchBarProps {
+    initialQuery?: string;
+    onSearch?: (query: string) => void;
+    placeholder?: string;
+    className?: string;
+}
+
+export default function SearchBar({
+    initialQuery = '',
+    onSearch,
+    placeholder = 'Search features...',
+    className = ''
+}: SearchBarProps) {
     const router = useRouter();
-    const [query, setQuery] = useState('');
+    const searchParams = useSearchParams();
+    const [query, setQuery] = useState(initialQuery || searchParams?.get('q') || '');
+
+    // Update query if searchParams changes (e.g., when user navigates)
+    useEffect(() => {
+        const queryParam = searchParams?.get('q');
+        if (queryParam !== null && queryParam !== query) {
+            setQuery(queryParam || '');
+        }
+    }, [searchParams]);
 
     const handleSearch = () => {
         if (!query.trim()) return;
-        router.push(`/browse?q=${encodeURIComponent(query)}`);
+
+        if (onSearch) {
+            // If a custom search handler is provided, use it
+            onSearch(query);
+        } else {
+            // Default behavior: redirect to browse page
+            router.push(`/browse?q=${encodeURIComponent(query)}`);
+        }
     };
 
     // New handler for keydown events on the input field
@@ -21,14 +49,14 @@ export default function SearchBar() {
     };
 
     return (
-        <div className="relative mb-8">
+        <div className={`relative ${className || 'mb-8'}`}>
             <input
                 className="w-full pr-16 py-2 px-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="text"
-                placeholder="Search features..."
+                placeholder={placeholder}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}  // Added the onKeyDown handler here
+                onKeyDown={handleKeyDown}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 <button
