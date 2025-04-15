@@ -31,6 +31,48 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* New User Onboarding - What is MCP? */}
+            <section className="py-12 px-4 bg-blue-50">
+                <div className="max-w-5xl mx-auto">
+                    <div className="bg-white border border-neutral-100 rounded-lg p-8 shadow-sm">
+                        <h2 className="text-2xl font-semibold mb-4 text-center text-neutral-800">
+                            New to MCP? Here's What You Need to Know
+                        </h2>
+
+                        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                            <p className="text-neutral-700">
+                                <strong>Model Context Protocol (MCP)</strong> enables AI systems to discover, access and use external tools and APIs.
+                                Think of it as a standardized way for AI models to interact with various capabilities beyond their built-in knowledge.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div className="border border-neutral-100 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <h3 className="font-medium text-lg mb-2 text-neutral-800">For AI Developers</h3>
+                                <p className="text-neutral-600 text-sm">
+                                    MCPs let your AI applications access external capabilities like databases, web searches, or specialized tools without custom integration code for each service.
+                                </p>
+                            </div>
+                            <div className="border border-neutral-100 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <h3 className="font-medium text-lg mb-2 text-neutral-800">For Service Providers</h3>
+                                <p className="text-neutral-600 text-sm">
+                                    Create MCPs to make your APIs and services easily discoverable and usable by AI systems, expanding your reach to the AI ecosystem.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="text-center">
+                            <Link href="/docs" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                Learn more about MCP in our documentation
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Featured MCPs Sections */}
             <div className="max-w-6xl mx-auto py-12 px-4">
                 <div className="grid grid-cols-1 gap-8">
