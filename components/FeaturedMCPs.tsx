@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import MCPCard from './MCPCard';
 import { MCP } from 'types/mcp';
 import { FaExclamationCircle } from 'react-icons/fa';
@@ -10,6 +11,7 @@ interface FeaturedMCPsProps {
 }
 
 export default function FeaturedMCPs({ title, type, limit = 5 }: FeaturedMCPsProps) {
+    const router = useRouter();
     const [mcps, setMcps] = useState<MCP[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -76,7 +78,11 @@ export default function FeaturedMCPs({ title, type, limit = 5 }: FeaturedMCPsPro
             <h2 className="text-xl font-semibold mb-6 text-center text-neutral-800">{title}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {mcps.map((mcp) => (
-                    <MCPCard key={mcp.id} mcp={mcp} />
+                    <MCPCard
+                        key={mcp.id}
+                        mcp={mcp}
+                        onClick={() => router.push(`/mcp/${mcp.id}`)}
+                    />
                 ))}
             </div>
         </div>
