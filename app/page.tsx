@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Button from 'components/ui/Button';
 import Card from 'components/ui/Card';
 import SearchBar from 'components/SearchBar';
-
+import FeaturedMCPs from 'components/FeaturedMCPs';
 
 export default function Home() {
     return (
@@ -30,6 +30,17 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Featured MCPs Sections */}
+            <div className="max-w-6xl mx-auto py-12 px-4">
+                <div className="grid grid-cols-1 gap-8">
+                    {/* Most Starred MCPs */}
+                    <FeaturedMCPs title="Most Popular MCPs" type="starred" limit={3} />
+
+                    {/* Trending MCPs */}
+                    <FeaturedMCPs title="Trending MCPs" type="trending" limit={3} />
+                </div>
+            </div>
 
             {/* How It Works - Smaller and more compact */}
             <div className="max-w-5xl mx-auto pt-8 pb-10 px-4">
