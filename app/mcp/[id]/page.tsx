@@ -21,6 +21,9 @@ import {
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
 
+// Import the CSS for the dark theme
+import styles from './markdown-dark.module.css';
+
 interface MCPDetailProps {
   params: { id: string };
 }
@@ -442,7 +445,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   </div>
                 )}
                 {readme ? (
-                  <div className="markdown-body bg-transparent border-0 prose prose-blue max-w-none">
+                  <div className={`markdown-body bg-transparent border-0 prose prose-blue max-w-none ${styles['markdown-dark']}`}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
                       {readme}
                     </ReactMarkdown>

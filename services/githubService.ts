@@ -182,6 +182,62 @@ export async function updateMcpReadme(mcpId: string, readme: string): Promise<an
 }
 
 /**
+ * Fetches repository details from GitHub
+ * @param owner GitHub repository owner username
+ * @param repo GitHub repository name
+ * @returns Promise resolving to the repository details
+ */
+export async function fetchRepoDetails(owner: string, repo: string): Promise<any> {
+  // Build the GitHub API URL for the repo endpoint
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      Accept: 'application/vnd.github.v3+json',
+      // Use GitHub token if available for higher rate limits
+      ...(process.env.GITHUB_TOKEN && {
+        Authorization: `token ${process.env.GITHUB_TOKEN}`
+      })
+    }
+  });
+
+  // Process the response with the handler
+  await handleGitHubResponse(response);
+
+  return await response.json();
+}
+
+/**
+ * Updates the MCP with repository details like star count
+ * @param mcpId ID of the MCP to update
+ * @param repoDetails Repository details from GitHub API
+ * @returns Promise resolving to the updated record or error
+ */
+export async function updateMcpRepoDetails(mcpId: string, repoDetails: any): Promise<any> {
+  const { supabase } = require('../lib/supabaseClient');
+
+  const updates = {
+    stars: repoDetails.stargazers_count,
+    forks: repoDetails.forks_count,
+    open_issues: repoDetails.open_issues_count,
+    last_repo_update: repoDetails.updated_at
+  };
+
+  const { data, error } = await supabase
+    .from('mcps')
+    .update(updates)
+    .eq('id', mcpId)
+    .select();
+
+  if (error) {
+    console.error('Error updating repo details in Supabase:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
  * Refreshes the README for an MCP if needed
  * @param mcp MCP object with repository info and last_refreshed
  * @returns Promise resolving to the updated MCP or the original if refresh wasn't needed
@@ -193,22 +249,45 @@ export async function refreshReadmeIfNeeded(mcp: any): Promise<any> {
       return mcp; // README is fresh enough, return the original MCP
     }
 
-    // Fetch fresh README content from GitHub using owner_username and repository_name if available
+    let owner = '';
+    let repo = '';
+
+    // Get the owner and repo from the MCP data
+    if (mcp.owner_username && mcp.repository_name) {
+      owner = mcp.owner_username;
+      repo = mcp.repository_name;
+    } else if (mcp.repository_url) {
+      const githubUrl = mcp.repository_url.replace(/\/+$/, '');
+      const parts = githubUrl.split('/');
+      owner = parts[parts.length - 2];
+      repo = parts[parts.length - 1];
+    }
+
+    // Fetch fresh README content from GitHub
     const { readme } = await fetchGithubReadme(
       mcp.repository_url,
-      mcp.owner_username,
-      mcp.repository_name
+      owner,
+      repo
     );
-
-    // If the README content hasn't changed, just update the timestamp
-    if (readme === mcp.readme) {
-      await updateMcpReadme(mcp.id, mcp.readme);
-      return { ...mcp, last_refreshed: new Date().toISOString() };
-    }
 
     // Update the README content in Supabase
     const updatedData = await updateMcpReadme(mcp.id, readme);
-    return updatedData[0] || { ...mcp, readme, last_refreshed: new Date().toISOString() };
+
+    // Fetch and update repository details including star count
+    try {
+      const repoDetails = await fetchRepoDetails(owner, repo);
+      await updateMcpRepoDetails(mcp.id, repoDetails);
+
+      // Add the star count to the return object
+      return {
+        ...(updatedData[0] || { ...mcp, readme, last_refreshed: new Date().toISOString() }),
+        stars: repoDetails.stargazers_count
+      };
+    } catch (repoError) {
+      console.error('Error fetching repo details:', repoError);
+      // Return with updated README but without repo details
+      return updatedData[0] || { ...mcp, readme, last_refreshed: new Date().toISOString() };
+    }
   } catch (error) {
     console.error('Error refreshing README:', error);
     // Return the original MCP if refresh fails
