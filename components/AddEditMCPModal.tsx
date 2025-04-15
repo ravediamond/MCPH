@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from 'lib/supabaseClient';
 
+interface TagItem {
+    id: number;
+    name: string;
+    description: string | null;
+    icon: string | null;
+}
+
 interface AddEditMCPModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -26,8 +33,17 @@ export default function AddEditMCPModal({
     const [isMCPHOwned, setIsMCPHOwned] = useState(false); // State to track MCPH ownership option
     // New state variables
     const [deploymentUrl, setDeploymentUrl] = useState('');
-    const [tagInput, setTagInput] = useState('');
-    const [tags, setTags] = useState<string[]>([]);
+
+    // Updated tag states for structured categories
+    const [customTagInput, setCustomTagInput] = useState('');
+    const [customTags, setCustomTags] = useState<string[]>([]);
+    const [selectedDomainTags, setSelectedDomainTags] = useState<string[]>([]);
+    const [selectedDeploymentTypes, setSelectedDeploymentTypes] = useState<string[]>([]);
+
+    // State for database tags
+    const [domainCategories, setDomainCategories] = useState<TagItem[]>([]);
+    const [deploymentTypes, setDeploymentTypes] = useState<TagItem[]>([]);
+    const [loadingTags, setLoadingTags] = useState(false);
 
     // Fetch current user's email to auto-fill author
     // and check if the user is an admin
@@ -51,32 +67,86 @@ export default function AddEditMCPModal({
         fetchUser();
     }, []);
 
-    // Handle tag input
-    const handleTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTagInput(e.target.value);
+    // Fetch tags from the database
+    useEffect(() => {
+        async function fetchTags() {
+            setLoadingTags(true);
+            try {
+                // Fetch domain tags
+                const { data: domainData, error: domainError } = await supabase
+                    .rpc('get_tags_by_category', { category_name: 'domain' });
+
+                if (domainError) {
+                    console.error('Error fetching domain tags:', domainError);
+                } else {
+                    setDomainCategories(domainData || []);
+                }
+
+                // Fetch deployment tags
+                const { data: deploymentData, error: deploymentError } = await supabase
+                    .rpc('get_tags_by_category', { category_name: 'deployment' });
+
+                if (deploymentError) {
+                    console.error('Error fetching deployment tags:', deploymentError);
+                } else {
+                    setDeploymentTypes(deploymentData || []);
+                }
+            } catch (error) {
+                console.error('Error fetching tags:', error);
+            } finally {
+                setLoadingTags(false);
+            }
+        }
+
+        if (isOpen) {
+            fetchTags();
+        }
+    }, [isOpen]);
+
+    // Handle custom tag input
+    const handleCustomTagInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setCustomTagInput(e.target.value);
     };
 
-    const addTag = () => {
-        if (tagInput.trim()) {
+    const addCustomTag = () => {
+        if (customTagInput.trim()) {
             // Check if the tag already exists
-            if (!tags.includes(tagInput.trim().toLowerCase())) {
-                setTags([...tags, tagInput.trim().toLowerCase()]);
+            if (!customTags.includes(customTagInput.trim().toLowerCase())) {
+                setCustomTags([...customTags, customTagInput.trim().toLowerCase()]);
             }
-            setTagInput('');
+            setCustomTagInput('');
         }
     };
 
     const handleTagKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
-            addTag();
+            addCustomTag();
         }
     };
 
-    const removeTag = (index: number) => {
-        const newTags = [...tags];
+    const removeCustomTag = (index: number) => {
+        const newTags = [...customTags];
         newTags.splice(index, 1);
-        setTags(newTags);
+        setCustomTags(newTags);
+    };
+
+    // Handle domain category selection
+    const toggleDomainTag = (tag: string) => {
+        if (selectedDomainTags.includes(tag)) {
+            setSelectedDomainTags(selectedDomainTags.filter(t => t !== tag));
+        } else {
+            setSelectedDomainTags([...selectedDomainTags, tag]);
+        }
+    };
+
+    // Handle deployment type selection
+    const toggleDeploymentType = (type: string) => {
+        if (selectedDeploymentTypes.includes(type)) {
+            setSelectedDeploymentTypes(selectedDeploymentTypes.filter(t => t !== type));
+        } else {
+            setSelectedDeploymentTypes([...selectedDeploymentTypes, type]);
+        }
     };
 
     // Automatically fetch repository details when the URL input loses focus
@@ -155,6 +225,11 @@ export default function AddEditMCPModal({
             return;
         }
 
+        // Combine all tags with prefixes for domain and deployment types
+        const formattedDomainTags = selectedDomainTags.map(tag => `domain:${tag}`);
+        const formattedDeploymentTags = selectedDeploymentTypes.map(type => `deployment:${type}`);
+        const allTags = [...formattedDomainTags, ...formattedDeploymentTags, ...customTags];
+
         // Insert the new MCP entry into the 'mcps' table
         const { error } = await supabase
             .from('mcps')
@@ -168,7 +243,7 @@ export default function AddEditMCPModal({
                 deployment_url: deploymentUrl.trim() || null,
                 author: author,
                 user_id: user.id,
-                tags: tags.length > 0 ? tags : null,
+                tags: allTags.length > 0 ? allTags : null,
                 is_mcph_owned: isMCPHOwned, // Add MCPH ownership flag
             });
         if (error) {
@@ -186,7 +261,9 @@ export default function AddEditMCPModal({
             setDeploymentUrl('');
             setVersion('1.0.0');
             setDescription('');
-            setTags([]);
+            setCustomTags([]);
+            setSelectedDomainTags([]);
+            setSelectedDeploymentTypes([]);
             setIsMCPHOwned(false); // Reset MCPH ownership flag
         }
     };
@@ -198,9 +275,9 @@ export default function AddEditMCPModal({
                 <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
 
                 {/* Modal Content */}
-                <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 z-10">
+                <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 z-10 max-h-[90vh] overflow-y-auto">
                     {/* Header */}
-                    <div className="px-6 py-4 border-b border-gray-200">
+                    <div className="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white z-10">
                         <h2 className="text-xl font-semibold text-gray-800">Add New MCP</h2>
                         <button
                             onClick={onClose}
@@ -292,38 +369,101 @@ export default function AddEditMCPModal({
                                 />
                             </div>
 
-                            {/* Tags */}
+                            {/* Domain/Functional Categories */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Tags/Categories
+                                    Domain/Functional Categories
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    Select one or more categories that best describe your MCP's function or sector.
+                                </p>
+                                {loadingTags ? (
+                                    <div className="flex items-center justify-center p-4">
+                                        <div className="w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+                                        <span className="ml-2 text-sm text-gray-600">Loading categories...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+                                        {domainCategories.map((category) => (
+                                            <button
+                                                key={category.id}
+                                                type="button"
+                                                onClick={() => toggleDomainTag(category.name)}
+                                                className={`text-xs py-1 px-2 rounded-full border ${selectedDomainTags.includes(category.name)
+                                                        ? 'bg-blue-500 text-white border-blue-500'
+                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {category.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Deployment Types */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Deployment Types
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    Select how your MCP is typically deployed. You can select both if applicable.
+                                </p>
+                                {loadingTags ? (
+                                    <div className="flex items-center justify-center p-2">
+                                        <div className="w-4 h-4 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {deploymentTypes.map((type) => (
+                                            <button
+                                                key={type.id}
+                                                type="button"
+                                                onClick={() => toggleDeploymentType(type.name)}
+                                                className={`text-xs py-1 px-2 rounded-full border ${selectedDeploymentTypes.includes(type.name)
+                                                        ? 'bg-blue-500 text-white border-blue-500'
+                                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                {type.icon} {type.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Custom Tags */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Additional Tags (Optional)
                                 </label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        value={tagInput}
-                                        onChange={handleTagInputChange}
+                                        value={customTagInput}
+                                        onChange={handleCustomTagInputChange}
                                         onKeyDown={handleTagKeyDown}
-                                        placeholder="Enter tags (comma or enter to add)"
+                                        placeholder="Enter custom tags (comma or enter to add)"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md pr-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                     <button
-                                        onClick={addTag}
+                                        onClick={addCustomTag}
                                         className="absolute right-1 top-1 h-8 px-3 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
                                     >
                                         Add
                                     </button>
                                 </div>
 
-                                {tags.length > 0 && (
+                                {customTags.length > 0 && (
                                     <div className="flex flex-wrap mt-2 gap-2">
-                                        {tags.map((tag, index) => (
+                                        {customTags.map((tag, index) => (
                                             <span
                                                 key={index}
-                                                className="inline-flex items-center rounded-full bg-blue-500 px-3 py-1 text-sm text-white"
+                                                className="inline-flex items-center rounded-full bg-gray-400 px-3 py-1 text-sm text-white"
                                             >
                                                 {tag}
                                                 <button
-                                                    onClick={() => removeTag(index)}
+                                                    onClick={() => removeCustomTag(index)}
                                                     className="ml-1 text-white hover:text-gray-200"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -334,10 +474,26 @@ export default function AddEditMCPModal({
                                         ))}
                                     </div>
                                 )}
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Add relevant tags for better discoverability
-                                </p>
                             </div>
+
+                            {/* Selected Tags Summary */}
+                            {(selectedDomainTags.length > 0 || selectedDeploymentTypes.length > 0) && (
+                                <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-1">Selected Tags:</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedDomainTags.map((tag) => (
+                                            <span key={tag} className="inline-flex items-center rounded-full bg-blue-500 px-3 py-1 text-xs text-white">
+                                                {tag}
+                                            </span>
+                                        ))}
+                                        {selectedDeploymentTypes.map((type) => (
+                                            <span key={type} className="inline-flex items-center rounded-full bg-green-500 px-3 py-1 text-xs text-white">
+                                                {deploymentTypes.find(t => t.name === type)?.icon || ''} {type}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* MCPH Ownership */}
                             {isAdmin && (
@@ -367,7 +523,7 @@ export default function AddEditMCPModal({
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 sticky bottom-0 bg-white z-10">
                         <button
                             onClick={onClose}
                             className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100"

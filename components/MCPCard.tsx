@@ -53,6 +53,32 @@ export default function MCPCard({
     }
   };
 
+  // Process tags to separate them by type
+  const processTags = () => {
+    if (!mcp.tags || !Array.isArray(mcp.tags) || mcp.tags.length === 0) {
+      return {
+        domainTags: [],
+        deploymentTags: [],
+        customTags: [],
+      };
+    }
+
+    return {
+      domainTags: mcp.tags.filter((tag: string) => tag.startsWith('domain:')).map((tag: string) => tag.replace('domain:', '')),
+      deploymentTags: mcp.tags.filter((tag: string) => tag.startsWith('deployment:')).map((tag: string) => tag.replace('deployment:', '')),
+      customTags: mcp.tags.filter((tag: string) => !tag.startsWith('domain:') && !tag.startsWith('deployment:'))
+    };
+  };
+
+  const { domainTags, deploymentTags, customTags } = processTags();
+
+  // Helper function to get deployment icon
+  const getDeploymentIcon = (type: string) => {
+    if (type === "Deployed") return "☁️";
+    if (type === "Self-Hosted") return "🏠";
+    return "";
+  };
+
   return (
     <div
       className="relative bg-white border border-gray-200 rounded-xl p-6 w-full cursor-pointer transition-all hover:shadow-lg overflow-hidden"
@@ -84,13 +110,41 @@ export default function MCPCard({
         {mcp.description || 'No description provided'}
       </p>
 
-      {/* Tags */}
-      {mcp.tags && mcp.tags.length > 0 && (
+      {/* Deployment Tags */}
+      {deploymentTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
-          {mcp.tags.map((tag: string, index: number) => (
+          {deploymentTags.map((tag: string, index: number) => (
             <span
-              key={index}
+              key={`deployment-${index}`}
+              className="text-sm bg-green-50 text-green-600 px-2 py-1 rounded-full break-words flex items-center"
+            >
+              {getDeploymentIcon(tag)} {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Domain Tags */}
+      {domainTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {domainTags.map((tag: string, index: number) => (
+            <span
+              key={`domain-${index}`}
               className="text-sm bg-blue-50 text-blue-600 px-2 py-1 rounded-full break-words"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Custom Tags */}
+      {customTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {customTags.map((tag: string, index: number) => (
+            <span
+              key={`custom-${index}`}
+              className="text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded-full break-words"
             >
               {tag}
             </span>
