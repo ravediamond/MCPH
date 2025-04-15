@@ -21,6 +21,8 @@ import {
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
+// Import SupabaseProvider
+import SupabaseProvider from 'app/supabase-provider';
 
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
@@ -34,8 +36,10 @@ interface MCPDetailProps {
 }
 
 export default function MCPDetail({ params }: MCPDetailProps) {
-  const { id } = params;
+  // Extract id from params
+  const id = params.id;
   const [mcp, setMCP] = useState<MCP | null>(null);
+  // Rest of the code remains unchanged
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readme, setReadme] = useState<string>('');
@@ -492,8 +496,8 @@ export default function MCPDetail({ params }: MCPDetailProps) {
               <button
                 onClick={() => setActiveTab('readme')}
                 className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'readme'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 <FaFileAlt className="mr-2" /> README
@@ -501,8 +505,8 @@ export default function MCPDetail({ params }: MCPDetailProps) {
               <button
                 onClick={() => setActiveTab('reviews')}
                 className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'reviews'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
                   }`}
               >
                 <FaComment className="mr-2" /> Reviews {mcp.review_count ? `(${mcp.review_count})` : ''}
@@ -559,7 +563,11 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             {activeTab === 'reviews' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6">
-                  {mcp && mcp.id && <Reviews mcpId={mcp.id} />}
+                  {mcp && mcp.id && (
+                    <SupabaseProvider>
+                      <Reviews mcpId={mcp.id} />
+                    </SupabaseProvider>
+                  )}
                 </div>
               </div>
             )}

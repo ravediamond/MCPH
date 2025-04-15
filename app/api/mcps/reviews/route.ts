@@ -16,23 +16,21 @@ export async function GET(request: NextRequest) {
             );
         }
 
+        // Fix the createRouteHandlerClient call to pass cookies as a function
         const supabase = createRouteHandlerClient({ cookies });
 
+        // Modified select query to avoid using a join that requires a foreign key relationship
         const { data, error } = await supabase
             .from('reviews')
             .select(`
-        id,
-        created_at,
-        updated_at,
-        mcp_id,
-        user_id,
-        rating,
-        comment,
-        profiles:user_id (
-          username,
-          email
-        )
-      `)
+                id,
+                created_at,
+                updated_at,
+                mcp_id,
+                user_id,
+                rating,
+                comment
+            `)
             .eq('mcp_id', mcpId)
             .order('created_at', { ascending: false });
 
@@ -42,6 +40,32 @@ export async function GET(request: NextRequest) {
                 JSON.stringify({ error: 'Failed to fetch reviews' }),
                 { status: 500 }
             );
+        }
+
+        // If reviews are found, fetch user information separately
+        let reviewsWithUserInfo = [];
+        if (data && data.length > 0) {
+            for (const review of data) {
+                // Get user info for each review
+                const { data: userData, error: userError } = await supabase
+                    .from('profiles')
+                    .select('username, email')
+                    .eq('id', review.user_id)
+                    .single();
+
+                if (!userError && userData) {
+                    reviewsWithUserInfo.push({
+                        ...review,
+                        user: userData
+                    });
+                } else {
+                    // If user not found, still include the review but with null user
+                    reviewsWithUserInfo.push({
+                        ...review,
+                        user: null
+                    });
+                }
+            }
         }
 
         // Get the rating distribution
@@ -76,7 +100,7 @@ export async function GET(request: NextRequest) {
 
         return new NextResponse(
             JSON.stringify({
-                reviews: data,
+                reviews: reviewsWithUserInfo,
                 stats: {
                     avg_rating: mcpData?.avg_rating || 0,
                     review_count: mcpData?.review_count || 0,
@@ -97,6 +121,7 @@ export async function GET(request: NextRequest) {
 // POST endpoint to add a new review
 export async function POST(request: NextRequest) {
     try {
+        // Fix the createRouteHandlerClient call to pass cookies as a function
         const supabase = createRouteHandlerClient({ cookies });
 
         // Check if user is authenticated
@@ -204,6 +229,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
+        // Fix the createRouteHandlerClient call to pass cookies as a function
         const supabase = createRouteHandlerClient({ cookies });
 
         // Check if user is authenticated

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
     try {
@@ -13,10 +14,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Increment the view count for the specified MCP
+        // Fix the createRouteHandlerClient call to pass cookies as a function
+        const supabase = createRouteHandlerClient({ cookies });
+
+        // First get the current view count
+        const { data: mcpData, error: fetchError } = await supabase
+            .from('mcps')
+            .select('view_count')
+            .eq('id', mcpId)
+            .single();
+
+        if (fetchError) {
+            console.error('Error fetching MCP:', fetchError);
+            return NextResponse.json(
+                { error: 'Failed to fetch MCP data' },
+                { status: 500 }
+            );
+        }
+
+        // Calculate new view count
+        const currentViewCount = mcpData.view_count || 0;
+        const newViewCount = currentViewCount + 1;
+
+        // Update the view count directly instead of using RPC
         const { data, error } = await supabase
             .from('mcps')
-            .update({ view_count: supabase.rpc('increment_view_count', { row_id: mcpId }) })
+            .update({ view_count: newViewCount })
             .eq('id', mcpId)
             .select('view_count')
             .single();
