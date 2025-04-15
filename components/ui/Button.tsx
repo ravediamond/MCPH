@@ -27,10 +27,10 @@ export default function Button({
     const baseClasses = 'font-medium rounded-md transition-all inline-flex items-center justify-center';
 
     const variantClasses = {
-        primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-primary-300 focus:ring-offset-1',
-        secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-2 focus:ring-secondary-300 focus:ring-offset-1',
-        outline: 'bg-transparent border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-2 focus:ring-primary-300 focus:ring-offset-1',
-        ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-2 focus:ring-primary-300',
+        primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-2 focus:ring-primary-200 focus:ring-offset-1',
+        secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-2 focus:ring-gray-200 focus:ring-offset-1',
+        outline: 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-primary-100 focus:ring-offset-1',
+        ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200',
     };
 
     const sizeClasses = {

@@ -32,30 +32,32 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       rounded-md
       border
       shadow-sm
-      focus:ring-2
-      focus:ring-blue-500
-      focus:border-blue-500
+      focus:ring-1
+      focus:ring-primary-300
+      focus:border-primary-400
       block
+      transition-colors
       ${isFullWidth ? 'w-full' : ''}
-      ${error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}
+      ${error ? 'border-red-400' : 'border-gray-200'}
       ${sizeClasses[size]}
       ${leftElement ? 'pl-10' : ''}
       ${rightElement ? 'pr-10' : ''}
-      bg-white dark:bg-gray-700
-      text-gray-900 dark:text-white
+      bg-white
+      text-gray-800
+      placeholder-gray-400
       ${className}
     `;
 
         return (
             <div className={`${isFullWidth ? 'w-full' : ''}`}>
                 {label && (
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                         {label}
                     </label>
                 )}
                 <div className="relative">
                     {leftElement && (
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                             {leftElement}
                         </div>
                     )}
@@ -65,13 +67,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         {...rest}
                     />
                     {rightElement && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                             {rightElement}
                         </div>
                     )}
                 </div>
                 {helperText && !error && (
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helperText}</p>
+                    <p className="mt-1 text-xs text-gray-500">{helperText}</p>
                 )}
                 {error && (
                     <p className="mt-1 text-xs text-red-500">{error}</p>

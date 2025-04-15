@@ -11,11 +11,11 @@ export default function Card({ children, className = '', hoverable = false }: Ca
         <div
             className={`
         bg-white 
-        border border-neutral-200 
+        border border-gray-200 
         rounded-lg 
-        shadow-soft 
+        shadow-sm 
         overflow-hidden
-        ${hoverable ? 'transition-all duration-200 hover:shadow-medium hover:border-neutral-300' : ''}
+        ${hoverable ? 'transition-all duration-200 hover:shadow hover:border-gray-300' : ''}
         ${className}
       `}
         >
@@ -31,7 +31,7 @@ interface CardHeaderProps {
 
 Card.Header = function CardHeader({ children, className = '' }: CardHeaderProps) {
     return (
-        <div className={`px-5 py-4 border-b border-neutral-200 ${className}`}>
+        <div className={`px-5 py-4 border-b border-gray-200 ${className}`}>
             {children}
         </div>
     );
@@ -57,7 +57,7 @@ interface CardFooterProps {
 
 Card.Footer = function CardFooter({ children, className = '' }: CardFooterProps) {
     return (
-        <div className={`px-5 py-4 bg-neutral-50 border-t border-neutral-200 ${className}`}>
+        <div className={`px-5 py-4 bg-gray-50 border-t border-gray-200 ${className}`}>
             {children}
         </div>
     );

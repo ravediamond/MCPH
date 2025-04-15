@@ -150,17 +150,17 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
 
     return (
         <div className="w-full my-8">
-            <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Reviews</h2>
 
             {/* Review Summary */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+            <div className="bg-white border border-gray-200 p-4 rounded-lg mb-6 shadow-sm">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
                     <div className="flex items-center mb-2 md:mb-0">
-                        <StarRating initialRating={stats.avg_rating} readOnly size={28} />
-                        <span className="ml-2 text-xl font-bold">
+                        <StarRating initialRating={stats.avg_rating} readOnly size={24} />
+                        <span className="ml-2 text-lg font-medium text-gray-800">
                             {stats.avg_rating ? stats.avg_rating.toFixed(1) : '0.0'}
                         </span>
-                        <span className="ml-2 text-gray-500">
+                        <span className="ml-2 text-gray-500 text-sm">
                             ({stats.review_count} {stats.review_count === 1 ? 'review' : 'reviews'})
                         </span>
                     </div>
@@ -172,8 +172,8 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                                 const percentage = stats.review_count > 0 ? (count / stats.review_count) * 100 : 0;
                                 return (
                                     <div key={rating} className="flex items-center my-1">
-                                        <span className="w-8 text-sm">{rating} ★</span>
-                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-2">
+                                        <span className="w-8 text-sm text-gray-600">{rating} ★</span>
+                                        <div className="w-full bg-gray-100 rounded-full h-2 mx-2">
                                             <div
                                                 className="bg-yellow-400 h-2 rounded-full"
                                                 style={{ width: `${percentage}%` }}
@@ -191,19 +191,19 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
             {/* Add/Edit Review Section */}
             {session ? (
                 userReview && !editing ? (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
+                    <div className="bg-primary-50 p-4 rounded-lg mb-6 border border-primary-100">
                         <div className="flex justify-between items-start">
-                            <h3 className="font-semibold mb-2">Your Review</h3>
+                            <h3 className="font-medium text-gray-800 mb-2">Your Review</h3>
                             <div className="flex space-x-2">
                                 <button
                                     onClick={() => setEditing(true)}
-                                    className="text-blue-500 hover:text-blue-700"
+                                    className="text-gray-500 hover:text-primary-600 transition-colors p-1"
                                 >
                                     <FaEdit />
                                 </button>
                                 <button
                                     onClick={handleDeleteReview}
-                                    className="text-red-500 hover:text-red-700"
+                                    className="text-gray-500 hover:text-red-500 transition-colors p-1"
                                 >
                                     <FaTrash />
                                 </button>
@@ -215,7 +215,7 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                         </div>
 
                         {userReview.comment && (
-                            <p className="text-sm mb-2">{userReview.comment}</p>
+                            <p className="text-sm text-gray-700 mb-2">{userReview.comment}</p>
                         )}
 
                         <div className="text-xs text-gray-500 flex items-center">
@@ -224,27 +224,27 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-                        <h3 className="font-semibold mb-4">
+                    <div className="bg-white p-4 rounded-lg mb-6 border border-gray-200 shadow-sm">
+                        <h3 className="font-medium text-gray-800 mb-4">
                             {editing ? 'Edit Your Review' : 'Write a Review'}
                         </h3>
 
                         <div className="mb-4">
-                            <label htmlFor="rating" className="block mb-2">Rating</label>
+                            <label htmlFor="rating" className="block mb-2 text-sm text-gray-700">Rating</label>
                             <StarRating
                                 initialRating={newReviewRating}
                                 onChange={(rating) => setNewReviewRating(rating)}
-                                size={32}
+                                size={28}
                             />
                         </div>
 
                         <div className="mb-4">
-                            <label htmlFor="comment" className="block mb-2">Comment (optional)</label>
+                            <label htmlFor="comment" className="block mb-2 text-sm text-gray-700">Comment (optional)</label>
                             <textarea
                                 id="comment"
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                                className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                                className="w-full p-2 border border-gray-200 rounded-md shadow-sm focus:ring-1 focus:ring-primary-300 focus:border-primary-400"
                                 rows={4}
                                 placeholder="Share your experience with this MCP..."
                             />
@@ -258,7 +258,7 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                                         setNewReviewRating(userReview?.rating || 0);
                                         setComment(userReview?.comment || '');
                                     }}
-                                    className="py-2 px-4 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+                                    className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -266,7 +266,7 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                             <button
                                 onClick={handleSubmitReview}
                                 disabled={submitting || newReviewRating < 1}
-                                className={`py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded ml-auto ${submitting || newReviewRating < 1 ? 'opacity-50 cursor-not-allowed' : ''
+                                className={`py-2 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors ml-auto ${submitting || newReviewRating < 1 ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                             >
                                 {submitting ? 'Submitting...' : editing ? 'Update Review' : 'Submit Review'}
@@ -275,23 +275,23 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                     </div>
                 )
             ) : (
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6 text-center">
-                    <p>Please sign in to leave a review</p>
+                <div className="bg-white p-4 rounded-lg mb-6 text-center border border-gray-200 shadow-sm">
+                    <p className="text-gray-600">Please sign in to leave a review</p>
                 </div>
             )}
 
             {/* Reviews List */}
             {loading ? (
-                <div className="text-center">Loading reviews...</div>
+                <div className="text-center p-4">Loading reviews...</div>
             ) : reviews.length > 0 ? (
-                <div>
+                <div className="divide-y divide-gray-200">
                     {reviews.map((review) => (
-                        <div key={review.id} className="border-b dark:border-gray-700 py-4">
+                        <div key={review.id} className="py-4">
                             <div className="flex justify-between">
                                 <div>
                                     <div className="flex items-center">
                                         <StarRating initialRating={review.rating} readOnly size={16} />
-                                        <span className="ml-2 font-semibold">
+                                        <span className="ml-2 font-medium text-gray-800">
                                             {review.user?.username || 'Anonymous User'}
                                         </span>
                                     </div>
@@ -312,13 +312,13 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
                             </div>
 
                             {review.comment && (
-                                <p className="mt-2 text-sm">{review.comment}</p>
+                                <p className="mt-2 text-sm text-gray-700">{review.comment}</p>
                             )}
                         </div>
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-6 border-t dark:border-gray-700">
+                <div className="text-center py-6 border-t border-gray-200">
                     <p className="text-gray-500">No reviews yet. Be the first to review this MCP!</p>
                 </div>
             )}

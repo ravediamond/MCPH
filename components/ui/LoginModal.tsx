@@ -69,7 +69,7 @@ export default function LoginModal() {
 
     if (loading) {
         return (
-            <div className="animate-pulse bg-gray-300 h-8 w-24 rounded-md"></div>
+            <div className="animate-pulse bg-gray-200 h-8 w-24 rounded-md"></div>
         );
     }
 
@@ -78,7 +78,7 @@ export default function LoginModal() {
             <div className="relative">
                 <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center space-x-2 text-neutral-700 hover:text-blue-600 transition-colors"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors"
                 >
                     <FaUserCircle className="h-5 w-5" />
                     <span className="font-medium text-sm">
@@ -87,16 +87,16 @@ export default function LoginModal() {
                 </button>
 
                 {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
-                        <Link href="/profile" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600">
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-sm py-1 z-20 border border-gray-200">
+                        <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600">
                             Profile
                         </Link>
-                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600">
+                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600">
                             Dashboard
                         </Link>
                         <button
                             onClick={handleLogout}
-                            className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-blue-50 hover:text-blue-600"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600"
                         >
                             Sign out
                         </button>
@@ -109,7 +109,7 @@ export default function LoginModal() {
     return (
         <>
             <button
-                className="text-sm font-medium bg-neutral-800 text-white px-4 py-2 rounded-md hover:bg-neutral-700 transition-colors"
+                className="text-sm font-medium bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors"
                 onClick={onOpen}
             >
                 Login with GitHub
@@ -119,18 +119,18 @@ export default function LoginModal() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     {/* Modal Backdrop */}
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+                        className="fixed inset-0 bg-black bg-opacity-30 transition-opacity"
                         onClick={onClose}
                     />
 
                     {/* Modal Content */}
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-md z-50 overflow-hidden relative">
+                    <div className="bg-white rounded-lg shadow-md w-full max-w-md z-50 overflow-hidden relative">
                         {/* Header */}
                         <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-medium">Login with GitHub</h3>
+                            <h3 className="text-lg font-medium text-gray-800">Login with GitHub</h3>
                             <button
                                 onClick={onClose}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
                                 aria-label="Close"
                             >
                                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,7 +141,7 @@ export default function LoginModal() {
 
                         {/* Body */}
                         <div className="px-6 py-4">
-                            <p className="mb-4">
+                            <p className="mb-4 text-gray-600">
                                 Proceed to login with your GitHub account by clicking the button below.
                             </p>
                         </div>
@@ -149,7 +149,7 @@ export default function LoginModal() {
                         {/* Footer */}
                         <div className="px-6 py-3 bg-gray-50 flex justify-end space-x-3">
                             <button
-                                className="bg-[#24292e] hover:bg-[#1b1f23] active:bg-[#141619] text-white px-4 py-2 rounded flex items-center"
+                                className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md flex items-center transition-colors"
                                 onClick={() => {
                                     handleLogin();
                                     onClose();
@@ -159,7 +159,7 @@ export default function LoginModal() {
                                 Continue with GitHub
                             </button>
                             <button
-                                className="text-gray-700 bg-transparent hover:bg-gray-100 px-4 py-2 rounded"
+                                className="text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 px-4 py-2 rounded-md transition-colors"
                                 onClick={onClose}
                             >
                                 Cancel

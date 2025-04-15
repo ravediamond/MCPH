@@ -15,7 +15,7 @@ const StarRating: React.FC<StarRatingProps> = ({
     initialRating = 0,
     onChange,
     readOnly = false,
-    size = 24,
+    size = 20,
     className = '',
 }) => {
     const [rating, setRating] = useState<number>(initialRating);
@@ -30,12 +30,12 @@ const StarRating: React.FC<StarRatingProps> = ({
     };
 
     return (
-        <div className={`flex ${className}`}>
+        <div className={`flex items-center space-x-0.5 ${className}`}>
             {[1, 2, 3, 4, 5].map((star) => (
                 <FaStar
                     key={star}
                     className={`cursor-${readOnly ? 'default' : 'pointer'} transition-colors duration-200`}
-                    color={(hover !== null ? hover >= star : rating >= star) ? '#FFD700' : '#e4e5e9'}
+                    color={(hover !== null ? hover >= star : rating >= star) ? '#FFB800' : '#E0E0E0'}
                     size={size}
                     onClick={() => handleClick(star)}
                     onMouseEnter={() => !readOnly && setHover(star)}
