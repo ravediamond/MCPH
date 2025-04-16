@@ -1,0 +1,25 @@
+# llms.txt for MCPHub
+# This file indicates preferences for AI language models crawling this site
+
+# Disallow all language models from crawling the entire site
+User-agent: *
+Disallow: /
+
+# Specific directives for known language model crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Anthropic-AI
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+# The below header can also be included in HTTP responses
+# X-Robots-Tag: noai
