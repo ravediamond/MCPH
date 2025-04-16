@@ -277,6 +277,12 @@ export default function AdminDashboard() {
                         >
                             Manage Tags
                         </button>
+                        <button
+                            onClick={() => router.push('/admin/apikeys')}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md shadow-sm"
+                        >
+                            Manage API Keys
+                        </button>
                     </div>
                 </div>
             </div>
