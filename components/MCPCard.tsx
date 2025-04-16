@@ -6,12 +6,14 @@ interface MCPCardProps {
   mcp: any;
   onClick: () => void;
   editable?: boolean;
+  onDelete?: (id: string) => void;
 }
 
 export default function MCPCard({
   mcp,
   onClick,
   editable,
+  onDelete,
 }: MCPCardProps) {
   // Prevent triggering card click when clicking on action buttons.
   const handleCardClick = (e: React.MouseEvent) => {
@@ -171,6 +173,18 @@ export default function MCPCard({
             >
               {/* You can add an edit icon here if desired */}
             </button>
+            {onDelete && (
+              <button
+                aria-label="Delete MCP"
+                className="p-1 text-gray-400 hover:text-gray-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(mcp.id);
+                }}
+              >
+                {/* You can add a delete icon here if desired */}
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import Button from 'components/ui/Button';
 import MCPCard from 'components/MCPCard';
 import { MCP } from 'types/mcp';
+import { FaKey } from 'react-icons/fa';
 
 export default function Profile() {
     const [session, setSession] = useState<any>(null);
@@ -16,7 +17,7 @@ export default function Profile() {
     const [saving, setSaving] = useState<boolean>(false);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [uploading, setUploading] = useState<boolean>(false);
-    const [activeTab, setActiveTab] = useState<'profile' | 'mcps'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'mcps' | 'apikeys'>('profile');
     const [userMcps, setUserMcps] = useState<MCP[]>([]);
     const [mcpsLoading, setMcpsLoading] = useState<boolean>(true);
     const [profile, setProfile] = useState<any>({
@@ -300,22 +301,31 @@ export default function Profile() {
                         {/* Navigation Tabs */}
                         <div className="flex border-b border-neutral-200 mb-6">
                             <button
-                                className={`py-3 px-4 font-medium text-sm flex-1 ${activeTab === 'profile'
-                                        ? 'text-blue-600 border-b-2 border-blue-600'
-                                        : 'text-neutral-500 hover:text-neutral-800'
+                                className={`py-3 px-4 font-medium text-sm ${activeTab === 'profile'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-neutral-500 hover:text-neutral-800'
                                     }`}
                                 onClick={() => setActiveTab('profile')}
                             >
                                 Profile Details
                             </button>
                             <button
-                                className={`py-3 px-4 font-medium text-sm flex-1 ${activeTab === 'mcps'
-                                        ? 'text-blue-600 border-b-2 border-blue-600'
-                                        : 'text-neutral-500 hover:text-neutral-800'
+                                className={`py-3 px-4 font-medium text-sm ${activeTab === 'mcps'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-neutral-500 hover:text-neutral-800'
                                     }`}
                                 onClick={() => setActiveTab('mcps')}
                             >
                                 My MCPs
+                            </button>
+                            <button
+                                className={`py-3 px-4 font-medium text-sm ${activeTab === 'apikeys'
+                                    ? 'text-blue-600 border-b-2 border-blue-600'
+                                    : 'text-neutral-500 hover:text-neutral-800'
+                                    }`}
+                                onClick={() => setActiveTab('apikeys')}
+                            >
+                                API Keys
                             </button>
                         </div>
 
@@ -543,6 +553,50 @@ export default function Profile() {
                                         </svg>
                                         Back to Dashboard
                                     </Button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* API Keys Tab Content */}
+                        {activeTab === 'apikeys' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-bold text-neutral-800">Your API Keys</h2>
+                                    <Button
+                                        variant="primary"
+                                        className="px-4 py-2"
+                                        onClick={() => router.push('/profile/apikeys')}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-5 w-5 mr-2"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                                        </svg>
+                                        Manage API Keys
+                                    </Button>
+                                </div>
+                                <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6">
+                                    <div className="flex items-center">
+                                        <div className="mr-4 text-blue-500">
+                                            <FaKey className="w-8 h-8" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-medium text-neutral-800">Access the MCPHub API</h3>
+                                            <p className="mt-1 text-neutral-600">
+                                                Create and manage API keys to access MCPHub resources programmatically.
+                                            </p>
+                                            <Button
+                                                variant="outline"
+                                                className="mt-3"
+                                                onClick={() => router.push('/profile/apikeys')}
+                                            >
+                                                Manage Keys
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
