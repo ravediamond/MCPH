@@ -26,7 +26,7 @@ export async function GET(request: Request) {
         const cacheKey = createFeaturedCacheKey(type, safeLimit);
 
         // Use cached fetch to avoid redundant database queries
-        return cachedFetch(
+        const resultData = await cachedFetch(
             cacheKey,
             async () => {
                 // Fields to select, reused across queries
@@ -59,14 +59,14 @@ export async function GET(request: Request) {
                         throw error;
                     }
 
-                    return NextResponse.json({
+                    return {
                         mcps: data,
                         meta: {
                             type: 'starred',
                             limit: safeLimit,
                             count: data.length
                         }
-                    });
+                    };
                 }
                 else if (type === 'trending') {
                     // Get date from 30 days ago
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
                         throw error;
                     }
 
-                    return NextResponse.json({
+                    return {
                         mcps: data,
                         meta: {
                             type: 'trending',
@@ -97,7 +97,7 @@ export async function GET(request: Request) {
                             count: data.length,
                             timeRange: '30 days'
                         }
-                    });
+                    };
                 }
                 else if (type === 'most-viewed') {
                     // Add a new category for most viewed MCPs
@@ -112,14 +112,14 @@ export async function GET(request: Request) {
                         throw error;
                     }
 
-                    return NextResponse.json({
+                    return {
                         mcps: data,
                         meta: {
                             type: 'most-viewed',
                             limit: safeLimit,
                             count: data.length
                         }
-                    });
+                    };
                 }
                 else if (type === 'highest-rated') {
                     // Add a new category for highest rated MCPs
@@ -136,23 +136,31 @@ export async function GET(request: Request) {
                         throw error;
                     }
 
-                    return NextResponse.json({
+                    return {
                         mcps: data,
                         meta: {
                             type: 'highest-rated',
                             limit: safeLimit,
                             count: data.length
                         }
-                    });
+                    };
                 }
 
-                return NextResponse.json({
+                return {
                     error: 'Invalid type parameter',
                     validTypes: ['starred', 'trending', 'most-viewed', 'highest-rated']
-                }, { status: 400 });
+                };
             },
             FEATURED_CACHE_TTL
         );
+
+        // Handle error case separately
+        if (resultData.error) {
+            return NextResponse.json(resultData, { status: 400 });
+        }
+
+        // Return fresh NextResponse with the cached data
+        return NextResponse.json(resultData);
     } catch (error) {
         console.error('Error fetching featured MCPs:', error);
         return NextResponse.json(
