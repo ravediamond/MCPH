@@ -1,19 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FaBars, FaTimes, FaUser } from 'react-icons/fa';
+import { usePathname, useRouter } from 'next/navigation';
+import { FaBars, FaTimes, FaUser, FaSignOutAlt, FaTachometerAlt, FaUserCircle } from 'react-icons/fa';
 import LoginModal from 'components/ui/LoginModal';
 import BrandIcon from 'components/ui/BrandIcon';
 import { useSupabase } from 'app/supabase-provider';
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const { supabase, session } = useSupabase();
     const pathname = usePathname();
+    const router = useRouter();
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isActive = (path: string) => pathname === path;
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/');
+    };
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsProfileDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <header className="bg-white border-b border-gray-100 sticky top-0 z-10 shadow-sm">
@@ -46,26 +68,48 @@ export default function Header() {
                         >
                             About
                         </Link>
-                        {session && (
-                            <Link
-                                href="/dashboard"
-                                className={`text-gray-600 hover:text-gray-900 font-medium ${isActive('/dashboard') ? 'text-gray-900 border-b-2 border-gray-900' : ''}`}
-                            >
-                                Dashboard
-                            </Link>
-                        )}
                     </nav>
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center">
                         {session ? (
-                            <Link
-                                href="/profile"
-                                className="flex items-center gap-2 px-4 py-2 text-primary-600 hover:text-primary-700 font-medium border border-primary-200 rounded-md hover:bg-primary-50 transition-colors"
-                            >
-                                <FaUser className="h-4 w-4" />
-                                <span>Profile</span>
-                            </Link>
+                            <div className="relative" ref={dropdownRef}>
+                                <button
+                                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                                    className="flex items-center gap-2 px-4 py-2 text-primary-600 hover:text-primary-700 font-medium border border-primary-200 rounded-md hover:bg-primary-50 transition-colors"
+                                >
+                                    <FaUser className="h-4 w-4" />
+                                    <span>Profile</span>
+                                </button>
+
+                                {isProfileDropdownOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-100">
+                                        <Link
+                                            href="/profile"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                            onClick={() => setIsProfileDropdownOpen(false)}
+                                        >
+                                            <FaUserCircle className="mr-2" /> My Profile
+                                        </Link>
+                                        <Link
+                                            href="/dashboard"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                            onClick={() => setIsProfileDropdownOpen(false)}
+                                        >
+                                            <FaTachometerAlt className="mr-2" /> Dashboard
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileDropdownOpen(false);
+                                                handleLogout();
+                                            }}
+                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                        >
+                                            <FaSignOutAlt className="mr-2" /> Log Out
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         ) : (
                             <LoginModal />
                         )}
@@ -121,16 +165,27 @@ export default function Header() {
                                         className={`text-gray-600 hover:text-gray-900 px-4 py-2 ${isActive('/dashboard') ? 'bg-gray-50 text-gray-900' : ''}`}
                                         onClick={() => setIsMenuOpen(false)}
                                     >
+                                        <FaTachometerAlt className="inline mr-2" />
                                         Dashboard
                                     </Link>
                                     <Link
                                         href="/profile"
-                                        className="flex items-center gap-2 mx-4 px-4 py-2 text-primary-600 bg-primary-50 rounded-md border border-primary-200"
+                                        className={`text-gray-600 hover:text-gray-900 px-4 py-2 ${isActive('/profile') ? 'bg-gray-50 text-gray-900' : ''}`}
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        <FaUser className="h-4 w-4" />
+                                        <FaUserCircle className="inline mr-2" />
                                         Profile
                                     </Link>
+                                    <button
+                                        onClick={() => {
+                                            setIsMenuOpen(false);
+                                            handleLogout();
+                                        }}
+                                        className="w-full text-left text-gray-600 hover:text-gray-900 px-4 py-2"
+                                    >
+                                        <FaSignOutAlt className="inline mr-2" />
+                                        Log Out
+                                    </button>
                                 </>
                             )}
                         </nav>
