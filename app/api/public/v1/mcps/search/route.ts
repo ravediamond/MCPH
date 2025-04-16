@@ -1,12 +1,31 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
+import { validateApiKey } from 'utils/apiKeyValidation';
 
 /**
  * Public API endpoint to search for MCPs
- * This is an example of a public-facing API that's properly versioned
- * and follows REST principles
+ * This endpoint requires an API key for authentication
+ * Follows REST principles and uses the same versioning as other public APIs
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+    // Validate API key
+    const apiKey = request.headers.get('x-api-key');
+    if (!apiKey) {
+        return NextResponse.json({
+            success: false,
+            error: 'API key is required'
+        }, { status: 401 });
+    }
+
+    // Validate the API key
+    const keyValidation = await validateApiKey(apiKey);
+    if (!keyValidation.valid || !keyValidation.key) {
+        return NextResponse.json({
+            success: false,
+            error: 'Invalid or expired API key'
+        }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const tags = searchParams.get('tags');

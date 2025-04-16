@@ -13,10 +13,11 @@ export default function ApiKeysManagement() {
     const [loading, setLoading] = useState(true);
     const [isAdmin, setIsAdmin] = useState(false);
     const [showNewKeyModal, setShowNewKeyModal] = useState(false);
-    const [newApiKey, setNewApiKey] = useState<{ name: string; description: string; expires_at: string | null }>({
+    const [newApiKey, setNewApiKey] = useState<{ name: string; description: string; expires_at: string | null; isAdminKey: boolean }>({
         name: '',
         description: '',
-        expires_at: null
+        expires_at: null,
+        isAdminKey: false
     });
     const [createdKey, setCreatedKey] = useState<{ id: string; key: string } | null>(null);
     const [showKey, setShowKey] = useState(false);
@@ -90,7 +91,8 @@ export default function ApiKeysManagement() {
                 body: JSON.stringify({
                     name: newApiKey.name,
                     description: newApiKey.description || undefined,
-                    expires_at: newApiKey.expires_at || undefined
+                    expires_at: newApiKey.expires_at || undefined,
+                    isAdminKey: newApiKey.isAdminKey
                 })
             });
 
@@ -110,7 +112,8 @@ export default function ApiKeysManagement() {
             setNewApiKey({
                 name: '',
                 description: '',
-                expires_at: null
+                expires_at: null,
+                isAdminKey: false
             });
 
             // Reload the API keys list
@@ -402,6 +405,24 @@ export default function ApiKeysManagement() {
                                         />
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             Leave blank for a non-expiring API key (not recommended for production)
+                                        </p>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                id="admin-key"
+                                                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                                checked={newApiKey.isAdminKey}
+                                                onChange={(e) => setNewApiKey({ ...newApiKey, isAdminKey: e.target.checked })}
+                                            />
+                                            <label htmlFor="admin-key" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Create as Admin API Key
+                                            </label>
+                                        </div>
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Admin API keys have full access to all API endpoints including administrative functions
                                         </p>
                                     </div>
 

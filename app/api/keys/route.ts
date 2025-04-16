@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         // Get all API keys for the current user
         const { data, error } = await supabase
             .from('api_keys')
-            .select('id, name, created_at, expires_at, last_used_at, is_active, description, scopes')
+            .select('id, name, created_at, expires_at, last_used_at, is_active, description, scopes, is_admin_key')
             .eq('user_id', session.user.id)
             .order('created_at', { ascending: false });
 
@@ -53,6 +53,26 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'API key name is required' }, { status: 400 });
         }
 
+        // Check if user is an admin (for admin keys)
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+
+        const isAdmin = profile?.is_admin === true;
+
+        // Determine if this should be an admin key based on the route it was created from
+        // and if the user has admin privileges
+        const isAdminKey = body.isAdminKey && isAdmin;
+
+        // If trying to create an admin key but user is not an admin
+        if (body.isAdminKey && !isAdmin) {
+            return NextResponse.json({
+                error: 'Only administrators can create admin API keys'
+            }, { status: 403 });
+        }
+
         // Get forwarded IP if available, or use a fallback
         const forwardedFor = request.headers.get('x-forwarded-for');
         const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : 'unknown';
@@ -81,9 +101,10 @@ export async function POST(request: NextRequest) {
                 expires_at: body.expires_at || null,
                 scopes: scopes,
                 api_key: apiKey,
-                created_from_ip: ip
+                created_from_ip: ip,
+                is_admin_key: isAdminKey
             })
-            .select('id, name, created_at, expires_at, is_active, description, scopes')
+            .select('id, name, created_at, expires_at, is_active, description, scopes, is_admin_key')
             .single();
 
         if (insertError) {

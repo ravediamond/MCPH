@@ -10,6 +10,7 @@ export interface ApiKey {
     is_active: boolean;
     description?: string | null;
     created_from_ip?: string | null;
+    is_admin_key?: boolean;
     user?: {
         email: string;
         username?: string;
@@ -21,6 +22,7 @@ export interface CreateApiKeyRequest {
     description?: string;
     expires_at?: string | null;
     scopes?: string[];
+    isAdminKey?: boolean;
 }
 
 export interface ApiKeyResponse {

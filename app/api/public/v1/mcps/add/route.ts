@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
             }, { status: 401 });
         }
 
-        // Validate the API key
+        // Validate the API key - this will work with both admin and regular user keys
         const keyValidation = await validateApiKey(apiKey);
         if (!keyValidation.valid || !keyValidation.key) {
             return NextResponse.json({
