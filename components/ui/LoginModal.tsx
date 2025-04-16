@@ -109,7 +109,7 @@ export default function LoginModal() {
     return (
         <>
             <button
-                className="text-sm font-medium bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors"
+                className="text-sm font-medium bg-blue-700 text-white px-4 py-2 rounded-md hover:bg-blue-800 transition-colors shadow-sm"
                 onClick={onOpen}
             >
                 Login with GitHub
