@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { ApiKey, CreateApiKeyRequest } from 'types/apiKey';
+import { invalidateApiKeyCache } from 'utils/apiKeyValidation';
 
 // GET endpoint to list API keys for the current user
 export async function GET(request: NextRequest) {
@@ -148,7 +149,7 @@ export async function DELETE(request: NextRequest) {
         // Check if the user is the owner of the API key or an admin
         const { data: apiKey, error: fetchError } = await supabase
             .from('api_keys')
-            .select('id, user_id')
+            .select('id, user_id, api_key')  // Also fetch the api_key field to invalidate cache
             .eq('id', keyId)
             .single();
 
@@ -178,6 +179,11 @@ export async function DELETE(request: NextRequest) {
         if (deleteError) {
             console.error('Error deleting API key:', deleteError);
             return NextResponse.json({ error: 'Failed to delete API key' }, { status: 500 });
+        }
+
+        // Invalidate the cache for this API key
+        if (apiKey.api_key) {
+            invalidateApiKeyCache(apiKey.api_key);
         }
 
         return NextResponse.json({

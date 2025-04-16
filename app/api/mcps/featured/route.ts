@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
+import { cachedFetch } from 'utils/cacheUtils';
+
+// Cache TTL for featured MCPs (10 minutes)
+// Featured content doesn't change as frequently
+const FEATURED_CACHE_TTL = 10 * 60 * 1000;
+
+/**
+ * Creates a cache key for featured MCP results
+ */
+function createFeaturedCacheKey(type: string, limit: number): string {
+    return `featured:${type}:limit:${limit}`;
+}
 
 export async function GET(request: Request) {
     try {
@@ -7,45 +19,140 @@ export async function GET(request: Request) {
         const type = url.searchParams.get('type') || 'starred';
         const limit = parseInt(url.searchParams.get('limit') || '5', 10);
 
-        // For most starred MCPs
-        if (type === 'starred') {
-            const { data, error } = await supabase
-                .from('mcps')
-                .select('id, name, description, repository_url, tags, version, author, owner_username, repository_name, stars, avg_rating, review_count, view_count')
-                .order('stars', { ascending: false })
-                .limit(limit);
+        // Validate limit to prevent abuse (between 1 and 20)
+        const safeLimit = Math.min(Math.max(limit, 1), 20);
 
-            if (error) {
-                throw error;
-            }
+        // Create cache key based on the type of featured content and limit
+        const cacheKey = createFeaturedCacheKey(type, safeLimit);
 
-            return NextResponse.json({ mcps: data });
-        }
-        // For trending MCPs - this will be based on star growth over time
-        // Since we don't yet have historical star data, we'll use a combination of stars and recency
-        else if (type === 'trending') {
-            // Get date from 30 days ago
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Use cached fetch to avoid redundant database queries
+        return cachedFetch(
+            cacheKey,
+            async () => {
+                // Fields to select, reused across queries
+                const selectFields = `
+                    id, 
+                    name, 
+                    description, 
+                    repository_url, 
+                    tags, 
+                    version, 
+                    author, 
+                    owner_username, 
+                    repository_name, 
+                    stars, 
+                    avg_rating, 
+                    review_count, 
+                    view_count, 
+                    last_repo_update
+                `;
 
-            // Fetch recently updated MCPs that have stars
-            const { data, error } = await supabase
-                .from('mcps')
-                .select('id, name, description, repository_url, tags, version, author, owner_username, repository_name, stars, avg_rating, review_count, view_count, last_repo_update')
-                .gt('stars', 0) // Only MCPs with at least 1 star
-                .gt('last_repo_update', thirtyDaysAgo.toISOString()) // Updated in the last 30 days
-                // Order by a weighted combination of stars and recency (as a proxy for trending)
-                .order('stars', { ascending: false })
-                .limit(limit);
+                // Process based on type
+                if (type === 'starred') {
+                    const { data, error } = await supabase
+                        .from('mcps')
+                        .select(selectFields)
+                        .order('stars', { ascending: false })
+                        .limit(safeLimit);
 
-            if (error) {
-                throw error;
-            }
+                    if (error) {
+                        throw error;
+                    }
 
-            return NextResponse.json({ mcps: data });
-        }
+                    return NextResponse.json({
+                        mcps: data,
+                        meta: {
+                            type: 'starred',
+                            limit: safeLimit,
+                            count: data.length
+                        }
+                    });
+                }
+                else if (type === 'trending') {
+                    // Get date from 30 days ago
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        return NextResponse.json({ error: 'Invalid type parameter' }, { status: 400 });
+                    // Create a more sophisticated trending algorithm
+                    // Consider both recent updates and popularity signals
+                    const { data, error } = await supabase
+                        .from('mcps')
+                        .select(selectFields)
+                        .gt('stars', 0) // Only MCPs with at least 1 star
+                        .gt('last_repo_update', thirtyDaysAgo.toISOString()) // Updated in the last 30 days
+                        // Use a combination of sorting criteria to determine "trending" status
+                        .order('stars', { ascending: false }) // Popular repos first
+                        .order('last_repo_update', { ascending: false }) // Recently updated second
+                        .limit(safeLimit);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    return NextResponse.json({
+                        mcps: data,
+                        meta: {
+                            type: 'trending',
+                            limit: safeLimit,
+                            count: data.length,
+                            timeRange: '30 days'
+                        }
+                    });
+                }
+                else if (type === 'most-viewed') {
+                    // Add a new category for most viewed MCPs
+                    const { data, error } = await supabase
+                        .from('mcps')
+                        .select(selectFields)
+                        .gt('view_count', 0) // Only MCPs with some views
+                        .order('view_count', { ascending: false }) // Most viewed first
+                        .limit(safeLimit);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    return NextResponse.json({
+                        mcps: data,
+                        meta: {
+                            type: 'most-viewed',
+                            limit: safeLimit,
+                            count: data.length
+                        }
+                    });
+                }
+                else if (type === 'highest-rated') {
+                    // Add a new category for highest rated MCPs
+                    const { data, error } = await supabase
+                        .from('mcps')
+                        .select(selectFields)
+                        .gt('avg_rating', 0) // Only MCPs with ratings
+                        .gt('review_count', 1) // At least 2 reviews for statistical significance
+                        .order('avg_rating', { ascending: false }) // Highest rated first
+                        .order('review_count', { ascending: false }) // With more reviews prioritized
+                        .limit(safeLimit);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    return NextResponse.json({
+                        mcps: data,
+                        meta: {
+                            type: 'highest-rated',
+                            limit: safeLimit,
+                            count: data.length
+                        }
+                    });
+                }
+
+                return NextResponse.json({
+                    error: 'Invalid type parameter',
+                    validTypes: ['starred', 'trending', 'most-viewed', 'highest-rated']
+                }, { status: 400 });
+            },
+            FEATURED_CACHE_TTL
+        );
     } catch (error) {
         console.error('Error fetching featured MCPs:', error);
         return NextResponse.json(

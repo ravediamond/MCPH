@@ -7,6 +7,13 @@ interface GitHubRateLimitInfo {
   resource: string;
 }
 
+// Import our cache utility
+import { cachedFetch, cache } from '../utils/cacheUtils';
+
+// Cache TTL constants (in milliseconds)
+const README_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+const REPO_DETAILS_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours
+
 /**
  * Extracts rate limit information from GitHub API response headers
  * @param headers Response headers from GitHub API call
@@ -68,6 +75,13 @@ export async function handleGitHubResponse(response: Response): Promise<Response
   }
 }
 
+/**
+ * Creates a cache key for GitHub API requests
+ */
+function createGitHubCacheKey(type: string, owner: string, repo: string): string {
+  return `github:${type}:${owner}/${repo}`;
+}
+
 export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: string, repositoryName?: string): Promise<{ readme: string; ownerUsername: string }> {
   let owner: string;
   let repo: string;
@@ -84,23 +98,34 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
     repo = parts[parts.length - 1];
   }
 
-  // Build the GitHub API URL for the README endpoint
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
+  // Create cache key for this specific readme
+  const cacheKey = createGitHubCacheKey('readme', owner, repo);
 
-  const response = await fetch(apiUrl, {
-    headers: {
-      Accept: 'application/vnd.github.v3.raw',
-      // Use GitHub token if available for higher rate limits
-      ...(process.env.GITHUB_TOKEN && {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
-      })
-    }
-  });
+  // Use the cached fetch utility
+  const readme = await cachedFetch<string>(
+    cacheKey,
+    async () => {
+      // This function will only run if cache miss
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
 
-  // Process the response with the new handler
-  await handleGitHubResponse(response);
+      const response = await fetch(apiUrl, {
+        headers: {
+          Accept: 'application/vnd.github.v3.raw',
+          // Use GitHub token if available for higher rate limits
+          ...(process.env.GITHUB_TOKEN && {
+            Authorization: `token ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      });
 
-  const readme = await response.text();
+      // Process the response with the new handler
+      await handleGitHubResponse(response);
+
+      return await response.text();
+    },
+    README_CACHE_TTL
+  );
+
   return { readme, ownerUsername: owner };
 }
 
@@ -111,23 +136,33 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
  * @returns Promise resolving to the README content as a string
  */
 export async function fetchReadmeFromGitHub(owner: string, repo: string): Promise<string> {
-  // Build the GitHub API URL for the README endpoint
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
+  // Create cache key for this specific readme
+  const cacheKey = createGitHubCacheKey('readme', owner, repo);
 
-  const response = await fetch(apiUrl, {
-    headers: {
-      Accept: 'application/vnd.github.v3.raw',
-      // Use GitHub token if available for higher rate limits
-      ...(process.env.GITHUB_TOKEN && {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
-      })
-    }
-  });
+  // Use the cached fetch utility
+  return cachedFetch<string>(
+    cacheKey,
+    async () => {
+      // This function will only run if cache miss
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
 
-  // Process the response with the new handler
-  await handleGitHubResponse(response);
+      const response = await fetch(apiUrl, {
+        headers: {
+          Accept: 'application/vnd.github.v3.raw',
+          // Use GitHub token if available for higher rate limits
+          ...(process.env.GITHUB_TOKEN && {
+            Authorization: `token ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      });
 
-  return await response.text();
+      // Process the response with the new handler
+      await handleGitHubResponse(response);
+
+      return await response.text();
+    },
+    README_CACHE_TTL
+  );
 }
 
 /**
@@ -182,29 +217,50 @@ export async function updateMcpReadme(mcpId: string, readme: string): Promise<an
 }
 
 /**
+ * Invalidates GitHub cache for a specific repository
+ * @param owner GitHub repository owner username
+ * @param repo GitHub repository name
+ */
+export function invalidateGitHubCache(owner: string, repo: string): void {
+  // Clear both readme and repo details from cache
+  cache.delete(createGitHubCacheKey('readme', owner, repo));
+  cache.delete(createGitHubCacheKey('repo', owner, repo));
+}
+
+/**
  * Fetches repository details from GitHub
  * @param owner GitHub repository owner username
  * @param repo GitHub repository name
  * @returns Promise resolving to the repository details
  */
 export async function fetchRepoDetails(owner: string, repo: string): Promise<any> {
-  // Build the GitHub API URL for the repo endpoint
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+  // Create cache key for this specific repo
+  const cacheKey = createGitHubCacheKey('repo', owner, repo);
 
-  const response = await fetch(apiUrl, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-      // Use GitHub token if available for higher rate limits
-      ...(process.env.GITHUB_TOKEN && {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
-      })
-    }
-  });
+  // Use the cached fetch utility
+  return cachedFetch<any>(
+    cacheKey,
+    async () => {
+      // This function will only run if cache miss
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
-  // Process the response with the handler
-  await handleGitHubResponse(response);
+      const response = await fetch(apiUrl, {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          // Use GitHub token if available for higher rate limits
+          ...(process.env.GITHUB_TOKEN && {
+            Authorization: `token ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      });
 
-  return await response.json();
+      // Process the response with the handler
+      await handleGitHubResponse(response);
+
+      return await response.json();
+    },
+    REPO_DETAILS_CACHE_TTL
+  );
 }
 
 /**
@@ -263,12 +319,11 @@ export async function refreshReadmeIfNeeded(mcp: any): Promise<any> {
       repo = parts[parts.length - 1];
     }
 
+    // Invalidate the cache for this repository to ensure fresh data
+    invalidateGitHubCache(owner, repo);
+
     // Fetch fresh README content from GitHub
-    const { readme } = await fetchGithubReadme(
-      mcp.repository_url,
-      owner,
-      repo
-    );
+    const readme = await fetchReadmeFromGitHub(owner, repo);
 
     // Update the README content in Supabase
     const updatedData = await updateMcpReadme(mcp.id, readme);

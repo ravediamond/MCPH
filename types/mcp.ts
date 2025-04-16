@@ -17,6 +17,10 @@ export interface MCP {
   view_count?: number;     // Number of times this MCP has been viewed
   avg_rating?: number;     // Average rating (1-5)
   review_count?: number;   // Number of reviews
+  stars?: number;          // GitHub repository star count
+  forks?: number;          // GitHub repository fork count
+  open_issues?: number;    // GitHub repository open issues count
+  last_repo_update?: string; // Last GitHub repository update timestamp
   profiles?: {             // Added profiles property for join data
     email: string;
   };

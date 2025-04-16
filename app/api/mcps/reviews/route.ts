@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { Review, ReviewSubmission } from 'types/mcp';
+import { cachedFetch, cache } from 'utils/cacheUtils';
+
+// Cache TTL for reviews (5 minutes)
+const REVIEWS_CACHE_TTL = 5 * 60 * 1000;
+
+// Create a cache key for reviews of a specific MCP
+function createReviewsCacheKey(mcpId: string): string {
+    return `reviews:${mcpId}`;
+}
+
+// Creates a cache key for user profile data
+function createUserProfileCacheKey(userId: string): string {
+    return `user-profile:${userId}`;
+}
 
 // GET endpoint to retrieve reviews for a specific MCP
 export async function GET(request: NextRequest) {
@@ -16,98 +30,122 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Fix the createRouteHandlerClient call to pass cookies as a function
-        const supabase = createRouteHandlerClient({ cookies });
+        // Create a cache key for this specific MCP's reviews
+        const cacheKey = createReviewsCacheKey(mcpId);
 
-        // Modified select query to avoid using a join that requires a foreign key relationship
-        const { data, error } = await supabase
-            .from('reviews')
-            .select(`
-                id,
-                created_at,
-                updated_at,
-                mcp_id,
-                user_id,
-                rating,
-                comment
-            `)
-            .eq('mcp_id', mcpId)
-            .order('created_at', { ascending: false });
+        // Use cachedFetch to avoid unnecessary database queries
+        return cachedFetch(
+            cacheKey,
+            async () => {
+                // Fix the createRouteHandlerClient call to pass cookies as a function
+                const supabase = createRouteHandlerClient({ cookies });
 
-        if (error) {
-            console.error('Error fetching reviews:', error);
-            return new NextResponse(
-                JSON.stringify({ error: 'Failed to fetch reviews' }),
-                { status: 500 }
-            );
-        }
+                // Execute all these queries in parallel to reduce wait time
+                const [reviewsResponse, mcpStatsResponse] = await Promise.all([
+                    // Fetch reviews
+                    supabase
+                        .from('reviews')
+                        .select(`
+                            id,
+                            created_at,
+                            updated_at,
+                            mcp_id,
+                            user_id,
+                            rating,
+                            comment
+                        `)
+                        .eq('mcp_id', mcpId)
+                        .order('created_at', { ascending: false }),
 
-        // If reviews are found, fetch user information separately
-        let reviewsWithUserInfo = [];
-        if (data && data.length > 0) {
-            for (const review of data) {
-                // Get user info for each review
-                const { data: userData, error: userError } = await supabase
-                    .from('profiles')
-                    .select('username, email')
-                    .eq('id', review.user_id)
-                    .single();
+                    // Fetch MCP stats
+                    supabase
+                        .from('mcps')
+                        .select('avg_rating, review_count')
+                        .eq('id', mcpId)
+                        .single()
+                ]);
 
-                if (!userError && userData) {
-                    reviewsWithUserInfo.push({
-                        ...review,
-                        user: userData
-                    });
-                } else {
-                    // If user not found, still include the review but with null user
-                    reviewsWithUserInfo.push({
-                        ...review,
-                        user: null
+                const { data: reviews, error: reviewsError } = reviewsResponse;
+                const { data: mcpData, error: mcpError } = mcpStatsResponse;
+
+                if (reviewsError) {
+                    console.error('Error fetching reviews:', reviewsError);
+                    throw new Error('Failed to fetch reviews');
+                }
+
+                // Collect all user IDs that we need to fetch
+                const userIds = new Set<string>();
+                if (reviews && reviews.length > 0) {
+                    reviews.forEach(review => {
+                        if (review.user_id) userIds.add(review.user_id);
                     });
                 }
-            }
-        }
 
-        // Get the rating distribution
-        const { data: statsData, error: statsError } = await supabase
-            .from('reviews')
-            .select('rating')
-            .eq('mcp_id', mcpId);
+                // Fetch user profiles in bulk if we have reviews
+                const userProfiles: Record<string, any> = {};
+                if (userIds.size > 0) {
+                    const userIdsArray = Array.from(userIds);
 
-        if (statsError) {
-            console.error('Error fetching review stats:', statsError);
-        }
+                    // Check cache first for each user profile
+                    const uncachedUserIds = [];
+                    for (const userId of userIdsArray) {
+                        const userProfileKey = createUserProfileCacheKey(userId);
+                        const cachedProfile = cache.get(userProfileKey);
 
-        // Calculate distribution
-        const distribution = statsData ? {
-            1: statsData.filter(r => r.rating === 1).length,
-            2: statsData.filter(r => r.rating === 2).length,
-            3: statsData.filter(r => r.rating === 3).length,
-            4: statsData.filter(r => r.rating === 4).length,
-            5: statsData.filter(r => r.rating === 5).length,
-        } : undefined;
+                        if (cachedProfile) {
+                            userProfiles[userId] = cachedProfile;
+                        } else {
+                            uncachedUserIds.push(userId);
+                        }
+                    }
 
-        // Get MCP details with avg_rating and review_count
-        const { data: mcpData, error: mcpError } = await supabase
-            .from('mcps')
-            .select('avg_rating, review_count')
-            .eq('id', mcpId)
-            .single();
+                    // Only fetch profiles that aren't in cache
+                    if (uncachedUserIds.length > 0) {
+                        const { data: profiles, error: profilesError } = await supabase
+                            .from('profiles')
+                            .select('id, username, email')
+                            .in('id', uncachedUserIds);
 
-        if (mcpError) {
-            console.error('Error fetching MCP stats:', mcpError);
-        }
+                        if (!profilesError && profiles) {
+                            // Add fetched profiles to our mapping and cache them
+                            profiles.forEach(profile => {
+                                userProfiles[profile.id] = profile;
 
-        return new NextResponse(
-            JSON.stringify({
-                reviews: reviewsWithUserInfo,
-                stats: {
-                    avg_rating: mcpData?.avg_rating || 0,
-                    review_count: mcpData?.review_count || 0,
-                    rating_distribution: distribution
+                                // Cache individual user profiles (1 hour TTL)
+                                const userProfileKey = createUserProfileCacheKey(profile.id);
+                                cache.set(userProfileKey, profile, { ttl: 60 * 60 * 1000 });
+                            });
+                        }
+                    }
                 }
-            }),
-            { status: 200 }
+
+                // Add user info to reviews
+                const reviewsWithUserInfo = reviews?.map(review => ({
+                    ...review,
+                    user: userProfiles[review.user_id] || null
+                })) || [];
+
+                // Calculate rating distribution more efficiently
+                const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                reviews?.forEach(review => {
+                    if (review.rating >= 1 && review.rating <= 5) {
+                        distribution[review.rating as 1 | 2 | 3 | 4 | 5]++;
+                    }
+                });
+
+                return new NextResponse(
+                    JSON.stringify({
+                        reviews: reviewsWithUserInfo,
+                        stats: {
+                            avg_rating: mcpData?.avg_rating || 0,
+                            review_count: mcpData?.review_count || 0,
+                            rating_distribution: distribution
+                        }
+                    }),
+                    { status: 200 }
+                );
+            },
+            REVIEWS_CACHE_TTL
         );
     } catch (error) {
         console.error('Unexpected error:', error);
@@ -143,12 +181,24 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if the MCP exists
-        const { data: mcpExists, error: mcpError } = await supabase
-            .from('mcps')
-            .select('id')
-            .eq('id', body.mcp_id)
-            .single();
+        // Check if the MCP exists and if the user has already reviewed it in parallel
+        const [mcpCheck, existingReviewCheck] = await Promise.all([
+            supabase
+                .from('mcps')
+                .select('id')
+                .eq('id', body.mcp_id)
+                .single(),
+
+            supabase
+                .from('reviews')
+                .select('id')
+                .eq('mcp_id', body.mcp_id)
+                .eq('user_id', session.user.id)
+                .single()
+        ]);
+
+        const { data: mcpExists, error: mcpError } = mcpCheck;
+        const { data: existingReview } = existingReviewCheck;
 
         if (mcpError || !mcpExists) {
             return new NextResponse(
@@ -156,14 +206,6 @@ export async function POST(request: NextRequest) {
                 { status: 404 }
             );
         }
-
-        // Check if user has already reviewed this MCP
-        const { data: existingReview } = await supabase
-            .from('reviews')
-            .select('id')
-            .eq('mcp_id', body.mcp_id)
-            .eq('user_id', session.user.id)
-            .single();
 
         let response;
 
@@ -198,6 +240,9 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Invalidate the reviews cache for this MCP
+        cache.delete(createReviewsCacheKey(body.mcp_id));
 
         return new NextResponse(
             JSON.stringify({
@@ -244,7 +289,7 @@ export async function DELETE(request: NextRequest) {
         // Check if review exists and belongs to the user
         const { data: review, error: reviewError } = await supabase
             .from('reviews')
-            .select('id, user_id')
+            .select('id, user_id, mcp_id')  // Also fetch mcp_id to invalidate cache
             .eq('id', reviewId)
             .single();
 
@@ -275,6 +320,11 @@ export async function DELETE(request: NextRequest) {
                 JSON.stringify({ error: 'Failed to delete review' }),
                 { status: 500 }
             );
+        }
+
+        // Invalidate the reviews cache for this MCP
+        if (review.mcp_id) {
+            cache.delete(createReviewsCacheKey(review.mcp_id));
         }
 
         return new NextResponse(

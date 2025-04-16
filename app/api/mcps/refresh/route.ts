@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
-import { fetchReadmeFromGitHub, handleGitHubResponse } from 'services/githubService';
+import { fetchReadmeFromGitHub, invalidateGitHubCache } from 'services/githubService';
+import { cache } from 'utils/cacheUtils';
+
+// Cache key for recently refreshed MCPs to prevent duplicate refreshes
+const createRecentlyRefreshedKey = (mcpId: string) => `recently-refreshed:${mcpId}`;
+const REFRESH_COOLDOWN = 30 * 1000; // 30 seconds cooldown between refreshes
 
 export async function POST(request: Request) {
     try {
@@ -17,19 +22,37 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'MCP ID is required' }, { status: 400 });
         }
 
-        // Check if user is an admin or the owner of the MCP
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', currentUser.id)
-            .single();
+        // Check for refresh cooldown to prevent spamming the API
+        const cooldownKey = createRecentlyRefreshedKey(mcpId);
+        const recentlyRefreshed = cache.get(cooldownKey);
 
-        // Get the MCP data
-        const { data: mcp, error: mcpError } = await supabase
-            .from('mcps')
-            .select('*')
-            .eq('id', mcpId)
-            .single();
+        if (recentlyRefreshed) {
+            return NextResponse.json({
+                success: false,
+                error: 'This MCP was recently refreshed',
+                details: 'Please wait a moment before refreshing again',
+                cooldownRemaining: true
+            }, { status: 429 });
+        }
+
+        // Get user profile and MCP data in parallel to reduce latency
+        const [profileResponse, mcpResponse] = await Promise.all([
+            supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', currentUser.id)
+                .single(),
+
+            supabase
+                .from('mcps')
+                .select('id, user_id, owner_username, repository_name, repository_url')
+                .eq('id', mcpId)
+                .single()
+        ]);
+
+        const profile = profileResponse.data;
+        const mcp = mcpResponse.data;
+        const mcpError = mcpResponse.error;
 
         if (mcpError || !mcp) {
             return NextResponse.json({ error: 'MCP not found' }, { status: 404 });
@@ -65,6 +88,12 @@ export async function POST(request: Request) {
         }
 
         try {
+            // Set the cooldown key early to prevent concurrent refresh requests
+            cache.set(cooldownKey, true, { ttl: REFRESH_COOLDOWN });
+
+            // Invalidate GitHub cache to ensure fresh data
+            invalidateGitHubCache(owner, repo);
+
             // Fetch the README from GitHub
             const readme = await fetchReadmeFromGitHub(owner, repo);
             const lastRefreshed = new Date().toISOString();
@@ -89,6 +118,9 @@ export async function POST(request: Request) {
                 message: 'README refreshed successfully'
             });
         } catch (error: any) {
+            // If there's an error, remove the cooldown to allow retries
+            cache.delete(cooldownKey);
+
             // Check if this is a rate limit error
             if (error.message && error.message.includes('rate limit exceeded')) {
                 // Log rate limit specifically
