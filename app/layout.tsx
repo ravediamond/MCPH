@@ -20,6 +20,34 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata = {
     title: 'MCP Registry',
     description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
+    keywords: ['MCP', 'Model Context Protocol', 'AI tools', 'AI endpoints', 'API registry'],
+    authors: [{ name: 'MCPHub Team' }],
+    openGraph: {
+        title: 'MCP Registry',
+        description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
+        url: 'https://mcph.io',
+        siteName: 'MCP Registry',
+        images: [
+            {
+                url: '/icon-transparent.png',
+                width: 800,
+                height: 600,
+                alt: 'MCP Registry Logo',
+            }
+        ],
+        locale: 'en_US',
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'MCP Registry',
+        description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
+        images: ['/icon-transparent.png'],
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
 };
 
 export default function RootLayout({

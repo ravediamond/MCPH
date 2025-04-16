@@ -1,0 +1,10 @@
+# robots.txt file for mcph.io
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://mcph.io/sitemap.xml
+
+# Disallow admin paths
+Disallow: /admin/
+Disallow: /api/keys/

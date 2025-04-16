@@ -2,6 +2,8 @@
 
 Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools! Whether you're a developer looking to publish your awesome MCP or an AI system hunting for the perfect integration, we've got you covered. 😊
 
+Visit us at [mcph.io](https://mcph.io)
+
 ---
 
 ## Features
@@ -46,7 +48,68 @@ Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring M
 
 ---
 
-We’re all about making integrations fun and accessible. Dive in, explore, and let your imagination run wild with what you can build. Happy integrating! 🎉
+## Deployment to Vercel
+
+### Prerequisites
+- A [Vercel](https://vercel.com) account
+- A [Supabase](https://supabase.io) project
+
+### Steps to Deploy
+
+1. **Push your code to GitHub**:
+   ```
+   git add .
+   git commit -m "Prepare for Vercel deployment"
+   git push
+   ```
+
+2. **Import your project to Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com/new)
+   - Select "Import Git Repository" and choose your repository
+   - Configure project settings
+
+3. **Set Environment Variables**:
+   - In the Vercel dashboard, go to your project settings
+   - Navigate to "Environment Variables" section
+   - Add these required variables:
+     - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase URL
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+
+4. **Deploy**:
+   - Click "Deploy" and wait for your project to build
+   - Once deployed, your site will be available at `https://your-project-name.vercel.app`
+
+### Post-Deployment
+
+- Set up your custom domain if desired
+  - For this project, we're using [mcph.io](https://mcph.io) as our official domain
+- Monitor the analytics and logs in Vercel dashboard
+
+---
+
+## Domain Configuration
+
+### Setting up mcph.io on Vercel
+
+1. **Purchase the Domain**: If not already purchased, acquire the mcph.io domain from a domain registrar.
+
+2. **Add Domain to Vercel**:
+   - Go to your Vercel project dashboard
+   - Navigate to "Settings" > "Domains"
+   - Add your domain: `mcph.io`
+   - Also add `www.mcph.io` (configured to redirect to the apex domain)
+
+3. **Configure DNS**:
+   - Update your domain's DNS settings to point to Vercel's nameservers, or
+   - Add the required A, CNAME, TXT records as provided by Vercel
+
+4. **SSL Configuration**:
+   - Vercel automatically provisions SSL certificates for custom domains
+   - Ensure HTTPS is enforced for all traffic
+
+---
+
+We're all about making integrations fun and accessible. Dive in, explore, and let your imagination run wild with what you can build. Happy integrating! 🎉
 
 
 # Dev

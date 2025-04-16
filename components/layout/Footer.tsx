@@ -16,7 +16,7 @@ export default function Footer() {
                         <Link href="/docs" className="text-gray-600 hover:text-primary-600 transition-colors">
                             Documentation
                         </Link>
-                        <Link href="https://github.com/your-org/mcp-hub" className="text-gray-600 hover:text-primary-600 transition-colors">
+                        <Link href="https://github.com/ravediamond/MCPHub" className="text-gray-600 hover:text-primary-600 transition-colors">
                             GitHub
                         </Link>
                         <Link href="/privacy" className="text-gray-600 hover:text-primary-600 transition-colors">
