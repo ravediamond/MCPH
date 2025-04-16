@@ -93,15 +93,72 @@ export default function BrowsePage() {
             const url = searchQuery.trim()
                 ? `/api/search?q=${encodeURIComponent(searchQuery)}`
                 : `/api/search`;
+
+            console.log(`[Debug] Fetching from URL: ${url}`);
             const res = await fetch(url);
-            const data = await res.json();
-            if (data.results) {
-                setItems(data.results);
-            } else {
-                setError("No results found.");
+
+            console.log(`[Debug] Response status: ${res.status}, ok: ${res.ok}`);
+
+            // Log headers without using spread operator to avoid TypeScript error
+            const headerObj: Record<string, string> = {};
+            res.headers.forEach((value, key) => {
+                headerObj[key] = value;
+            });
+            console.log('[Debug] Response headers:', headerObj);
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+
+            // Check if response has content
+            const contentType = res.headers.get("content-type");
+            console.log(`[Debug] Content-Type: ${contentType}`);
+
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error(`Response is not JSON. Content-Type: ${contentType}`);
+            }
+
+            const text = await res.text(); // Get raw text first
+            console.log(`[Debug] Response text length: ${text.length}`);
+            console.log(`[Debug] Response text (first 200 chars): ${text.substring(0, 200)}`);
+
+            if (!text) {
+                throw new Error("Empty response from server");
+            }
+
+            try {
+                // Try to parse the JSON
+                const data = JSON.parse(text);
+                console.log(`[Debug] Parsed JSON successfully:`, {
+                    success: data.success,
+                    resultsLength: data.results?.length,
+                    hasPagination: !!data.pagination
+                });
+
+                if (data.success && data.results) {
+                    setItems(data.results);
+                    setError(null);
+                } else if (data.results && data.results.length === 0) {
+                    setItems([]);
+                    setError("No results found.");
+                } else {
+                    console.error("[Debug] Unexpected API response structure:", data);
+                    setItems([]);
+                    setError("Unexpected response format.");
+                }
+            } catch (jsonError) {
+                console.error("[Debug] JSON parsing error:", jsonError);
+                console.error("[Debug] Raw response text:", text);
+                // Fix TypeScript error by properly type checking
+                const errorMessage = jsonError instanceof Error ? jsonError.message : 'Unknown JSON parsing error';
+                throw new Error(`Invalid JSON response: ${errorMessage}`);
             }
         } catch (err) {
-            setError("Failed to fetch data.");
+            console.error("[Debug] Error fetching data:", err);
+            setItems([]);
+            // Fix TypeScript error by properly type checking
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            setError(`Failed to fetch data: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

@@ -13,12 +13,17 @@ function generateSearchCacheKey(query: string | null, page: number, limit: numbe
 }
 
 export async function GET(request: Request) {
+    const requestId = Math.random().toString(36).substring(2, 10); // Create a unique ID for this request
+    console.log(`[${requestId}] API Search request received:`, new URL(request.url).toString());
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get('q');
 
     // Add pagination parameters
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '20', 10);
+
+    console.log(`[${requestId}] Search params: query="${q || ''}", page=${page}, limit=${limit}`);
 
     // Limit to reasonable values to prevent abuse
     const validatedLimit = Math.min(Math.max(limit, 1), 100);
@@ -29,69 +34,92 @@ export async function GET(request: Request) {
 
     // Generate cache key
     const cacheKey = generateSearchCacheKey(q, validatedPage, validatedLimit);
+    console.log(`[${requestId}] Generated cache key: "${cacheKey}"`);
 
-    // Use cached results if available
-    return cachedFetch(
-        cacheKey,
-        async () => {
-            // Select only relevant fields instead of '*'
-            const selectFields = [
-                'id',
-                'name',
-                'description',
-                'repository_url',
-                'tags',
-                'version',
-                'author',
-                'stars',
-                'forks',
-                'avg_rating',
-                'review_count',
-                'view_count',
-                'last_repo_update'
-            ].join(', ');
+    // Check if result exists in cache before calling cachedFetch
+    const cachedResult = cache.get(cacheKey);
+    if (cachedResult) {
+        console.log(`[${requestId}] Cache hit - returning cached result`);
+    } else {
+        console.log(`[${requestId}] Cache miss - will fetch from database`);
+    }
 
-            // Build the query
-            let queryBuilder = supabase
-                .from('mcps')
-                .select(selectFields, { count: 'exact' });
+    try {
+        // Use cached results if available
+        const resultData = await cachedFetch(
+            cacheKey,
+            async () => {
+                console.log(`[${requestId}] Executing database query`);
 
-            // Apply search filter if query exists
-            if (q && q.trim() !== '') {
-                queryBuilder = queryBuilder.or(
-                    `name.ilike.%${q}%,description.ilike.%${q}%`
-                );
-            }
+                // Select only relevant fields instead of '*'
+                const selectFields = [
+                    'id',
+                    'name',
+                    'description',
+                    'repository_url',
+                    'tags',
+                    'version',
+                    'author',
+                    'stars',
+                    'forks',
+                    'avg_rating',
+                    'review_count',
+                    'view_count',
+                    'last_repo_update'
+                ].join(', ');
 
-            // Apply pagination
-            queryBuilder = queryBuilder
-                .order('stars', { ascending: false })
-                .range(offset, offset + validatedLimit - 1);
+                // Build the query
+                let queryBuilder = supabase
+                    .from('mcps')
+                    .select(selectFields, { count: 'exact' });
 
-            // Execute query
-            const { data, error, count } = await queryBuilder;
-
-            if (error) {
-                return NextResponse.json(
-                    { success: false, message: 'Search failed', error },
-                    { status: 500 }
-                );
-            }
-
-            // Return paginated results with metadata
-            return NextResponse.json({
-                success: true,
-                results: data,
-                pagination: {
-                    total: count || 0,
-                    page: validatedPage,
-                    limit: validatedLimit,
-                    pages: count ? Math.ceil(count / validatedLimit) : 0,
-                    hasNext: count ? offset + validatedLimit < count : false,
-                    hasPrev: validatedPage > 1
+                // Apply search filter if query exists
+                if (q && q.trim() !== '') {
+                    queryBuilder = queryBuilder.or(
+                        `name.ilike.%${q}%,description.ilike.%${q}%`
+                    );
                 }
-            });
-        },
-        SEARCH_CACHE_TTL
-    );
+
+                // Apply pagination
+                queryBuilder = queryBuilder
+                    .order('stars', { ascending: false })
+                    .range(offset, offset + validatedLimit - 1);
+
+                // Execute query
+                const { data, error, count } = await queryBuilder;
+
+                if (error) {
+                    console.error(`[${requestId}] Database query error:`, error);
+                    throw new Error(`Database query error: ${error.message}`);
+                }
+
+                console.log(`[${requestId}] Query successful. Found ${data?.length || 0} results, total count: ${count || 0}`);
+
+                // Return data object rather than NextResponse
+                return {
+                    success: true,
+                    results: data || [],
+                    pagination: {
+                        total: count || 0,
+                        page: validatedPage,
+                        limit: validatedLimit,
+                        pages: count ? Math.ceil(count / validatedLimit) : 0,
+                        hasNext: count ? offset + validatedLimit < count : false,
+                        hasPrev: validatedPage > 1
+                    }
+                };
+            },
+            SEARCH_CACHE_TTL
+        );
+
+        console.log(`[${requestId}] Response ready to be returned to client`);
+        // Create a fresh NextResponse from the cached data
+        return NextResponse.json(resultData);
+    } catch (error) {
+        console.error(`[${requestId}] Unexpected error in search endpoint:`, error);
+        return NextResponse.json(
+            { success: false, message: 'Internal server error', error: String(error) },
+            { status: 500 }
+        );
+    }
 }
