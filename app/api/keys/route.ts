@@ -3,72 +3,124 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { ApiKey, CreateApiKeyRequest } from 'types/apiKey';
 import { invalidateApiKeyCache } from 'utils/apiKeyValidation';
+import type { Database } from 'types/database.types';
 
 // GET endpoint to list API keys for the current user
 export async function GET(request: NextRequest) {
+    console.log('[API] GET /api/keys - Request received');
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        // Log request headers for debugging
+        console.log('[API] Request headers:', Object.fromEntries(request.headers.entries()));
 
-        // Check if user is authenticated
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
-        if (authError || !session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        // Using the createRouteHandlerClient with properly handled cookies
+        const cookiesInstance = await cookies();
+        const supabase = createRouteHandlerClient<Database>({
+            cookies: () => cookiesInstance
+        });
+
+        console.log('[API] Supabase client created');
+
+        // Check if user is authenticated - with better error handling
+        console.log('[API] Checking authentication session');
+        const { data, error: authError } = await supabase.auth.getSession();
+        const session = data?.session;
+
+        if (authError) {
+            console.error('[API] Authentication error:', authError);
+            return NextResponse.json({ error: 'Unauthorized', details: authError.message }, { status: 401 });
         }
 
+        if (!session) {
+            console.error('[API] No session found');
+            return NextResponse.json({ error: 'Unauthorized', details: 'No session found' }, { status: 401 });
+        }
+
+        console.log('[API] User authenticated successfully. User ID:', session.user.id);
+
         // Get all API keys for the current user
-        const { data, error } = await supabase
+        console.log('[API] Fetching API keys for user');
+        const { data: apiKeys, error } = await supabase
             .from('api_keys')
             .select('id, name, created_at, expires_at, last_used_at, is_active, description, scopes, is_admin_key')
-            .eq('user_id', session.user.id)
+            .eq('user_id', session.user.id as string)
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching API keys:', error);
-            return NextResponse.json({ error: 'Failed to fetch API keys' }, { status: 500 });
+            console.error('[API] Error fetching API keys:', error);
+            return NextResponse.json({ error: 'Failed to fetch API keys', details: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ apiKeys: data });
+        console.log('[API] Successfully fetched API keys. Count:', apiKeys ? apiKeys.length : 0);
+        return NextResponse.json({ apiKeys });
     } catch (error: any) {
-        console.error('Unexpected error fetching API keys:', error);
-        return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+        console.error('[API] Unexpected error fetching API keys:', error);
+        // Log stack trace for better debugging
+        console.error('[API] Stack trace:', error.stack);
+        return NextResponse.json({
+            error: 'An unexpected error occurred',
+            details: error.message || String(error)
+        }, { status: 500 });
     }
 }
 
 // POST endpoint to create a new API key
 export async function POST(request: NextRequest) {
+    console.log('[API] POST /api/keys - Request received');
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        console.log('[API] Using cookies for authentication (POST)');
+
+        // Using the createRouteHandlerClient with properly handled cookies
+        const cookiesInstance = await cookies();
+        const supabase = createRouteHandlerClient<Database>({ cookies: () => cookiesInstance });
+
+        console.log('[API] Supabase client created');
 
         // Check if user is authenticated
+        console.log('[API] Checking authentication for API key creation');
         const { data: { session }, error: authError } = await supabase.auth.getSession();
-        if (authError || !session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        if (authError) {
+            console.error('[API] Authentication error during key creation:', authError);
+            return NextResponse.json({ error: 'Unauthorized', details: authError.message }, { status: 401 });
         }
+
+        if (!session) {
+            console.error('[API] No session found during key creation');
+            return NextResponse.json({ error: 'Unauthorized', details: 'No session found' }, { status: 401 });
+        }
+
+        console.log('[API] User authenticated for key creation. User ID:', session.user.id);
 
         // Get request data
         const body: CreateApiKeyRequest = await request.json();
+        console.log('[API] Request body received:', { name: body.name, hasDescription: !!body.description, expiresAt: body.expires_at, isAdminKey: body.isAdminKey });
 
         if (!body.name) {
+            console.error('[API] Missing required field: name');
             return NextResponse.json({ error: 'API key name is required' }, { status: 400 });
         }
 
         // Check if user is an admin (for admin keys)
-        const { data: profile } = await supabase
+        console.log('[API] Checking if user is admin');
+        const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('is_admin')
             .eq('id', session.user.id)
             .single();
 
-        const isAdmin = profile?.is_admin === true;
+        if (profileError) {
+            console.error('[API] Error fetching user profile:', profileError);
+        }
 
-        // Determine if this should be an admin key based on the route it was created from
-        // and if the user has admin privileges
+        const isAdmin = profile?.is_admin === true;
+        console.log('[API] User admin status:', isAdmin);
+
+        // Determine if this should be an admin key
         const isAdminKey = body.isAdminKey && isAdmin;
 
         // If trying to create an admin key but user is not an admin
         if (body.isAdminKey && !isAdmin) {
+            console.warn('[API] Non-admin user attempted to create admin key');
             return NextResponse.json({
                 error: 'Only administrators can create admin API keys'
             }, { status: 403 });
@@ -121,22 +173,42 @@ export async function POST(request: NextRequest) {
             plainTextKey: apiKey
         }, { status: 201 });
     } catch (error: any) {
-        console.error('Unexpected error creating API key:', error);
-        return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+        console.error('[API] Unexpected error creating API key:', error);
+        console.error('[API] Stack trace:', error.stack);
+        return NextResponse.json({
+            error: 'An unexpected error occurred',
+            details: error.message || String(error)
+        }, { status: 500 });
     }
 }
 
 // DELETE endpoint to revoke/delete API key
 export async function DELETE(request: NextRequest) {
+    console.log('[API] DELETE /api/keys - Request received');
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        console.log('[API] Using cookies for authentication (DELETE)');
+
+        // Using the createRouteHandlerClient with properly handled cookies
+        const cookiesInstance = await cookies();
+        const supabase = createRouteHandlerClient<Database>({ cookies: () => cookiesInstance });
+
+        console.log('[API] Supabase client created');
 
         // Check if user is authenticated
+        console.log('[API] Checking authentication for key deletion');
         const { data: { session }, error: authError } = await supabase.auth.getSession();
-        if (authError || !session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        if (authError) {
+            console.error('[API] Authentication error during key deletion:', authError);
+            return NextResponse.json({ error: 'Unauthorized', details: authError.message }, { status: 401 });
         }
+
+        if (!session) {
+            console.error('[API] No session found during key deletion');
+            return NextResponse.json({ error: 'Unauthorized', details: 'No session found' }, { status: 401 });
+        }
+
+        console.log('[API] User authenticated for key deletion. User ID:', session.user.id);
 
         // Get key ID from URL search params
         const searchParams = request.nextUrl.searchParams;
@@ -191,7 +263,11 @@ export async function DELETE(request: NextRequest) {
             message: 'API key deleted successfully'
         });
     } catch (error: any) {
-        console.error('Unexpected error deleting API key:', error);
-        return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
+        console.error('[API] Unexpected error deleting API key:', error);
+        console.error('[API] Stack trace:', error.stack);
+        return NextResponse.json({
+            error: 'An unexpected error occurred',
+            details: error.message || String(error)
+        }, { status: 500 });
     }
 }

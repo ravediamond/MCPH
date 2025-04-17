@@ -8,6 +8,7 @@ const BrandIcon = () => {
             width={180}
             height={180}
             className="bg-transparent"
+            priority
         />
     );
 };

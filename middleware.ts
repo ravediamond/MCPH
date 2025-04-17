@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { API } from './app/config/constants';
 import { validateApiKey } from './utils/apiKeyValidation';
 import { cache } from './utils/cacheUtils';
+import type { Database } from './types/database.types';
 
 // Rate limiting constants
 const DEFAULT_RATE_LIMIT = 30; // Default requests per minute
@@ -139,7 +141,45 @@ function getClientIp(request: NextRequest): string {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Only apply to public API routes
+    // Create a response object that will be modified
+    const res = NextResponse.next();
+
+    // Create a Supabase client specifically for middleware
+    const supabase = createMiddlewareClient<Database>({
+        req: request,
+        res
+    });
+
+    try {
+        // Refresh session if needed - Do this on all routes to ensure session is maintained
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error) {
+            console.error('Error in middleware auth session:', error.message);
+        }
+
+        // Check protected routes (dashboard, profile, admin)
+        if (
+            (pathname.startsWith('/dashboard') ||
+                pathname.startsWith('/profile') ||
+                pathname.startsWith('/admin') ||
+                pathname.startsWith('/mcp')) &&
+            !session
+        ) {
+            // Redirect unauthenticated users to login page
+            const redirectUrl = new URL('/', request.url);
+            console.log('Middleware: Redirecting unauthenticated user to homepage from', pathname);
+            return NextResponse.redirect(redirectUrl);
+        }
+
+        // For debugging - remove in production
+        console.log('Middleware session check:', session ? `Authenticated as ${session.user.email}` : 'No session', pathname);
+
+    } catch (error: any) {
+        console.error('Unexpected error in middleware:', error.message);
+    }
+
+    // Only apply API key validation and rate limiting to public API routes
     if (pathname.startsWith(API.PUBLIC.BASE_PATH)) {
         // 1. API Key Authentication with short-lived cache (5 seconds)
         // This prevents multiple validation checks within the same request chain
@@ -182,7 +222,6 @@ export async function middleware(request: NextRequest) {
 
         // 2. Rate Limiting - customized per API key if available
         const maxRequests = apiKeyValidation.key?.rate_limit_per_minute || DEFAULT_RATE_LIMIT;
-        // Fix: Use getClientIp helper instead of request.ip
         const clientIp = getClientIp(request);
         const keyIdentifier = apiKey || clientIp || 'unknown';
 
@@ -210,14 +249,16 @@ export async function middleware(request: NextRequest) {
         }
 
         // Add rate limit headers to the response
-        const response = NextResponse.next();
-        response.headers.set('X-RateLimit-Limit', maxRequests.toString());
-        response.headers.set('X-RateLimit-Remaining', rateCheck.remaining.toString());
-        response.headers.set('X-RateLimit-Reset', Math.ceil(rateCheck.resetTime / 1000).toString());
-
-        return response;
+        res.headers.set('X-RateLimit-Limit', maxRequests.toString());
+        res.headers.set('X-RateLimit-Remaining', rateCheck.remaining.toString());
+        res.headers.set('X-RateLimit-Reset', Math.ceil(rateCheck.resetTime / 1000).toString());
     }
 
-    // Continue processing for internal API routes and non-API routes
-    return NextResponse.next();
+    return res;
 }
+
+export const config = {
+    matcher: [
+        '/((?!_next/static|_next/image|favicon.ico).*)',
+    ]
+};

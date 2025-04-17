@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from 'lib/supabaseClient';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { Database } from '../types/database.types';
 
 // Define the context shape
 type SupabaseContextType = {
@@ -20,18 +21,43 @@ export default function SupabaseProvider({
     children: React.ReactNode;
 }) {
     const [session, setSession] = useState<Session | null>(null);
+    // Use createClientComponentClient instead of standard client
+    const supabase = createClientComponentClient<Database>();
 
     useEffect(() => {
+        // Log initialization of provider
+        console.log('Initializing Supabase provider');
+
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-        });
+        const fetchSession = async () => {
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.error('Error fetching session:', error);
+                    return;
+                }
+
+                setSession(data.session);
+                console.log("Session check:", data.session ? "User authenticated" : "No authenticated user");
+            } catch (err) {
+                console.error('Unexpected error fetching session:', err);
+            }
+        };
+
+        fetchSession();
 
         // Listen for auth changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+            console.log('Auth state change event:', event);
+            setSession(newSession);
+
+            // Log detailed session information for debugging
+            if (newSession) {
+                console.log('User authenticated:', newSession.user?.email);
+                console.log('Session expires at:', new Date(newSession.expires_at! * 1000).toLocaleString());
+            } else {
+                console.log('No active session');
+            }
         });
 
         // Cleanup on unmount

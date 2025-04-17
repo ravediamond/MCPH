@@ -1,70 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { supabase } from 'lib/supabaseClient';
+import React, { useState } from 'react';
 import { FaGithub, FaUserCircle } from 'react-icons/fa';
 import Link from 'next/link';
-import { User } from '@supabase/supabase-js';
+import { useSupabase } from '../../app/supabase-provider';
+import { useRouter } from 'next/navigation';
 
 export default function LoginModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    // Check the authentication status when component mounts
-    useEffect(() => {
-        const checkUser = async () => {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (session?.user) {
-                    setUser(session.user);
-                }
-            } catch (error) {
-                console.error('Error fetching user:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkUser();
-
-        // Set up auth state listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    setUser(session.user);
-                } else if (event === 'SIGNED_OUT') {
-                    setUser(null);
-                }
-            }
-        );
-
-        // Cleanup subscription
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
+    const { supabase, session } = useSupabase();
+    const router = useRouter();
+    const user = session?.user || null;
+    const loading = false; // Since we're using the provider, we don't need our own loading state
 
     const onOpen = () => setIsOpen(true);
     const onClose = () => setIsOpen(false);
 
     const handleLogin = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'github',
-            options: {
-                redirectTo: 'http://localhost:3000/dashboard',
-            },
-        });
-        if (error) {
-            console.error('Login error:', error);
+        console.log('Starting login process with GitHub');
+
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'github',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    // Set a scopes parameter if you need specific GitHub permissions
+                    scopes: 'read:user user:email',
+                }
+            });
+
+            if (error) {
+                console.error('Login error:', error);
+            } else {
+                console.log('OAuth sign in initiated successfully', data);
+                // The redirect will happen automatically via GitHub OAuth flow
+            }
+        } catch (err) {
+            console.error('Unexpected error during login:', err);
         }
     };
 
     const handleLogout = async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('Logout error:', error);
+        console.log('Starting logout process');
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+            } else {
+                console.log('Logged out successfully');
+                router.push('/');
+            }
+            setUserMenuOpen(false);
+        } catch (err) {
+            console.error('Unexpected error during logout:', err);
         }
-        setUserMenuOpen(false);
     };
 
     if (loading) {

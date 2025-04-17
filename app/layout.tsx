@@ -18,6 +18,7 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
+    metadataBase: new URL('https://mcph.io'),
     title: 'MCP Registry',
     description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
     keywords: ['MCP', 'Model Context Protocol', 'AI tools', 'AI endpoints', 'API registry'],

@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from 'lib/supabaseClient';
+import { createClientSupabase } from 'lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { ApiKey } from 'types/apiKey';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { FaKey, FaTrash, FaCopy, FaEye, FaEyeSlash, FaPlus } from 'react-icons/fa';
+import { useSupabase } from '../../supabase-provider';
 
 export default function ApiKeysManagement() {
     const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -23,31 +24,51 @@ export default function ApiKeysManagement() {
     const [showKey, setShowKey] = useState(false);
 
     const router = useRouter();
+    const { session } = useSupabase();
+    // Create a client-side Supabase instance that handles auth properly
+    const clientSupabase = createClientSupabase();
 
     // Check admin access and load API keys
     useEffect(() => {
         async function checkAdminAccessAndLoadKeys() {
             try {
-                // Check if user is authenticated
-                const { data: { session } } = await supabase.auth.getSession();
+                console.log('[Client] Checking authentication. Session exists:', !!session);
+
                 if (!session) {
+                    console.log('[Client] No session found, redirecting to login');
+                    toast.error('Please login to access this page');
                     router.push('/');
                     return;
                 }
 
-                // Check if user has admin role (optional - we may want to allow regular users to manage their own API keys)
-                const { data: profile } = await supabase
+                // Check if user has admin role
+                const { data, error: profileError } = await clientSupabase
                     .from('profiles')
                     .select('is_admin')
-                    .eq('id', session.user.id)
+                    .eq('id', session.user.id as string)
                     .single();
 
-                setIsAdmin(!!profile?.is_admin);
+                if (profileError) {
+                    console.error('[Client] Error fetching profile:', profileError);
+                    toast.error('Failed to check user permissions');
+                    return;
+                }
+
+                // Safely check if user is admin
+                const isAdmin = data && 'is_admin' in data ? !!data.is_admin : false;
+                setIsAdmin(isAdmin);
+
+                if (!isAdmin) {
+                    console.log('[Client] User is not an admin, redirecting');
+                    toast.error('Admin access required');
+                    router.push('/dashboard');
+                    return;
+                }
 
                 // Load API keys
                 await loadApiKeys();
             } catch (error) {
-                console.error('Error checking access:', error);
+                console.error('[Client] Error checking access:', error);
                 toast.error('Error loading API keys');
             } finally {
                 setLoading(false);
@@ -55,21 +76,33 @@ export default function ApiKeysManagement() {
         }
 
         checkAdminAccessAndLoadKeys();
-    }, [router]);
+    }, [router, session]);
 
     const loadApiKeys = async () => {
         try {
+            console.log('[Client] Starting to load API keys');
             setLoading(true);
-            const response = await fetch('/api/keys');
+
+            console.log('[Client] Fetching from /api/keys with credentials');
+            const response = await fetch('/api/keys', {
+                credentials: 'include', // Important - include cookies in the request
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            console.log('[Client] API response status:', response.status);
 
             if (!response.ok) {
-                throw new Error(`Error: ${response.status}`);
+                const errorData = await response.json().catch(e => ({ error: 'Could not parse error response' }));
+                console.error('[Client] API error response:', errorData);
+                throw new Error(`Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
             }
 
             const data = await response.json();
+            console.log('[Client] API keys loaded successfully. Count:', data.apiKeys?.length || 0);
             setApiKeys(data.apiKeys || []);
         } catch (error) {
-            console.error('Failed to load API keys:', error);
+            console.error('[Client] Failed to load API keys:', error);
             toast.error('Failed to load API keys');
         } finally {
             setLoading(false);

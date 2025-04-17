@@ -5,8 +5,21 @@ import Button from 'components/ui/Button';
 import Card from 'components/ui/Card';
 import SearchBar from 'components/SearchBar';
 import FeaturedMCPs from 'components/FeaturedMCPs';
+import { useSupabase } from './supabase-provider';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+    const { session } = useSupabase();
+    const router = useRouter();
+
+    // Redirect to dashboard if user is already authenticated
+    useEffect(() => {
+        if (session) {
+            router.push('/dashboard');
+        }
+    }, [session, router]);
+
     return (
         <div className="bg-white min-h-screen">
             {/* Refined Hero Section with Prominent Search */}
