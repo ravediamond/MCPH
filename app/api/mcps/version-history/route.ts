@@ -13,8 +13,8 @@ export async function GET(request: Request) {
             }, { status: 400 });
         }
 
-        // Fix the createRouteHandlerClient call to pass cookies as a function
-        const supabase = createRouteHandlerClient({ cookies });
+        // Create the Supabase client with the awaited cookies
+        const supabase = createRouteHandlerClient({ cookies: () => cookies() });
 
         // Check if the MCP exists
         const { data: mcp, error: mcpError } = await supabase

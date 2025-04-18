@@ -76,30 +76,28 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
         // Get the user's GitHub identity if they're logged in
         if (session.user) {
-          const { data: identities, error } = await supabase
-            .from('identities')
-            .select('identity_data')
-            .eq('user_id', session.user.id)
-            .eq('provider', 'github')
-            .single();
+          try {
+            // Using a more compatible way to query identities
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-          if (!error && identities) {
-            const githubUsername = identities.identity_data.user_name;
-            // Store the GitHub username in the user object
-            setCurrentUser({
-              ...session.user,
-              githubUsername
-            });
+            // If there's profile data, see if we can extract GitHub username another way
+            if (!error && data) {
+              // If you have a field in profiles for GitHub username, use username as fallback
+              setCurrentUser({
+                ...session.user,
+                githubUsername: data.username // Using username field which exists in profiles table
+              });
+
+              // Check if the user is an admin
+              setIsAdminUser(!!data?.is_admin);
+            }
+          } catch (identityError) {
+            console.error('Error fetching user identity:', identityError);
           }
-
-          // Check if the user is an admin
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', session.user.id)
-            .single();
-
-          setIsAdminUser(!!profile?.is_admin);
         }
       }
     }
@@ -119,18 +117,21 @@ export default function MCPDetail({ params }: MCPDetailProps) {
       if (error) {
         console.error('Error fetching MCP:', error);
       } else {
-        setMCP(data);
+        // Use type assertion to ensure TypeScript understands this is an MCP
+        setMCP(data as unknown as MCP);
 
         // Refresh the README if needed.
         try {
           setRefreshing(true);
           const refreshedMcp = await refreshReadmeIfNeeded(data);
           if (refreshedMcp !== data) {
-            setMCP(refreshedMcp);
+            setMCP(refreshedMcp as unknown as MCP);
           }
 
-          // Increment view count
-          incrementViewCount(id);
+          // Increment view count and log confirmation
+          console.log('Incrementing view count for MCP:', id);
+          await incrementViewCount(id);
+          console.log('View count increment request sent.');
         } catch (refreshError) {
           console.error('Error refreshing README:', refreshError);
         } finally {
@@ -144,7 +145,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
   // Function to handle MCP deletion
   const handleDeleteMCP = async () => {
-    if (!mcp) return;
+    if (!mcp || !mcp.id) return;
 
     setIsDeleting(true);
     try {
@@ -171,13 +172,18 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   // Function to increment view count
   const incrementViewCount = async (mcpId: string) => {
     try {
-      await fetch('/api/mcps/view', {
+      const response = await fetch('/api/mcps/view', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ mcpId })
       });
+
+      const data = await response.json();
+      console.log('View count response:', data);
+
+      return data;
     } catch (error) {
       console.error('Error incrementing view count:', error);
     }

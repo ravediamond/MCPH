@@ -4,23 +4,23 @@ export interface MCP {
   name: string;
   description?: string;
   repository_url: string;
-  repository_name?: string;  // New field for repository name
+  repository_name?: string | null;  // Updated to accept null values
   tags?: string[];
   version: string;
   author: string;
   user_id: string;
-  readme?: string;         // Cached README content
-  last_refreshed?: string; // Timestamp when the README was fetched
-  owner_username?: string; // Owner's GitHub username
-  claimed?: boolean;       // Whether the MCP has been claimed by its owner
-  is_mcph_owned?: boolean; // Whether the MCP is owned by MCPH (organization ownership)
+  readme?: string | null;         // Updated to accept null values
+  last_refreshed?: string | null; // Updated to accept null values
+  owner_username?: string | null; // Updated to accept null values
+  claimed?: boolean | null;       // Updated to accept null values
+  is_mcph_owned?: boolean | null; // Updated to accept null values
   view_count?: number;     // Number of times this MCP has been viewed
   avg_rating?: number;     // Average rating (1-5)
   review_count?: number;   // Number of reviews
   stars?: number;          // GitHub repository star count
   forks?: number;          // GitHub repository fork count
   open_issues?: number;    // GitHub repository open issues count
-  last_repo_update?: string; // Last GitHub repository update timestamp
+  last_repo_update?: string | null; // Updated to accept null values
   profiles?: {             // Added profiles property for join data
     email: string;
   };

@@ -6,7 +6,7 @@ import { validateApiKey } from 'utils/apiKeyValidation';
 
 /**
  * Public API endpoint to add a new MCP
- * This endpoint allows for submission of MCPs via API with an API key
+ * This endpoint allows for submission of MCPs via API with an admin API key
  * Follows REST principles and uses the same versioning as other public APIs
  */
 export async function POST(request: NextRequest) {
@@ -20,12 +20,19 @@ export async function POST(request: NextRequest) {
             }, { status: 401 });
         }
 
-        // Validate the API key - this will work with both admin and regular user keys
-        const keyValidation = await validateApiKey(apiKey);
+        // Validate the API key - require admin privileges
+        const keyValidation = await validateApiKey(apiKey, true);
         if (!keyValidation.valid || !keyValidation.key) {
             return NextResponse.json({
                 success: false,
-                error: 'Invalid or expired API key'
+                error: keyValidation.error || 'Invalid or expired API key'
+            }, { status: 403 });
+        }
+
+        if (!keyValidation.isAdmin) {
+            return NextResponse.json({
+                success: false,
+                error: 'This operation requires an admin API key'
             }, { status: 403 });
         }
 

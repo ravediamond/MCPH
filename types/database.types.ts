@@ -94,6 +94,89 @@ export interface Database {
                     }
                 ];
             };
+            mcps: {
+                Row: {
+                    id: string;
+                    created_at: string;
+                    name: string;
+                    description: string;
+                    repository_url: string;
+                    repository_name: string | null;
+                    tags: string[];
+                    version: string;
+                    author: string;
+                    user_id: string;
+                    readme: string | null;
+                    last_refreshed: string | null;
+                    owner_username: string | null;
+                    claimed: boolean | null;
+                    is_mcph_owned: boolean | null;
+                    view_count: number | null;
+                    avg_rating: number | null;
+                    review_count: number | null;
+                    stars: number | null;
+                    forks: number | null;
+                    open_issues: number | null;
+                    last_repo_update: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    created_at?: string;
+                    name: string;
+                    description?: string;
+                    repository_url: string;
+                    repository_name?: string | null;
+                    tags?: string[];
+                    version: string;
+                    author: string;
+                    user_id: string;
+                    readme?: string | null;
+                    last_refreshed?: string | null;
+                    owner_username?: string | null;
+                    claimed?: boolean | null;
+                    is_mcph_owned?: boolean | null;
+                    view_count?: number | null;
+                    avg_rating?: number | null;
+                    review_count?: number | null;
+                    stars?: number | null;
+                    forks?: number | null;
+                    open_issues?: number | null;
+                    last_repo_update?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    created_at?: string;
+                    name?: string;
+                    description?: string;
+                    repository_url?: string;
+                    repository_name?: string | null;
+                    tags?: string[];
+                    version?: string;
+                    author?: string;
+                    user_id?: string;
+                    readme?: string | null;
+                    last_refreshed?: string | null;
+                    owner_username?: string | null;
+                    claimed?: boolean | null;
+                    is_mcph_owned?: boolean | null;
+                    view_count?: number | null;
+                    avg_rating?: number | null;
+                    review_count?: number | null;
+                    stars?: number | null;
+                    forks?: number | null;
+                    open_issues?: number | null;
+                    last_repo_update?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "mcps_user_id_fkey";
+                        columns: ["user_id"];
+                        isOneToOne: false;
+                        referencedRelation: "users";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
             // Add other tables as needed
         };
         Views: {
