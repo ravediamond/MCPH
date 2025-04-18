@@ -18,7 +18,8 @@ import {
   FaSync,
   FaCheckCircle,
   FaComment,
-  FaTrashAlt
+  FaTrashAlt,
+  FaThumbsUp
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
@@ -30,7 +31,6 @@ import { useRouter } from 'next/navigation';
 import styles from './markdown-dark.module.css';
 
 // Import components
-import VersionHistoryPanel from 'components/VersionHistoryPanel';
 import Reviews from 'components/Reviews';
 
 interface MCPDetailProps {
@@ -38,10 +38,10 @@ interface MCPDetailProps {
 }
 
 export default function MCPDetail({ params }: MCPDetailProps) {
-  // Extract id from params
+  // Get the ID from params directly - don't use React.use() in client components
   const id = params.id;
+
   const [mcp, setMCP] = useState<MCP | null>(null);
-  // Rest of the code remains unchanged
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [readme, setReadme] = useState<string>('');
@@ -128,10 +128,8 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             setMCP(refreshedMcp as unknown as MCP);
           }
 
-          // Increment view count and log confirmation
-          console.log('Incrementing view count for MCP:', id);
+          // Increment view count and update the MCP state with the new view count
           await incrementViewCount(id);
-          console.log('View count increment request sent.');
         } catch (refreshError) {
           console.error('Error refreshing README:', refreshError);
         } finally {
@@ -172,6 +170,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   // Function to increment view count
   const incrementViewCount = async (mcpId: string) => {
     try {
+      console.log('Incrementing view count for MCP:', mcpId);
       const response = await fetch('/api/mcps/view', {
         method: 'POST',
         headers: {
@@ -182,6 +181,17 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       const data = await response.json();
       console.log('View count response:', data);
+
+      // If the call was successful and we got a new view count, update the state
+      if (data.success && data.viewCount !== undefined) {
+        setMCP(prevMcp => {
+          if (!prevMcp) return prevMcp;
+          return {
+            ...prevMcp,
+            view_count: data.viewCount
+          } as MCP;
+        });
+      }
 
       return data;
     } catch (error) {
@@ -430,7 +440,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       <div className="max-w-screen-xl mx-auto px-4 mt-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Sidebar with Repository Metrics and Version History */}
+          {/* Sidebar with Repository Metrics */}
           <div className="lg:col-span-1">
             {/* Repository Info Panel */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
@@ -444,7 +454,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
                       <FaEye className="text-blue-600" />
-                      <span>MCPHub Views</span>
+                      <span>Views</span>
                     </div>
                     <span className="font-semibold">{mcp.view_count?.toLocaleString() || '0'}</span>
                   </div>
@@ -452,7 +462,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   {/* Rating Info */}
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
-                      <FaStar className="text-yellow-500" />
+                      <FaThumbsUp className="text-green-500" />
                       <span>Rating</span>
                     </div>
                     <div className="flex items-center">
@@ -533,16 +543,6 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                 </div>
               )}
             </div>
-
-            {/* Version History Panel - Moved to the left */}
-            {mcp && mcp.id && (
-              <VersionHistoryPanel
-                mcpId={mcp.id}
-                currentVersion={mcp.version}
-                isOwner={isClaimedByCurrentUser}
-                isAdmin={isAdminUser}
-              />
-            )}
           </div>
 
           {/* Right side content with tabs for README and Reviews */}

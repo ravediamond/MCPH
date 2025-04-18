@@ -20,10 +20,13 @@ function createUserProfileCacheKey(userId: string): string {
 // GET endpoint to retrieve reviews for a specific MCP
 export async function GET(request: NextRequest) {
     try {
+        console.log('DEBUG Reviews GET: Starting request processing');
         const searchParams = request.nextUrl.searchParams;
         const mcpId = searchParams.get('mcp_id');
+        console.log(`DEBUG Reviews GET: Requested MCP ID: ${mcpId}`);
 
         if (!mcpId) {
+            console.log('DEBUG Reviews GET: Missing MCP ID parameter');
             return new NextResponse(
                 JSON.stringify({ error: 'MCP ID is required' }),
                 { status: 400 }
@@ -32,125 +35,149 @@ export async function GET(request: NextRequest) {
 
         // Create a cache key for this specific MCP's reviews
         const cacheKey = createReviewsCacheKey(mcpId);
+        console.log(`DEBUG Reviews GET: Cache key created: ${cacheKey}`);
+
+        // Check if we have this in cache already
+        const cachedData = cache.get(cacheKey);
+        console.log(`DEBUG Reviews GET: Cache hit? ${!!cachedData}`);
 
         // Use cachedFetch to avoid unnecessary database queries
         return cachedFetch(
             cacheKey,
             async () => {
-                // Fix the createRouteHandlerClient call to pass cookies as a function
-                const supabase = createRouteHandlerClient({ cookies });
+                console.log('DEBUG Reviews GET: Cache miss, fetching data from Supabase');
+                // Correctly initialize Supabase client with cookies as a function
+                try {
+                    console.log('DEBUG Reviews GET: Creating Supabase client');
+                    const cookiesObj = cookies();
+                    console.log(`DEBUG Reviews GET: Cookies available: ${!!cookiesObj}`);
 
-                // Execute all these queries in parallel to reduce wait time
-                const [reviewsResponse, mcpStatsResponse] = await Promise.all([
-                    // Fetch reviews
-                    supabase
-                        .from('reviews')
-                        .select(`
-                            id,
-                            created_at,
-                            updated_at,
-                            mcp_id,
-                            user_id,
-                            rating,
-                            comment
-                        `)
-                        .eq('mcp_id', mcpId)
-                        .order('created_at', { ascending: false }),
+                    const supabase = createRouteHandlerClient({ cookies: () => cookies() });
+                    console.log('DEBUG Reviews GET: Supabase client created successfully');
 
-                    // Fetch MCP stats
-                    supabase
-                        .from('mcps')
-                        .select('avg_rating, review_count')
-                        .eq('id', mcpId)
-                        .single()
-                ]);
+                    // Execute all these queries in parallel to reduce wait time
+                    console.log('DEBUG Reviews GET: Starting parallel database queries');
+                    const [reviewsResponse, mcpStatsResponse] = await Promise.all([
+                        // Fetch reviews
+                        supabase
+                            .from('reviews')
+                            .select(`
+                                id,
+                                created_at,
+                                updated_at,
+                                mcp_id,
+                                user_id,
+                                rating,
+                                comment
+                            `)
+                            .eq('mcp_id', mcpId)
+                            .order('created_at', { ascending: false }),
 
-                const { data: reviews, error: reviewsError } = reviewsResponse;
-                const { data: mcpData, error: mcpError } = mcpStatsResponse;
+                        // Fetch MCP stats
+                        supabase
+                            .from('mcps')
+                            .select('avg_rating, review_count')
+                            .eq('id', mcpId)
+                            .single()
+                    ]);
 
-                if (reviewsError) {
-                    console.error('Error fetching reviews:', reviewsError);
-                    throw new Error('Failed to fetch reviews');
-                }
+                    console.log('DEBUG Reviews GET: Database queries completed');
+                    const { data: reviews, error: reviewsError } = reviewsResponse;
+                    console.log(`DEBUG Reviews GET: Reviews count: ${reviews?.length || 0}`);
+                    if (reviewsError) console.log(`DEBUG Reviews GET: Reviews error: ${reviewsError.message}`);
 
-                // Collect all user IDs that we need to fetch
-                const userIds = new Set<string>();
-                if (reviews && reviews.length > 0) {
-                    reviews.forEach(review => {
-                        if (review.user_id) userIds.add(review.user_id);
+                    const { data: mcpData, error: mcpError } = mcpStatsResponse;
+                    console.log(`DEBUG Reviews GET: MCP data: ${JSON.stringify(mcpData || {})}`);
+                    if (mcpError) console.log(`DEBUG Reviews GET: MCP error: ${mcpError.message}`);
+
+                    if (reviewsError) {
+                        console.error('Error fetching reviews:', reviewsError);
+                        throw new Error('Failed to fetch reviews');
+                    }
+
+                    // Collect all user IDs that we need to fetch
+                    const userIds = new Set<string>();
+                    if (reviews && reviews.length > 0) {
+                        reviews.forEach(review => {
+                            if (review.user_id) userIds.add(review.user_id);
+                        });
+                    }
+
+                    // Fetch user profiles in bulk if we have reviews
+                    const userProfiles: Record<string, any> = {};
+                    if (userIds.size > 0) {
+                        const userIdsArray = Array.from(userIds);
+
+                        // Check cache first for each user profile
+                        const uncachedUserIds = [];
+                        for (const userId of userIdsArray) {
+                            const userProfileKey = createUserProfileCacheKey(userId);
+                            const cachedProfile = cache.get(userProfileKey);
+
+                            if (cachedProfile) {
+                                userProfiles[userId] = cachedProfile;
+                            } else {
+                                uncachedUserIds.push(userId);
+                            }
+                        }
+
+                        // Only fetch profiles that aren't in cache
+                        if (uncachedUserIds.length > 0) {
+                            const { data: profiles, error: profilesError } = await supabase
+                                .from('profiles')
+                                .select('id, username, email')
+                                .in('id', uncachedUserIds);
+
+                            if (!profilesError && profiles) {
+                                // Add fetched profiles to our mapping and cache them
+                                profiles.forEach(profile => {
+                                    userProfiles[profile.id] = profile;
+
+                                    // Cache individual user profiles (1 hour TTL)
+                                    const userProfileKey = createUserProfileCacheKey(profile.id);
+                                    cache.set(userProfileKey, profile, { ttl: 60 * 60 * 1000 });
+                                });
+                            }
+                        }
+                    }
+
+                    // Add user info to reviews
+                    const reviewsWithUserInfo = reviews?.map(review => ({
+                        ...review,
+                        user: userProfiles[review.user_id] || null
+                    })) || [];
+
+                    // Calculate rating distribution more efficiently
+                    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                    reviews?.forEach(review => {
+                        if (review.rating >= 1 && review.rating <= 5) {
+                            distribution[review.rating as 1 | 2 | 3 | 4 | 5]++;
+                        }
                     });
+
+                    console.log('DEBUG Reviews GET: Preparing response data');
+                    return new NextResponse(
+                        JSON.stringify({
+                            reviews: reviewsWithUserInfo,
+                            stats: {
+                                avg_rating: mcpData?.avg_rating || 0,
+                                review_count: mcpData?.review_count || 0,
+                                rating_distribution: distribution
+                            }
+                        }),
+                        { status: 200 }
+                    );
+                } catch (innerError) {
+                    console.error('DEBUG Reviews GET: Error in data fetching:', innerError);
+                    throw innerError;
                 }
-
-                // Fetch user profiles in bulk if we have reviews
-                const userProfiles: Record<string, any> = {};
-                if (userIds.size > 0) {
-                    const userIdsArray = Array.from(userIds);
-
-                    // Check cache first for each user profile
-                    const uncachedUserIds = [];
-                    for (const userId of userIdsArray) {
-                        const userProfileKey = createUserProfileCacheKey(userId);
-                        const cachedProfile = cache.get(userProfileKey);
-
-                        if (cachedProfile) {
-                            userProfiles[userId] = cachedProfile;
-                        } else {
-                            uncachedUserIds.push(userId);
-                        }
-                    }
-
-                    // Only fetch profiles that aren't in cache
-                    if (uncachedUserIds.length > 0) {
-                        const { data: profiles, error: profilesError } = await supabase
-                            .from('profiles')
-                            .select('id, username, email')
-                            .in('id', uncachedUserIds);
-
-                        if (!profilesError && profiles) {
-                            // Add fetched profiles to our mapping and cache them
-                            profiles.forEach(profile => {
-                                userProfiles[profile.id] = profile;
-
-                                // Cache individual user profiles (1 hour TTL)
-                                const userProfileKey = createUserProfileCacheKey(profile.id);
-                                cache.set(userProfileKey, profile, { ttl: 60 * 60 * 1000 });
-                            });
-                        }
-                    }
-                }
-
-                // Add user info to reviews
-                const reviewsWithUserInfo = reviews?.map(review => ({
-                    ...review,
-                    user: userProfiles[review.user_id] || null
-                })) || [];
-
-                // Calculate rating distribution more efficiently
-                const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-                reviews?.forEach(review => {
-                    if (review.rating >= 1 && review.rating <= 5) {
-                        distribution[review.rating as 1 | 2 | 3 | 4 | 5]++;
-                    }
-                });
-
-                return new NextResponse(
-                    JSON.stringify({
-                        reviews: reviewsWithUserInfo,
-                        stats: {
-                            avg_rating: mcpData?.avg_rating || 0,
-                            review_count: mcpData?.review_count || 0,
-                            rating_distribution: distribution
-                        }
-                    }),
-                    { status: 200 }
-                );
             },
             REVIEWS_CACHE_TTL
         );
     } catch (error) {
-        console.error('Unexpected error:', error);
+        console.error('DEBUG Reviews GET: Unexpected error:', error);
         return new NextResponse(
-            JSON.stringify({ error: 'An unexpected error occurred' }),
+            JSON.stringify({ error: 'An unexpected error occurred', details: error instanceof Error ? error.message : String(error) }),
             { status: 500 }
         );
     }
@@ -159,8 +186,8 @@ export async function GET(request: NextRequest) {
 // POST endpoint to add a new review
 export async function POST(request: NextRequest) {
     try {
-        // Fix the createRouteHandlerClient call to pass cookies as a function
-        const supabase = createRouteHandlerClient({ cookies });
+        // Correctly initialize Supabase client with cookies as a function
+        const supabase = createRouteHandlerClient({ cookies: () => cookies() });
 
         // Check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();
@@ -274,8 +301,8 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // Fix the createRouteHandlerClient call to pass cookies as a function
-        const supabase = createRouteHandlerClient({ cookies });
+        // Correctly initialize Supabase client with cookies as a function
+        const supabase = createRouteHandlerClient({ cookies: () => cookies() });
 
         // Check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();

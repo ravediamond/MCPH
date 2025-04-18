@@ -26,29 +26,39 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
     const fetchReviews = async () => {
         setLoading(true);
         try {
+            console.log(`DEBUG Reviews Component: Fetching reviews for MCP ID: ${mcpId}`);
             const response = await fetch(`/api/mcps/reviews?mcp_id=${mcpId}`);
+            console.log(`DEBUG Reviews Component: Response status: ${response.status}`);
+
             if (!response.ok) {
-                throw new Error('Failed to fetch reviews');
+                const errorText = await response.text();
+                console.error(`DEBUG Reviews Component: Error response body: ${errorText}`);
+                throw new Error(`Failed to fetch reviews: ${response.status} ${response.statusText}`);
             }
 
             const data = await response.json();
+            console.log(`DEBUG Reviews Component: Received data with ${data.reviews?.length || 0} reviews`);
             setReviews(data.reviews || []);
             setStats(data.stats || { avg_rating: 0, review_count: 0 });
 
             // If user is logged in, check if they've already left a review
             if (session?.user) {
+                console.log(`DEBUG Reviews Component: User logged in as ${session.user.email}, checking for existing review`);
                 const userReview = data.reviews.find(
                     (review: Review) => review.user_id === session.user.id
                 );
 
                 if (userReview) {
+                    console.log(`DEBUG Reviews Component: Found existing user review with ID: ${userReview.id}`);
                     setUserReview(userReview);
                     setNewReviewRating(userReview.rating);
                     setComment(userReview.comment || '');
+                } else {
+                    console.log(`DEBUG Reviews Component: No existing review found for current user`);
                 }
             }
         } catch (error) {
-            console.error('Error fetching reviews:', error);
+            console.error('DEBUG Reviews Component: Error fetching reviews:', error);
             toast.error('Failed to load reviews');
         } finally {
             setLoading(false);

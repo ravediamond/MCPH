@@ -1,6 +1,7 @@
 /**
  * A simple in-memory cache implementation with TTL support
  */
+import { NextResponse } from 'next/server';
 
 interface CacheOptions {
     ttl: number; // Time to live in milliseconds
@@ -106,18 +107,42 @@ export const cache = MemoryCache.getInstance();
  * Will fetch from the cache if available, otherwise call the fetcher function and cache the result
  */
 export async function cachedFetch<T>(
-    key: string,
-    fetcher: () => Promise<T>,
-    ttl: number = 3600000 // Default TTL: 1 hour
-): Promise<T> {
-    const cachedData = cache.get<T>(key);
+    cacheKey: string,
+    fetchFunction: () => Promise<NextResponse>,
+    ttlMs: number = 60 * 60 * 1000 // Default to 1 hour TTL
+): Promise<NextResponse> {
+    try {
+        // Check if we have a cached value
+        const cachedValue = cache.get<string>(cacheKey);
 
-    if (cachedData !== undefined) {
-        return cachedData;
+        if (cachedValue) {
+            console.log(`Cache hit for key: ${cacheKey}`);
+            // Ensure we return a proper NextResponse when using cached value
+            return new NextResponse(
+                cachedValue,
+                { status: 200, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
+
+        console.log(`Cache miss for key: ${cacheKey}`);
+        // Call the fetch function to get fresh data
+        const response = await fetchFunction();
+
+        // Only cache successful responses
+        if (response.status >= 200 && response.status < 300) {
+            // Clone the response and cache its text content
+            const clonedResponse = response.clone();
+            const responseText = await clonedResponse.text();
+
+            // Store the text response in cache
+            cache.set(cacheKey, responseText, { ttl: ttlMs });
+
+            return response;
+        }
+
+        return response;
+    } catch (error) {
+        console.error(`Error in cachedFetch for key ${cacheKey}:`, error);
+        throw error;
     }
-
-    // Data not in cache, fetch it
-    const freshData = await fetcher();
-    cache.set(key, freshData, { ttl });
-    return freshData;
 }
