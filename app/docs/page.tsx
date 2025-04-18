@@ -16,6 +16,16 @@ export default function DocsPage() {
                     <p className="text-lg text-neutral-600 max-w-3xl mx-auto">
                         Explore our guides, API reference, tutorials, and FAQs to learn how to integrate and get the most out of our platform.
                     </p>
+                    <div className="mt-4">
+                        <a
+                            href="https://modelcontextprotocol.io/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                        >
+                            Visit the official Model Context Protocol website →
+                        </a>
+                    </div>
                 </div>
             </section>
 
@@ -35,6 +45,44 @@ export default function DocsPage() {
                                 With MCP, AI applications can access specialized services like database interactions, web searches, or domain-specific tools
                                 without needing custom integration for each one.
                             </p>
+                        </div>
+
+                        <div className="mb-8 border-t border-neutral-100 pt-6">
+                            <h3 className="text-xl font-medium text-neutral-800 mb-3">Official SDK Libraries</h3>
+                            <div className="grid md:grid-cols-2 gap-4 mt-4">
+                                <a
+                                    href="https://github.com/modelcontextprotocol/python-sdk"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                >
+                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <span className="text-lg font-medium">Py</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-neutral-800">Python SDK</h4>
+                                        <p className="text-neutral-600 text-sm">
+                                            Official Python implementation of the MCP specification
+                                        </p>
+                                    </div>
+                                </a>
+                                <a
+                                    href="https://github.com/modelcontextprotocol/typescript-sdk"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                >
+                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <span className="text-lg font-medium">TS</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-neutral-800">TypeScript SDK</h4>
+                                        <p className="text-neutral-600 text-sm">
+                                            Official TypeScript implementation of the MCP specification
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
 
                         <div className="border-t border-neutral-100 pt-6">

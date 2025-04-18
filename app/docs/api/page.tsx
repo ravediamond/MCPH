@@ -11,6 +11,44 @@ export default function ApiReferencePage() {
                     MCPHub provides a RESTful API that allows you to search for and add MCP implementations programmatically.
                     To use the API, you'll need an API key from your <a href="/profile/apikeys" className="text-blue-600 hover:text-blue-800">profile page</a>.
                 </p>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-6">
+                    <h3 className="font-medium mb-2">Official MCP SDKs</h3>
+                    <p className="mb-2">
+                        For detailed implementation of the Model Context Protocol, please refer to the official SDKs:
+                    </p>
+                    <ul className="list-disc ml-6">
+                        <li>
+                            <a
+                                href="https://github.com/modelcontextprotocol/python-sdk"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                Python SDK
+                            </a> - For Python applications and servers
+                        </li>
+                        <li>
+                            <a
+                                href="https://github.com/modelcontextprotocol/typescript-sdk"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                TypeScript SDK
+                            </a> - For JavaScript/TypeScript applications and servers
+                        </li>
+                        <li>
+                            <a
+                                href="https://modelcontextprotocol.io/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                            >
+                                Official MCP Website
+                            </a> - For protocol specifications and ecosystem information
+                        </li>
+                    </ul>
+                </div>
             </section>
 
             <section className="mb-10">
@@ -66,6 +104,10 @@ X-API-Key: your_api_key_here
                 <p className="text-lg">
                     For detailed API documentation and more endpoints, please check our
                     <a href="https://github.com/example/mcphub/wiki/api" className="text-blue-600 hover:text-blue-800"> GitHub repository</a>.
+                </p>
+                <p className="text-lg mt-4">
+                    For comprehensive documentation on the Model Context Protocol specification itself, visit the
+                    <a href="https://modelcontextprotocol.io/" className="text-blue-600 hover:text-blue-800"> official MCP website</a>.
                 </p>
             </section>
         </div>
