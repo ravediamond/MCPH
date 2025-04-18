@@ -11,45 +11,72 @@ export default function DocsPage() {
             <section className="py-16 px-4 border-b border-neutral-100">
                 <div className="max-w-5xl mx-auto text-center">
                     <h1 className="text-4xl font-semibold text-neutral-800 mb-4">
-                        Documentation
+                        About MCPs
                     </h1>
                     <p className="text-lg text-neutral-600 max-w-3xl mx-auto">
-                        Explore our guides, API reference, tutorials, and FAQs to learn how to integrate and get the most out of our platform.
+                        Learn the basics of Model Context Protocol (MCP) and how to use the MCPs you discover on our hub.
                     </p>
-                    <div className="mt-4">
+                    <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
                         <a
                             href="https://modelcontextprotocol.io/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                            className="text-white bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-md transition-colors font-medium"
                         >
-                            Visit the official Model Context Protocol website →
+                            Official MCP Website
+                        </a>
+                        <a
+                            href="https://github.com/modelcontextprotocol"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 px-5 py-2 rounded-md transition-colors font-medium"
+                        >
+                            GitHub Repository
                         </a>
                     </div>
                 </div>
             </section>
 
-            {/* Quick Start Guide for New Users */}
-            <section className="py-10 px-4 bg-blue-50 border-y border-blue-100">
+            {/* What is MCP Section */}
+            <section className="py-10 px-4 bg-blue-50">
                 <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">Quick Start Guide</h2>
+                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">What is Model Context Protocol?</h2>
 
                     <div className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm">
-                        <div className="mb-8">
-                            <h3 className="text-xl font-medium text-neutral-800 mb-3">What is Model Context Protocol (MCP)?</h3>
-                            <p className="text-neutral-700 mb-4">
-                                MCP is a specification that enables AI systems to communicate with external tools and APIs in a standardized way.
-                                It defines how AI models can discover capabilities, send requests, and receive structured responses.
-                            </p>
-                            <p className="text-neutral-700">
-                                With MCP, AI applications can access specialized services like database interactions, web searches, or domain-specific tools
-                                without needing custom integration for each one.
-                            </p>
-                        </div>
+                        <p className="text-neutral-700 mb-4">
+                            MCP is a specification that enables AI systems to communicate with external tools and APIs in a standardized way.
+                            It defines how AI models can discover capabilities, send requests, and receive structured responses.
+                        </p>
+                        <p className="text-neutral-700 mb-6">
+                            With MCP, AI applications can access specialized services like database interactions, web searches, or domain-specific tools
+                            without needing custom integration for each one.
+                        </p>
 
-                        <div className="mb-8 border-t border-neutral-100 pt-6">
-                            <h3 className="text-xl font-medium text-neutral-800 mb-3">Official SDK Libraries</h3>
-                            <div className="grid md:grid-cols-2 gap-4 mt-4">
+                        <div className="flex justify-center">
+                            <img
+                                src="https://raw.githubusercontent.com/modelcontextprotocol/.github/main/profile/mcp-explanation.png"
+                                alt="MCP Flow Diagram"
+                                className="max-w-full h-auto rounded-lg shadow-sm border border-neutral-200"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Official Resources */}
+            <section className="py-10 px-4">
+                <div className="max-w-5xl mx-auto">
+                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">Official Resources</h2>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6 }}
+                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm"
+                        >
+                            <h3 className="text-xl font-medium text-neutral-800 mb-3">SDK Libraries</h3>
+                            <div className="space-y-4">
                                 <a
                                     href="https://github.com/modelcontextprotocol/python-sdk"
                                     target="_blank"
@@ -83,147 +110,106 @@ export default function DocsPage() {
                                     </div>
                                 </a>
                             </div>
-                        </div>
-
-                        <div className="border-t border-neutral-100 pt-6">
-                            <h3 className="text-xl font-medium text-neutral-800 mb-4">Integrating an MCP in 3 Simple Steps</h3>
-
-                            <div className="space-y-6">
-                                <div className="flex">
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                        <span className="font-bold text-sm">1</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-neutral-800 mb-1">Find a Compatible MCP</h4>
-                                        <p className="text-neutral-600 text-sm">
-                                            Search or browse the registry for MCPs that provide the capabilities you need.
-                                            Each listing includes compatibility information and required dependencies.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex">
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                        <span className="font-bold text-sm">2</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-neutral-800 mb-1">Add the Endpoint to Your System</h4>
-                                        <p className="text-neutral-600 text-sm">
-                                            Each MCP provides configuration details - typically an endpoint URL and authentication requirements.
-                                            Add these to your AI system's configuration using your framework's MCP client.
-                                        </p>
-                                        <div className="bg-neutral-50 rounded-md p-3 my-2 font-mono text-xs text-neutral-700 overflow-x-auto">
-                                            <code>{`// Example configuration (syntax varies by framework)
-{
-  "mcp_endpoints": [
-    {
-      "name": "example-service",
-      "url": "https://api.example.com/mcp",
-      "auth_type": "bearer" 
-    }
-  ]
-}`}</code>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex">
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                        <span className="font-bold text-sm">3</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-neutral-800 mb-1">Use the MCP in Your Application</h4>
-                                        <p className="text-neutral-600 text-sm">
-                                            Your AI system can now discover and use the MCP's capabilities. The exact implementation
-                                            depends on your framework, but typically follows this pattern:
-                                        </p>
-                                        <div className="bg-neutral-50 rounded-md p-3 my-2 font-mono text-xs text-neutral-700 overflow-x-auto">
-                                            <code>{`// Example usage (pseudocode)
-result = ai_system.process_with_tools(
-  user_query,
-  available_tools=["example-service"]
-)`}</code>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-neutral-100 text-center">
-                            <Link href="/docs/getting-started" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-                                View detailed integration guides
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Documentation Categories */}
-            <section className="py-16 px-4">
-                <div className="max-w-5xl mx-auto">
-                    <div className="grid gap-8 md:grid-cols-2">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
-                        >
-                            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">Getting Started</h2>
-                            <p className="text-neutral-600 text-sm mb-4">
-                                Learn how to quickly set up your project and integrate our services.
-                            </p>
-                            <Button variant="primary" size="sm" className="px-4 py-2">
-                                <Link href="/docs/getting-started">Read More</Link>
-                            </Button>
                         </motion.div>
 
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
+                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm"
                         >
-                            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">API Reference</h2>
-                            <p className="text-neutral-600 text-sm mb-4">
-                                Detailed documentation on our API endpoints, parameters, and usage examples.
-                            </p>
-                            <Button variant="primary" size="sm" className="px-4 py-2">
-                                <Link href="/docs/api">Read More</Link>
-                            </Button>
+                            <h3 className="text-xl font-medium text-neutral-800 mb-3">Documentation</h3>
+                            <div className="space-y-4">
+                                <a
+                                    href="https://docs.modelcontextprotocol.io/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                >
+                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <span className="text-lg font-medium">📚</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-neutral-800">Official Documentation</h4>
+                                        <p className="text-neutral-600 text-sm">
+                                            Comprehensive guides, API references, and tutorials
+                                        </p>
+                                    </div>
+                                </a>
+                                <a
+                                    href="https://github.com/modelcontextprotocol/spec"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                >
+                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <span className="text-lg font-medium">📝</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-neutral-800">Specification</h4>
+                                        <p className="text-neutral-600 text-sm">
+                                            Technical details and implementation guidelines
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
                         </motion.div>
+                    </div>
+                </div>
+            </section>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
-                        >
-                            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">Tutorials</h2>
-                            <p className="text-neutral-600 text-sm mb-4">
-                                Step-by-step guides to help you implement our platform seamlessly.
-                            </p>
-                            <Button variant="primary" size="sm" className="px-4 py-2">
-                                <Link href="/docs/tutorials">Read More</Link>
-                            </Button>
-                        </motion.div>
+            {/* How to Use MCPs */}
+            <section className="py-10 px-4 bg-blue-50 mb-10">
+                <div className="max-w-5xl mx-auto">
+                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">How to Use MCPs</h2>
 
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.3 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-300"
-                        >
-                            <h2 className="text-2xl font-semibold text-neutral-800 mb-2">FAQ</h2>
-                            <p className="text-neutral-600 text-sm mb-4">
-                                Find answers to common questions and get troubleshooting tips.
-                            </p>
-                            <Button variant="primary" size="sm" className="px-4 py-2">
-                                <Link href="/docs/faq">Read More</Link>
-                            </Button>
-                        </motion.div>
+                    <div className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm">
+                        <div className="space-y-6">
+                            <div className="flex">
+                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                    <span className="font-bold text-sm">1</span>
+                                </div>
+                                <div>
+                                    <h4 className="font-medium text-neutral-800 mb-1">Find a Compatible MCP</h4>
+                                    <p className="text-neutral-600">
+                                        Browse our hub to discover MCPs that provide the capabilities you need for your AI application.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex">
+                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                    <span className="font-bold text-sm">2</span>
+                                </div>
+                                <div>
+                                    <h4 className="font-medium text-neutral-800 mb-1">Configure Your Environment</h4>
+                                    <p className="text-neutral-600">
+                                        Install the appropriate MCP SDK for your programming language and configure it with the MCP's endpoint.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex">
+                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                    <span className="font-bold text-sm">3</span>
+                                </div>
+                                <div>
+                                    <h4 className="font-medium text-neutral-800 mb-1">Integrate and Use</h4>
+                                    <p className="text-neutral-600">
+                                        Connect your AI model to the MCP to extend its capabilities with the external tools and services.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-6 border-t border-neutral-100 text-center">
+                            <Link href="/browse" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                                Start browsing MCPs
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
