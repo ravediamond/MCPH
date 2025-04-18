@@ -287,27 +287,6 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     fetchRepoData();
   }, [repoInfo]);
 
-  // Manual refresh function
-  const handleManualRefresh = async () => {
-    if (!mcp || refreshing) return;
-
-    try {
-      setRefreshing(true);
-      // Force a refresh by setting last_refreshed to null.
-      const refreshedMcp = await refreshReadmeIfNeeded({
-        ...mcp,
-        last_refreshed: null
-      });
-      setMCP(refreshedMcp);
-      setReadme(refreshedMcp.readme || '');
-      setLastRefreshed(refreshedMcp.last_refreshed || null);
-    } catch (error) {
-      console.error('Error manually refreshing README:', error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   // Custom Markdown image renderer that resolves relative image paths
   // to absolute GitHub raw URLs.
   const renderers = {
@@ -580,14 +559,6 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                     <span className="text-sm text-gray-500">
                       Last updated: {formatRefreshDate(lastRefreshed)}
                     </span>
-                    <button
-                      onClick={handleManualRefresh}
-                      disabled={refreshing}
-                      className="text-blue-600 hover:text-blue-800 transition-colors p-1"
-                      title="Refresh README from GitHub"
-                    >
-                      <FaSync className={refreshing ? 'animate-spin' : ''} />
-                    </button>
                   </div>
                 </div>
                 <div className="p-6">
