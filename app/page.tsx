@@ -6,19 +6,13 @@ import Card from 'components/ui/Card';
 import SearchBar from 'components/SearchBar';
 import FeaturedMCPs from 'components/FeaturedMCPs';
 import { useSupabase } from './supabase-provider';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
     const { session } = useSupabase();
     const router = useRouter();
 
-    // Redirect to dashboard if user is already authenticated
-    useEffect(() => {
-        if (session) {
-            router.push('/dashboard');
-        }
-    }, [session, router]);
+    // No automatic redirect - allow logged-in users to view the landing page
 
     return (
         <div className="bg-white min-h-screen">
