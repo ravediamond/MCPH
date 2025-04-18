@@ -162,8 +162,7 @@ export async function middleware(request: NextRequest) {
         if (
             (pathname.startsWith('/dashboard') ||
                 pathname.startsWith('/profile') ||
-                pathname.startsWith('/admin') ||
-                pathname.startsWith('/mcp')) &&
+                pathname.startsWith('/admin')) &&
             !session
         ) {
             // Redirect unauthenticated users to login page

@@ -9,7 +9,6 @@ export const config = {
         '/dashboard/:path*',
         '/profile/:path*',
         '/admin/:path*',
-        '/mcp/:path*',
         // Also run on the root path for login/signup
         '/',
         // IMPORTANT: Exclude auth callback route from middleware
