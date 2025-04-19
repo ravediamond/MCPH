@@ -1,110 +1,22 @@
 /**
- * A simple in-memory cache implementation with TTL support
+ * Redis-based cache implementation using Upstash
  */
+import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
-interface CacheOptions {
-    ttl: number; // Time to live in milliseconds
-}
+// Initialize Upstash Redis client
+// You'll need to add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to your environment variables
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL || '',
+    token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
-interface CacheEntry<T> {
-    value: T;
-    expiresAt: number;
-}
-
-export class MemoryCache {
-    private static instance: MemoryCache;
-    private cache: Map<string, CacheEntry<any>>;
-    private cleanupInterval: NodeJS.Timeout | null = null;
-
-    private constructor() {
-        this.cache = new Map();
-        // Run cleanup every minute to remove expired items
-        this.cleanupInterval = setInterval(() => this.cleanup(), 60 * 1000);
-    }
-
-    public static getInstance(): MemoryCache {
-        if (!MemoryCache.instance) {
-            MemoryCache.instance = new MemoryCache();
-        }
-        return MemoryCache.instance;
-    }
-
-    /**
-     * Set a value in the cache with a TTL
-     */
-    public set<T>(key: string, value: T, options: CacheOptions): void {
-        const expiresAt = Date.now() + options.ttl;
-        this.cache.set(key, { value, expiresAt });
-    }
-
-    /**
-     * Get a value from the cache
-     * Returns undefined if the key doesn't exist or has expired
-     */
-    public get<T>(key: string): T | undefined {
-        const entry = this.cache.get(key);
-
-        if (!entry) {
-            return undefined;
-        }
-
-        // Check if the entry has expired
-        if (entry.expiresAt < Date.now()) {
-            this.cache.delete(key);
-            return undefined;
-        }
-
-        return entry.value as T;
-    }
-
-    /**
-     * Remove a specific key from the cache
-     */
-    public delete(key: string): boolean {
-        return this.cache.delete(key);
-    }
-
-    /**
-     * Clear all entries from the cache
-     */
-    public clear(): void {
-        this.cache.clear();
-    }
-
-    /**
-     * Remove all expired items from the cache
-     */
-    private cleanup(): void {
-        const now = Date.now();
-        // Fix for TypeScript iterator issue - convert to array first
-        const keysToCheck = Array.from(this.cache.keys());
-
-        for (const key of keysToCheck) {
-            const entry = this.cache.get(key);
-            if (entry && entry.expiresAt < now) {
-                this.cache.delete(key);
-            }
-        }
-    }
-
-    /**
-     * Ensure cache is cleaned up when the app shuts down
-     */
-    public dispose(): void {
-        if (this.cleanupInterval) {
-            clearInterval(this.cleanupInterval);
-            this.cleanupInterval = null;
-        }
-    }
-}
-
-// Export a singleton instance
-export const cache = MemoryCache.getInstance();
+// Flag to track Redis availability
+let isRedisAvailable = true;
 
 /**
- * A wrapper function to implement a cache-first strategy
- * Will fetch from the cache if available, otherwise call the fetcher function and cache the result
+ * A wrapper function to implement a cache-first strategy with Redis
+ * Will fetch from Redis if available, otherwise call the fetcher function and cache the result
  */
 export async function cachedFetch<T>(
     cacheKey: string,
@@ -112,37 +24,106 @@ export async function cachedFetch<T>(
     ttlMs: number = 60 * 60 * 1000 // Default to 1 hour TTL
 ): Promise<NextResponse> {
     try {
-        // Check if we have a cached value
-        const cachedValue = cache.get<string>(cacheKey);
+        if (isRedisAvailable) {
+            try {
+                // Check if we have a cached value in Redis
+                const cachedValue = await redis.get<string>(cacheKey);
 
-        if (cachedValue) {
-            console.log(`Cache hit for key: ${cacheKey}`);
-            // Ensure we return a proper NextResponse when using cached value
-            return new NextResponse(
-                cachedValue,
-                { status: 200, headers: { 'Content-Type': 'application/json' } }
-            );
+                if (cachedValue) {
+                    // Ensure we return a proper NextResponse when using cached value
+                    return new NextResponse(
+                        cachedValue,
+                        { status: 200, headers: { 'Content-Type': 'application/json' } }
+                    );
+                }
+            } catch (redisError) {
+                // Redis is not available, log once and set flag
+                if (isRedisAvailable) {
+                    console.error(`Redis unavailable: ${redisError.message}. Falling back to direct data fetching.`);
+                    isRedisAvailable = false;
+                }
+                // Continue with direct fetch
+            }
         }
 
-        console.log(`Cache miss for key: ${cacheKey}`);
         // Call the fetch function to get fresh data
         const response = await fetchFunction();
 
-        // Only cache successful responses
-        if (response.status >= 200 && response.status < 300) {
-            // Clone the response and cache its text content
-            const clonedResponse = response.clone();
-            const responseText = await clonedResponse.text();
+        // Only try to cache successful responses if Redis is available
+        if (isRedisAvailable && response.status >= 200 && response.status < 300) {
+            try {
+                // Clone the response and cache its text content
+                const clonedResponse = response.clone();
+                const responseText = await clonedResponse.text();
 
-            // Store the text response in cache
-            cache.set(cacheKey, responseText, { ttl: ttlMs });
-
-            return response;
+                // Store the text response in cache with TTL in seconds
+                await redis.set(cacheKey, responseText, { ex: Math.floor(ttlMs / 1000) });
+            } catch (cacheError) {
+                // Silently fail on cache write errors, but mark Redis as unavailable
+                console.warn(`Failed to cache response for key ${cacheKey}: ${cacheError.message}`);
+                isRedisAvailable = false;
+            }
         }
 
         return response;
     } catch (error) {
         console.error(`Error in cachedFetch for key ${cacheKey}:`, error);
-        throw error;
+        // If there's an error in the entire process, still try the direct fetch as last resort
+        try {
+            return await fetchFunction();
+        } catch (fetchError) {
+            console.error(`Fatal error, both cache and direct fetch failed: ${fetchError.message}`);
+            throw fetchError;
+        }
+    }
+}
+
+/**
+ * Remove a specific key from the cache
+ */
+export async function invalidateCache(key: string): Promise<boolean> {
+    if (!isRedisAvailable) return true; // Pretend it worked if Redis is offline
+
+    try {
+        await redis.del(key);
+        return true;
+    } catch (error) {
+        console.error(`Error invalidating cache for key ${key}:`, error);
+        isRedisAvailable = false;
+        return false;
+    }
+}
+
+// For backward compatibility
+export const cache = {
+    delete: invalidateCache,
+    clear: async () => {
+        if (!isRedisAvailable) return true;
+
+        try {
+            await redis.flushdb();
+            return true;
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+            isRedisAvailable = false;
+            return false;
+        }
+    },
+    // These methods are maintained for API compatibility but shouldn't be used
+    set: () => { console.warn('Direct cache.set() is deprecated. Use cachedFetch instead.'); },
+    get: () => { console.warn('Direct cache.get() is deprecated. Use cachedFetch instead.'); return undefined; }
+};
+
+// Add a health check method to test Redis connection
+export async function checkRedisHealth(): Promise<boolean> {
+    try {
+        // Simple ping-pong check
+        await redis.ping();
+        isRedisAvailable = true;
+        return true;
+    } catch (error) {
+        console.error('Redis health check failed:', error.message);
+        isRedisAvailable = false;
+        return false;
     }
 }

@@ -13,6 +13,7 @@
         "@supabase/supabase-js": "^2.49.4",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/typography": "^0.5.16",
+        "@upstash/redis": "^1.34.8",
         "bufferutil": "^4.0.9",
         "date-fns": "^4.1.0",
         "framer-motion": "^12.6.3",

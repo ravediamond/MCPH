@@ -1,5 +1,5 @@
 import { supabase } from 'lib/supabaseClient';
-import { cachedFetch } from './cacheUtils';
+import { cachedFetch, invalidateCache } from './cacheUtils';
 import { NextResponse } from 'next/server';
 
 // Cache TTL for API keys (15 minutes)
@@ -33,8 +33,7 @@ interface ApiKeyValidationResult {
  * Create a cache key for an API key validation
  */
 function createApiKeyCacheKey(apiKey: string): string {
-    // We use an SHA-256 hash of the API key for security
-    // But for simplicity in this implementation, we'll use a prefix approach
+    // We use a prefix for Redis namespace management
     return `apikey:${apiKey}`;
 }
 
@@ -53,7 +52,7 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
             async () => {
                 // This function only runs on cache miss
                 let result: ApiKeyValidationResult;
-                
+
                 // Fetch the API key and verify it's active
                 const { data, error } = await supabase
                     .from('api_keys')
@@ -105,9 +104,9 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                             }
 
                             // Now data directly matches our ApiKey interface with the admin flag added
-                            const keyWithAdmin: ApiKey = { 
-                                ...data as ApiKey, 
-                                is_admin_key: isAdmin 
+                            const keyWithAdmin: ApiKey = {
+                                ...data as ApiKey,
+                                is_admin_key: isAdmin
                             };
 
                             result = {
@@ -118,13 +117,13 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                         }
                     }
                 }
-                
+
                 // Return as NextResponse to match the cachedFetch expected return type
                 return NextResponse.json(result);
             },
             API_KEY_CACHE_TTL
         );
-        
+
         // Parse the response to get the validation result
         const result = await response.json();
         return result as ApiKeyValidationResult;
@@ -140,7 +139,8 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
  */
 export function invalidateApiKeyCache(apiKey: string): void {
     const cacheKey = createApiKeyCacheKey(apiKey);
-    // Import cache directly here to avoid circular dependency
-    const { cache } = require('./cacheUtils');
-    cache.delete(cacheKey);
+    // Use the new invalidateCache function instead of directly accessing the cache
+    invalidateCache(cacheKey).catch(error => {
+        console.error('Error invalidating API key cache:', error);
+    });
 }
