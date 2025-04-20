@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { ApiKey, CreateApiKeyRequest } from 'types/apiKey';
-import { invalidateApiKeyCache } from 'utils/apiKeyValidation';
 import type { Database } from 'types/database.types';
 
 // GET endpoint to list API keys for the current user
@@ -13,10 +12,7 @@ export async function GET(request: NextRequest) {
         console.log('[API] Request headers:', Object.fromEntries(request.headers.entries()));
 
         // Using the createRouteHandlerClient with properly handled cookies
-        const cookiesInstance = await cookies();
-        const supabase = createRouteHandlerClient<Database>({
-            cookies: () => cookiesInstance
-        });
+        const supabase = createRouteHandlerClient<Database>({ cookies });
 
         console.log('[API] Supabase client created');
 
@@ -41,7 +37,7 @@ export async function GET(request: NextRequest) {
         console.log('[API] Fetching API keys for user');
         const { data: apiKeys, error } = await supabase
             .from('api_keys')
-            .select('id, name, created_at, expires_at, last_used_at, is_active, description, scopes, is_admin_key')
+            .select('id, name, created_at, expires_at, last_used_at, is_active, description, is_admin_key')
             .eq('user_id', session.user.id as string)
             .order('created_at', { ascending: false });
 
@@ -70,8 +66,7 @@ export async function POST(request: NextRequest) {
         console.log('[API] Using cookies for authentication (POST)');
 
         // Using the createRouteHandlerClient with properly handled cookies
-        const cookiesInstance = await cookies();
-        const supabase = createRouteHandlerClient<Database>({ cookies: () => cookiesInstance });
+        const supabase = createRouteHandlerClient<Database>({ cookies });
 
         console.log('[API] Supabase client created');
 
@@ -93,7 +88,7 @@ export async function POST(request: NextRequest) {
 
         // Get request data
         const body: CreateApiKeyRequest = await request.json();
-        console.log('[API] Request body received:', { name: body.name, hasDescription: !!body.description, expiresAt: body.expires_at, isAdminKey: body.isAdminKey });
+        console.log('[API] Request body received:', { name: body.name, hasDescription: !!body.description, expiresAt: body.expires_at, isAdminKey: body.is_admin_key });
 
         if (!body.name) {
             console.error('[API] Missing required field: name');
@@ -116,10 +111,10 @@ export async function POST(request: NextRequest) {
         console.log('[API] User admin status:', isAdmin);
 
         // Determine if this should be an admin key
-        const isAdminKey = body.isAdminKey && isAdmin;
+        const isAdminKey = body.is_admin_key && isAdmin;
 
         // If trying to create an admin key but user is not an admin
-        if (body.isAdminKey && !isAdmin) {
+        if (body.is_admin_key && !isAdmin) {
             console.warn('[API] Non-admin user attempted to create admin key');
             return NextResponse.json({
                 error: 'Only administrators can create admin API keys'
@@ -141,9 +136,6 @@ export async function POST(request: NextRequest) {
         // Store newly generated key (we'll only send the full key to the client once)
         const apiKey = keyData;
 
-        // Default scopes if none provided
-        const scopes = body.scopes || ['read'];
-
         // Insert the new API key record
         const { data: insertedKey, error: insertError } = await supabase
             .from('api_keys')
@@ -152,12 +144,11 @@ export async function POST(request: NextRequest) {
                 name: body.name,
                 description: body.description || null,
                 expires_at: body.expires_at || null,
-                scopes: scopes,
                 api_key: apiKey,
                 created_from_ip: ip,
                 is_admin_key: isAdminKey
             })
-            .select('id, name, created_at, expires_at, is_active, description, scopes, is_admin_key')
+            .select('id, name, created_at, expires_at, is_active, description, is_admin_key')
             .single();
 
         if (insertError) {
@@ -189,8 +180,7 @@ export async function DELETE(request: NextRequest) {
         console.log('[API] Using cookies for authentication (DELETE)');
 
         // Using the createRouteHandlerClient with properly handled cookies
-        const cookiesInstance = await cookies();
-        const supabase = createRouteHandlerClient<Database>({ cookies: () => cookiesInstance });
+        const supabase = createRouteHandlerClient<Database>({ cookies });
 
         console.log('[API] Supabase client created');
 
@@ -221,7 +211,7 @@ export async function DELETE(request: NextRequest) {
         // Check if the user is the owner of the API key or an admin
         const { data: apiKey, error: fetchError } = await supabase
             .from('api_keys')
-            .select('id, user_id, api_key')  // Also fetch the api_key field to invalidate cache
+            .select('id, user_id')
             .eq('id', keyId)
             .single();
 
@@ -251,11 +241,6 @@ export async function DELETE(request: NextRequest) {
         if (deleteError) {
             console.error('Error deleting API key:', deleteError);
             return NextResponse.json({ error: 'Failed to delete API key' }, { status: 500 });
-        }
-
-        // Invalidate the cache for this API key
-        if (apiKey.api_key) {
-            invalidateApiKeyCache(apiKey.api_key);
         }
 
         return NextResponse.json({

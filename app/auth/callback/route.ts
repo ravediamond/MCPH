@@ -17,10 +17,7 @@ export async function GET(request: Request) {
 
     try {
         // Create a Supabase client using the route handler
-        const cookiesInstance = cookies();
-        const supabase = createRouteHandlerClient<Database>({
-            cookies: () => cookiesInstance
-        });
+        const supabase = createRouteHandlerClient<Database>({ cookies });
 
         console.log('Auth callback: Exchanging code for session');
 
