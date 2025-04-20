@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
                 const userProfiles: Record<string, any> = {};
                 if (userIds.size > 0) {
                     const userIdsArray = Array.from(userIds);
-                    
+
                     // We'll fetch all profiles from the database directly
                     // since our new caching system will handle caching efficiently
                     const { data: profiles, error: profilesError } = await supabase

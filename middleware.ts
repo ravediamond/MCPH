@@ -159,7 +159,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith(API.PUBLIC.BASE_PATH)) {
         // 1. API Key Authentication
         const apiKey = request.headers.get('x-api-key') || '';
-        
+
         // Validate the API key
         const apiKeyValidation = await validateApiKey(apiKey);
 
