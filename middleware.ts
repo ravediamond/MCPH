@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { API } from './app/config/constants';
 import { validateApiKey } from './utils/apiKeyValidation';
-import { cache } from './utils/cacheUtils';
+import { getFromCache, setInCache } from './utils/cacheUtils';
 import type { Database } from './types/database.types';
 
 // Rate limiting constants
@@ -186,7 +186,7 @@ export async function middleware(request: NextRequest) {
         const apiKeyCacheKey = createApiKeyCheckCacheKey(apiKey);
 
         // Try to get the validation result from the short-lived cache
-        let apiKeyValidation = cache.get<{
+        let apiKeyValidation = await getFromCache<{
             valid: boolean;
             key?: any;
             error?: string;
@@ -200,7 +200,7 @@ export async function middleware(request: NextRequest) {
             // Cache the result for 5 seconds to avoid redundant checks
             // within the same request chain or very rapid successive requests
             if (apiKeyValidation) {
-                cache.set(apiKeyCacheKey, apiKeyValidation, { ttl: 5000 });
+                await setInCache(apiKeyCacheKey, apiKeyValidation, { ttl: 5000 });
             }
         }
 

@@ -1,5 +1,5 @@
 import { supabase } from 'lib/supabaseClient';
-import { cachedFetch, invalidateCache } from './cacheUtils';
+import { cachedFetch } from './cacheUtils';
 import { NextResponse } from 'next/server';
 
 // Cache TTL for API keys (15 minutes)
@@ -118,15 +118,42 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                     }
                 }
 
-                // Return as NextResponse to match the cachedFetch expected return type
-                return NextResponse.json(result);
+                // Convert to a plain object before serializing to avoid "[object Object]" issues
+                const plainResult = JSON.parse(JSON.stringify(result));
+
+                // Return properly serialized JSON
+                return NextResponse.json(plainResult);
             },
             API_KEY_CACHE_TTL
         );
 
-        // Parse the response to get the validation result
-        const result = await response.json();
-        return result as ApiKeyValidationResult;
+        try {
+            // First, clone the response to avoid consuming it
+            const clonedResponse = response.clone();
+
+            // Get the response text and parse it as JSON
+            const responseText = await clonedResponse.text();
+
+            // Check if the response text is already a valid JSON string
+            try {
+                return JSON.parse(responseText) as ApiKeyValidationResult;
+            } catch (parseError) {
+                // If parsing fails, log but don't throw an error
+                console.error('Error parsing API key validation response:', parseError);
+
+                // Return a default response that indicates failure but doesn't break the flow
+                return {
+                    valid: false,
+                    error: 'Error processing API key validation'
+                };
+            }
+        } catch (responseError) {
+            console.error('Error processing API key validation response:', responseError);
+            return {
+                valid: false,
+                error: 'Error processing API key validation response'
+            };
+        }
     } catch (error) {
         console.error('Error validating API key:', error);
         return { valid: false, error: 'Error validating API key' };
@@ -139,8 +166,9 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
  */
 export function invalidateApiKeyCache(apiKey: string): void {
     const cacheKey = createApiKeyCacheKey(apiKey);
-    // Use the new invalidateCache function instead of directly accessing the cache
-    invalidateCache(cacheKey).catch(error => {
+    // Use direct require to avoid circular dependency issues
+    const { invalidateCache } = require('./cacheUtils');
+    invalidateCache(cacheKey).catch((error: Error) => {
         console.error('Error invalidating API key cache:', error);
     });
 }
