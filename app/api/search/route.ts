@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
-import { cachedFetch, cache } from 'utils/cacheUtils';
+import { cacheFetch, CACHE_REGIONS } from 'utils/cacheUtils';
 
 // Cache TTL for search results (2 minutes)
-const SEARCH_CACHE_TTL = 2 * 60 * 1000;
+const SEARCH_CACHE_TTL = 2 * 60;
 
 /**
  * Generate a cache key for search queries
  */
 function generateSearchCacheKey(query: string | null, page: number, limit: number): string {
-    return `search:${query || 'all'}:page:${page}:limit:${limit}`;
+    return `${query || 'all'}:page:${page}:limit:${limit}`;
 }
 
 export async function GET(request: Request) {
@@ -32,22 +32,11 @@ export async function GET(request: Request) {
     // Calculate offset for pagination
     const offset = (validatedPage - 1) * validatedLimit;
 
-    // Generate cache key
-    const cacheKey = generateSearchCacheKey(q, validatedPage, validatedLimit);
-    console.log(`[${requestId}] Generated cache key: "${cacheKey}"`);
-
-    // Check if result exists in cache before calling cachedFetch
-    const cachedResult = cache.get(cacheKey);
-    if (cachedResult) {
-        console.log(`[${requestId}] Cache hit - returning cached result`);
-    } else {
-        console.log(`[${requestId}] Cache miss - will fetch from database`);
-    }
-
     try {
-        // Use cached results if available
-        const resultData = await cachedFetch(
-            cacheKey,
+        // Use the new cacheFetch with proper region
+        const resultData = await cacheFetch(
+            CACHE_REGIONS.SEARCH,
+            generateSearchCacheKey(q, validatedPage, validatedLimit),
             async () => {
                 console.log(`[${requestId}] Executing database query`);
 
@@ -95,7 +84,7 @@ export async function GET(request: Request) {
 
                 console.log(`[${requestId}] Query successful. Found ${data?.length || 0} results, total count: ${count || 0}`);
 
-                // Return data object rather than NextResponse
+                // Return data object
                 return {
                     success: true,
                     results: data || [],

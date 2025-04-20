@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
-import { cachedFetch } from 'utils/cacheUtils';
+import { cacheFetch, CACHE_REGIONS } from 'utils/cacheUtils';
 
 // Cache TTL for featured MCPs (10 minutes)
 // Featured content doesn't change as frequently
-const FEATURED_CACHE_TTL = 10 * 60 * 1000;
+const FEATURED_CACHE_TTL = 10 * 60;
 
 /**
  * Creates a cache key for featured MCP results
  */
 function createFeaturedCacheKey(type: string, limit: number): string {
-    return `featured:${type}:limit:${limit}`;
+    return `${type}:limit:${limit}`;
 }
 
 export async function GET(request: Request) {
@@ -22,12 +22,10 @@ export async function GET(request: Request) {
         // Validate limit to prevent abuse (between 1 and 20)
         const safeLimit = Math.min(Math.max(limit, 1), 20);
 
-        // Create cache key based on the type of featured content and limit
-        const cacheKey = createFeaturedCacheKey(type, safeLimit);
-
-        // Use cached fetch to avoid redundant database queries
-        const resultData = await cachedFetch(
-            cacheKey,
+        // Use the new cache system with featured region
+        const resultData = await cacheFetch(
+            CACHE_REGIONS.FEATURED,
+            createFeaturedCacheKey(type, safeLimit),
             async () => {
                 // Fields to select, reused across queries
                 const selectFields = `
@@ -74,7 +72,6 @@ export async function GET(request: Request) {
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
                     // Create a more sophisticated trending algorithm
-                    // Consider both recent updates and popularity signals
                     const { data, error } = await supabase
                         .from('mcps')
                         .select(selectFields)
@@ -100,7 +97,6 @@ export async function GET(request: Request) {
                     };
                 }
                 else if (type === 'most-viewed') {
-                    // Add a new category for most viewed MCPs
                     const { data, error } = await supabase
                         .from('mcps')
                         .select(selectFields)
@@ -122,7 +118,6 @@ export async function GET(request: Request) {
                     };
                 }
                 else if (type === 'highest-rated') {
-                    // Add a new category for highest rated MCPs
                     const { data, error } = await supabase
                         .from('mcps')
                         .select(selectFields)

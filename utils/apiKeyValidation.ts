@@ -1,20 +1,19 @@
 import { supabase } from 'lib/supabaseClient';
-import { cachedFetch } from './cacheUtils';
-import { NextResponse } from 'next/server';
+import { cacheFetch, CACHE_REGIONS } from './cacheUtils';
 
 // Cache TTL for API keys (15 minutes)
-const API_KEY_CACHE_TTL = 15 * 60 * 1000;
+const API_KEY_CACHE_TTL = 15 * 60;
 
 // Update interface to match the actual database structure
 interface ApiKey {
     id: string;
-    api_key: string; // Changed from 'key' to match database
+    api_key: string;
     name: string;
     created_at: string;
     expires_at: string | null;
     last_used_at: string | null;
     user_id: string;
-    rate_limit_per_minute?: number; // Made optional since it might not exist in all records
+    rate_limit_per_minute?: number;
     scopes: string[];
     is_active: boolean;
     created_from_ip?: string;
@@ -33,8 +32,7 @@ interface ApiKeyValidationResult {
  * Create a cache key for an API key validation
  */
 function createApiKeyCacheKey(apiKey: string): string {
-    // We use a prefix for Redis namespace management
-    return `apikey:${apiKey}`;
+    return apiKey.substring(0, 10); // Only use part of the key for the cache key
 }
 
 export async function validateApiKey(apiKey: string, requireAdmin: boolean = false): Promise<ApiKeyValidationResult> {
@@ -42,18 +40,16 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
         return { valid: false, error: 'No API key provided' };
     }
 
-    // Create a cache key for this API key
-    const cacheKey = createApiKeyCacheKey(apiKey);
-
     try {
-        // Use cachedFetch to potentially skip database query
-        const response = await cachedFetch<ApiKeyValidationResult>(
-            cacheKey,
+        // Use the new cacheFetch function to potentially skip database query
+        return await cacheFetch<ApiKeyValidationResult>(
+            'api-keys', // Use the separate region for API keys
+            createApiKeyCacheKey(apiKey),
             async () => {
                 // This function only runs on cache miss
                 let result: ApiKeyValidationResult;
 
-                // Fetch the API key and verify it's active
+                // Perform the validation query
                 const { data, error } = await supabase
                     .from('api_keys')
                     .select('*')
@@ -75,7 +71,7 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                         result = { valid: false, error: 'API key has expired' };
                     } else {
                         // Get the user's admin status
-                        const { data: profile, error: profileError } = await supabase
+                        const { data: profile } = await supabase
                             .from('profiles')
                             .select('is_admin')
                             .eq('id', data.user_id)
@@ -91,8 +87,7 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                                 isAdmin: false
                             };
                         } else {
-                            // Update last_used_at periodically (not on every request to reduce DB writes)
-                            // We only update the timestamp if it's been more than 5 minutes since the last update
+                            // Update last_used_at periodically (not on every request)
                             const lastUsedAt = data.last_used_at ? new Date(data.last_used_at) : new Date(0);
                             const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 
@@ -118,44 +113,13 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
                     }
                 }
 
-                // Convert to a plain object before serializing to avoid "[object Object]" issues
-                const plainResult = JSON.parse(JSON.stringify(result));
-
-                // Return properly serialized JSON
-                return NextResponse.json(plainResult);
+                return result;
             },
-            API_KEY_CACHE_TTL
+            API_KEY_CACHE_TTL,
+            // Don't cache failed validations for as long
+            (result) => result.valid ? true : false
         );
-
-        try {
-            // First, clone the response to avoid consuming it
-            const clonedResponse = response.clone();
-
-            // Get the response text and parse it as JSON
-            const responseText = await clonedResponse.text();
-
-            // Check if the response text is already a valid JSON string
-            try {
-                return JSON.parse(responseText) as ApiKeyValidationResult;
-            } catch (parseError) {
-                // If parsing fails, log but don't throw an error
-                console.error('Error parsing API key validation response:', parseError);
-
-                // Return a default response that indicates failure but doesn't break the flow
-                return {
-                    valid: false,
-                    error: 'Error processing API key validation'
-                };
-            }
-        } catch (responseError) {
-            console.error('Error processing API key validation response:', responseError);
-            return {
-                valid: false,
-                error: 'Error processing API key validation response'
-            };
-        }
     } catch (error) {
-        console.error('Error validating API key:', error);
         return { valid: false, error: 'Error validating API key' };
     }
 }
@@ -165,10 +129,8 @@ export async function validateApiKey(apiKey: string, requireAdmin: boolean = fal
  * Call this function when an API key is updated or deleted
  */
 export function invalidateApiKeyCache(apiKey: string): void {
-    const cacheKey = createApiKeyCacheKey(apiKey);
-    // Use direct require to avoid circular dependency issues
     const { invalidateCache } = require('./cacheUtils');
-    invalidateCache(cacheKey).catch((error: Error) => {
+    invalidateCache('api-keys', createApiKeyCacheKey(apiKey)).catch((error: Error) => {
         console.error('Error invalidating API key cache:', error);
     });
 }

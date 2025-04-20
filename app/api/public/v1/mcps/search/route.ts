@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
 import { validateApiKey } from 'utils/apiKeyValidation';
-import { cachedFetch } from 'utils/cacheUtils';
+import { cacheFetch, CACHE_REGIONS } from 'utils/cacheUtils';
 
 // Cache TTL for public API search results (5 minutes)
-// Public API usually has more stable/less frequent data changes
-const SEARCH_CACHE_TTL = 5 * 60 * 1000;
+// Note: Our caching system will auto-skip this cache for public API endpoints
+const SEARCH_CACHE_TTL = 5 * 60;
 
 /**
  * Generate a cache key for public API search queries
- * We include the API key hash to ensure separate caching for different users
+ * Note: Public API requests will bypass cache anyway due to our isExcludedFromCache function
  */
-function generateSearchCacheKey(query: string | null, tags: string | null, offset: number, limit: number, apiKeyHash: string): string {
-    // Simple hash function for API key (for cache key only)
-    const hash = apiKeyHash.substring(0, 8); // Use first 8 chars as a simple hash
-    return `public:search:${query || 'all'}:tags:${tags || 'none'}:offset:${offset}:limit:${limit}:user:${hash}`;
+function generateSearchCacheKey(query: string | null, tags: string | null, offset: number, limit: number): string {
+    return `${query || 'all'}:tags:${tags || 'none'}:offset:${offset}:limit:${limit}`;
 }
 
 /**
@@ -53,87 +51,81 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(1, requestedLimit), 100); // Between 1 and 100
     const offset = Math.max(0, requestedOffset);
 
-    // Create cache key based on query parameters
-    const cacheKey = generateSearchCacheKey(
-        query,
-        tags,
-        offset,
-        limit,
-        apiKey // Using apiKey directly for cache key generation
-    );
+    try {
+        // Create search function that will be executed
+        const executeSearch = async () => {
+            // Start building our query - select only needed fields
+            const selectFields = `
+                id, 
+                name, 
+                description, 
+                repository_url, 
+                tags, 
+                version,
+                author,
+                owner_username,
+                repository_name,
+                stars,
+                avg_rating,
+                review_count,
+                view_count
+            `;
 
-    // Use cached search results if available
-    return cachedFetch(
-        cacheKey,
-        async () => {
-            try {
-                // Start building our query - select only needed fields
-                const selectFields = `
-                    id, 
-                    name, 
-                    description, 
-                    repository_url, 
-                    tags, 
-                    version,
-                    author,
-                    owner_username,
-                    repository_name,
-                    stars,
-                    avg_rating,
-                    review_count,
-                    view_count
-                `;
+            // More efficient query construction
+            let queryBuilder = supabase
+                .from('mcps')
+                .select(selectFields, { count: 'exact' });
 
-                // More efficient query construction
-                let queryBuilder = supabase
-                    .from('mcps')
-                    .select(selectFields, { count: 'exact' });
-
-                // Apply search filters if provided
-                if (query && query.trim() !== '') {
-                    queryBuilder = queryBuilder.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
-                }
-
-                // Filter by tags if provided
-                if (tags) {
-                    const tagArray = tags.split(',').map(tag => tag.trim());
-                    queryBuilder = queryBuilder.contains('tags', tagArray);
-                }
-
-                // Apply pagination - combine with a single efficient query
-                queryBuilder = queryBuilder
-                    .order('stars', { ascending: false })
-                    .range(offset, offset + limit - 1);
-
-                // Execute the query - the count is returned along with the data
-                const { data, error, count } = await queryBuilder;
-
-                if (error) {
-                    console.error('Search error:', error);
-                    return NextResponse.json({
-                        success: false,
-                        error: 'Failed to search MCPs',
-                    }, { status: 500 });
-                }
-
-                return NextResponse.json({
-                    success: true,
-                    results: data,
-                    pagination: {
-                        total: count || 0,
-                        offset,
-                        limit,
-                        hasMore: (offset + limit) < (count || 0)
-                    }
-                });
-            } catch (error) {
-                console.error('Unexpected error in MCP search:', error);
-                return NextResponse.json({
-                    success: false,
-                    error: 'An unexpected error occurred',
-                }, { status: 500 });
+            // Apply search filters if provided
+            if (query && query.trim() !== '') {
+                queryBuilder = queryBuilder.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
             }
-        },
-        SEARCH_CACHE_TTL
-    );
+
+            // Filter by tags if provided
+            if (tags) {
+                const tagArray = tags.split(',').map(tag => tag.trim());
+                queryBuilder = queryBuilder.contains('tags', tagArray);
+            }
+
+            // Apply pagination - combine with a single efficient query
+            queryBuilder = queryBuilder
+                .order('stars', { ascending: false })
+                .range(offset, offset + limit - 1);
+
+            // Execute the query - the count is returned along with the data
+            const { data, error, count } = await queryBuilder;
+
+            if (error) {
+                throw new Error(`Failed to search MCPs: ${error.message}`);
+            }
+
+            return {
+                success: true,
+                results: data,
+                pagination: {
+                    total: count || 0,
+                    offset,
+                    limit,
+                    hasMore: (offset + limit) < (count || 0)
+                }
+            };
+        };
+
+        // Use the new cacheFetch function
+        // Note: Our caching system will automatically skip caching public API endpoints
+        const result = await cacheFetch(
+            'public-api',  // Will be skipped by our caching system
+            generateSearchCacheKey(query, tags, offset, limit),
+            executeSearch,
+            SEARCH_CACHE_TTL
+        );
+
+        return NextResponse.json(result);
+    } catch (error) {
+        console.error('Unexpected error in MCP search:', error);
+        return NextResponse.json({
+            success: false,
+            error: 'An unexpected error occurred',
+        }, { status: 500 });
+    }
 }

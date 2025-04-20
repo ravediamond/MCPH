@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { API } from './app/config/constants';
 import { validateApiKey } from './utils/apiKeyValidation';
-import { getFromCache, setInCache } from './utils/cacheUtils';
 import type { Database } from './types/database.types';
 
 // Rate limiting constants
@@ -81,7 +80,6 @@ class RateLimiter {
      */
     private cleanup(): void {
         const now = Date.now();
-        // Fix for TypeScript iterator issue - convert to array first
         const keysToCheck = Array.from(this.cache.keys());
 
         for (const key of keysToCheck) {
@@ -90,13 +88,6 @@ class RateLimiter {
                 this.cache.delete(key);
             }
         }
-    }
-
-    /**
-     * Get the size of the cache for monitoring purposes
-     */
-    public size(): number {
-        return this.cache.size;
     }
 
     /**
@@ -112,11 +103,6 @@ class RateLimiter {
 
 // Get an instance of the rate limiter
 const rateLimiter = RateLimiter.getInstance();
-
-// Create a cache key for API key validation results to avoid redundant checks
-function createApiKeyCheckCacheKey(apiKey: string): string {
-    return `middleware:apikey:${apiKey}`;
-}
 
 /**
  * Get client IP address from request headers
@@ -152,11 +138,7 @@ export async function middleware(request: NextRequest) {
 
     try {
         // Refresh session if needed - Do this on all routes to ensure session is maintained
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error) {
-            console.error('Error in middleware auth session:', error.message);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
 
         // Check protected routes (dashboard, profile, admin)
         if (
@@ -167,42 +149,19 @@ export async function middleware(request: NextRequest) {
         ) {
             // Redirect unauthenticated users to login page
             const redirectUrl = new URL('/', request.url);
-            console.log('Middleware: Redirecting unauthenticated user to homepage from', pathname);
             return NextResponse.redirect(redirectUrl);
         }
-
-        // For debugging - remove in production
-        console.log('Middleware session check:', session ? `Authenticated as ${session.user.email}` : 'No session', pathname);
-
     } catch (error: any) {
         console.error('Unexpected error in middleware:', error.message);
     }
 
     // Only apply API key validation and rate limiting to public API routes
     if (pathname.startsWith(API.PUBLIC.BASE_PATH)) {
-        // 1. API Key Authentication with short-lived cache (5 seconds)
-        // This prevents multiple validation checks within the same request chain
+        // 1. API Key Authentication
         const apiKey = request.headers.get('x-api-key') || '';
-        const apiKeyCacheKey = createApiKeyCheckCacheKey(apiKey);
-
-        // Try to get the validation result from the short-lived cache
-        let apiKeyValidation = await getFromCache<{
-            valid: boolean;
-            key?: any;
-            error?: string;
-            isAdmin?: boolean;
-        }>(apiKeyCacheKey);
-
-        // If not in cache, validate the API key
-        if (!apiKeyValidation) {
-            apiKeyValidation = await validateApiKey(apiKey);
-
-            // Cache the result for 5 seconds to avoid redundant checks
-            // within the same request chain or very rapid successive requests
-            if (apiKeyValidation) {
-                await setInCache(apiKeyCacheKey, apiKeyValidation, { ttl: 5000 });
-            }
-        }
+        
+        // Validate the API key
+        const apiKeyValidation = await validateApiKey(apiKey);
 
         if (!apiKeyValidation?.valid) {
             return new NextResponse(

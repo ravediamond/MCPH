@@ -1,17 +1,16 @@
 /**
- * Simplified Redis-based cache implementation using Upstash
+ * Simple Redis-based cache implementation using Upstash
  */
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
 
-// Cache regions for better organization and invalidation
+// Cache regions for better organization
 export const CACHE_REGIONS = {
     MCPS: 'mcps',
     TAGS: 'tags',
     SEARCH: 'search',
     FEATURED: 'featured',
-    USER: 'user',
-    API_KEYS: 'api-keys',
+    INTERNAL: 'internal',
 };
 
 // Initialize Upstash Redis client
@@ -21,25 +20,32 @@ const redis = new Redis({
 });
 
 /**
- * Builds a cache key with a region prefix for better organization
+ * Builds a cache key with a region prefix
  */
 export function buildCacheKey(region: string, key: string): string {
     return `${region}:${key}`;
 }
 
 /**
- * Simplified cache fetch with stale-while-revalidate pattern
+ * Simple cache fetch function
  * @param region The cache region (for grouping related items)
  * @param key The specific cache key
  * @param fetcher Function to fetch data if not in cache
  * @param ttl Time to live in seconds (default: 1 hour)
+ * @param shouldCache Optional function to determine if this response should be cached
  */
 export async function cacheFetch<T>(
     region: string,
     key: string,
     fetcher: () => Promise<T>,
-    ttl: number = 3600
+    ttl: number = 3600,
+    shouldCache?: (data: T) => boolean
 ): Promise<T> {
+    // Skip caching for admin or public API endpoints
+    if (isExcludedFromCache(region, key)) {
+        return fetcher();
+    }
+
     const cacheKey = buildCacheKey(region, key);
 
     try {
@@ -48,59 +54,39 @@ export async function cacheFetch<T>(
 
         if (cached) {
             try {
-                // Parse the cached value
-                const parsedValue = typeof cached === 'string' && cached.startsWith('{')
-                    ? JSON.parse(cached)
-                    : cached;
-
-                // Trigger background refresh if more than 80% of TTL has passed
-                const metadata = await redis.ttl(cacheKey);
-                if (metadata && ttl > 0 && metadata < ttl * 0.2) {
-                    // Refresh in background without awaiting
-                    refreshCache(region, key, fetcher, ttl).catch(console.error);
-                }
-
-                return parsedValue as T;
+                // Parse the cached value if it's JSON
+                return typeof cached === 'string' && cached.startsWith('{')
+                    ? JSON.parse(cached) as T
+                    : cached as unknown as T;
             } catch (e) {
-                console.warn(`Invalid cache format for ${cacheKey}:`, e);
-                // Continue to fetch fresh data
+                // Continue to fetch fresh data if parse error
             }
         }
 
         // Cache miss or invalid format, fetch fresh data
-        return refreshCache(region, key, fetcher, ttl);
+        const freshData = await fetcher();
+
+        // Check if we should cache this response
+        if (shouldCache && !shouldCache(freshData)) {
+            return freshData;
+        }
+
+        try {
+            // Store the data with TTL
+            const serialized = typeof freshData === 'string'
+                ? freshData
+                : JSON.stringify(freshData);
+
+            await redis.set(cacheKey, serialized, { ex: ttl });
+        } catch (error) {
+            // Non-blocking error - we still return the fresh data
+        }
+
+        return freshData;
     } catch (error) {
-        console.error(`Cache error for ${cacheKey}:`, error);
         // Fallback to direct fetch on any cache error
         return fetcher();
     }
-}
-
-/**
- * Refresh the cache with fresh data
- */
-async function refreshCache<T>(
-    region: string,
-    key: string,
-    fetcher: () => Promise<T>,
-    ttl: number
-): Promise<T> {
-    const cacheKey = buildCacheKey(region, key);
-    const freshData = await fetcher();
-
-    try {
-        // Store the data with TTL
-        const serialized = typeof freshData === 'string'
-            ? freshData
-            : JSON.stringify(freshData);
-
-        await redis.set(cacheKey, serialized, { ex: ttl });
-    } catch (error) {
-        console.error(`Failed to update cache for ${cacheKey}:`, error);
-        // Non-blocking error - we still return the fresh data
-    }
-
-    return freshData;
 }
 
 /**
@@ -112,8 +98,14 @@ export async function cacheApiResponse(
     fetcher: () => Promise<NextResponse>,
     ttl: number = 3600
 ): Promise<NextResponse> {
+    // Skip caching for admin or public API endpoints
+    if (isExcludedFromCache(region, key)) {
+        return fetcher();
+    }
+
+    const cacheKey = buildCacheKey(region, key);
+
     try {
-        const cacheKey = buildCacheKey(region, key);
         const cached = await redis.get<string>(cacheKey);
 
         if (cached) {
@@ -140,21 +132,12 @@ export async function cacheApiResponse(
                 JSON.parse(responseText);
                 await redis.set(cacheKey, responseText, { ex: ttl });
             } catch (error) {
-                console.warn(`Not caching invalid JSON response for ${cacheKey}`);
+                // Skip caching invalid responses
             }
         }
 
-        // Add cache miss header
-        const headers = new Headers(response.headers);
-        headers.set('X-Cache', 'MISS');
-
-        return new NextResponse(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers
-        });
+        return response;
     } catch (error) {
-        console.error(`Cache API error:`, error);
         // Fallback to direct fetch
         return fetcher();
     }
@@ -168,7 +151,6 @@ export async function invalidateCache(region: string, key: string): Promise<bool
         await redis.del(buildCacheKey(region, key));
         return true;
     } catch (error) {
-        console.error(`Failed to invalidate cache:`, error);
         return false;
     }
 }
@@ -184,7 +166,6 @@ export async function invalidateRegion(region: string): Promise<boolean> {
         }
         return true;
     } catch (error) {
-        console.error(`Failed to invalidate region ${region}:`, error);
         return false;
     }
 }
@@ -197,133 +178,75 @@ export async function checkRedisHealth(): Promise<boolean> {
         await redis.ping();
         return true;
     } catch (error) {
-        console.error('Redis health check failed:', error);
         return false;
     }
 }
 
-// ----- BACKWARD COMPATIBILITY LAYER -----
-
 /**
- * Compatibility for old getFromCache function
- * @deprecated Use cacheFetch instead with proper region
+ * Check if the given region/key should be excluded from caching
  */
-export async function getFromCache<T>(key: string): Promise<T | null> {
-    try {
-        const result = await redis.get<string>(key);
-        if (!result) return null;
-
-        try {
-            return JSON.parse(result) as T;
-        } catch (e) {
-            // If not JSON, return as is
-            return result as unknown as T;
-        }
-    } catch (error) {
-        console.error(`Error getting cache for key ${key}:`, error);
-        return null;
-    }
-}
-
-/**
- * Compatibility for old setInCache function
- * @deprecated Use cacheFetch instead with proper region
- */
-export async function setInCache<T>(key: string, value: T, options?: { ttl?: number }): Promise<boolean> {
-    try {
-        const serializedValue = typeof value === 'string' ? value : JSON.stringify(value);
-        if (options?.ttl) {
-            await redis.set(key, serializedValue, { ex: Math.floor(options.ttl / 1000) });
-        } else {
-            await redis.set(key, serializedValue);
-        }
+function isExcludedFromCache(region: string, key: string): boolean {
+    // Exclude admin operations
+    if (key.includes('admin') || region === 'admin') {
         return true;
-    } catch (error) {
-        console.error(`Error setting cache for key ${key}:`, error);
-        return false;
     }
+
+    // Exclude public API endpoints
+    if (key.startsWith('public/') || region.startsWith('public')) {
+        return true;
+    }
+
+    // Exclude API key related operations
+    if (key.includes('apikey') || region.includes('api-key') || key.startsWith('key:')) {
+        return true;
+    }
+
+    return false;
 }
 
-/**
- * Compatibility for old cachedFetch function
- * @deprecated Use cacheFetch with proper region or cacheApiResponse for API routes
- */
-export async function cachedFetch<T>(
-    cacheKey: string,
-    fetchFunction: () => Promise<NextResponse | T>,
-    ttlMs: number = 60 * 60 * 1000 // Default to 1 hour TTL
-): Promise<NextResponse | T> {
-    // Determine if this is being used for an API response
-    let isNextResponse = false;
-
-    try {
-        // Use the legacy key format directly
-        const cached = await redis.get<string>(cacheKey);
-
-        if (cached) {
-            try {
-                const parsedValue = JSON.parse(cached);
-                return isNextResponse
-                    ? new NextResponse(cached, { status: 200, headers: { 'Content-Type': 'application/json' } })
-                    : parsedValue;
-            } catch (e) {
-                // If it's a string but not JSON
-                if (typeof cached === 'string' && isNextResponse) {
-                    return new NextResponse(cached, { status: 200 });
-                }
-            }
-        }
-
-        // Cache miss, get fresh data
-        const result = await fetchFunction();
-
-        // Check if result is NextResponse
-        if (result instanceof NextResponse) {
-            isNextResponse = true;
-            try {
-                const clonedResponse = result.clone();
-                const responseText = await clonedResponse.text();
-
-                try {
-                    // Verify it's valid JSON before caching
-                    JSON.parse(responseText);
-                    await redis.set(cacheKey, responseText, { ex: Math.floor(ttlMs / 1000) });
-                } catch (parseError) {
-                    console.warn(`Response for key ${cacheKey} is not valid JSON, not caching`);
-                }
-            } catch (error) {
-                console.warn(`Failed to cache response: ${error}`);
-            }
-
-            return result;
-        } else {
-            // For non-NextResponse data
-            try {
-                const serialized = typeof result === 'string' ? result : JSON.stringify(result);
-                await redis.set(cacheKey, serialized, { ex: Math.floor(ttlMs / 1000) });
-            } catch (error) {
-                console.warn(`Failed to cache data: ${error}`);
-            }
-
-            return result;
-        }
-    } catch (error) {
-        console.error(`Error in cachedFetch for ${cacheKey}:`, error);
-        // If there's an error, still try the direct fetch as last resort
-        return await fetchFunction();
-    }
-}
-
-// Legacy cache object for backward compatibility
+// Simple cache interface for backward compatibility
 export const cache = {
-    get: getFromCache,
-    set: setInCache,
+    get: async <T>(key: string): Promise<T | null> => {
+        if (isExcludedFromCache('', key)) {
+            return null;
+        }
+        try {
+            const result = await redis.get<string>(key);
+            if (!result) return null;
+
+            try {
+                return JSON.parse(result) as T;
+            } catch (e) {
+                return result as unknown as T;
+            }
+        } catch (error) {
+            return null;
+        }
+    },
+    set: async <T>(key: string, value: T, options?: { ttl?: number }): Promise<boolean> => {
+        if (isExcludedFromCache('', key)) {
+            return false;
+        }
+        try {
+            const serializedValue = typeof value === 'string'
+                ? value
+                : JSON.stringify(value);
+
+            if (options?.ttl) {
+                await redis.set(key, serializedValue, { ex: Math.floor(options.ttl / 1000) });
+            } else {
+                await redis.set(key, serializedValue);
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    },
     delete: async (key: string): Promise<boolean> => {
         try {
             await redis.del(key);
             return true;
         } catch (error) {
-            console.error(`Failed to delete cache key ${key}:`, error);
             return false;
         }
     },
@@ -335,7 +258,6 @@ export const cache = {
             }
             return true;
         } catch (error) {
-            console.error('Failed to clear cache:', error);
             return false;
         }
     }

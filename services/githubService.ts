@@ -7,12 +7,15 @@ interface GitHubRateLimitInfo {
   resource: string;
 }
 
-// Import our cache utility
-import { cachedFetch, cache } from '../utils/cacheUtils';
+// Import our updated cache utility
+import { cacheFetch, invalidateCache, CACHE_REGIONS } from '../utils/cacheUtils';
 
-// Cache TTL constants (in milliseconds)
-const README_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
-const REPO_DETAILS_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours
+// Cache TTL constants (in seconds)
+const README_CACHE_TTL = 6 * 60 * 60; // 6 hours
+const REPO_DETAILS_CACHE_TTL = 2 * 60 * 60; // 2 hours
+
+// Define a GitHub cache region
+const GITHUB_REGION = 'github';
 
 /**
  * Extracts rate limit information from GitHub API response headers
@@ -79,7 +82,7 @@ export async function handleGitHubResponse(response: Response): Promise<Response
  * Creates a cache key for GitHub API requests
  */
 function createGitHubCacheKey(type: string, owner: string, repo: string): string {
-  return `github:${type}:${owner}/${repo}`;
+  return `${type}:${owner}/${repo}`;
 }
 
 export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: string, repositoryName?: string): Promise<{ readme: string; ownerUsername: string }> {
@@ -98,12 +101,10 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
     repo = parts[parts.length - 1];
   }
 
-  // Create cache key for this specific readme
-  const cacheKey = createGitHubCacheKey('readme', owner, repo);
-
-  // Use the cached fetch utility
-  const readme = await cachedFetch<string>(
-    cacheKey,
+  // Use the new cache fetch utility
+  const readme = await cacheFetch<string>(
+    GITHUB_REGION,
+    createGitHubCacheKey('readme', owner, repo),
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
@@ -136,12 +137,10 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
  * @returns Promise resolving to the README content as a string
  */
 export async function fetchReadmeFromGitHub(owner: string, repo: string): Promise<string> {
-  // Create cache key for this specific readme
-  const cacheKey = createGitHubCacheKey('readme', owner, repo);
-
-  // Use the cached fetch utility
-  return cachedFetch<string>(
-    cacheKey,
+  // Use the new cache fetch utility
+  return cacheFetch<string>(
+    GITHUB_REGION,
+    createGitHubCacheKey('readme', owner, repo),
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
@@ -222,9 +221,9 @@ export async function updateMcpReadme(mcpId: string, readme: string): Promise<an
  * @param repo GitHub repository name
  */
 export function invalidateGitHubCache(owner: string, repo: string): void {
-  // Clear both readme and repo details from cache
-  cache.delete(createGitHubCacheKey('readme', owner, repo));
-  cache.delete(createGitHubCacheKey('repo', owner, repo));
+  // Clear both readme and repo details from cache using new API
+  invalidateCache(GITHUB_REGION, createGitHubCacheKey('readme', owner, repo));
+  invalidateCache(GITHUB_REGION, createGitHubCacheKey('repo', owner, repo));
 }
 
 /**
@@ -234,12 +233,10 @@ export function invalidateGitHubCache(owner: string, repo: string): void {
  * @returns Promise resolving to the repository details
  */
 export async function fetchRepoDetails(owner: string, repo: string): Promise<any> {
-  // Create cache key for this specific repo
-  const cacheKey = createGitHubCacheKey('repo', owner, repo);
-
-  // Use the cached fetch utility
-  return cachedFetch<any>(
-    cacheKey,
+  // Use the new cache fetch utility
+  return cacheFetch<any>(
+    GITHUB_REGION,
+    createGitHubCacheKey('repo', owner, repo),
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
