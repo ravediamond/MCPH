@@ -86,16 +86,7 @@ export async function POST(request: NextRequest) {
 
         console.log('[API] User authenticated for key creation. User ID:', session.user.id);
 
-        // Get request data
-        const body: CreateApiKeyRequest = await request.json();
-        console.log('[API] Request body received:', { name: body.name, hasDescription: !!body.description, expiresAt: body.expires_at, isAdminKey: body.is_admin_key });
-
-        if (!body.name) {
-            console.error('[API] Missing required field: name');
-            return NextResponse.json({ error: 'API key name is required' }, { status: 400 });
-        }
-
-        // Check if user is an admin (for admin keys)
+        // Check if user is an admin - required to create API keys
         console.log('[API] Checking if user is admin');
         const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -105,21 +96,31 @@ export async function POST(request: NextRequest) {
 
         if (profileError) {
             console.error('[API] Error fetching user profile:', profileError);
+            return NextResponse.json({ error: 'Failed to verify admin status' }, { status: 500 });
         }
 
         const isAdmin = profile?.is_admin === true;
         console.log('[API] User admin status:', isAdmin);
 
-        // Determine if this should be an admin key
-        const isAdminKey = body.is_admin_key && isAdmin;
-
-        // If trying to create an admin key but user is not an admin
-        if (body.is_admin_key && !isAdmin) {
-            console.warn('[API] Non-admin user attempted to create admin key');
+        // Only allow admins to create API keys
+        if (!isAdmin) {
+            console.warn('[API] Non-admin user attempted to create API key');
             return NextResponse.json({
-                error: 'Only administrators can create admin API keys'
+                error: 'Only administrators can create API keys'
             }, { status: 403 });
         }
+
+        // Get request data
+        const body: CreateApiKeyRequest = await request.json();
+        console.log('[API] Request body received:', { name: body.name, hasDescription: !!body.description, expiresAt: body.expires_at, isAdminKey: body.is_admin_key });
+
+        if (!body.name) {
+            console.error('[API] Missing required field: name');
+            return NextResponse.json({ error: 'API key name is required' }, { status: 400 });
+        }
+
+        // Determine if this should be an admin key
+        const isAdminKey = body.is_admin_key || false;
 
         // Get forwarded IP if available, or use a fallback
         const forwardedFor = request.headers.get('x-forwarded-for');

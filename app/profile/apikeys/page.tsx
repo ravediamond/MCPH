@@ -12,6 +12,7 @@ import Button from 'components/ui/Button';
 export default function UserApiKeysManagement() {
     const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [showNewKeyModal, setShowNewKeyModal] = useState(false);
     const [newApiKey, setNewApiKey] = useState<{ name: string; description: string; expires_at: string | null }>({
         name: '',
@@ -33,6 +34,15 @@ export default function UserApiKeysManagement() {
                     router.push('/');
                     return;
                 }
+
+                // Check if user is admin
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', session.user.id)
+                    .single();
+
+                setIsAdmin(profile?.is_admin === true);
 
                 // Load API keys
                 await loadApiKeys();
@@ -202,27 +212,33 @@ export default function UserApiKeysManagement() {
                         <div className="bg-white rounded-lg p-6 mb-6 border border-neutral-100">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold text-gray-800">Your API Keys</h2>
-                                <Button
-                                    onClick={() => setShowNewKeyModal(true)}
-                                    variant="primary"
-                                    className="flex items-center"
-                                >
-                                    <FaPlus className="mr-2" />
-                                    Create New Key
-                                </Button>
+                                {isAdmin ? (
+                                    <Button
+                                        onClick={() => setShowNewKeyModal(true)}
+                                        variant="primary"
+                                        className="flex items-center"
+                                    >
+                                        <FaPlus className="mr-2" />
+                                        Create New Key
+                                    </Button>
+                                ) : (
+                                    <p className="text-red-600">Only admins can create API keys.</p>
+                                )}
                             </div>
 
                             {apiKeys.length === 0 ? (
                                 <div className="text-center py-12">
                                     <FaKey className="mx-auto text-4xl text-gray-400 mb-3" />
                                     <p className="text-gray-600 mb-6">You don't have any API keys yet.</p>
-                                    <Button
-                                        onClick={() => setShowNewKeyModal(true)}
-                                        variant="primary"
-                                        className="px-6 py-2"
-                                    >
-                                        Create your first API key
-                                    </Button>
+                                    {isAdmin && (
+                                        <Button
+                                            onClick={() => setShowNewKeyModal(true)}
+                                            variant="primary"
+                                            className="px-6 py-2"
+                                        >
+                                            Create your first API key
+                                        </Button>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="overflow-x-auto">
