@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from 'lib/supabaseClient';
-import { fetchGithubReadme, fetchRepoDetails } from 'services/githubService';
+import { fetchComprehensiveRepoData } from 'services/githubService';
 import { MCP } from 'types/mcp';
 
 export async function POST(request: NextRequest) {
@@ -34,53 +34,34 @@ export async function POST(request: NextRequest) {
       tags: tags || []
     };
 
-    // Extract owner and repo name from the URL
-    const parsedUrl = new URL(repository_url);
-    const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
-
-    if (pathParts.length < 2) {
-      return NextResponse.json(
-        { error: 'Invalid GitHub repository URL' },
-        { status: 400 }
-      );
-    }
-
-    const owner_username = pathParts[0];
-    const repository_name = pathParts[1];
-
-    // Store these early so we have them even if GitHub API calls fail
-    mcpData.owner_username = owner_username;
-    mcpData.repository_name = repository_name;
-    mcpData.last_refreshed = new Date().toISOString();
-
+    // Fetch comprehensive GitHub data
     try {
-      // Fetch GitHub data in parallel for better performance
-      const [readmeResponse, repoDetailsResponse] = await Promise.allSettled([
-        fetchGithubReadme(repository_url, owner_username, repository_name),
-        fetchRepoDetails(owner_username, repository_name)
-      ]);
+      console.log('Fetching GitHub data for repository:', repository_url);
+      const repoData = await fetchComprehensiveRepoData(repository_url);
 
-      // Handle README fetch results
-      if (readmeResponse.status === 'fulfilled') {
-        mcpData.readme = readmeResponse.value.readme;
-      } else {
-        console.error('GitHub README fetch error:', readmeResponse.reason);
-        mcpData.readme = ''; // Set empty readme if fetch fails
-      }
+      // Enrich the MCP with GitHub data
+      mcpData.readme = repoData.readme;
+      mcpData.owner_username = repoData.owner;
+      mcpData.repository_name = repoData.repo;
+      mcpData.stars = repoData.stars;
+      mcpData.forks = repoData.forks;
+      mcpData.open_issues = repoData.open_issues;
+      mcpData.last_repo_update = repoData.last_repo_update;
+      mcpData.languages = repoData.languages;
+      mcpData.last_refreshed = new Date().toISOString();
 
-      // Handle repo details fetch results
-      if (repoDetailsResponse.status === 'fulfilled') {
-        const repoDetails = repoDetailsResponse.value;
-        mcpData.stars = repoDetails.stargazers_count || 0;
-        mcpData.forks = repoDetails.forks_count || 0;
-        mcpData.open_issues = repoDetails.open_issues_count || 0;
-        mcpData.last_repo_update = repoDetails.updated_at;
-      } else {
-        console.error('GitHub repo details fetch error:', repoDetailsResponse.reason);
-      }
+      console.log(`GitHub data fetched successfully. Stars: ${repoData.stars}, Languages: ${repoData.languages.join(', ')}`);
     } catch (e) {
-      // Log the error but proceed with MCP creation using the data we already have
-      console.error('GitHub API error:', e);
+      console.error('Error fetching GitHub data:', e);
+
+      // Still extract basic owner/repo info even if GitHub API fails
+      const parsedUrl = new URL(repository_url);
+      const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+
+      if (pathParts.length >= 2) {
+        mcpData.owner_username = pathParts[0];
+        mcpData.repository_name = pathParts[1];
+      }
     }
 
     // Insert the new MCP record in Supabase

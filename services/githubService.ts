@@ -346,3 +346,112 @@ export async function refreshReadmeIfNeeded(mcp: any): Promise<any> {
     return mcp;
   }
 }
+
+/**
+ * Fetches comprehensive repository data during MCP creation
+ * This function fetches the README, star count, and other repo details in one go
+ * @param repositoryUrl GitHub repository URL
+ * @param ownerUsername Optional owner username (will parse from URL if not provided)
+ * @param repositoryName Optional repository name (will parse from URL if not provided)
+ * @returns Promise with comprehensive GitHub data (readme, stars, etc.)
+ */
+export async function fetchComprehensiveRepoData(
+  repositoryUrl: string,
+  ownerUsername?: string,
+  repositoryName?: string
+): Promise<{
+  readme: string;
+  owner: string;
+  repo: string;
+  stars: number;
+  forks: number;
+  open_issues: number;
+  last_repo_update: string;
+  languages: string[];
+}> {
+  let owner: string;
+  let repo: string;
+
+  // If owner and repo name are provided directly, use them
+  if (ownerUsername && repositoryName) {
+    owner = ownerUsername;
+    repo = repositoryName;
+  } else {
+    // Parse from URL
+    try {
+      const url = new URL(repositoryUrl);
+      const pathParts = url.pathname.split('/').filter(Boolean);
+
+      if (pathParts.length >= 2 && (url.hostname === 'github.com' || url.hostname === 'www.github.com')) {
+        owner = pathParts[0];
+        repo = pathParts[1];
+      } else {
+        throw new Error('Invalid GitHub repository URL format');
+      }
+    } catch (error) {
+      // Fallback to basic parsing for backward compatibility
+      const normalizedUrl = repositoryUrl.replace(/\/+$/, '');
+      const parts = normalizedUrl.split('/');
+      owner = parts[parts.length - 2];
+      repo = parts[parts.length - 1];
+    }
+  }
+
+  // Fetch both README and repo details
+  const [readme, repoDetails] = await Promise.all([
+    fetchReadmeFromGitHub(owner, repo),
+    fetchRepoDetails(owner, repo)
+  ]);
+
+  // Fetch languages
+  let languages: string[] = [];
+  try {
+    const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        ...(process.env.GITHUB_TOKEN && {
+          Authorization: `token ${process.env.GITHUB_TOKEN}`
+        })
+      }
+    });
+
+    await handleGitHubResponse(languagesResponse);
+    const languagesData = await languagesResponse.json();
+    languages = Object.keys(languagesData);
+  } catch (error) {
+    console.error('Error fetching repository languages:', error);
+  }
+
+  return {
+    readme,
+    owner,
+    repo,
+    stars: repoDetails.stargazers_count || 0,
+    forks: repoDetails.forks_count || 0,
+    open_issues: repoDetails.open_issues_count || 0,
+    last_repo_update: repoDetails.updated_at,
+    languages
+  };
+}
+
+/**
+ * Applies GitHub repository data to an MCP object
+ * This function enriches an MCP with GitHub data without saving to the database
+ * @param mcp The MCP object to enrich
+ * @param repoData Repository data from GitHub
+ * @returns Enriched MCP object
+ */
+export function enrichMcpWithRepoData(mcp: any, repoData: any): any {
+  return {
+    ...mcp,
+    readme: repoData.readme,
+    owner_username: repoData.owner,
+    repository_name: repoData.repo,
+    stars: repoData.stars,
+    forks: repoData.forks,
+    open_issues: repoData.open_issues,
+    last_repo_update: repoData.last_repo_update,
+    languages: repoData.languages,
+    last_refreshed: new Date().toISOString()
+  };
+}

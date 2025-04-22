@@ -21,6 +21,7 @@ export interface MCP {
   forks?: number;          // GitHub repository fork count
   open_issues?: number;    // GitHub repository open issues count
   last_repo_update?: string | null; // Updated to accept null values
+  languages?: string[];    // Programming languages used in the repository
   profiles?: {             // Added profiles property for join data
     email: string;
   };

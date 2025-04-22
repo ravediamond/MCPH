@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, createServiceRoleClient } from 'lib/supabaseClient';
 import { MCP } from 'types/mcp';
 import { createClient } from '@supabase/supabase-js';
+import { fetchComprehensiveRepoData } from 'services/githubService';
 
 export async function POST(request: Request) {
     try {
@@ -72,44 +73,68 @@ export async function POST(request: Request) {
                         continue;
                     }
 
-                    // Parse GitHub repository URL to extract owner and repo name
-                    let ownerUsername = mcp.owner_username;
-                    let repositoryName = mcp.repository_name;
+                    // Create a copy of the MCP object for enrichment
+                    const mcpData = { ...mcp };
 
-                    if (!ownerUsername || !repositoryName) {
-                        try {
-                            const repoUrl = new URL(mcp.repository_url);
-                            const pathParts = repoUrl.pathname.split('/').filter(Boolean);
+                    // Fetch GitHub repository data
+                    try {
+                        console.log(`Fetching GitHub data for ${mcp.name} (${mcp.repository_url})`);
+                        const repoData = await fetchComprehensiveRepoData(mcp.repository_url);
 
-                            if (pathParts.length >= 2 && (repoUrl.hostname === 'github.com' || repoUrl.hostname === 'www.github.com')) {
-                                ownerUsername = pathParts[0];
-                                repositoryName = pathParts[1];
+                        // Enrich the MCP with GitHub data
+                        mcpData.readme = repoData.readme;
+                        mcpData.owner_username = repoData.owner;
+                        mcpData.repository_name = repoData.repo;
+                        mcpData.stars = repoData.stars;
+                        mcpData.forks = repoData.forks;
+                        mcpData.open_issues = repoData.open_issues;
+                        mcpData.last_repo_update = repoData.last_repo_update;
+                        mcpData.languages = repoData.languages;
+                        mcpData.last_refreshed = new Date().toISOString();
+
+                        console.log(`GitHub data fetched for ${mcp.name}. Stars: ${repoData.stars}, Languages: ${repoData.languages.join(', ')}`);
+                    } catch (e) {
+                        console.error(`Error fetching GitHub data for ${mcp.name}:`, e);
+
+                        // Extract basic owner/repo info if GitHub API fails
+                        if (!mcpData.owner_username || !mcpData.repository_name) {
+                            try {
+                                const repoUrl = new URL(mcp.repository_url);
+                                const pathParts = repoUrl.pathname.split('/').filter(Boolean);
+
+                                if (pathParts.length >= 2 && (repoUrl.hostname === 'github.com' || repoUrl.hostname === 'www.github.com')) {
+                                    mcpData.owner_username = pathParts[0];
+                                    mcpData.repository_name = pathParts[1];
+                                }
+                            } catch (error) {
+                                console.error('Error parsing repository URL:', error);
                             }
-                        } catch (error) {
-                            // If URL parsing fails, we'll just continue with null values
-                            console.error('Error parsing repository URL:', error);
                         }
                     }
-
-                    // Format tags properly
-                    const formattedTags = mcp.tags || [];
 
                     // Use supabaseAdmin to bypass RLS
                     const { error: insertError } = await supabaseAdmin
                         .from('mcps')
                         .insert({
-                            name: mcp.name,
-                            description: mcp.description || '',
-                            repository_url: mcp.repository_url,
-                            owner_username: ownerUsername,
-                            repository_name: repositoryName,
-                            version: mcp.version,
-                            author: mcp.author,
-                            tags: formattedTags,
-                            user_id: mcp.user_id || currentUser.id, // Use the admin's ID if no user_id provided
-                            is_mcph_owned: mcp.is_mcph_owned !== undefined ? mcp.is_mcph_owned : false,
-                            deployment_url: mcp.deployment_url || null,
-                            view_count: mcp.view_count || 0
+                            name: mcpData.name,
+                            description: mcpData.description || '',
+                            repository_url: mcpData.repository_url,
+                            owner_username: mcpData.owner_username,
+                            repository_name: mcpData.repository_name,
+                            version: mcpData.version,
+                            author: mcpData.author,
+                            tags: mcpData.tags || [],
+                            user_id: mcpData.user_id || currentUser.id,
+                            is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                            deployment_url: mcpData.deployment_url || null,
+                            view_count: mcpData.view_count || 0,
+                            readme: mcpData.readme || '',
+                            stars: mcpData.stars || 0,
+                            forks: mcpData.forks || 0,
+                            open_issues: mcpData.open_issues || 0,
+                            last_repo_update: mcpData.last_repo_update,
+                            languages: mcpData.languages || [],
+                            last_refreshed: mcpData.last_refreshed
                         });
 
                     if (insertError) {
@@ -172,44 +197,68 @@ export async function POST(request: Request) {
                         continue;
                     }
 
-                    // Parse GitHub repository URL to extract owner and repo name
-                    let ownerUsername = mcp.owner_username;
-                    let repositoryName = mcp.repository_name;
+                    // Create a copy of the MCP object for enrichment
+                    const mcpData = { ...mcp };
 
-                    if (!ownerUsername || !repositoryName) {
-                        try {
-                            const repoUrl = new URL(mcp.repository_url);
-                            const pathParts = repoUrl.pathname.split('/').filter(Boolean);
+                    // Fetch GitHub repository data
+                    try {
+                        console.log(`Fetching GitHub data for ${mcp.name} (${mcp.repository_url})`);
+                        const repoData = await fetchComprehensiveRepoData(mcp.repository_url);
 
-                            if (pathParts.length >= 2 && (repoUrl.hostname === 'github.com' || repoUrl.hostname === 'www.github.com')) {
-                                ownerUsername = pathParts[0];
-                                repositoryName = pathParts[1];
+                        // Enrich the MCP with GitHub data
+                        mcpData.readme = repoData.readme;
+                        mcpData.owner_username = repoData.owner;
+                        mcpData.repository_name = repoData.repo;
+                        mcpData.stars = repoData.stars;
+                        mcpData.forks = repoData.forks;
+                        mcpData.open_issues = repoData.open_issues;
+                        mcpData.last_repo_update = repoData.last_repo_update;
+                        mcpData.languages = repoData.languages;
+                        mcpData.last_refreshed = new Date().toISOString();
+
+                        console.log(`GitHub data fetched for ${mcp.name}. Stars: ${repoData.stars}, Languages: ${repoData.languages.join(', ')}`);
+                    } catch (e) {
+                        console.error(`Error fetching GitHub data for ${mcp.name}:`, e);
+
+                        // Extract basic owner/repo info if GitHub API fails
+                        if (!mcpData.owner_username || !mcpData.repository_name) {
+                            try {
+                                const repoUrl = new URL(mcp.repository_url);
+                                const pathParts = repoUrl.pathname.split('/').filter(Boolean);
+
+                                if (pathParts.length >= 2 && (repoUrl.hostname === 'github.com' || repoUrl.hostname === 'www.github.com')) {
+                                    mcpData.owner_username = pathParts[0];
+                                    mcpData.repository_name = pathParts[1];
+                                }
+                            } catch (error) {
+                                console.error('Error parsing repository URL:', error);
                             }
-                        } catch (error) {
-                            // If URL parsing fails, we'll just continue with null values
-                            console.error('Error parsing repository URL:', error);
                         }
                     }
-
-                    // Format tags properly
-                    const formattedTags = mcp.tags || [];
 
                     // Use supabaseAdmin to bypass RLS
                     const { error: insertError } = await supabaseAdmin
                         .from('mcps')
                         .insert({
-                            name: mcp.name,
-                            description: mcp.description || '',
-                            repository_url: mcp.repository_url,
-                            owner_username: ownerUsername,
-                            repository_name: repositoryName,
-                            version: mcp.version,
-                            author: mcp.author,
-                            tags: formattedTags,
-                            user_id: mcp.user_id || currentUser.id, // Use the admin's ID if no user_id provided
-                            is_mcph_owned: mcp.is_mcph_owned !== undefined ? mcp.is_mcph_owned : false,
-                            deployment_url: mcp.deployment_url || null,
-                            view_count: mcp.view_count || 0
+                            name: mcpData.name,
+                            description: mcpData.description || '',
+                            repository_url: mcpData.repository_url,
+                            owner_username: mcpData.owner_username,
+                            repository_name: mcpData.repository_name,
+                            version: mcpData.version,
+                            author: mcpData.author,
+                            tags: mcpData.tags || [],
+                            user_id: mcpData.user_id || currentUser.id,
+                            is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                            deployment_url: mcpData.deployment_url || null,
+                            view_count: mcpData.view_count || 0,
+                            readme: mcpData.readme || '',
+                            stars: mcpData.stars || 0,
+                            forks: mcpData.forks || 0,
+                            open_issues: mcpData.open_issues || 0,
+                            last_repo_update: mcpData.last_repo_update,
+                            languages: mcpData.languages || [],
+                            last_refreshed: mcpData.last_refreshed
                         });
 
                     if (insertError) {
