@@ -17,7 +17,7 @@ interface Tag {
 interface TagCategory {
     id: number;
     name: string;
-    description: string;
+    description: string | null;
 }
 
 export default function AdminTags() {
@@ -29,6 +29,7 @@ export default function AdminTags() {
     const [isTagModalOpen, setIsTagModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('tags');
+    const [isExporting, setIsExporting] = useState(false);
     const router = useRouter();
 
     // Form states
@@ -58,10 +59,17 @@ export default function AdminTags() {
 
                 // Check if user has admin role
                 const { data: user } = await supabase.auth.getUser();
+                const userId = user.user?.id;
+
+                if (!userId) {
+                    router.push('/');
+                    return;
+                }
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('is_admin')
-                    .eq('id', user.user?.id)
+                    .eq('id', userId)
                     .single();
 
                 if (!profile?.is_admin) {
@@ -92,7 +100,9 @@ export default function AdminTags() {
                 .order('name');
 
             if (error) throw error;
-            setTags(data || []);
+            // Cast the returned data to match the Tag interface
+            const typedTags = (data || []) as unknown as Tag[];
+            setTags(typedTags);
         } catch (error) {
             console.error('Error loading tags:', error);
         }
@@ -294,6 +304,61 @@ export default function AdminTags() {
         category.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Function to handle exporting tags as JSON
+    const handleExportTags = async () => {
+        try {
+            setIsExporting(true);
+            
+            // Get the current session
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (!session) {
+                throw new Error('You must be logged in to export tags');
+            }
+            
+            // Use fetch with authentication token in the header
+            const response = await fetch('/api/tags/export', {
+                method: 'GET',
+                credentials: 'include', // Include cookies
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to export tags');
+            }
+            
+            // Get the filename from the Content-Disposition header if available
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            const matches = filenameRegex.exec(contentDisposition || '');
+            const filename = matches && matches[1] ? matches[1].replace(/['"]/g, '') : 'mcphub-tags-export.json';
+            
+            // Convert the response to a blob
+            const blob = await response.blob();
+            
+            // Create a download link and trigger the download
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+            setIsExporting(false);
+        } catch (error) {
+            console.error('Error exporting tags:', error);
+            alert(`Failed to export tags: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setIsExporting(false);
+        }
+    };
+
     if (isLoading) {
         return <div className="flex justify-center items-center h-screen">Loading admin dashboard...</div>;
     }
@@ -311,6 +376,19 @@ export default function AdminTags() {
                     className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow-sm"
                 >
                     Back to Dashboard
+                </button>
+            </div>
+
+            <div className="mb-4">
+                <button
+                    onClick={handleExportTags}
+                    disabled={isExporting}
+                    className="bg-purple-500 hover:bg-purple-600 disabled:bg-purple-300 text-white px-4 py-2 rounded-md shadow-sm flex items-center"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    {isExporting ? 'Exporting...' : 'Export Tags as JSON'}
                 </button>
             </div>
 
@@ -561,7 +639,7 @@ export default function AdminTags() {
                             </label>
                             <textarea
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                                value={newCategory.description}
+                                value={newCategory.description || ''}
                                 onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                                 rows={3}
                             ></textarea>

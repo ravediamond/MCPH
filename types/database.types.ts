@@ -177,6 +177,62 @@ export interface Database {
                     }
                 ];
             };
+            tag_categories: {
+                Row: {
+                    id: number;
+                    name: string;
+                    description: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    name: string;
+                    description?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    name?: string;
+                    description?: string | null;
+                    created_at?: string;
+                };
+                Relationships: [];
+            };
+            tags: {
+                Row: {
+                    id: number;
+                    category_id: number;
+                    name: string;
+                    description: string | null;
+                    icon: string | null;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    category_id: number;
+                    name: string;
+                    description?: string | null;
+                    icon?: string | null;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    category_id?: number;
+                    name?: string;
+                    description?: string | null;
+                    icon?: string | null;
+                    created_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: "tags_category_id_fkey";
+                        columns: ["category_id"];
+                        isOneToOne: false;
+                        referencedRelation: "tag_categories";
+                        referencedColumns: ["id"];
+                    }
+                ];
+            };
             // Add other tables as needed
         };
         Views: {
@@ -186,6 +242,14 @@ export interface Database {
             generate_api_key: {
                 Args: Record<string, never>;
                 Returns: string;
+            };
+            get_tags_by_category: {
+                Args: { category_name: string };
+                Returns: Database['public']['Tables']['tags']['Row'][];
+            };
+            is_valid_tag: {
+                Args: { tag_name: string; category_name: string };
+                Returns: boolean;
             };
         };
         Enums: {
