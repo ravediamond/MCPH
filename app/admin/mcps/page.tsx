@@ -83,13 +83,34 @@ export default function AdminMCPs() {
 
     async function loadMCPs() {
         try {
-            const { data, error } = await supabase
+            // Get all MCPs
+            const { data: mcpData, error: mcpError } = await supabase
                 .from('mcps')
-                .select('*, profiles:user_id(email)')
+                .select('*')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            setMcps(data as unknown as MCP[] || []);
+            if (mcpError) throw mcpError;
+
+            // Get all MCPs with owner information by fetching profiles separately
+            const mcpsWithOwners = await Promise.all((mcpData || []).map(async (mcp) => {
+                if (mcp.user_id) {
+                    const { data: userData, error: userError } = await supabase
+                        .from('profiles')
+                        .select('email')
+                        .eq('id', mcp.user_id)
+                        .single();
+
+                    if (!userError && userData) {
+                        return {
+                            ...mcp,
+                            profiles: userData
+                        };
+                    }
+                }
+                return mcp;
+            }));
+
+            setMcps(mcpsWithOwners as unknown as MCP[] || []);
         } catch (error) {
             console.error('Error loading MCPs:', error);
         }
@@ -216,13 +237,24 @@ export default function AdminMCPs() {
                 return;
             }
 
-            // Send to API endpoint
+            // Use supabase client directly with auth session
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                alert('Your session has expired. Please log in again.');
+                router.push('/');
+                return;
+            }
+
+            // Send to API endpoint with auth header
             const response = await fetch('/api/mcps/admin/batch-import', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
                 },
                 body: JSON.stringify({ mcps: mcpsData }),
+                credentials: 'include',
             });
 
             const result = await response.json();
