@@ -308,14 +308,14 @@ export default function AdminTags() {
     const handleExportTags = async () => {
         try {
             setIsExporting(true);
-            
+
             // Get the current session
             const { data: { session } } = await supabase.auth.getSession();
-            
+
             if (!session) {
                 throw new Error('You must be logged in to export tags');
             }
-            
+
             // Use fetch with authentication token in the header
             const response = await fetch('/api/tags/export', {
                 method: 'GET',
@@ -325,21 +325,21 @@ export default function AdminTags() {
                     'Authorization': `Bearer ${session.access_token}`
                 }
             });
-            
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Failed to export tags');
             }
-            
+
             // Get the filename from the Content-Disposition header if available
             const contentDisposition = response.headers.get('Content-Disposition');
             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
             const matches = filenameRegex.exec(contentDisposition || '');
             const filename = matches && matches[1] ? matches[1].replace(/['"]/g, '') : 'mcphub-tags-export.json';
-            
+
             // Convert the response to a blob
             const blob = await response.blob();
-            
+
             // Create a download link and trigger the download
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -347,7 +347,7 @@ export default function AdminTags() {
             link.download = filename;
             document.body.appendChild(link);
             link.click();
-            
+
             // Clean up
             window.URL.revokeObjectURL(url);
             document.body.removeChild(link);

@@ -37,11 +37,11 @@ export async function GET(request: Request) {
         // Check for authorization header first
         const authHeader = request.headers.get('Authorization');
         let session;
-        
+
         if (authHeader && authHeader.startsWith('Bearer ')) {
             // Extract token from Authorization header
             const token = authHeader.substring(7);
-            
+
             // Create a temp Supabase client with the access token
             const supabaseWithAuth = createClient<Database>(
                 process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
                     }
                 }
             );
-            
+
             // Set the auth token for this client
             const { data, error } = await supabaseWithAuth.auth.getUser(token);
             if (error || !data?.user) {
@@ -62,21 +62,21 @@ export async function GET(request: Request) {
                     { status: 401 }
                 );
             }
-            
+
             // Check if user is admin
             const { data: profile } = await supabaseWithAuth
                 .from('profiles')
                 .select('is_admin')
                 .eq('id', data.user.id)
                 .single();
-                
+
             if (!profile?.is_admin) {
                 return NextResponse.json(
                     { error: 'Admin privileges required' },
                     { status: 403 }
                 );
             }
-            
+
             // Use this client for subsequent operations
             const { data: categories, error: categoriesError } = await supabaseWithAuth
                 .from('tag_categories')
@@ -104,7 +104,7 @@ export async function GET(request: Request) {
                     { status: 500 }
                 );
             }
-            
+
             // Group tags by category
             const tagsByCategory: Record<string, TagExport[]> = {};
 
@@ -147,7 +147,7 @@ export async function GET(request: Request) {
         } else {
             // Fall back to session-based auth if no valid Authorization header
             const { data: { session } } = await supabase.auth.getSession();
-            
+
             if (!session) {
                 return NextResponse.json(
                     { error: 'Authentication required' },
