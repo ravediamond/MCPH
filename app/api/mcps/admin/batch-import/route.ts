@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { supabase, createServiceRoleClient } from 'lib/supabaseClient';
 import { MCP } from 'types/mcp';
 import { createClient } from '@supabase/supabase-js';
 
@@ -8,6 +8,9 @@ export async function POST(request: Request) {
         // Get authorization header
         const authHeader = request.headers.get('Authorization');
         let session;
+
+        // Create a service role client that can bypass RLS
+        const supabaseAdmin = createServiceRoleClient();
 
         // If Authorization header is present, use it to get the session
         if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -91,8 +94,8 @@ export async function POST(request: Request) {
                     // Format tags properly
                     const formattedTags = mcp.tags || [];
 
-                    // Insert the MCP
-                    const { error: insertError } = await supabase
+                    // Use supabaseAdmin to bypass RLS
+                    const { error: insertError } = await supabaseAdmin
                         .from('mcps')
                         .insert({
                             name: mcp.name,
@@ -103,10 +106,10 @@ export async function POST(request: Request) {
                             version: mcp.version,
                             author: mcp.author,
                             tags: formattedTags,
-                            user_id: mcp.user_id || null,
-                            claimed: mcp.claimed !== undefined ? mcp.claimed : false,
+                            user_id: mcp.user_id || currentUser.id, // Use the admin's ID if no user_id provided
                             is_mcph_owned: mcp.is_mcph_owned !== undefined ? mcp.is_mcph_owned : false,
-                            deployment_url: mcp.deployment_url || null
+                            deployment_url: mcp.deployment_url || null,
+                            view_count: mcp.view_count || 0
                         });
 
                     if (insertError) {
@@ -191,8 +194,8 @@ export async function POST(request: Request) {
                     // Format tags properly
                     const formattedTags = mcp.tags || [];
 
-                    // Insert the MCP
-                    const { error: insertError } = await supabase
+                    // Use supabaseAdmin to bypass RLS
+                    const { error: insertError } = await supabaseAdmin
                         .from('mcps')
                         .insert({
                             name: mcp.name,
@@ -203,10 +206,10 @@ export async function POST(request: Request) {
                             version: mcp.version,
                             author: mcp.author,
                             tags: formattedTags,
-                            user_id: mcp.user_id || null,
-                            claimed: mcp.claimed !== undefined ? mcp.claimed : false,
+                            user_id: mcp.user_id || currentUser.id, // Use the admin's ID if no user_id provided
                             is_mcph_owned: mcp.is_mcph_owned !== undefined ? mcp.is_mcph_owned : false,
-                            deployment_url: mcp.deployment_url || null
+                            deployment_url: mcp.deployment_url || null,
+                            view_count: mcp.view_count || 0
                         });
 
                     if (insertError) {

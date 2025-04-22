@@ -18,3 +18,24 @@ export const createClientSupabase = () => {
     // Use same configuration to ensure consistent cookie handling
     return createClientComponentClient<Database>();
 };
+
+// Create a server-side client with service role for admin functions that need to bypass RLS
+export const createServiceRoleClient = () => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+        throw new Error("Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY. Make sure the service role key is set in your .env file or environment variables.");
+    }
+
+    return createClient<Database>(
+        supabaseUrl,
+        supabaseServiceRoleKey,
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+            }
+        }
+    );
+};
