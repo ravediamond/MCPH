@@ -6,7 +6,6 @@ export interface MCP {
   repository_url: string;
   repository_name?: string | null;  // Updated to accept null values
   tags?: string[];
-  version: string;
   author: string;
   user_id: string;
   readme?: string | null;         // Updated to accept null values

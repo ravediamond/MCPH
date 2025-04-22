@@ -25,7 +25,6 @@ export default function AddEditMCPModal({
     const [ownerUsername, setOwnerUsername] = useState(''); // New state for owner username
     const [repositoryName, setRepositoryName] = useState(''); // New state for repository name
     const [name, setName] = useState('');
-    const [version, setVersion] = useState('1.0.0'); // Default value
     const [description, setDescription] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const [loadingRepoInfo, setLoadingRepoInfo] = useState(false);
@@ -221,17 +220,6 @@ export default function AddEditMCPModal({
             setName(repoData.name || '');
             setDescription(repoData.description || '');
 
-            // Fetch the latest release for version info
-            const releaseResponse = await fetch(
-                `https://api.github.com/repos/${owner}/${repo}/releases/latest`
-            );
-            if (releaseResponse.ok) {
-                const releaseData = await releaseResponse.json();
-                setVersion(releaseData.tag_name || '1.0.0');
-            } else {
-                // If no release info, keep default or let user adjust it.
-                setVersion('1.0.0');
-            }
         } catch (error) {
             console.error(error);
             setErrorMsg('Error occurred while fetching repository information.');
@@ -248,10 +236,6 @@ export default function AddEditMCPModal({
         }
         if (!repositoryUrl.trim()) {
             setErrorMsg('Repository URL is required.');
-            return;
-        }
-        if (!version.trim() || !version.match(/^\d+\.\d+\.\d+$/)) {
-            setErrorMsg('Version is required and must follow semantic versioning (e.g., 1.0.0).');
             return;
         }
         setErrorMsg('');
@@ -278,7 +262,6 @@ export default function AddEditMCPModal({
                 repository_url: repositoryUrl.trim(),
                 owner_username: ownerUsername,
                 repository_name: repositoryName,
-                version: version.trim(),
                 description: description.trim(),
                 deployment_url: deploymentUrl.trim() || null,
                 author: author,
@@ -299,7 +282,6 @@ export default function AddEditMCPModal({
             setOwnerUsername('');
             setRepositoryName('');
             setDeploymentUrl('');
-            setVersion('1.0.0');
             setDescription('');
             setCustomTags([]);
             setSelectedDomainTags([]);
@@ -363,20 +345,6 @@ export default function AddEditMCPModal({
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="MCP Name"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            {/* Version */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Version<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={version}
-                                    onChange={(e) => setVersion(e.target.value)}
-                                    placeholder="e.g., 1.0.0"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
