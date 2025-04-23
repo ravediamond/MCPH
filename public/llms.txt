@@ -1,4 +1,4 @@
-# llms.txt for MCPHub
+# llms.txt for MCPH
 # This file indicates preferences for AI language models crawling this site
 
 # Disallow all language models from crawling the entire site

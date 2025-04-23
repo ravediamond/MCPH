@@ -584,9 +584,9 @@ export default function Profile() {
                                             <FaKey className="w-8 h-8" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-medium text-neutral-800">Access the MCPHub API</h3>
+                                            <h3 className="text-lg font-medium text-neutral-800">Access the MCPH API</h3>
                                             <p className="mt-1 text-neutral-600">
-                                                Create and manage API keys to access MCPHub resources programmatically.
+                                                Create and manage API keys to access MCPH resources programmatically.
                                             </p>
                                             <Button
                                                 variant="outline"

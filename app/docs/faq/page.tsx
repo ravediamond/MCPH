@@ -20,9 +20,9 @@ export default function FAQPage() {
                         </div>
 
                         <div>
-                            <h3 className="text-xl font-medium mb-2">What is MCPHub?</h3>
+                            <h3 className="text-xl font-medium mb-2">What is MCPH?</h3>
                             <p className="text-lg text-gray-700">
-                                MCPHub is a platform for discovering, sharing, and using MCP implementations.
+                                MCPH is a platform for discovering, sharing, and using MCP implementations.
                                 It serves as a central registry for MCP servers that enable AI models to interact
                                 with various data sources and tools.
                             </p>
@@ -49,7 +49,7 @@ export default function FAQPage() {
                                 To use an MCP, you need to:
                             </p>
                             <ol className="list-decimal pl-6 mt-3 space-y-2 text-lg text-gray-700">
-                                <li>Choose a compatible MCP from MCPHub</li>
+                                <li>Choose a compatible MCP from MCPH</li>
                                 <li>Add the MCP endpoint to your AI system</li>
                                 <li>Configure your AI model to utilize the MCP</li>
                             </ol>
@@ -73,12 +73,12 @@ export default function FAQPage() {
 
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-xl font-medium mb-2">How do I publish my MCP to MCPHub?</h3>
+                            <h3 className="text-xl font-medium mb-2">How do I publish my MCP to MCPH?</h3>
                             <p className="text-lg text-gray-700">
                                 To publish your MCP:
                             </p>
                             <ol className="list-decimal pl-6 mt-3 space-y-2 text-lg text-gray-700">
-                                <li>Create an account on MCPHub</li>
+                                <li>Create an account on MCPH</li>
                                 <li>Prepare your MCP with proper documentation</li>
                                 <li>Use our web interface or API to submit it</li>
                             </ol>

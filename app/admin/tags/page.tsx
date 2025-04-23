@@ -335,7 +335,7 @@ export default function AdminTags() {
             const contentDisposition = response.headers.get('Content-Disposition');
             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
             const matches = filenameRegex.exec(contentDisposition || '');
-            const filename = matches && matches[1] ? matches[1].replace(/['"]/g, '') : 'mcphub-tags-export.json';
+            const filename = matches && matches[1] ? matches[1].replace(/['"]/g, '') : 'mcph-tags-export.json';
 
             // Convert the response to a blob
             const blob = await response.blob();

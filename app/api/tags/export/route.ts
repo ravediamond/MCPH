@@ -136,7 +136,7 @@ export async function GET(request: Request) {
 
             // Set headers for file download
             const headers = new Headers();
-            headers.append('Content-Disposition', 'attachment; filename="mcphub-tags-export.json"');
+            headers.append('Content-Disposition', 'attachment; filename="mcph-tags-export.json"');
             headers.append('Content-Type', 'application/json');
 
             // Return data as downloadable JSON file
@@ -238,7 +238,7 @@ export async function GET(request: Request) {
 
             // Set headers for file download
             const headers = new Headers();
-            headers.append('Content-Disposition', 'attachment; filename="mcphub-tags-export.json"');
+            headers.append('Content-Disposition', 'attachment; filename="mcph-tags-export.json"');
             headers.append('Content-Type', 'application/json');
 
             // Return data as downloadable JSON file

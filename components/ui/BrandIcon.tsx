@@ -5,13 +5,13 @@ const BrandIcon = () => {
         <div className="relative flex items-center">
             <Image
                 src="/icon.png"
-                alt="MCP Hub Icon"
-                width={42}
-                height={42}
+                alt="MCPH Icon"
+                width={56}
+                height={56}
                 className="bg-transparent"
                 priority
             />
-            <span className="ml-2 font-bold text-xl text-white">MCPRegistry</span>
+            <span className="ml-2 font-bold text-xl text-white">MCPH</span>
         </div>
     );
 };

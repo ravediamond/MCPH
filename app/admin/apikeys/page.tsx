@@ -330,7 +330,7 @@ export default function ApiKeysManagement() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">About API Keys</h2>
                     <div className="prose dark:prose-invert max-w-none">
-                        <p>API keys allow third-party applications to access the MCPHub API on your behalf. These keys can be used to:</p>
+                        <p>API keys allow third-party applications to access the MCPH API on your behalf. These keys can be used to:</p>
                         <ul className="list-disc list-inside ml-4 mt-2">
                             <li>Fetch MCP data programmatically</li>
                             <li>Integrate with external tools and services</li>

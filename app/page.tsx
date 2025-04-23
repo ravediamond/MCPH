@@ -20,7 +20,7 @@ export default function Home() {
             <section className="py-16 px-4 border-b border-gray-800">
                 <div className="max-w-5xl mx-auto">
                     <h1 className="text-4xl font-semibold mb-4 text-center text-gray-100">
-                        The Model Context Protocol Registry
+                        The Model Context Protocol Hub
                     </h1>
                     <p className="text-gray-300 text-center mb-10 max-w-3xl mx-auto text-lg">
                         Find, install, and publish MCP endpoints to enhance your AI systems
@@ -85,9 +85,6 @@ export default function Home() {
                 <div className="grid grid-cols-1 gap-8">
                     {/* Most Starred MCPs */}
                     <FeaturedMCPs title="Most Popular MCPs" type="starred" limit={3} />
-
-                    {/* Trending MCPs */}
-                    <FeaturedMCPs title="Trending MCPs" type="trending" limit={3} />
                 </div>
             </div>
 
@@ -95,7 +92,7 @@ export default function Home() {
             <div className="max-w-5xl mx-auto pt-8 pb-10 px-4">
                 <section className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
                     <h2 className="text-xl font-semibold mb-6 text-center text-gray-100">
-                        How to use the MCP Registry
+                        How to use the MCPH
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="text-center">
@@ -104,7 +101,7 @@ export default function Home() {
                             </div>
                             <h3 className="text-gray-100 font-medium mb-2 text-base">Find an MCP</h3>
                             <p className="text-gray-300 text-sm">
-                                Search or browse the registry to find MCPs that enhance your AI application's capabilities.
+                                Search or browse the hub to find MCPs that enhance your AI application's capabilities.
                             </p>
                         </div>
                         <div className="text-center">

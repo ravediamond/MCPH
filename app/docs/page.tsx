@@ -6,14 +6,14 @@ import { motion } from 'framer-motion';
 
 export default function DocsPage() {
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-gray-900 min-h-screen">
             {/* Hero Section */}
-            <section className="py-16 px-4 border-b border-neutral-100">
+            <section className="py-16 px-4 border-b border-gray-800">
                 <div className="max-w-5xl mx-auto text-center">
-                    <h1 className="text-4xl font-semibold text-neutral-800 mb-4">
+                    <h1 className="text-4xl font-semibold text-gray-100 mb-4">
                         About MCPs
                     </h1>
-                    <p className="text-lg text-neutral-600 max-w-3xl mx-auto">
+                    <p className="text-lg text-gray-300 max-w-3xl mx-auto">
                         Learn the basics of Model Context Protocol (MCP) and how to use the MCPs you discover on our hub.
                     </p>
                     <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
@@ -29,7 +29,7 @@ export default function DocsPage() {
                             href="https://github.com/modelcontextprotocol"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 bg-white border border-blue-600 hover:bg-blue-50 px-5 py-2 rounded-md transition-colors font-medium"
+                            className="text-gray-100 bg-gray-800 border border-gray-700 hover:bg-gray-750 px-5 py-2 rounded-md transition-colors font-medium"
                         >
                             GitHub Repository
                         </a>
@@ -38,16 +38,16 @@ export default function DocsPage() {
             </section>
 
             {/* What is MCP Section */}
-            <section className="py-10 px-4 bg-blue-50">
+            <section className="py-10 px-4 bg-gray-800">
                 <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">What is Model Context Protocol?</h2>
+                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">What is Model Context Protocol?</h2>
 
-                    <div className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm">
-                        <p className="text-neutral-700 mb-4">
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
+                        <p className="text-gray-300 mb-4">
                             MCP is a specification that enables AI systems to communicate with external tools and APIs in a standardized way.
                             It defines how AI models can discover capabilities, send requests, and receive structured responses.
                         </p>
-                        <p className="text-neutral-700 mb-6">
+                        <p className="text-gray-300 mb-6">
                             With MCP, AI applications can access specialized services like database interactions, web searches, or domain-specific tools
                             without needing custom integration for each one.
                         </p>
@@ -56,7 +56,7 @@ export default function DocsPage() {
                             <img
                                 src="https://raw.githubusercontent.com/modelcontextprotocol/.github/main/profile/mcp-explanation.png"
                                 alt="MCP Flow Diagram"
-                                className="max-w-full h-auto rounded-lg shadow-sm border border-neutral-200"
+                                className="max-w-full h-auto rounded-lg shadow-md border border-gray-700"
                             />
                         </div>
                     </div>
@@ -64,31 +64,31 @@ export default function DocsPage() {
             </section>
 
             {/* Official Resources */}
-            <section className="py-10 px-4">
+            <section className="py-10 px-4 bg-gray-900">
                 <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">Official Resources</h2>
+                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">Official Resources</h2>
 
                     <div className="grid md:grid-cols-2 gap-6">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm"
+                            className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md"
                         >
-                            <h3 className="text-xl font-medium text-neutral-800 mb-3">SDK Libraries</h3>
+                            <h3 className="text-xl font-medium text-gray-100 mb-3">SDK Libraries</h3>
                             <div className="space-y-4">
                                 <a
                                     href="https://github.com/modelcontextprotocol/python-sdk"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
                                 >
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
                                         <span className="text-lg font-medium">Py</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-neutral-800">Python SDK</h4>
-                                        <p className="text-neutral-600 text-sm">
+                                        <h4 className="font-medium text-gray-100">Python SDK</h4>
+                                        <p className="text-gray-300 text-sm">
                                             Official Python implementation of the MCP specification
                                         </p>
                                     </div>
@@ -97,14 +97,14 @@ export default function DocsPage() {
                                     href="https://github.com/modelcontextprotocol/typescript-sdk"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
                                 >
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
                                         <span className="text-lg font-medium">TS</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-neutral-800">TypeScript SDK</h4>
-                                        <p className="text-neutral-600 text-sm">
+                                        <h4 className="font-medium text-gray-100">TypeScript SDK</h4>
+                                        <p className="text-gray-300 text-sm">
                                             Official TypeScript implementation of the MCP specification
                                         </p>
                                     </div>
@@ -116,22 +116,22 @@ export default function DocsPage() {
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 0.1 }}
-                            className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm"
+                            className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md"
                         >
-                            <h3 className="text-xl font-medium text-neutral-800 mb-3">Documentation</h3>
+                            <h3 className="text-xl font-medium text-gray-100 mb-3">Documentation</h3>
                             <div className="space-y-4">
                                 <a
                                     href="https://docs.modelcontextprotocol.io/"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
                                 >
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
                                         <span className="text-lg font-medium">📚</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-neutral-800">Official Documentation</h4>
-                                        <p className="text-neutral-600 text-sm">
+                                        <h4 className="font-medium text-gray-100">Official Documentation</h4>
+                                        <p className="text-gray-300 text-sm">
                                             Comprehensive guides, API references, and tutorials
                                         </p>
                                     </div>
@@ -140,14 +140,14 @@ export default function DocsPage() {
                                     href="https://github.com/modelcontextprotocol/spec"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-neutral-200 rounded-lg hover:bg-blue-50 transition-colors"
+                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
                                 >
-                                    <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
+                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
                                         <span className="text-lg font-medium">📝</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-neutral-800">Specification</h4>
-                                        <p className="text-neutral-600 text-sm">
+                                        <h4 className="font-medium text-gray-100">Specification</h4>
+                                        <p className="text-gray-300 text-sm">
                                             Technical details and implementation guidelines
                                         </p>
                                     </div>
@@ -159,51 +159,51 @@ export default function DocsPage() {
             </section>
 
             {/* How to Use MCPs */}
-            <section className="py-10 px-4 bg-blue-50 mb-10">
+            <section className="py-10 px-4 bg-gray-800 mb-10">
                 <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-neutral-800 mb-6 text-center">How to Use MCPs</h2>
+                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">How to Use MCPs</h2>
 
-                    <div className="bg-white border border-neutral-100 rounded-lg p-6 shadow-sm">
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
                         <div className="space-y-6">
                             <div className="flex">
-                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
                                     <span className="font-bold text-sm">1</span>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-neutral-800 mb-1">Find a Compatible MCP</h4>
-                                    <p className="text-neutral-600">
+                                    <h4 className="font-medium text-gray-100 mb-1">Find a Compatible MCP</h4>
+                                    <p className="text-gray-300">
                                         Browse our hub to discover MCPs that provide the capabilities you need for your AI application.
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex">
-                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
                                     <span className="font-bold text-sm">2</span>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-neutral-800 mb-1">Configure Your Environment</h4>
-                                    <p className="text-neutral-600">
+                                    <h4 className="font-medium text-gray-100 mb-1">Configure Your Environment</h4>
+                                    <p className="text-gray-300">
                                         Install the appropriate MCP SDK for your programming language and configure it with the MCP's endpoint.
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex">
-                                <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
+                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
                                     <span className="font-bold text-sm">3</span>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-neutral-800 mb-1">Integrate and Use</h4>
-                                    <p className="text-neutral-600">
+                                    <h4 className="font-medium text-gray-100 mb-1">Integrate and Use</h4>
+                                    <p className="text-gray-300">
                                         Connect your AI model to the MCP to extend its capabilities with the external tools and services.
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-6 pt-6 border-t border-neutral-100 text-center">
-                            <Link href="/browse" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                        <div className="mt-6 pt-6 border-t border-gray-700 text-center">
+                            <Link href="/browse" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium">
                                 Start browsing MCPs
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

@@ -306,7 +306,7 @@ export default function UserApiKeysManagement() {
                         <div className="bg-white rounded-lg p-6 border border-neutral-100">
                             <h2 className="text-xl font-semibold text-gray-800 mb-4">About API Keys</h2>
                             <div className="prose max-w-none">
-                                <p>API keys allow you to access the MCPHub API programmatically. These keys can be used to:</p>
+                                <p>API keys allow you to access the MCPH API programmatically. These keys can be used to:</p>
                                 <ul className="list-disc list-inside ml-4 mt-2">
                                     <li>Search for MCPs</li>
                                     <li>Fetch MCP data</li>

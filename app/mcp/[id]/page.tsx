@@ -372,17 +372,14 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   return (
     <div className="bg-gray-900 min-h-screen pb-16 text-gray-200">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 px-4 shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 px-4 shadow-lg relative overflow-hidden border-b border-gray-700">
         {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-10" style={{
+        <div className="absolute inset-0 opacity-5" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
 
         {/* Accent line at the top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-
-        {/* Add a subtle background box for better logo contrast */}
-        <div className="absolute top-0 left-0 right-0 h-16 bg-black bg-opacity-25"></div>
 
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="flex justify-between items-start">
