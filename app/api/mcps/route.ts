@@ -23,12 +23,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prepare the initial MCP object
-    const mcpData: MCP = {
+    // Prepare the initial MCP object (without version since it's now in a separate table)
+    const mcpData: Omit<MCP, 'version'> = {
       name,
       description: description || '',
       repository_url,
-      version,
       author,
       user_id,
       tags: tags || []
@@ -84,6 +83,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Now insert the initial version into the mcp_versions table
+    if (data.id) {
+      const versionData = {
+        mcp_id: data.id,
+        version_number: version,
+        created_at: new Date().toISOString(),
+        is_active: true,
+        changes: 'Initial version',
+      };
+
+      const { error: versionError } = await supabase
+        .from('mcp_versions')
+        .insert(versionData);
+
+      if (versionError) {
+        console.error('Error creating initial version record:', versionError);
+        // Continue anyway, as the MCP itself was created successfully
+      }
+    }
+
     // Schedule a background task to refresh GitHub data if initial fetch failed
     if (!mcpData.stars && data.id) {
       try {
@@ -98,10 +117,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Include the version in the response for backward compatibility
+    const responseData = {
+      ...data,
+      version,
+    };
+
     return NextResponse.json({
       success: true,
       message: 'MCP created successfully',
-      mcp: data
+      mcp: responseData
     }, { status: 201 });
   } catch (error) {
     console.error('Error processing MCP creation:', error);

@@ -47,7 +47,6 @@ export async function GET(request: Request) {
                     'description',
                     'repository_url',
                     'tags',
-                    'version',
                     'author',
                     'stars',
                     'forks',

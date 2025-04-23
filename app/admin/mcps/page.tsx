@@ -194,7 +194,6 @@ export default function AdminMCPs() {
     // Open file selector
     const handleImportClick = () => {
         setImportResults(null);
-        setJsonPreview('');
         setIsImportModalOpen(true);
     };
 
@@ -422,32 +421,8 @@ export default function AdminMCPs() {
             {/* Batch Import Modal */}
             {isImportModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-3xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Batch Import MCPs</h2>
-
-                        <div className="mb-6">
-                            <p className="text-gray-700 dark:text-gray-300 mb-2">
-                                Upload a JSON file containing an array of MCPs to import. Each MCP should have the following structure:
-                            </p>
-                            <pre className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md text-xs overflow-auto max-h-48">
-                                {`[
-  {
-    "name": "MCP Name", // required
-    "description": "MCP Description",
-    "repository_url": "https://github.com/username/repo", // required
-    "owner_username": "username", // optional, will be parsed from repository_url if not provided
-    "repository_name": "repo", // optional, will be parsed from repository_url if not provided
-    "version": "1.0.0", // required
-    "author": "Author Name", // required
-    "tags": ["domain:category", "deployment:type", "provider:Community", "custom-tag"],
-    "claimed": false, // optional
-    "is_mcph_owned": false, // optional
-    "deployment_url": "https://deployment-url.com" // optional
-  },
-  // More MCPs...
-]`}
-                            </pre>
-                        </div>
+                    <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Import MCPs from JSON</h2>
 
                         <div className="mb-6">
                             <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -460,16 +435,10 @@ export default function AdminMCPs() {
                                 ref={fileInputRef}
                                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                             />
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                Upload a JSON file containing an array of MCPs to import
+                            </p>
                         </div>
-
-                        {jsonPreview && (
-                            <div className="mb-6">
-                                <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-white">Preview:</h3>
-                                <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md text-xs overflow-auto max-h-48">
-                                    <pre>{jsonPreview}</pre>
-                                </div>
-                            </div>
-                        )}
 
                         {importResults && (
                             <div className="mb-6">
