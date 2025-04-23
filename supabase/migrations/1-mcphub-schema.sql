@@ -497,8 +497,8 @@ VALUES
 -- Insert Deployment Tags
 INSERT INTO public.tags (category_id, name, description, icon)
 VALUES
-((SELECT id FROM public.tag_categories WHERE name = 'deployment'), 'Deployed', 'Solution is already available as a managed service', '☁️'),
-((SELECT id FROM public.tag_categories WHERE name = 'deployment'), 'Self-Hosted', 'Solution is provided as code that you must install locally', '🏠');
+((SELECT id FROM public.tag_categories WHERE name = 'deployment'), 'Deployed', 'MCP is already available as a managed service', '☁️'),
+((SELECT id FROM public.tag_categories WHERE name = 'deployment'), 'Local', 'MCP is provided as code that you must install locally', '🏠');
 
 -- Insert Provider Tags
 INSERT INTO public.tags (category_id, name, description, icon)
