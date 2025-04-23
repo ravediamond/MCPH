@@ -40,7 +40,7 @@
     "crons": [
         {
             "path": "/api/mcps/refresh-stars",
-            "schedule": "0 */6 * * *"
+            "schedule": "0 0 * * *"
         }
     ]
 }
