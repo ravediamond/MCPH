@@ -1,0 +1,40 @@
+{
+    "name": "mcp-hub",
+    "version": "0.1.0",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@heroicons/react": "^2.2.0",
+        "@supabase/auth-helpers-nextjs": "^0.10.0",
+        "@supabase/supabase-js": "^2.49.4",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/typography": "^0.5.16",
+        "@upstash/redis": "^1.34.8",
+        "bufferutil": "^4.0.9",
+        "date-fns": "^4.1.0",
+        "framer-motion": "^12.6.3",
+        "github-markdown-css": "^5.8.1",
+        "lucide-react": "^0.487.0",
+        "next": "^15.3.0",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "react-hot-toast": "^2.5.2",
+        "react-icons": "^5.5.0",
+        "react-markdown": "^10.1.0",
+        "remark-gfm": "^4.0.1",
+        "utf-8-validate": "^6.0.5"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.1.3",
+        "@types/node": "22.14.0",
+        "@types/react": "19.1.0",
+        "autoprefixer": "^10.4.21",
+        "postcss": "^8.5.3",
+        "tailwindcss": "^4.1.3",
+        "typescript": "^5.8.3"
+    }
+}

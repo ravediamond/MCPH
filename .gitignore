@@ -1,0 +1,15 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next
+
+# Environment Variables
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.vscode

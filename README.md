@@ -1,51 +1,121 @@
-# MCP Registry
+# MCPH🚀
 
-MCP Registry est un projet visant à créer un équivalent de PyPI pour le protocole Model Context Protocol (MCP). Au lieu d’héberger des packages, ce projet référence des URL de déploiement MCP pour permettre aux systèmes d'agents (comme ChatGPT) d'utiliser des API et outils via un protocole de commentaire.
+Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools! Whether you're a developer looking to publish your awesome MCP or an AI system hunting for the perfect integration, we've got you covered. 😊
 
-## Technologies utilisées
+Visit us at [mcph.io](https://mcph.io)
 
-- **Next.js**  
-  Framework React pour le développement rapide d'applications web avec une gestion intégrée du routage, du SSR et de la génération statique.
+---
 
-- **Vercel**  
-  Plateforme de déploiement et d'hébergement idéale pour Next.js, avec un plan gratuit généreux pour les projets à faible trafic.
+## Features
 
-- **Chakra UI**  
-  Librairie de composants UI prête à l'emploi pour créer des interfaces élégantes et réactives, réduisant ainsi le temps de développement.
+### 🔐 User Authentication & Profiles
+- **Sign Up & Log In:** Create your account and log in securely.
+- **Profile Management:** Update your details and track the MCPs you submit.
 
-- **Supabase**  
-  Backend as a Service fournissant une base de données PostgreSQL, authentification et fonctionnalités en temps réel, parfait pour un MVP.
+### 📦 MCP Creation with GitHub Integration
+- **Easy MCP Submission:** Just fill in a simple form and link your GitHub repository.
+- **Automatic README Import:** We fetch your repository's README and display it right on your MCP's detail page—no manual copy-pasting required!
 
-- **Algolia InstantSearch (optionnel)**  
-  Pour une recherche ultra-rapide et performante, à intégrer si besoin pour améliorer l’expérience de recherche.
+### 📚 MCP Catalog & Detailed View
+- **Browse & Explore:** Check out our searchable and filterable catalog of MCPs.
+- **MCP Detail Pages:** Get all the info you need in one place, including the latest documentation pulled directly from GitHub.
 
-## Fonctionnalités du MVP
+### 🔎 Basic Search & Filtering
+- **Smart Search:** Find MCPs by name, description, or tags.
+- **Filtering Options:** Narrow down your search by categories, recent updates, or specific keywords.
 
-- **Landing Page avec Recherche :**  
-  Une page d'accueil élégante avec une barre de recherche similaire à celle de PyPI pour filtrer les MCP.
+### 🤖 API Endpoint for AI Integration
+- **Simple RESTful API:** AI systems (looking at you, ChatGPT 😉) can query our database for the most relevant MCPs.
+- **Secure Access:** Use API keys or tokens to ensure only authorized tools connect and access data.
 
-- **Liste des MCP :**  
-  Affichage des MCP avec leurs informations clés (nom, description, URL de déploiement, tags, etc.).
+---
 
-- **Pages Détail :**  
-  Une page dédiée pour chaque MCP, présentant des informations détaillées et des liens vers la documentation.
+## Future Roadmap (Dream Big, Start Simple) 🛤️
 
-- **Formulaires de Soumission/Mise à Jour :**  
-  Des formulaires pour ajouter ou modifier des MCP (avec authentification gérée par Supabase).
+- **Seamless Deployment:** In the future, easily deploy both official and open-source MCPs on our platform.
+- **Advanced Versioning & Documentation:** More robust version management and extra documentation features for the growing ecosystem.
+- **Task cutomized MCP usage planning** Better MCP by giving an optimized list of MCP to use depending on the task.
+- **Usabe based Monetisation:** Give an usage based monetization system for the MCP developers.
 
-- **API Publique (optionnelle) :**  
-  Une API permettant aux systèmes d’agents d’interroger ou de mettre à jour les enregistrements MCP.
+---
 
-## Prérequis
+## Getting Started
 
-- Node.js (version 14 ou supérieure)
-- npm ou yarn
-- Un compte sur Vercel
-- Un projet Supabase configuré
+1. **Fork & Clone the Repo:** Get your local copy ready.
+2. **Sign Up:** Create your account and set up your profile.
+3. **Submit Your MCP:** Fill in the submission form with your GitHub URL.
+4. **Explore:** Browse, search, and interact with MCPs contributed by our awesome community!
 
-## Installation
+---
 
-1. **Cloner le dépôt :**
-   ```bash
-   git clone https://github.com/votre-utilisateur/mcp-registry.git
-   cd mcp-registry
+## Deployment to Vercel
+
+### Prerequisites
+- A [Vercel](https://vercel.com) account
+- A [Supabase](https://supabase.io) project
+
+### Steps to Deploy
+
+1. **Push your code to GitHub**:
+   ```
+   git add .
+   git commit -m "Prepare for Vercel deployment"
+   git push
+   ```
+
+2. **Import your project to Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com/new)
+   - Select "Import Git Repository" and choose your repository
+   - Configure project settings
+
+3. **Set Environment Variables**:
+   - In the Vercel dashboard, go to your project settings
+   - Navigate to "Environment Variables" section
+   - Add these required variables:
+     - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase URL
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+
+4. **Deploy**:
+   - Click "Deploy" and wait for your project to build
+   - Once deployed, your site will be available at `https://your-project-name.vercel.app`
+
+### Post-Deployment
+
+- Set up your custom domain if desired
+  - For this project, we're using [mcph.io](https://mcph.io) as our official domain
+- Monitor the analytics and logs in Vercel dashboard
+
+---
+
+## Domain Configuration
+
+### Setting up mcph.io on Vercel
+
+1. **Purchase the Domain**: If not already purchased, acquire the mcph.io domain from a domain registrar.
+
+2. **Add Domain to Vercel**:
+   - Go to your Vercel project dashboard
+   - Navigate to "Settings" > "Domains"
+   - Add your domain: `mcph.io`
+   - Also add `www.mcph.io` (configured to redirect to the apex domain)
+
+3. **Configure DNS**:
+   - Update your domain's DNS settings to point to Vercel's nameservers, or
+   - Add the required A, CNAME, TXT records as provided by Vercel
+
+4. **SSL Configuration**:
+   - Vercel automatically provisions SSL certificates for custom domains
+   - Ensure HTTPS is enforced for all traffic
+
+---
+
+We're all about making integrations fun and accessible. Dive in, explore, and let your imagination run wild with what you can build. Happy integrating! 🎉
+
+
+# Dev
+
+## Add admin user
+
+INSERT INTO public.profiles (id, username, is_admin)
+VALUES ('USER_ID', 'admin', true)
+ON CONFLICT (id) DO UPDATE SET is_admin = true;
