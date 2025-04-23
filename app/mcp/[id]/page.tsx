@@ -266,36 +266,65 @@ export default function MCPDetail({ params }: MCPDetailProps) {
     }
   };
 
-  // Fetch GitHub repository metadata based on repoInfo.
+  // Fetch repository metadata from the database, not from GitHub API
   useEffect(() => {
     async function fetchRepoData() {
-      if (repoInfo.owner && repoInfo.repo) {
-        const repoUrl = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}`;
+      if (mcp) {
         try {
-          const response = await fetch(repoUrl);
-          if (!response.ok) {
-            console.error('Error fetching repository data:', response.statusText);
-            return;
-          }
-          const data = await response.json();
-          setRepoData(data);
+          // Instead of calling GitHub API, just use the values from the database
+          setRepoData({
+            stargazers_count: mcp.stars || 0,
+            forks_count: mcp.forks || 0,
+            open_issues_count: mcp.open_issues || 0,
+            updated_at: mcp.last_repo_update || new Date().toISOString(),
+            language: mcp.languages ? mcp.languages[0] : null,
+            license: { spdx_id: mcp.license || "None" },
+            subscribers_count: mcp.watchers || 0,
+            watchers_count: mcp.watchers || 0,
+          });
+          setRefreshing(false);
         } catch (error) {
-          console.error('Error fetching repository data:', error);
+          console.error('Error setting repository data:', error);
+          // Set minimal data as fallback
+          setRepoData({
+            stargazers_count: 0,
+            forks_count: 0,
+            open_issues_count: 0,
+            updated_at: null,
+            language: null,
+            license: { spdx_id: "None" },
+            subscribers_count: 0,
+            watchers_count: 0,
+          });
+          setRefreshing(false);
         }
+      } else {
+        // If we don't have MCP data, set empty repo data
+        setRepoData({
+          stargazers_count: 0,
+          forks_count: 0,
+          open_issues_count: 0,
+          updated_at: null,
+          language: null,
+          license: { spdx_id: "None" },
+          subscribers_count: 0,
+          watchers_count: 0,
+        });
       }
     }
     fetchRepoData();
-  }, [repoInfo]);
+  }, [mcp]);
 
-  // Custom Markdown image renderer that resolves relative image paths
-  // to absolute GitHub raw URLs.
-  const renderers = {
-    img: ({ node, ...props }: any) => {
-      let src: string = props.src || '';
-      if (!src.match(/^(https?:\/\/)/)) {
-        src = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${src}`;
+  // Custom Markdown components with a proper image renderer
+  // that resolves relative image paths to absolute GitHub raw URLs.
+  const components = {
+    img: (props: any) => {
+      const { src, alt, ...rest } = props;
+      let imageSrc: string = src || '';
+      if (!imageSrc.match(/^(https?:\/\/)/)) {
+        imageSrc = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${imageSrc}`;
       }
-      return <img {...props} src={src} alt={props.alt} className="max-w-full rounded-md" />;
+      return <img src={imageSrc} alt={alt || ''} className="max-w-full rounded-md" {...rest} />;
     },
   };
 
@@ -341,14 +370,22 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const canDeleteMCP = isAdminUser || (mcp.claimed && isClaimedByCurrentUser) || (!mcp.claimed && isOwner);
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-16">
+    <div className="bg-white min-h-screen pb-16">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-10 px-4 shadow-md">
-        <div className="max-w-screen-xl mx-auto">
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 shadow-md relative overflow-hidden">
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-10" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }}></div>
+
+        {/* Accent line at the top */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold mb-4">{mcp.name || 'MCP Detail'}</h1>
-              <p className="text-lg mb-4 opacity-90 max-w-3xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-3">{mcp.name || 'MCP Detail'}</h1>
+              <p className="text-lg mb-5 opacity-90 max-w-3xl text-gray-200">
                 {mcp.description || 'No description available.'}
               </p>
               <div className="flex flex-wrap gap-3 items-center">
@@ -356,7 +393,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   href={mcp.repository_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-white text-blue-800 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200"
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-md transition-all duration-300 backdrop-blur-sm border border-white/10"
                 >
                   <FaGithub className="text-xl" /> View on GitHub <FaExternalLinkAlt className="ml-1 text-sm" />
                 </a>
@@ -366,7 +403,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   <button
                     onClick={handleClaimMCP}
                     disabled={claimLoading}
-                    className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-all duration-300 disabled:opacity-50 border border-green-500"
                   >
                     {claimLoading ? (
                       <>
@@ -383,13 +420,13 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
                 {/* Claimed Status */}
                 {isClaimedByCurrentUser && (
-                  <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-md">
+                  <div className="inline-flex items-center gap-2 bg-green-900/30 text-green-200 px-4 py-2 rounded-md border border-green-500/30 backdrop-blur-sm">
                     <FaCheckCircle className="text-lg" /> You've claimed this MCP
                   </div>
                 )}
 
                 {mcp.claimed && !isClaimedByCurrentUser && (
-                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-md">
+                  <div className="inline-flex items-center gap-2 bg-blue-900/30 text-blue-200 px-4 py-2 rounded-md border border-blue-500/30 backdrop-blur-sm">
                     <FaCheckCircle className="text-lg" /> Claimed by author
                   </div>
                 )}
@@ -400,7 +437,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             {canDeleteMCP && (
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200 flex items-center gap-2"
+                className="bg-red-600/80 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-all duration-300 flex items-center gap-2 border border-red-500/50"
                 aria-label="Delete MCP"
               >
                 <FaTrashAlt /> Delete MCP
@@ -410,26 +447,42 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
           {/* Error message */}
           {claimError && (
-            <div className="mt-3 p-3 bg-red-100 text-red-800 rounded-md">
+            <div className="mt-3 p-3 bg-red-900/50 text-red-200 rounded-md border border-red-500/50">
               <p className="font-medium">Error: {claimError}</p>
+            </div>
+          )}
+
+          {/* Tags Section */}
+          {mcp.tags && mcp.tags.length > 0 && (
+            <div className="mt-6">
+              <div className="flex flex-wrap gap-2">
+                {mcp.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-100 border border-white/10"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      <div className="max-w-screen-xl mx-auto px-4 mt-8">
+      <div className="max-w-5xl mx-auto px-4 mt-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Sidebar with Repository Metrics */}
           <div className="lg:col-span-1">
             {/* Repository Info Panel */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-              <div className="p-6 border-b border-gray-100">
+              <div className="p-5 border-b border-gray-100">
                 <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   <FaGithub /> Repository Info
                 </h3>
               </div>
               {repoData ? (
-                <div className="p-6 space-y-4">
+                <div className="p-5 space-y-4">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center text-gray-700 gap-2">
                       <FaEye className="text-blue-600" />
@@ -517,7 +570,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   </div>
                 </div>
               ) : (
-                <div className="p-6 flex justify-center">
+                <div className="p-5 flex justify-center">
                   <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
@@ -530,18 +583,18 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             <div className="flex border-b border-gray-200 mb-4">
               <button
                 onClick={() => setActiveTab('readme')}
-                className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'readme'
+                className={`px-5 py-3 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 'readme'
                   ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-gray-600 hover:text-blue-600'
                   }`}
               >
                 <FaFileAlt className="mr-2" /> README
               </button>
               <button
                 onClick={() => setActiveTab('reviews')}
-                className={`px-6 py-3 font-medium text-sm flex items-center ${activeTab === 'reviews'
+                className={`px-5 py-3 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 'reviews'
                   ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                  : 'text-gray-600 hover:text-blue-600'
                   }`}
               >
                 <FaComment className="mr-2" /> Reviews {mcp.review_count ? `(${mcp.review_count})` : ''}
@@ -551,7 +604,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             {/* README Tab Content */}
             {activeTab === 'readme' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="p-5 border-b border-gray-100 flex justify-between items-center">
                   <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <FaFileAlt /> README
                   </h3>
@@ -561,7 +614,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                     </span>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="p-5">
                   {refreshing && !readme && (
                     <div className="flex justify-center py-12">
                       <div className="flex flex-col items-center space-y-4">
@@ -572,7 +625,10 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   )}
                   {readme ? (
                     <div className={`markdown-body bg-transparent border-0 prose prose-blue max-w-none ${styles['markdown-dark']}`}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={renderers}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={components}
+                      >
                         {readme}
                       </ReactMarkdown>
                     </div>
@@ -589,7 +645,12 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             {/* Reviews Tab Content */}
             {activeTab === 'reviews' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6">
+                <div className="p-5 border-b border-gray-100">
+                  <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    <FaComment /> Reviews & Feedback
+                  </h3>
+                </div>
+                <div className="p-5">
                   {mcp && mcp.id && (
                     <SupabaseProvider>
                       <Reviews mcpId={mcp.id} />
@@ -604,22 +665,22 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
             <h2 className="text-lg font-bold mb-4">Delete MCP</h2>
-            <p className="mb-6">
+            <p className="mb-6 text-gray-600">
               Are you sure you want to delete "{mcp.name}"? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 ref={cancelRef}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors duration-200"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancel
               </button>
               <button
-                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''
+                className={`px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 ${isDeleting ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 onClick={handleDeleteMCP}
                 disabled={isDeleting}

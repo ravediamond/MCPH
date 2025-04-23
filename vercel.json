@@ -36,5 +36,11 @@
     ],
     "github": {
         "silent": true
-    }
+    },
+    "crons": [
+        {
+            "path": "/api/mcps/refresh-stars",
+            "schedule": "0 */6 * * *"
+        }
+    ]
 }

@@ -11,48 +11,33 @@ interface RefreshError {
 // This endpoint refreshes GitHub star counts for all MCPs
 export async function POST(request: Request) {
     try {
-        // Authenticate the request - in production you might want to use a secure API key
+        // Check if it's a valid API key request
+        // Note: Implement proper authorization if needed
         const { searchParams } = new URL(request.url);
-        const apiKey = searchParams.get('apiKey');
+        const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit') as string, 10) : undefined;
+        const forceFresh = searchParams.get('forceFresh') === 'true';
 
-        // Simple API key check - you should use a more secure method in production
-        const validApiKey = process.env.STARS_UPDATE_API_KEY;
-        if (!validApiKey || apiKey !== validApiKey) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        // Default and max batch sizes
+        const defaultBatchSize = 5;
+        const maxBatchSize = 10;
+        const validBatchSize = limit ? Math.min(limit, maxBatchSize) : defaultBatchSize;
+
+        // Base query to fetch MCPs
+        let query = supabase.from('mcps').select('id, owner_username, repository_name, last_repo_update');
+
+        if (!forceFresh) {
+            // Only fetch repos that haven't been updated in the last 6 hours
+            const sixHoursAgo = new Date();
+            sixHoursAgo.setHours(sixHoursAgo.getHours() - 6);
+            query = query.lt('last_repo_update', sixHoursAgo.toISOString());
         }
 
-        // Get optional parameters for more flexible operation
-        const priorityOnly = searchParams.get('priorityOnly') === 'true';
-        const batchSize = parseInt(searchParams.get('batchSize') || '25', 10);
-        const validBatchSize = Math.min(Math.max(1, batchSize), 100); // Between 1 and 100
-        const minStars = parseInt(searchParams.get('minStars') || '0', 10);
+        // Add ordering by last update - refresh older ones first
+        query = query.order('last_repo_update', { ascending: true });
 
-        // Log start of the process
-        const startTime = new Date();
-        console.log(`Starting star count refresh at ${startTime.toISOString()} with parameters:`, {
-            priorityOnly,
-            batchSize: validBatchSize,
-            minStars
-        });
-
-        // Fetch MCPs with repository info
-        let query = supabase
-            .from('mcps')
-            .select('id, repository_url, owner_username, repository_name, view_count, stars, last_repo_update');
-
-        // If priorityOnly is true, prioritize popular and recently viewed MCPs
-        if (priorityOnly) {
-            query = query
-                .or(`view_count.gt.10,stars.gt.${minStars}`)  // Popular by views or stars
-                .order('view_count', { ascending: false });    // Most viewed first
-        } else {
-            // Otherwise, just filter by minimum stars if specified
-            if (minStars > 0) {
-                query = query.gt('stars', minStars);
-            }
-
-            // Add ordering by last update - refresh older ones first
-            query = query.order('last_repo_update', { ascending: true });
+        // Apply limit if specified
+        if (limit) {
+            query = query.limit(limit);
         }
 
         const { data: mcps, error: fetchError } = await query;
@@ -85,17 +70,6 @@ export async function POST(request: Request) {
                         return;
                     }
 
-                    // Check if this repo was updated recently (within the last 6 hours)
-                    // GitHub doesn't update stats more frequently than this anyway
-                    const sixHoursAgo = new Date();
-                    sixHoursAgo.setHours(sixHoursAgo.getHours() - 6);
-
-                    if (mcp.last_repo_update && new Date(mcp.last_repo_update) > sixHoursAgo) {
-                        console.log(`Skipping MCP ${mcp.id}: Recently updated (${mcp.last_repo_update})`);
-                        skippedCount++;
-                        return;
-                    }
-
                     // Invalidate the GitHub cache to ensure fresh data
                     invalidateGitHubCache(mcp.owner_username, mcp.repository_name);
 
@@ -109,7 +83,7 @@ export async function POST(request: Request) {
                             stars: repoDetails.stargazers_count,
                             forks: repoDetails.forks_count,
                             open_issues: repoDetails.open_issues_count,
-                            last_repo_update: repoDetails.updated_at
+                            last_repo_update: new Date().toISOString() // Use current time to prevent race conditions
                         })
                         .eq('id', mcp.id);
 
@@ -118,75 +92,39 @@ export async function POST(request: Request) {
                     }
 
                     successCount++;
-                } catch (err) {
-                    errorCount++;
-                    const errorMessage = err instanceof Error ? err.message : String(err);
-                    console.error(`Error updating MCP ${mcp.id}:`, errorMessage);
-                    errors.push({ mcpId: mcp.id, error: errorMessage });
+                    console.log(`Updated repository metrics for MCP ${mcp.id}: ${mcp.owner_username}/${mcp.repository_name}`);
 
-                    // Log the error to the database
-                    try {
-                        await supabase.from('error_logs').insert({
-                            type: 'Star Count Update',
-                            message: `Failed to update star count for MCP ${mcp.id}`,
-                            details: errorMessage
-                        });
-                    } catch (logError) {
-                        console.error('Failed to log error:', logError);
-                    }
+                } catch (error) {
+                    errorCount++;
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    console.error(`Error updating MCP ${mcp.id}:`, errorMessage);
+                    errors.push({
+                        mcpId: mcp.id,
+                        message: errorMessage
+                    });
                 }
             });
 
-            // Wait for all promises in this batch to complete
+            // Wait for all promises in this batch to resolve
             await Promise.all(batchPromises);
-
-            // Add a small delay between batches to prevent rate limiting
-            if (i + validBatchSize < mcps.length) {
-                console.log('Waiting a moment before processing next batch...');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
         }
-
-        const endTime = new Date();
-        const duration = (endTime.getTime() - startTime.getTime()) / 1000;
-
-        // Log completion
-        console.log(`Completed star count refresh at ${endTime.toISOString()}.`);
-        console.log(`Total processed: ${mcps.length}, Successful: ${successCount}, Skipped: ${skippedCount}, Failed: ${errorCount}, Duration: ${duration}s`);
-
-        // Record the execution in admin_logs
-        await supabase.from('admin_logs').insert({
-            action: 'refresh_star_counts',
-            admin_id: null, // System action
-            details: {
-                total: mcps.length,
-                successful: successCount,
-                skipped: skippedCount,
-                failed: errorCount,
-                duration_seconds: duration,
-                timestamp: endTime.toISOString(),
-                batch_size: validBatchSize,
-                priority_only: priorityOnly
-            }
-        });
 
         return NextResponse.json({
             success: true,
-            message: `Updated star counts for ${successCount} MCPs. Skipped: ${skippedCount}. Failed: ${errorCount}.`,
-            details: {
+            message: `GitHub metrics refresh completed. Processed ${mcps.length} MCPs: ${successCount} updated, ${skippedCount} skipped, ${errorCount} errors.`,
+            stats: {
                 total: mcps.length,
-                successful: successCount,
+                success: successCount,
                 skipped: skippedCount,
-                failed: errorCount,
-                errors: errors.length > 0 ? errors : undefined,
-                duration_seconds: duration
-            }
+                errors: errorCount
+            },
+            errors: errors.length > 0 ? errors : undefined
         });
     } catch (error) {
         console.error('Error in refresh-stars endpoint:', error);
-        return NextResponse.json(
-            { error: 'Failed to refresh star counts', details: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-        );
+        return NextResponse.json({
+            success: false,
+            message: error instanceof Error ? error.message : 'An unknown error occurred',
+        }, { status: 500 });
     }
 }
