@@ -23,9 +23,9 @@ import {
 } from 'react-icons/fa';
 import { refreshReadmeIfNeeded } from 'services/githubService';
 import { MCP } from 'types/mcp';
-// Import SupabaseProvider
 import SupabaseProvider from 'app/supabase-provider';
 import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
@@ -33,16 +33,10 @@ import styles from './markdown-dark.module.css';
 // Import components
 import Reviews from 'components/Reviews';
 
-// Fix the type definition to not conflict with NextJS PageProps
-interface MCPDetailProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function MCPDetail({ params }: MCPDetailProps) {
-  // Get the ID from params directly - don't use React.use() in client components
-  const id = params.id;
+export default function MCPDetail() {
+  // Use Next.js hooks to get the params
+  const params = useParams();
+  const id = params.id as string;
 
   const [mcp, setMCP] = useState<MCP | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
