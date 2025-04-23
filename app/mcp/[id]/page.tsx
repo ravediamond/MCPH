@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from 'lib/supabaseClient';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -26,6 +26,7 @@ import { MCP } from 'types/mcp';
 import SupabaseProvider from 'app/supabase-provider';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 
 // Import the CSS for the dark theme
 import styles from './markdown-dark.module.css';
@@ -321,7 +322,22 @@ export default function MCPDetail() {
       if (!imageSrc.match(/^(https?:\/\/)/)) {
         imageSrc = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${imageSrc}`;
       }
-      return <img src={imageSrc} alt={alt || ''} className="max-w-full rounded-md" {...rest} />;
+
+      // Using Next.js Image component with remote patterns
+      // We need to ensure the domain is properly configured in next.config.js
+      return (
+        <span className="relative inline-block max-w-full">
+          <Image
+            src={imageSrc}
+            alt={alt || ''}
+            className="rounded-md"
+            width={500}
+            height={300}
+            style={{ maxWidth: '100%', height: 'auto' }}
+            unoptimized // Using unoptimized for GitHub raw images that may not be compatible with Next.js Image optimization
+          />
+        </span>
+      );
     },
   };
 

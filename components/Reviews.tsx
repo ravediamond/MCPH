@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Review, ReviewSubmission, ReviewStats } from 'types/mcp';
 import StarRating from './ui/StarRating';
 import { useSupabase } from 'app/supabase-provider';
@@ -22,8 +22,8 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
     const [submitting, setSubmitting] = useState(false);
     const [editing, setEditing] = useState(false);
 
-    // Fetch reviews for this MCP
-    const fetchReviews = async () => {
+    // Fetch reviews for this MCP - wrapped in useCallback to avoid infinite loop
+    const fetchReviews = useCallback(async () => {
         setLoading(true);
         try {
             console.log(`DEBUG Reviews Component: Fetching reviews for MCP ID: ${mcpId}`);
@@ -63,7 +63,7 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [mcpId, session]); // Dependencies for fetchReviews
 
     // Submit a new review or update an existing one
     const handleSubmitReview = async () => {
@@ -156,7 +156,7 @@ const Reviews: React.FC<ReviewsProps> = ({ mcpId }) => {
         if (mcpId) {
             fetchReviews();
         }
-    }, [mcpId, session]);
+    }, [mcpId, fetchReviews]); // fetchReviews now safe as dependency
 
     return (
         <div className="w-full my-8">
