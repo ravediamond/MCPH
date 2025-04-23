@@ -33,8 +33,11 @@ import styles from './markdown-dark.module.css';
 // Import components
 import Reviews from 'components/Reviews';
 
+// Fix the type definition to not conflict with NextJS PageProps
 interface MCPDetailProps {
-  params: { id: string };
+  params: {
+    id: string;
+  };
 }
 
 export default function MCPDetail({ params }: MCPDetailProps) {
