@@ -212,14 +212,14 @@ export default function BrowsePage() {
     };
 
     return (
-        <div className="bg-white min-h-screen">
+        <div className="bg-gray-900 min-h-screen">
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-bold text-neutral-800 mb-2">
+                    <h1 className="text-3xl font-bold text-gray-100 mb-2">
                         Browse MCPs
                     </h1>
-                    <p className="text-neutral-600">
+                    <p className="text-gray-400">
                         Discover and explore the latest MCPs in our hub
                     </p>
                 </div>
@@ -236,16 +236,16 @@ export default function BrowsePage() {
                     </div>
 
                     <div className="flex gap-2 items-center">
-                        <div className="flex items-center border border-neutral-200 rounded-lg">
+                        <div className="flex items-center border border-gray-700 rounded-lg bg-gray-800">
                             <button
                                 onClick={() => setView("grid")}
-                                className={`p-2 rounded-l-lg ${view === "grid" ? "bg-blue-500 text-white" : "text-neutral-500"}`}
+                                className={`p-2 rounded-l-lg ${view === "grid" ? "bg-blue-600 text-white" : "text-gray-400"}`}
                             >
                                 <Squares2X2Icon className="h-5 w-5" />
                             </button>
                             <button
                                 onClick={() => setView("list")}
-                                className={`p-2 rounded-r-lg ${view === "list" ? "bg-blue-500 text-white" : "text-neutral-500"}`}
+                                className={`p-2 rounded-r-lg ${view === "list" ? "bg-blue-600 text-white" : "text-gray-400"}`}
                             >
                                 <Bars3Icon className="h-5 w-5" />
                             </button>
@@ -255,11 +255,11 @@ export default function BrowsePage() {
 
                 {/* Deployment Tags Section - Highlighted as Important */}
                 <div className="mb-4">
-                    <h2 className="text-base font-semibold text-gray-700 mb-2">Deployment Type</h2>
+                    <h2 className="text-base font-semibold text-gray-200 mb-2">Deployment Type</h2>
                     <div className="flex flex-wrap gap-2">
                         {loadingTags ? (
                             <div className="w-full text-center py-2">
-                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-500 border-r-2 border-blue-500 border-b-2 border-blue-500 border-l-2 border-transparent"></div>
+                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-400 border-r-2 border-blue-400 border-b-2 border-blue-400 border-l-2 border-transparent"></div>
                             </div>
                         ) : deploymentTags.length > 0 ? (
                             deploymentTags.map((tag) => (
@@ -268,26 +268,26 @@ export default function BrowsePage() {
                                     onClick={() => toggleTag(tag.name, 'deployment')}
                                     className={`inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-colors
                                         ${selectedTags.includes(`deployment:${tag.name}`)
-                                            ? 'bg-green-500 text-white border-green-500'
-                                            : 'bg-white text-green-700 border-green-200 hover:bg-green-50'
+                                            ? 'bg-green-600 text-white border-green-600'
+                                            : 'bg-gray-800 text-green-400 border-green-700 hover:bg-green-900/50'
                                         }`}
                                 >
                                     {getTagIcon(tag)} {tag.name}
                                 </button>
                             ))
                         ) : (
-                            <span className="text-sm text-gray-500">No deployment types available</span>
+                            <span className="text-sm text-gray-400">No deployment types available</span>
                         )}
                     </div>
                 </div>
 
                 {/* Provider Type Section */}
                 <div className="mb-4">
-                    <h2 className="text-base font-semibold text-gray-700 mb-2">Provider Type</h2>
+                    <h2 className="text-base font-semibold text-gray-200 mb-2">Provider Type</h2>
                     <div className="flex flex-wrap gap-2">
                         {loadingTags ? (
                             <div className="w-full text-center py-2">
-                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-500 border-r-2 border-blue-500 border-b-2 border-blue-500 border-l-2 border-transparent"></div>
+                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-400 border-r-2 border-blue-400 border-b-2 border-blue-400 border-l-2 border-transparent"></div>
                             </div>
                         ) : providerTags.length > 0 ? (
                             providerTags.map((tag) => (
@@ -296,15 +296,15 @@ export default function BrowsePage() {
                                     onClick={() => toggleTag(tag.name, 'provider')}
                                     className={`inline-flex items-center px-3 py-1.5 rounded-full border text-sm font-medium transition-colors
                                         ${selectedTags.includes(`provider:${tag.name}`)
-                                            ? 'bg-yellow-500 text-white border-yellow-500'
-                                            : 'bg-white text-yellow-700 border-yellow-200 hover:bg-yellow-50'
+                                            ? 'bg-yellow-600 text-white border-yellow-600'
+                                            : 'bg-gray-800 text-yellow-400 border-yellow-700 hover:bg-yellow-900/50'
                                         }`}
                                 >
                                     {getTagIcon(tag)} {tag.name}
                                 </button>
                             ))
                         ) : (
-                            <span className="text-sm text-gray-500">No provider types available</span>
+                            <span className="text-sm text-gray-400">No provider types available</span>
                         )}
                     </div>
                 </div>
@@ -312,21 +312,21 @@ export default function BrowsePage() {
                 {/* Domain Tags */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-base font-semibold text-gray-700">Filter by Tag</h2>
+                        <h2 className="text-base font-semibold text-gray-200">Filter by Tag</h2>
                         {selectedTags.length > 0 && (
                             <button
                                 onClick={clearTags}
-                                className="text-sm text-blue-500 hover:text-blue-700 flex items-center"
+                                className="text-sm text-blue-400 hover:text-blue-300 flex items-center"
                             >
                                 <XMarkIcon className="h-4 w-4 mr-1" />
                                 Clear filters
                             </button>
                         )}
                     </div>
-                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-gray-100 rounded-lg">
+                    <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-gray-700 rounded-lg bg-gray-800/50">
                         {loadingTags ? (
                             <div className="w-full text-center py-2">
-                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-500 border-r-2 border-blue-500 border-b-2 border-blue-500 border-l-2 border-transparent"></div>
+                                <div className="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-blue-400 border-r-2 border-blue-400 border-b-2 border-blue-400 border-l-2 border-transparent"></div>
                             </div>
                         ) : domainTags.length > 0 ? (
                             domainTags.map((tag) => (
@@ -335,31 +335,31 @@ export default function BrowsePage() {
                                     onClick={() => toggleTag(tag.name, 'domain')}
                                     className={`text-xs py-1 px-2 rounded-full border transition-colors
                                         ${selectedTags.includes(`domain:${tag.name}`)
-                                            ? 'bg-blue-500 text-white border-blue-500'
-                                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                                            ? 'bg-blue-600 text-white border-blue-600'
+                                            : 'bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700'
                                         }`}
                                 >
                                     {tag.name}
                                 </button>
                             ))
                         ) : (
-                            <span className="text-sm text-gray-500">No domain tags available</span>
+                            <span className="text-sm text-gray-400">No domain tags available</span>
                         )}
                     </div>
                 </div>
 
                 {/* Filter info */}
                 {selectedTags.length > 0 && (
-                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                        <p className="text-sm text-blue-800">
+                    <div className="mb-4 p-3 bg-blue-900/30 rounded-lg border border-blue-800">
+                        <p className="text-sm text-blue-300">
                             <span className="font-medium">Active filters:</span> {selectedTags.map(tag => tag.replace(/^(domain|deployment|provider):/, '')).join(', ')}
                         </p>
                     </div>
                 )}
 
                 {/* Display loading or error states */}
-                {loading && <p className="text-center py-10">Loading...</p>}
-                {error && <p className="text-red-500 text-center py-10">{error}</p>}
+                {loading && <p className="text-center py-10 text-gray-300">Loading...</p>}
+                {error && <p className="text-red-400 text-center py-10">{error}</p>}
 
                 {/* Content Grid / List using MCPCard */}
                 <div
@@ -394,7 +394,7 @@ export default function BrowsePage() {
                             </motion.div>
                         ))
                     ) : (
-                        !loading && <p className="text-center w-full col-span-full py-10">No results found.</p>
+                        !loading && <p className="text-center w-full col-span-full py-10 text-gray-300">No results found.</p>
                     )}
                 </div>
 
@@ -404,31 +404,31 @@ export default function BrowsePage() {
                         <nav className="inline-flex rounded-md shadow">
                             <a
                                 href="#"
-                                className="px-3 py-2 rounded-l-md border border-neutral-200 bg-white text-neutral-700 hover:bg-blue-50"
+                                className="px-3 py-2 rounded-l-md border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700"
                             >
                                 Previous
                             </a>
                             <a
                                 href="#"
-                                className="px-3 py-2 border-t border-b border-neutral-200 bg-blue-500 text-white"
+                                className="px-3 py-2 border-t border-b border-gray-700 bg-blue-600 text-white"
                             >
                                 1
                             </a>
                             <a
                                 href="#"
-                                className="px-3 py-2 border-t border-b border-neutral-200 bg-white text-neutral-700 hover:bg-blue-50"
+                                className="px-3 py-2 border-t border-b border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700"
                             >
                                 2
                             </a>
                             <a
                                 href="#"
-                                className="px-3 py-2 border-t border-b border-neutral-200 bg-white text-neutral-700 hover:bg-blue-50"
+                                className="px-3 py-2 border-t border-b border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700"
                             >
                                 3
                             </a>
                             <a
                                 href="#"
-                                className="px-3 py-2 rounded-r-md border border-neutral-200 bg-white text-neutral-700 hover:bg-blue-50"
+                                className="px-3 py-2 rounded-r-md border border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700"
                             >
                                 Next
                             </a>

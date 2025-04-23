@@ -46,15 +46,15 @@ export default function MCPCard({
 
   return (
     <div
-      className="bg-white rounded-lg shadow-sm hover:shadow transition-shadow duration-200 overflow-hidden cursor-pointer relative group border border-gray-200"
+      className="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden cursor-pointer relative group border border-gray-700"
       onClick={handleCardClick}
     >
       {/* Card Content */}
       <div className="p-5">
-        <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-primary-600 transition-colors duration-200">
+        <h3 className="text-xl font-semibold text-gray-100 mb-2 group-hover:text-blue-400 transition-colors duration-200">
           {mcp.name}
         </h3>
-        <p className="text-gray-600 mb-4 line-clamp-2 text-sm">{mcp.description}</p>
+        <p className="text-gray-300 mb-4 line-clamp-2 text-sm">{mcp.description}</p>
 
         {/* Tags */}
         <div className="mb-4 space-y-2">
@@ -64,7 +64,7 @@ export default function MCPCard({
               {domainTags.map((tag: string, index: number) => (
                 <span
                   key={`domain-${index}`}
-                  className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-xs rounded-md"
+                  className="px-2 py-0.5 bg-indigo-900/50 text-indigo-300 text-xs rounded-md border border-indigo-800"
                 >
                   {tag}
                 </span>
@@ -78,7 +78,7 @@ export default function MCPCard({
               {deploymentTags.map((tag: string, index: number) => (
                 <span
                   key={`deployment-${index}`}
-                  className="px-2 py-0.5 bg-green-50 text-green-600 text-xs rounded-md"
+                  className="px-2 py-0.5 bg-green-900/50 text-green-300 text-xs rounded-md border border-green-800"
                 >
                   {tag}
                 </span>
@@ -92,7 +92,7 @@ export default function MCPCard({
               {providerTags.map((tag: string, index: number) => (
                 <span
                   key={`provider-${index}`}
-                  className="px-2 py-0.5 bg-primary-50 text-primary-600 text-xs rounded-md"
+                  className="px-2 py-0.5 bg-blue-900/50 text-blue-300 text-xs rounded-md border border-blue-800"
                 >
                   {tag}
                 </span>
@@ -106,7 +106,7 @@ export default function MCPCard({
               {customTags.map((tag: string, index: number) => (
                 <span
                   key={`custom-${index}`}
-                  className="px-2 py-0.5 bg-gray-50 text-gray-600 text-xs rounded-md"
+                  className="px-2 py-0.5 bg-gray-700 text-gray-300 text-xs rounded-md border border-gray-600"
                 >
                   {tag}
                 </span>
@@ -121,7 +121,7 @@ export default function MCPCard({
             href={mcp.repository_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-500 hover:text-primary-500 transition-colors mb-3 flex items-center gap-1 text-sm"
+            className="text-gray-400 hover:text-blue-400 transition-colors mb-3 flex items-center gap-1 text-sm"
             onClick={(e) => e.stopPropagation()}
           >
             <FaGithub /> {mcp.owner_username}/{mcp.repository_name}{' '}
@@ -134,7 +134,7 @@ export default function MCPCard({
           {mcp.avg_rating !== undefined && mcp.avg_rating !== null && (
             <div className="flex items-center gap-1">
               <FaStar className="text-yellow-400" size={16} />
-              <span className="text-gray-600">
+              <span className="text-gray-300">
                 {mcp.avg_rating.toFixed(1)}
               </span>
             </div>
@@ -143,7 +143,7 @@ export default function MCPCard({
           {mcp.stars !== undefined && (
             <div className="flex items-center gap-1">
               <FaStar className="text-yellow-400" size={16} />
-              <span className="text-gray-600">
+              <span className="text-gray-300">
                 {mcp.stars} {mcp.stars === 1 ? 'star' : 'stars'}
               </span>
             </div>
@@ -152,7 +152,7 @@ export default function MCPCard({
           {mcp.view_count !== undefined && (
             <div className="flex items-center gap-1">
               <FaEye className="text-gray-400" size={16} />
-              <span className="text-gray-600">
+              <span className="text-gray-300">
                 {mcp.view_count} {mcp.view_count === 1 ? 'view' : 'views'}
               </span>
             </div>
@@ -164,7 +164,7 @@ export default function MCPCard({
           <div className="absolute top-2 right-2 flex gap-2 action-button">
             <button
               aria-label="Edit MCP"
-              className="p-1 text-gray-400 hover:text-gray-600"
+              className="p-1 text-gray-400 hover:text-gray-200"
               onClick={(e) => {
                 e.stopPropagation();
                 // If edit functionality is needed later, implement it here.
@@ -176,7 +176,7 @@ export default function MCPCard({
             {onDelete && (
               <button
                 aria-label="Delete MCP"
-                className="p-1 text-gray-400 hover:text-gray-600"
+                className="p-1 text-gray-400 hover:text-gray-200"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(mcp.id);

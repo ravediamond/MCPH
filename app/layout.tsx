@@ -57,9 +57,18 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable}`}>
-            <body className="antialiased text-neutral-900 bg-neutral-50">
-                <Toaster position="top-center" />
+        <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable} dark`}>
+            <body className="antialiased text-gray-200 bg-gray-900 min-h-screen">
+                <Toaster
+                    position="top-center"
+                    toastOptions={{
+                        style: {
+                            background: '#1f2937',
+                            color: '#e5e7eb',
+                            border: '1px solid #374151'
+                        }
+                    }}
+                />
                 <SupabaseProvider>
                     <Layout>{children}</Layout>
                 </SupabaseProvider>

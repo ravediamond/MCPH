@@ -278,9 +278,9 @@ export default function MCPDetail({ params }: MCPDetailProps) {
             open_issues_count: mcp.open_issues || 0,
             updated_at: mcp.last_repo_update || new Date().toISOString(),
             language: mcp.languages ? mcp.languages[0] : null,
-            license: { spdx_id: mcp.license || "None" },
-            subscribers_count: mcp.watchers || 0,
-            watchers_count: mcp.watchers || 0,
+            license: { spdx_id: "None" }, // Use a default value since license property doesn't exist in MCP type
+            subscribers_count: 0, // Default since watchers property doesn't exist in MCP type
+            watchers_count: 0,  // Default since watchers property doesn't exist in MCP type
           });
           setRefreshing(false);
         } catch (error) {
@@ -330,10 +330,10 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[60vh] bg-gray-900 text-white">
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 font-medium">Loading MCP details...</p>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-300 font-medium">Loading MCP details...</p>
         </div>
       </div>
     );
@@ -341,11 +341,11 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
   if (!mcp) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="bg-white shadow-md rounded-lg p-6 text-center max-w-md">
+      <div className="flex items-center justify-center min-h-[60vh] bg-gray-900">
+        <div className="bg-gray-800 shadow-md rounded-lg p-6 text-center max-w-md">
           <FaExclamationCircle className="mx-auto text-red-500 text-4xl mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">MCP Not Found</h2>
-          <p className="text-gray-600">The requested MCP could not be found. Please check the ID and try again.</p>
+          <h2 className="text-xl font-bold text-gray-100 mb-2">MCP Not Found</h2>
+          <p className="text-gray-300">The requested MCP could not be found. Please check the ID and try again.</p>
         </div>
       </div>
     );
@@ -370,9 +370,9 @@ export default function MCPDetail({ params }: MCPDetailProps) {
   const canDeleteMCP = isAdminUser || (mcp.claimed && isClaimedByCurrentUser) || (!mcp.claimed && isOwner);
 
   return (
-    <div className="bg-white min-h-screen pb-16">
+    <div className="bg-gray-900 min-h-screen pb-16 text-gray-200">
       {/* Header Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 shadow-md relative overflow-hidden">
+      <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 text-white py-12 px-4 shadow-md relative overflow-hidden">
         {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-10" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 38.59l2.83-2.83 1.41 1.41L1.41 40H0v-1.41zM0 1.4l2.83 2.83 1.41-1.41L1.41 0H0v1.41zM38.59 40l-2.83-2.83 1.41-1.41L40 38.59V40h-1.41zM40 1.41l-2.83 2.83-1.41-1.41L38.59 0H40v1.41zM20 18.6l2.83-2.83 1.41 1.41L21.41 20l2.83 2.83-1.41 1.41L20 21.41l-2.83 2.83-1.41-1.41L18.59 20l-2.83-2.83 1.41-1.41L20 18.59z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -380,6 +380,9 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
         {/* Accent line at the top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+
+        {/* Add a subtle background box for better logo contrast */}
+        <div className="absolute top-0 left-0 right-0 h-16 bg-black bg-opacity-25"></div>
 
         <div className="max-w-5xl mx-auto relative z-10">
           <div className="flex justify-between items-start">
@@ -475,34 +478,34 @@ export default function MCPDetail({ params }: MCPDetailProps) {
           {/* Sidebar with Repository Metrics */}
           <div className="lg:col-span-1">
             {/* Repository Info Panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-              <div className="p-5 border-b border-gray-100">
-                <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 overflow-hidden mb-6">
+              <div className="p-5 border-b border-gray-700">
+                <h3 className="text-xl font-semibold text-gray-100 flex items-center gap-2">
                   <FaGithub /> Repository Info
                 </h3>
               </div>
               {repoData ? (
                 <div className="p-5 space-y-4">
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaEye className="text-blue-600" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaEye className="text-blue-400" />
                       <span>Views</span>
                     </div>
-                    <span className="font-semibold">{mcp.view_count?.toLocaleString() || '0'}</span>
+                    <span className="font-semibold text-gray-200">{mcp.view_count?.toLocaleString() || '0'}</span>
                   </div>
 
                   {/* Rating Info */}
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaThumbsUp className="text-green-500" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaThumbsUp className="text-green-400" />
                       <span>Rating</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="font-semibold mr-1">
+                      <span className="font-semibold mr-1 text-gray-200">
                         {mcp.avg_rating ? mcp.avg_rating.toFixed(1) : 'N/A'}
                       </span>
                       {mcp.review_count ? (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-400">
                           ({mcp.review_count} {mcp.review_count === 1 ? 'review' : 'reviews'})
                         </span>
                       ) : null}
@@ -510,60 +513,60 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaStar className="text-yellow-500" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaStar className="text-yellow-400" />
                       <span>Stars</span>
                     </div>
-                    <span className="font-semibold">{repoData.stargazers_count.toLocaleString()}</span>
+                    <span className="font-semibold text-gray-200">{repoData.stargazers_count.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaCodeBranch className="text-green-600" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaCodeBranch className="text-green-400" />
                       <span>Forks</span>
                     </div>
-                    <span className="font-semibold">{repoData.forks_count.toLocaleString()}</span>
+                    <span className="font-semibold text-gray-200">{repoData.forks_count.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaExclamationCircle className="text-orange-500" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaExclamationCircle className="text-orange-400" />
                       <span>Issues</span>
                     </div>
-                    <span className="font-semibold">{repoData.open_issues_count.toLocaleString()}</span>
+                    <span className="font-semibold text-gray-200">{repoData.open_issues_count.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center text-gray-700 gap-2">
-                      <FaEye className="text-purple-600" />
+                    <div className="flex items-center text-gray-300 gap-2">
+                      <FaEye className="text-purple-400" />
                       <span>GitHub Watchers</span>
                     </div>
-                    <span className="font-semibold">
+                    <span className="font-semibold text-gray-200">
                       {(repoData.subscribers_count || repoData.watchers_count).toLocaleString()}
                     </span>
                   </div>
-                  <div className="border-t border-gray-100 pt-4 mt-4">
+                  <div className="border-t border-gray-700 pt-4 mt-4">
                     <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center text-gray-700 gap-2">
+                      <div className="flex items-center text-gray-300 gap-2">
                         <FaCode />
                         <span>Language</span>
                       </div>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full font-medium">
+                      <span className="px-3 py-1 bg-blue-900/50 text-blue-200 text-sm rounded-full font-medium border border-blue-700/30">
                         {repoData.language || 'N/A'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center text-gray-700 gap-2">
+                      <div className="flex items-center text-gray-300 gap-2">
                         <FaFileAlt />
                         <span>License</span>
                       </div>
-                      <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full font-medium">
+                      <span className="px-3 py-1 bg-gray-700 text-gray-200 text-sm rounded-full font-medium border border-gray-600">
                         {repoData.license?.spdx_id || 'None'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center text-gray-700 gap-2">
+                      <div className="flex items-center text-gray-300 gap-2">
                         <FaCalendarAlt />
                         <span>Updated</span>
                       </div>
-                      <span className="text-gray-800 font-medium">
+                      <span className="text-gray-200 font-medium">
                         {new Date(repoData.updated_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -571,7 +574,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                 </div>
               ) : (
                 <div className="p-5 flex justify-center">
-                  <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
             </div>
@@ -580,12 +583,12 @@ export default function MCPDetail({ params }: MCPDetailProps) {
           {/* Right side content with tabs for README and Reviews */}
           <div className="lg:col-span-2 mt-8 lg:mt-0">
             {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 mb-4">
+            <div className="flex border-b border-gray-700 mb-4">
               <button
                 onClick={() => setActiveTab('readme')}
                 className={`px-5 py-3 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 'readme'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'border-b-2 border-blue-500 text-blue-400'
+                  : 'text-gray-400 hover:text-blue-400'
                   }`}
               >
                 <FaFileAlt className="mr-2" /> README
@@ -593,8 +596,8 @@ export default function MCPDetail({ params }: MCPDetailProps) {
               <button
                 onClick={() => setActiveTab('reviews')}
                 className={`px-5 py-3 font-medium text-sm flex items-center transition-colors duration-200 ${activeTab === 'reviews'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'border-b-2 border-blue-500 text-blue-400'
+                  : 'text-gray-400 hover:text-blue-400'
                   }`}
               >
                 <FaComment className="mr-2" /> Reviews {mcp.review_count ? `(${mcp.review_count})` : ''}
@@ -603,13 +606,13 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
             {/* README Tab Content */}
             {activeTab === 'readme' && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-5 border-b border-gray-100 flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 overflow-hidden">
+                <div className="p-5 border-b border-gray-700 flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-gray-100 flex items-center gap-2">
                     <FaFileAlt /> README
                   </h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-400">
                       Last updated: {formatRefreshDate(lastRefreshed)}
                     </span>
                   </div>
@@ -618,13 +621,13 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                   {refreshing && !readme && (
                     <div className="flex justify-center py-12">
                       <div className="flex flex-col items-center space-y-4">
-                        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-gray-600">Fetching latest README...</p>
+                        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-gray-300">Fetching latest README...</p>
                       </div>
                     </div>
                   )}
                   {readme ? (
-                    <div className={`markdown-body bg-transparent border-0 prose prose-blue max-w-none ${styles['markdown-dark']}`}>
+                    <div className={`markdown-body bg-transparent border-0 prose prose-invert prose-blue max-w-none ${styles['markdown-dark']}`}>
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={components}
@@ -633,7 +636,7 @@ export default function MCPDetail({ params }: MCPDetailProps) {
                       </ReactMarkdown>
                     </div>
                   ) : !refreshing ? (
-                    <div className="text-center py-12 text-gray-500">
+                    <div className="text-center py-12 text-gray-400">
                       <FaFileAlt className="mx-auto text-4xl mb-4 opacity-30" />
                       <p>No README available for this repository.</p>
                     </div>
@@ -644,9 +647,9 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
             {/* Reviews Tab Content */}
             {activeTab === 'reviews' && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-5 border-b border-gray-100">
-                  <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              <div className="bg-gray-800 rounded-xl shadow-sm border border-gray-700 overflow-hidden">
+                <div className="p-5 border-b border-gray-700">
+                  <h3 className="text-xl font-semibold text-gray-100 flex items-center gap-2">
                     <FaComment /> Reviews & Feedback
                   </h3>
                 </div>
@@ -665,16 +668,16 @@ export default function MCPDetail({ params }: MCPDetailProps) {
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
-            <h2 className="text-lg font-bold mb-4">Delete MCP</h2>
-            <p className="mb-6 text-gray-600">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full p-6 shadow-xl border border-gray-700">
+            <h2 className="text-lg font-bold mb-4 text-gray-100">Delete MCP</h2>
+            <p className="mb-6 text-gray-300">
               Are you sure you want to delete "{mcp.name}"? This action cannot be undone.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 ref={cancelRef}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                className="px-4 py-2 border border-gray-600 text-gray-300 rounded-md hover:bg-gray-700 transition-colors duration-200"
                 onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancel

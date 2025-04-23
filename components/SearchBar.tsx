@@ -52,7 +52,7 @@ export default function SearchBar({
     return (
         <div className={`relative ${className || 'mb-8'}`}>
             <input
-                className="w-full pr-16 py-2 px-4 border border-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-300 focus:border-primary-400 transition-colors"
+                className="w-full pr-16 py-2 px-4 border border-gray-700 bg-gray-800 text-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors placeholder-gray-500"
                 type="text"
                 placeholder={placeholder}
                 value={query}
@@ -61,7 +61,7 @@ export default function SearchBar({
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                 <button
-                    className="h-8 w-8 flex items-center justify-center bg-primary-500 text-white rounded-md hover:bg-primary-600 focus:outline-none focus:ring-1 focus:ring-primary-300 transition-colors"
+                    className="h-8 w-8 flex items-center justify-center bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors"
                     aria-label="Search"
                     onClick={handleSearch}
                 >
