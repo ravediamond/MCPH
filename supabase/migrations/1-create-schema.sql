@@ -1,7 +1,7 @@
 -- ===========================================
 -- MCPHub Complete Database Schema
--- Aggregated Migration File
--- Generated on: April 23, 2025
+-- Aggregated Schema File
+-- Generated on: April 24, 2025
 -- ===========================================
 
 -- ===========================================
@@ -23,7 +23,6 @@ CREATE TABLE IF NOT EXISTS public.mcps (
     description TEXT,
     repository_url TEXT NOT NULL,  -- REQUIRED repository link (e.g., GitHub, GitLab)
     tags TEXT[] DEFAULT '{}',      -- metadata tags
-    version TEXT NOT NULL,         -- e.g. repository release/version
     author TEXT NOT NULL,          -- submission author (could be distinct from repository owner)
     user_id UUID REFERENCES auth.users(id),
     readme TEXT,                    -- OPTIONAL: store fetched README for caching/additional processing
@@ -41,8 +40,7 @@ CREATE TABLE IF NOT EXISTS public.mcps (
     view_count INTEGER DEFAULT 0,          -- Number of page views
     
     -- Data quality constraints
-    CONSTRAINT name_length CHECK (char_length(name) >= 3),
-    CONSTRAINT version_format CHECK (version ~ '^[0-9]+\.[0-9]+\.[0-9]+$')
+    CONSTRAINT name_length CHECK (char_length(name) >= 3)
 );
 
 -- Create Tag Categories Table
@@ -79,20 +77,6 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     
     -- Each user can only review each MCP once
     CONSTRAINT unique_user_mcp_review UNIQUE (user_id, mcp_id)
-);
-
--- Create MCP Versions Table
-CREATE TABLE IF NOT EXISTS public.mcp_versions (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    mcp_id UUID REFERENCES public.mcps(id) ON DELETE CASCADE,
-    version TEXT NOT NULL,
-    change_summary TEXT,
-    change_details TEXT,
-    changed_by UUID REFERENCES auth.users(id),
-    
-    -- Ensure versions follow semver format like main mcps table
-    CONSTRAINT version_format CHECK (version ~ '^[0-9]+\.[0-9]+\.[0-9]+$')
 );
 
 -- Create API Keys Table
@@ -138,7 +122,6 @@ ALTER TABLE public.mcps ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tag_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.mcp_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 
 -- ===========================================
@@ -215,30 +198,6 @@ CREATE POLICY "Users can delete their own reviews"
     ON public.reviews FOR DELETE
     USING (auth.uid() = user_id);
 
--- MCP Versions Policies
-CREATE POLICY "Public MCP versions are viewable by everyone"
-    ON public.mcp_versions FOR SELECT
-    USING (true);
-
-CREATE POLICY "Users can insert version history for own MCPs"
-    ON public.mcp_versions FOR INSERT
-    WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM public.mcps 
-            WHERE mcps.id = mcp_versions.mcp_id 
-            AND mcps.user_id = auth.uid()
-        )
-    );
-
-CREATE POLICY "Only admins can delete version history"
-    ON public.mcp_versions FOR DELETE
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE profiles.id = auth.uid() AND profiles.is_admin = true
-        )
-    );
-
 -- API Keys Policies
 CREATE POLICY "api_keys_select_policy"
     ON public.api_keys FOR SELECT
@@ -287,11 +246,6 @@ CREATE INDEX IF NOT EXISTS reviews_mcp_id_idx ON public.reviews(mcp_id);
 CREATE INDEX IF NOT EXISTS reviews_user_id_idx ON public.reviews(user_id);
 CREATE INDEX IF NOT EXISTS reviews_rating_idx ON public.reviews(rating);
 CREATE INDEX IF NOT EXISTS reviews_created_at_idx ON public.reviews(created_at);
-
--- MCP Versions Table Indexes
-CREATE INDEX IF NOT EXISTS mcp_versions_mcp_id_idx ON public.mcp_versions(mcp_id);
-CREATE INDEX IF NOT EXISTS mcp_versions_created_at_idx ON public.mcp_versions(created_at);
-CREATE INDEX IF NOT EXISTS mcp_versions_changed_by_idx ON public.mcp_versions(changed_by);
 
 -- API Keys Table Indexes
 CREATE INDEX IF NOT EXISTS api_keys_user_id_idx ON public.api_keys(user_id);
@@ -373,22 +327,6 @@ CREATE TRIGGER update_mcp_rating_on_delete
 AFTER DELETE ON public.reviews
 FOR EACH ROW
 EXECUTE FUNCTION update_mcp_rating();
-
--- Function to record initial MCP version
-CREATE OR REPLACE FUNCTION public.record_initial_mcp_version()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.mcp_versions (mcp_id, version, change_summary, changed_by)
-    VALUES (NEW.id, NEW.version, 'Initial version', NEW.user_id);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create trigger to record initial MCP version
-CREATE TRIGGER record_initial_mcp_version_trigger
-AFTER INSERT ON public.mcps
-FOR EACH ROW
-EXECUTE FUNCTION public.record_initial_mcp_version();
 
 -- Function to generate secure API keys
 CREATE OR REPLACE FUNCTION generate_api_key()
@@ -527,7 +465,6 @@ END $$;
 -- Table Comments
 COMMENT ON TABLE public.mcps IS 'Stores Model Context Protocol implementations';
 COMMENT ON TABLE public.reviews IS 'Stores user reviews and ratings for MCPs';
-COMMENT ON TABLE public.mcp_versions IS 'Stores version history for MCPs, including change details and who made the changes';
 COMMENT ON TABLE public.api_keys IS 'Stores API keys for authenticated access to the MCPHub API';
 COMMENT ON TABLE public.error_logs IS 'Stores system error logs for debugging and monitoring';
 COMMENT ON TABLE public.admin_logs IS 'Tracks administrative actions performed by admins';
