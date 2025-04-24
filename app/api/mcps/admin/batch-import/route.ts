@@ -59,6 +59,7 @@ export async function POST(request: Request) {
             // Results tracking
             const results = {
                 success: 0,
+                skipped: 0, // Added skipped counter
                 failed: 0,
                 errors: [] as string[]
             };
@@ -72,6 +73,27 @@ export async function POST(request: Request) {
                         results.errors.push(`MCP "${mcp.name || 'unnamed'}" is missing required fields`);
                         continue;
                     }
+
+                    // --- Check if MCP already exists ---
+                    const { data: existingMcp, error: checkError } = await supabaseAdmin
+                        .from('mcps')
+                        .select('id')
+                        .eq('repository_url', mcp.repository_url)
+                        .maybeSingle();
+
+                    if (checkError) {
+                        console.error('Error checking for existing MCP:', checkError);
+                        results.failed++;
+                        results.errors.push(`Error checking existence for MCP "${mcp.name}": ${checkError.message}`);
+                        continue; // Skip this MCP if check fails
+                    }
+
+                    if (existingMcp) {
+                        results.skipped++;
+                        results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
+                        continue; // Skip if MCP already exists
+                    }
+                    // --- End Check ---
 
                     // Create a copy of the MCP object for enrichment
                     const mcpData = { ...mcp };
@@ -146,7 +168,7 @@ export async function POST(request: Request) {
             }
 
             return NextResponse.json({
-                message: `Import completed: ${results.success} MCPs imported successfully, ${results.failed} failed`,
+                message: `Import completed: ${results.success} MCPs imported, ${results.skipped} skipped, ${results.failed} failed`, // Updated message
                 results
             });
         } else {
@@ -179,6 +201,7 @@ export async function POST(request: Request) {
             // Results tracking
             const results = {
                 success: 0,
+                skipped: 0, // Added skipped counter
                 failed: 0,
                 errors: [] as string[]
             };
@@ -192,6 +215,27 @@ export async function POST(request: Request) {
                         results.errors.push(`MCP "${mcp.name || 'unnamed'}" is missing required fields`);
                         continue;
                     }
+
+                    // --- Check if MCP already exists ---
+                    const { data: existingMcp, error: checkError } = await supabaseAdmin
+                        .from('mcps')
+                        .select('id')
+                        .eq('repository_url', mcp.repository_url)
+                        .maybeSingle();
+
+                    if (checkError) {
+                        console.error('Error checking for existing MCP:', checkError);
+                        results.failed++;
+                        results.errors.push(`Error checking existence for MCP "${mcp.name}": ${checkError.message}`);
+                        continue; // Skip this MCP if check fails
+                    }
+
+                    if (existingMcp) {
+                        results.skipped++;
+                        results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
+                        continue; // Skip if MCP already exists
+                    }
+                    // --- End Check ---
 
                     // Create a copy of the MCP object for enrichment
                     const mcpData = { ...mcp };
@@ -266,7 +310,7 @@ export async function POST(request: Request) {
             }
 
             return NextResponse.json({
-                message: `Import completed: ${results.success} MCPs imported successfully, ${results.failed} failed`,
+                message: `Import completed: ${results.success} MCPs imported, ${results.skipped} skipped, ${results.failed} failed`, // Updated message
                 results
             });
         }
