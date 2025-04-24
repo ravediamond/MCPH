@@ -84,7 +84,8 @@ export default function Dashboard() {
 
     useEffect(() => {
         fetchMcps();
-    }, [session, showAddModal]); // Re-fetch when session updates or after closing the modal
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [session, showAddModal]); // Keep dependencies as is, fetchMcps changes on every render.
 
     const handleDeleteMCP = async (mcpId: string) => {
         // The actual deletion is handled by the MCPCard component

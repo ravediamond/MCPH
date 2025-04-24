@@ -169,7 +169,8 @@ function BrowsePageContent() {
     // Fetch data on initial render and when searchQuery changes.
     useEffect(() => {
         fetchItems();
-    }, [searchQuery]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery]); // Keep only searchQuery as fetchItems changes on every render
 
     // Toggle tag selection
     const toggleTag = (tag: string, prefix?: string) => {

@@ -76,7 +76,7 @@ export default function ApiKeysManagement() {
         }
 
         checkAdminAccessAndLoadKeys();
-    }, [router, session]);
+    }, [router, session, clientSupabase]);
 
     const loadApiKeys = async () => {
         try {

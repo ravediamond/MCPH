@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from 'lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface User {
     id: string;
@@ -191,7 +192,7 @@ export default function AdminUsers() {
                             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.username}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                    {user.avatar_url ? <img src={user.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}
+                                    {user.avatar_url ? <Image src={user.avatar_url} alt="Avatar" width={32} height={32} className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.mcp_count}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -225,7 +226,7 @@ export default function AdminUsers() {
                         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Manage User</h2>
                         <div className="mb-6 text-gray-700 dark:text-gray-300">
                             <p className="mb-2"><span className="font-semibold">Username:</span> {selectedUser.username}</p>
-                            <p className="mb-2"><span className="font-semibold">Avatar:</span> {selectedUser.avatar_url ? <img src={selectedUser.avatar_url} alt="Avatar" className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}</p>
+                            <p className="mb-2 flex items-center"><span className="font-semibold mr-2">Avatar:</span> {selectedUser.avatar_url ? <Image src={selectedUser.avatar_url} alt="Avatar" width={32} height={32} className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}</p>
                             <p className="mb-2"><span className="font-semibold">MCPs:</span> {selectedUser.mcp_count}</p>
                             <p className="mb-2"><span className="font-semibold">Created:</span> {new Date(selectedUser.created_at).toLocaleString()}</p>
                             <p className="mb-2">
