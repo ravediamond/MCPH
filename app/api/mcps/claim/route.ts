@@ -27,19 +27,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'MCP not found' }, { status: 404 });
         }
 
-        // Get the user's GitHub identity
-        const { data: identities, error: identityError } = await supabase
-            .from('identities')
-            .select('identity_data')
-            .eq('user_id', currentUser.id)
-            .eq('provider', 'github')
-            .single();
+        // Get the user data including identities from auth metadata
+        const { data: userData, error: userError } = await supabase.auth.getUser();
 
-        if (identityError || !identities) {
-            return NextResponse.json({ error: 'GitHub identity not found' }, { status: 400 });
+        if (userError || !userData) {
+            return NextResponse.json({ error: 'Failed to get user data' }, { status: 400 });
         }
 
-        const githubUsername = identities.identity_data.user_name;
+        // Extract GitHub username from user metadata or app metadata
+        const userMetadata = userData.user.user_metadata;
+        const githubUsername = userMetadata.user_name || userMetadata.preferred_username;
+
+        if (!githubUsername) {
+            return NextResponse.json({ error: 'GitHub username not found in user profile' }, { status: 400 });
+        }
 
         // Check if the user's GitHub username matches the MCP owner_username
         if (githubUsername !== mcpData.owner_username) {
