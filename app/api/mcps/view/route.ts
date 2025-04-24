@@ -109,13 +109,13 @@ export async function POST(request: NextRequest) {
 
         // Check if this user has viewed this MCP recently
         const userCooldownKey = createUserViewCooldownKey(mcpId, userId);
-        const hasRecentView = cache.get(userCooldownKey);
+        const hasRecentView = await cache.get(userCooldownKey);
 
         if (hasRecentView) {
             // User has viewed this MCP recently, don't count it as a new view
             // But return the current view count
             const cacheKey = createViewCountCacheKey(mcpId);
-            const viewCache = cache.get<ViewCountCache>(cacheKey);
+            const viewCache = await cache.get<ViewCountCache>(cacheKey);
 
             return NextResponse.json({
                 success: true,
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
 
         // Get or initialize the view count cache
         const cacheKey = createViewCountCacheKey(mcpId);
-        let viewCache = cache.get<ViewCountCache>(cacheKey);
+        let viewCache = await cache.get<ViewCountCache>(cacheKey);
 
         if (!viewCache) {
             viewCache = {

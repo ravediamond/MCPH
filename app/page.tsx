@@ -7,6 +7,7 @@ import SearchBar from 'components/SearchBar';
 import FeaturedMCPs from 'components/FeaturedMCPs';
 import { useSupabase } from './supabase-provider';
 import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
 
 export default function Home() {
     const { session } = useSupabase();
@@ -27,8 +28,10 @@ export default function Home() {
                     </p>
 
                     <div className="max-w-4xl mx-auto mb-8">
-                        {/* Use the SearchBar component here */}
-                        <SearchBar />
+                        {/* Wrap SearchBar in Suspense boundary */}
+                        <Suspense fallback={<div className="w-full py-2 px-4 border border-gray-700 bg-gray-800 text-gray-400 rounded-md">Loading search...</div>}>
+                            <SearchBar />
+                        </Suspense>
                         <div className="text-center mt-4">
                             <Link href="/browse" className="text-blue-400 hover:text-blue-300 font-medium">
                                 Or browse all available MCPs →

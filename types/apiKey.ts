@@ -9,6 +9,7 @@ export interface ApiKey {
     is_active: boolean;
     description?: string | null;
     is_admin_key: boolean;
+    rate_limit_per_minute?: number | null;
     user?: {
         email: string;
         username?: string;

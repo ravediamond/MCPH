@@ -5,7 +5,7 @@ export interface MCP {
   description?: string;
   repository_url: string;
   repository_name?: string | null;  // Updated to accept null values
-  tags?: string[];
+  tags?: string[];    // Removed null since it's causing type issues with Supabase
   author: string;
   user_id: string;
   readme?: string | null;         // Updated to accept null values
@@ -13,12 +13,12 @@ export interface MCP {
   owner_username?: string | null; // Updated to accept null values
   claimed?: boolean | null;       // Updated to accept null values
   is_mcph_owned?: boolean | null; // Updated to accept null values
-  view_count?: number;     // Number of times this MCP has been viewed
-  avg_rating?: number;     // Average rating (1-5)
-  review_count?: number;   // Number of reviews
-  stars?: number;          // GitHub repository star count
-  forks?: number;          // GitHub repository fork count
-  open_issues?: number;    // GitHub repository open issues count
+  view_count?: number | null;     // Updated to accept null values
+  avg_rating?: number | null;     // Updated to accept null values
+  review_count?: number | null;   // Updated to accept null values
+  stars?: number | null;          // GitHub repository star count, updated to accept null
+  forks?: number | null;          // GitHub repository fork count, updated to accept null
+  open_issues?: number | null;    // GitHub repository open issues count, updated to accept null
   last_repo_update?: string | null; // Updated to accept null values
   languages?: string[];    // Programming languages used in the repository
   profiles?: {             // Added profiles property for join data
