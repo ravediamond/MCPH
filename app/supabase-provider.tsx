@@ -64,7 +64,7 @@ export default function SupabaseProvider({
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [supabase.auth]); // Added supabase.auth as a dependency
 
     return (
         <SupabaseContext.Provider value={{ supabase, session }}>

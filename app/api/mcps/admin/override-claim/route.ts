@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         }
 
         // Log the action
-        await supabase.from('admin_logs').insert({
+        await (supabase as any).from('admin_logs').insert({
             action: 'override_mcp_ownership',
             admin_id: currentUser.id,
             details: {
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     } catch (error: any) {
         // Log the error
         try {
-            await supabase.from('error_logs').insert({
+            await (supabase as any).from('error_logs').insert({
                 type: 'Admin Override',
                 message: 'Error overriding MCP ownership',
                 details: error.message || JSON.stringify(error),

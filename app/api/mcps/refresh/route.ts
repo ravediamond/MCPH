@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         const cooldownKey = createRecentlyRefreshedKey(mcpId);
         const recentlyRefreshed = cache.get(cooldownKey);
 
-        if (recentlyRefreshed) {
+        if (recentlyRefreshed !== undefined && recentlyRefreshed !== null) {
             return NextResponse.json({
                 success: false,
                 error: 'This MCP was recently refreshed',
@@ -156,14 +156,6 @@ export async function POST(request: Request) {
 }
 
 async function logError(type: string, message: string, error: any) {
-    try {
-        await supabase.from('error_logs').insert({
-            type,
-            message,
-            details: error.message || JSON.stringify(error),
-            stack: error.stack
-        });
-    } catch (logError) {
-        console.error('Failed to log error:', logError);
-    }
+    // Simple logging to console since error_logs table doesn't exist in DB schema
+    console.error(`[${type}] ${message}:`, error);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // Import Suspense
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -17,16 +17,18 @@ import { supabase } from "lib/supabaseClient";
 interface Tag {
     id: number;
     name: string;
-    description?: string;
-    icon?: string;
+    description: string | null;  // Changed from description?: string to accept null values
+    icon: string | null;         // Changed from icon?: string to accept null values
     category_id: number;
+    created_at: string;          // Added created_at from DB schema
     tag_category?: {
         id: number;
         name: string;
     }
 }
 
-export default function BrowsePage() {
+// Create a new component for the main content
+function BrowsePageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -167,7 +169,8 @@ export default function BrowsePage() {
     // Fetch data on initial render and when searchQuery changes.
     useEffect(() => {
         fetchItems();
-    }, [searchQuery]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery]); // Keep only searchQuery as fetchItems changes on every render
 
     // Toggle tag selection
     const toggleTag = (tag: string, prefix?: string) => {
@@ -199,8 +202,10 @@ export default function BrowsePage() {
 
         // Check if the item has the selected tags
         const hasSelectedTags = selectedTags.every(tag => {
-            return item.tags && item.tags.includes(tag);
+            // Ensure item.tags exists and is an array before calling includes
+            return Array.isArray(item.tags) && item.tags.some((itemTag: string) => itemTag === tag);
         });
+
 
         return matchesSearch && hasSelectedTags;
     });
@@ -437,5 +442,15 @@ export default function BrowsePage() {
                 )}
             </div>
         </div>
+    );
+}
+
+
+export default function BrowsePage() {
+    // Wrap the component that uses useSearchParams in Suspense
+    return (
+        <Suspense fallback={<div className="text-center py-10 text-gray-300">Loading browse page...</div>}>
+            <BrowsePageContent />
+        </Suspense>
     );
 }

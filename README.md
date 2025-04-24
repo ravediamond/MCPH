@@ -114,6 +114,21 @@ We're all about making integrations fun and accessible. Dive in, explore, and le
 
 # Dev
 
+## Continuous Integration
+
+This project uses GitHub Actions for continuous integration. The workflow automatically runs on:
+- Every push to the main/master branch
+- Every pull request to the main/master branch
+- Weekly (Sunday at midnight) to ensure dependencies remain compatible
+
+The CI workflow performs the following checks:
+- Installs dependencies
+- Runs linting
+- Builds the application
+- Archives the build artifacts for inspection
+
+This helps catch errors early in the development process, ensuring the application remains in a deployable state.
+
 ## Add admin user
 
 INSERT INTO public.profiles (id, username, is_admin)

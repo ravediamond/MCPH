@@ -266,7 +266,7 @@ export default function AddEditMCPModal({
                 deployment_url: deploymentUrl.trim() || null,
                 author: author,
                 user_id: user.id,
-                tags: allTags.length > 0 ? allTags : null,
+                tags: allTags.length > 0 ? allTags : undefined,  // Use undefined instead of null
                 is_mcph_owned: isMCPHOwned, // Add MCPH ownership flag
             });
         if (error) {

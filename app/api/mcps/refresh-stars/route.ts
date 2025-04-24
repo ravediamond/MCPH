@@ -100,7 +100,7 @@ export async function POST(request: Request) {
                     console.error(`Error updating MCP ${mcp.id}:`, errorMessage);
                     errors.push({
                         mcpId: mcp.id,
-                        message: errorMessage
+                        error: errorMessage
                     });
                 }
             });

@@ -103,7 +103,6 @@ export interface Database {
                     repository_url: string;
                     repository_name: string | null;
                     tags: string[];
-                    version: string;
                     author: string;
                     user_id: string;
                     readme: string | null;
@@ -127,7 +126,6 @@ export interface Database {
                     repository_url: string;
                     repository_name?: string | null;
                     tags?: string[];
-                    version: string;
                     author: string;
                     user_id: string;
                     readme?: string | null;
@@ -151,7 +149,6 @@ export interface Database {
                     repository_url?: string;
                     repository_name?: string | null;
                     tags?: string[];
-                    version?: string;
                     author?: string;
                     user_id?: string;
                     readme?: string | null;

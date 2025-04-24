@@ -49,11 +49,11 @@ export default function About() {
                             className="md:w-1/2"
                         >
                             <div className="aspect-video relative bg-gray-800 flex items-center justify-center">
-                                <Image 
-                                    src="/icon-big.png" 
-                                    alt="MCPHub Logo" 
-                                    width={400} 
-                                    height={400} 
+                                <Image
+                                    src="/icon-big.png"
+                                    alt="MCPHub Logo"
+                                    width={400}
+                                    height={400}
                                     className="object-contain"
                                     style={{ maxHeight: '100%', maxWidth: '100%' }}
                                 />

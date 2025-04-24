@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Button from 'components/ui/Button';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export default function DocsPage() {
     return (
@@ -53,9 +54,11 @@ export default function DocsPage() {
                         </p>
 
                         <div className="flex justify-center">
-                            <img
+                            <Image
                                 src="https://raw.githubusercontent.com/modelcontextprotocol/.github/main/profile/mcp-explanation.png"
                                 alt="MCP Flow Diagram"
+                                width={800} // Added width - adjust if needed
+                                height={400} // Added height - adjust if needed
                                 className="max-w-full h-auto rounded-lg shadow-md border border-gray-700"
                             />
                         </div>

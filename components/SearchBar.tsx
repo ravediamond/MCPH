@@ -27,7 +27,8 @@ export default function SearchBar({
         if (queryParam !== null && queryParam !== query) {
             setQuery(queryParam || '');
         }
-    }, [searchParams]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]); // Keep only searchParams, query changes within the effect
 
     const handleSearch = () => {
         if (!query.trim()) return;

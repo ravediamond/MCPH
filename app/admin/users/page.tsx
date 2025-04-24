@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from 'lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface User {
     id: string;
-    email: string;
+    username: string;
+    avatar_url: string | null;
     is_admin: boolean;
     created_at: string;
-    github_username: string | null;
     mcp_count?: number;
 }
 
@@ -34,10 +35,17 @@ export default function AdminUsers() {
 
                 // Check if user has admin role
                 const { data: user } = await supabase.auth.getUser();
+
+                // Return early if user ID is not available
+                if (!user.user?.id) {
+                    router.push('/');
+                    return;
+                }
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('is_admin')
-                    .eq('id', user.user?.id)
+                    .eq('id', user.user.id)
                     .single();
 
                 if (!profile?.is_admin) {
@@ -67,31 +75,40 @@ export default function AdminUsers() {
                 .from('profiles')
                 .select(`
           id, 
-          email, 
+          username, 
+          avatar_url, 
           is_admin, 
-          created_at, 
-          github_username
+          created_at
         `)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            // Get MCP counts for each user
-            const usersWithCounts = await Promise.all(data.map(async (user) => {
-                const { count } = await supabase
-                    .from('mcps')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', user.id);
+            if (!data) {
+                setUsers([]);
+                return;
+            }
 
-                return {
-                    ...user,
-                    mcp_count: count || 0
-                };
-            }));
+            // Get MCP counts for each user
+            const usersWithCounts = await Promise.all(
+                data.map(async (userProfile) => {
+                    const { count } = await supabase
+                        .from('mcps')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('user_id', userProfile.id);
+
+                    return {
+                        ...userProfile,
+                        mcp_count: count || 0
+                    } as User;
+                })
+            );
 
             setUsers(usersWithCounts);
         } catch (error) {
             console.error('Error loading users:', error);
+            // Set empty array on error to prevent UI errors
+            setUsers([]);
         }
     }
 
@@ -114,7 +131,7 @@ export default function AdminUsers() {
 
             if (error) throw error;
 
-            alert(`Admin privileges ${newAdminStatus ? 'granted to' : 'revoked from'} ${selectedUser.email}`);
+            alert(`Admin privileges ${newAdminStatus ? 'granted to' : 'revoked from'} ${selectedUser.username}`);
             setIsModalOpen(false);
             await loadUsers(); // Refresh the users list
         } catch (error) {
@@ -125,8 +142,7 @@ export default function AdminUsers() {
 
     // Filter users based on search term
     const filteredUsers = users.filter(user =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.github_username && user.github_username.toLowerCase().includes(searchTerm.toLowerCase()))
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (isLoading) {
@@ -152,7 +168,7 @@ export default function AdminUsers() {
             <div className="mb-6">
                 <input
                     type="text"
-                    placeholder="Search users by email or GitHub username..."
+                    placeholder="Search users by username..."
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -163,8 +179,8 @@ export default function AdminUsers() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-100 dark:bg-gray-700">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">GitHub Username</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Username</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Avatar</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">MCPs</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Admin</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Created</th>
@@ -174,9 +190,9 @@ export default function AdminUsers() {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredUsers.map((user) => (
                             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.username}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                    {user.github_username || <span className="italic text-gray-500 dark:text-gray-400">Not linked</span>}
+                                    {user.avatar_url ? <Image src={user.avatar_url} alt="Avatar" width={32} height={32} className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{user.mcp_count}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -209,8 +225,8 @@ export default function AdminUsers() {
                     <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
                         <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Manage User</h2>
                         <div className="mb-6 text-gray-700 dark:text-gray-300">
-                            <p className="mb-2"><span className="font-semibold">Email:</span> {selectedUser.email}</p>
-                            <p className="mb-2"><span className="font-semibold">GitHub Username:</span> {selectedUser.github_username || <span className="italic text-gray-500 dark:text-gray-400">Not linked</span>}</p>
+                            <p className="mb-2"><span className="font-semibold">Username:</span> {selectedUser.username}</p>
+                            <p className="mb-2 flex items-center"><span className="font-semibold mr-2">Avatar:</span> {selectedUser.avatar_url ? <Image src={selectedUser.avatar_url} alt="Avatar" width={32} height={32} className="w-8 h-8 rounded-full" /> : <span className="italic text-gray-500 dark:text-gray-400">No avatar</span>}</p>
                             <p className="mb-2"><span className="font-semibold">MCPs:</span> {selectedUser.mcp_count}</p>
                             <p className="mb-2"><span className="font-semibold">Created:</span> {new Date(selectedUser.created_at).toLocaleString()}</p>
                             <p className="mb-2">

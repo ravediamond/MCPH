@@ -36,10 +36,17 @@ export default function AdminDashboard() {
 
                 // Check if user has admin role
                 const { data: user } = await supabase.auth.getUser();
+
+                // Return early if user ID is not available
+                if (!user.user?.id) {
+                    router.push('/');
+                    return;
+                }
+
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('is_admin')
-                    .eq('id', user.user?.id)
+                    .eq('id', user.user.id)
                     .single();
 
                 if (!profile?.is_admin) {
@@ -83,14 +90,19 @@ export default function AdminDashboard() {
 
             setStaleReadmes(stale || []);
 
-            // Get recent error logs (assuming you have an error_logs table)
+            // Since error_logs table seems to not exist in the schema, we're commenting this out
+            // and initializing with an empty array for now
+            // You might need to create this table or use another approach to track errors
+            /*
             const { data: errors } = await supabase
                 .from('error_logs')
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(10);
+            */
 
-            setRecentErrors(errors || []);
+            // Initialize with empty array as a temporary solution
+            setRecentErrors([]);
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
