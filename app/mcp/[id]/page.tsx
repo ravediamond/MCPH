@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from 'lib/supabaseClient';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'; // Import rehype-raw
 import 'github-markdown-css/github-markdown.css';
 import {
   FaStar,
@@ -46,11 +47,11 @@ export default function MCPDetail() {
   const [repoInfo, setRepoInfo] = useState<{
     owner: string;
     repo: string;
-    branch: string;
+    branch: string; // Branch will be set dynamically
   }>({
     owner: '',
     repo: '',
-    branch: 'main', // Default branch; update as needed.
+    branch: '', // Initialize branch as empty
   });
   const [repoData, setRepoData] = useState<any>(null);
   const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
@@ -210,6 +211,8 @@ export default function MCPDetail() {
     if (mcp) {
       let owner = '';
       let repo = '';
+      // Use the default branch from the MCP data, fallback to 'main' if not present
+      const branch = mcp.default_branch || 'master';
 
       if (mcp.owner_username && mcp.repository_name) {
         owner = mcp.owner_username;
@@ -221,7 +224,7 @@ export default function MCPDetail() {
         repo = parts[parts.length - 1];
       }
 
-      setRepoInfo({ owner, repo, branch: 'main' });
+      setRepoInfo({ owner, repo, branch }); // Set the dynamically determined branch
       setReadme(mcp.readme || '');
       setLastRefreshed(mcp.last_refreshed || null);
     }
@@ -319,7 +322,14 @@ export default function MCPDetail() {
     img: (props: any) => {
       const { src, alt, ...rest } = props;
       let imageSrc: string = src || '';
+      // Check if the path is relative and starts with './'
+      if (imageSrc.startsWith('./')) {
+        // Remove the leading './'
+        imageSrc = imageSrc.substring(2);
+      }
+      // Check if the path is relative (doesn't start with http/https)
       if (!imageSrc.match(/^(https?:\/\/)/)) {
+        // Use the branch from the repoInfo state
         imageSrc = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${imageSrc}`;
       }
 
@@ -394,7 +404,7 @@ export default function MCPDetail() {
         {/* Accent line at the top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
 
-        <div className="max-w-5xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">{mcp.name || 'MCP Detail'}</h1>
@@ -483,7 +493,7 @@ export default function MCPDetail() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 mt-8">
+      <div className="max-w-7xl mx-auto px-4 mt-8">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Sidebar with Repository Metrics */}
           <div className="lg:col-span-1">
@@ -640,6 +650,7 @@ export default function MCPDetail() {
                     <div className={`markdown-body bg-transparent border-0 prose prose-invert prose-blue max-w-none ${styles['markdown-dark']}`}>
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]} // Add rehype-raw to plugins
                         components={components}
                       >
                         {readme}
