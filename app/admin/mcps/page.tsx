@@ -35,6 +35,7 @@ export default function AdminMCPs() {
     const [searchTerm, setSearchTerm] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [jsonPreview, setJsonPreview] = useState<string>('');
+    const [editingViews, setEditingViews] = useState<{ [key: string]: string }>({}); // State to hold view inputs
     const router = useRouter();
 
     useEffect(() => {
@@ -191,6 +192,57 @@ export default function AdminMCPs() {
         }
     }
 
+    async function handleUpdateViews(mcpId: string) {
+        const newViews = editingViews[mcpId];
+        const viewCount = parseInt(newViews, 10);
+
+        if (isNaN(viewCount) || viewCount < 0) {
+            alert('Please enter a valid non-negative number for views.');
+            return;
+        }
+
+        try {
+            // Get the current session token
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert('Your session has expired. Please log in again.');
+                router.push('/'); // Redirect to login or home
+                return;
+            }
+
+            const response = await fetch(`/api/mcps/admin/update-views`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}` // Add the Authorization header
+                },
+                body: JSON.stringify({ mcpId, views: viewCount }),
+            });
+
+            if (response.ok) {
+                alert('Views updated successfully!');
+                // Clear the editing state for this MCP after successful update
+                setEditingViews(prev => {
+                    const newState = { ...prev };
+                    delete newState[mcpId]; // Remove the key to revert to displaying the actual value
+                    return newState;
+                });
+                await loadMCPs(); // Refresh the MCPs list
+            } else {
+                const errorData = await response.json();
+                alert(`Error updating views: ${errorData.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error updating views:', error);
+            alert('Failed to update views. See console for details.');
+        }
+    }
+
+    // Handle input change for view counts
+    const handleViewInputChange = (mcpId: string, value: string) => {
+        setEditingViews(prev => ({ ...prev, [mcpId]: value }));
+    };
+
     // Open file selector
     const handleImportClick = () => {
         setImportResults(null);
@@ -333,41 +385,71 @@ export default function AdminMCPs() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Repository</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Current Owner</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Views</th> {/* Added Views column header */}
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Last Refreshed</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {filteredMCPs.map((mcp) => (
-                            <tr key={mcp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{mcp.name}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
-                                        {mcp.repository_url}
-                                    </a>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                    {mcp.profiles?.email || <span className="text-gray-500 dark:text-gray-400 italic">Unclaimed</span>}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                    {mcp.last_refreshed ? new Date(mcp.last_refreshed).toLocaleString() : <span className="italic text-gray-500 dark:text-gray-400">Never</span>}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <button
-                                        onClick={() => mcp.id && handleRefreshReadme(mcp.id)}
-                                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md shadow-sm mr-2 text-sm"
-                                    >
-                                        Refresh README
-                                    </button>
-                                    <button
-                                        onClick={() => openOwnershipModal(mcp)}
-                                        className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
-                                    >
-                                        Manage Ownership
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {filteredMCPs.map((mcp) => {
+                            // Ensure mcp.id exists before rendering the row/using it
+                            if (!mcp.id) return null;
+                            const currentViews = mcp.view_count ?? 0; // Use view_count, default to 0 if null/undefined
+                            const editingValue = editingViews[mcp.id];
+                            const isEditing = editingValue !== undefined;
+                            const displayValue = isEditing ? editingValue : String(currentViews);
+
+                            return (
+                                <tr key={mcp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">{mcp.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <a href={mcp.repository_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                            {mcp.repository_url}
+                                        </a>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                        {mcp.profiles?.email || <span className="text-gray-500 dark:text-gray-400 italic">Unclaimed</span>}
+                                    </td>
+                                    {/* Views Column */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                        <div className="flex items-center space-x-2">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={displayValue}
+                                                onChange={(e) => handleViewInputChange(mcp.id!, e.target.value)} // Use mcp.id! as we checked it's not null
+                                                className="w-20 p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm"
+                                                placeholder={String(currentViews)} // Show current views as placeholder
+                                            />
+                                            <button
+                                                onClick={() => handleUpdateViews(mcp.id!)} // Use mcp.id! as we checked it's not null
+                                                disabled={!isEditing || editingValue === '' || parseInt(editingValue, 10) === currentViews}
+                                                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-md shadow-sm text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Save
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
+                                        {mcp.last_refreshed ? new Date(mcp.last_refreshed).toLocaleString() : <span className="italic text-gray-500 dark:text-gray-400">Never</span>}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <button
+                                            onClick={() => mcp.id && handleRefreshReadme(mcp.id)}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md shadow-sm mr-2 text-sm"
+                                        >
+                                            Refresh README
+                                        </button>
+                                        <button
+                                            onClick={() => openOwnershipModal(mcp)}
+                                            className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-md shadow-sm text-sm"
+                                        >
+                                            Manage Ownership
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
