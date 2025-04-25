@@ -47,11 +47,11 @@ export default function MCPDetail() {
   const [repoInfo, setRepoInfo] = useState<{
     owner: string;
     repo: string;
-    branch: string;
+    branch: string; // Branch will be set dynamically
   }>({
     owner: '',
     repo: '',
-    branch: 'main', // Default branch; update as needed.
+    branch: '', // Initialize branch as empty
   });
   const [repoData, setRepoData] = useState<any>(null);
   const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
@@ -211,6 +211,8 @@ export default function MCPDetail() {
     if (mcp) {
       let owner = '';
       let repo = '';
+      // Use the default branch from the MCP data, fallback to 'main' if not present
+      const branch = mcp.default_branch || 'master';
 
       if (mcp.owner_username && mcp.repository_name) {
         owner = mcp.owner_username;
@@ -222,7 +224,7 @@ export default function MCPDetail() {
         repo = parts[parts.length - 1];
       }
 
-      setRepoInfo({ owner, repo, branch: 'main' });
+      setRepoInfo({ owner, repo, branch }); // Set the dynamically determined branch
       setReadme(mcp.readme || '');
       setLastRefreshed(mcp.last_refreshed || null);
     }
@@ -320,7 +322,14 @@ export default function MCPDetail() {
     img: (props: any) => {
       const { src, alt, ...rest } = props;
       let imageSrc: string = src || '';
+      // Check if the path is relative and starts with './'
+      if (imageSrc.startsWith('./')) {
+        // Remove the leading './'
+        imageSrc = imageSrc.substring(2);
+      }
+      // Check if the path is relative (doesn't start with http/https)
       if (!imageSrc.match(/^(https?:\/\/)/)) {
+        // Use the branch from the repoInfo state
         imageSrc = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${imageSrc}`;
       }
 
