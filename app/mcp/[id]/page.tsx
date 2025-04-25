@@ -320,7 +320,7 @@ export default function MCPDetail() {
   // that resolves relative image paths to absolute GitHub raw URLs.
   const components = {
     img: (props: any) => {
-      const { src, alt, ...rest } = props;
+      const { src, alt, width: mdWidth, height: mdHeight, ...rest } = props; // Destructure width and height
       let imageSrc: string = src || '';
       // Check if the path is relative and starts with './'
       if (imageSrc.startsWith('./')) {
@@ -333,17 +333,23 @@ export default function MCPDetail() {
         imageSrc = `https://raw.githubusercontent.com/${repoInfo.owner}/${repoInfo.repo}/${repoInfo.branch}/${imageSrc}`;
       }
 
+      // Use width/height from markdown, default to 12x12 if not provided or invalid
+      const imageWidth = typeof mdWidth === 'number' && mdWidth > 0 ? mdWidth : (typeof mdWidth === 'string' && parseInt(mdWidth) > 0 ? parseInt(mdWidth) : 12);
+      const imageHeight = typeof mdHeight === 'number' && mdHeight > 0 ? mdHeight : (typeof mdHeight === 'string' && parseInt(mdHeight) > 0 ? parseInt(mdHeight) : 12);
+
+
       // Using Next.js Image component with remote patterns
       // We need to ensure the domain is properly configured in next.config.js
+      // Use inline-block for proper sizing based on width/height
       return (
-        <span className="relative inline-block max-w-full">
+        <span className="relative inline-block align-middle mx-1" style={{ width: imageWidth, height: imageHeight }}>
           <Image
             src={imageSrc}
             alt={alt || ''}
-            className="rounded-md"
-            width={500}
-            height={300}
-            style={{ maxWidth: '100%', height: 'auto' }}
+            className="rounded-sm" // Use smaller rounding for small icons
+            width={imageWidth} // Use width from markdown or default
+            height={imageHeight} // Use height from markdown or default
+            style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }} // Ensure image scales within bounds
             unoptimized // Using unoptimized for GitHub raw images that may not be compatible with Next.js Image optimization
           />
         </span>
