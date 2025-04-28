@@ -36,6 +36,7 @@ export default function AdminMCPs() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [jsonPreview, setJsonPreview] = useState<string>('');
     const [editingViews, setEditingViews] = useState<{ [key: string]: string }>({}); // State to hold view inputs
+    const [overwriteExisting, setOverwriteExisting] = useState(false); // Add state for overwrite toggle
     const router = useRouter();
 
     useEffect(() => {
@@ -304,7 +305,7 @@ export default function AdminMCPs() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({ mcps: mcpsData }),
+                body: JSON.stringify({ mcps: mcpsData, overwrite: overwriteExisting }), // Include overwrite flag
                 credentials: 'include',
             });
 
@@ -520,6 +521,18 @@ export default function AdminMCPs() {
                             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 Upload a JSON file containing an array of MCPs to import
                             </p>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                Overwrite Existing MCPs:
+                            </label>
+                            <input
+                                type="checkbox"
+                                checked={overwriteExisting}
+                                onChange={(e) => setOverwriteExisting(e.target.checked)}
+                                className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                            />
                         </div>
 
                         {importResults && (

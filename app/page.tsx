@@ -7,11 +7,39 @@ import SearchBar from 'components/SearchBar';
 import FeaturedMCPs from 'components/FeaturedMCPs';
 import { useSupabase } from './supabase-provider';
 import { useRouter } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react'; // Added useState, useEffect
 
 export default function Home() {
-    const { session } = useSupabase();
+    const { session, supabase } = useSupabase(); // Get supabase client
     const router = useRouter();
+    const [mcpCount, setMcpCount] = useState<number | null>(null);
+    const [loadingCount, setLoadingCount] = useState(true);
+
+    useEffect(() => {
+        const fetchMcpCount = async () => {
+            setLoadingCount(true);
+            try {
+                // Fetch only the count, not the data
+                const { count, error } = await supabase
+                    .from('mcps')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) {
+                    console.error('Error fetching MCP count:', error);
+                    setMcpCount(null); // Handle error state if needed
+                } else {
+                    setMcpCount(count);
+                }
+            } catch (err) {
+                console.error('Unexpected error fetching MCP count:', err);
+                setMcpCount(null);
+            } finally {
+                setLoadingCount(false);
+            }
+        };
+
+        fetchMcpCount();
+    }, [supabase]); // Re-run if supabase client changes
 
     // No automatic redirect - allow logged-in users to view the landing page
 
@@ -23,19 +51,35 @@ export default function Home() {
                     <h1 className="text-4xl font-semibold mb-4 text-center text-gray-100">
                         The Model Context Protocol Hub
                     </h1>
-                    <p className="text-gray-300 text-center mb-10 max-w-3xl mx-auto text-lg">
+                    <p className="text-gray-300 text-center mb-6 max-w-3xl mx-auto text-lg"> {/* Reduced bottom margin */}
                         Find, install, and publish MCP endpoints to enhance your AI systems
                     </p>
+
+                    {/* Prominent MCP Count */}
+                    <div className="text-center mb-10"> {/* Added margin bottom */}
+                        {loadingCount && (
+                            <span className="text-gray-500 text-lg">
+                                Loading MCP count...
+                            </span>
+                        )}
+                        {!loadingCount && mcpCount !== null && (
+                            <div className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md shadow-md">
+                                <span className="font-bold text-xl">{mcpCount}</span>
+                                <span className="ml-2 text-lg">MCPs available</span>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="max-w-4xl mx-auto mb-8">
                         {/* Wrap SearchBar in Suspense boundary */}
                         <Suspense fallback={<div className="w-full py-2 px-4 border border-gray-700 bg-gray-800 text-gray-400 rounded-md">Loading search...</div>}>
                             <SearchBar />
                         </Suspense>
-                        <div className="text-center mt-4">
+                        <div className="text-center mt-4"> {/* Removed space-x-4 and the old count span */}
                             <Link href="/browse" className="text-blue-400 hover:text-blue-300 font-medium">
                                 Or browse all available MCPs →
                             </Link>
+                            {/* Old count location removed */}
                         </div>
                     </div>
                 </div>
