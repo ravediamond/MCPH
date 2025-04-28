@@ -8,7 +8,7 @@ import { MCP } from 'types/mcp';
 // Define User interface
 interface User {
     id: string;
-    email: string;
+    username: string;  // Changed from email to username to match the profiles table schema
 }
 
 // Define import results interface
@@ -96,9 +96,10 @@ export default function AdminMCPs() {
             // Get all MCPs with owner information by fetching profiles separately
             const mcpsWithOwners = await Promise.all((mcpData || []).map(async (mcp) => {
                 if (mcp.user_id) {
+                    // Fix the select query - using username field which exists instead of email field
                     const { data: userData, error: userError } = await supabase
                         .from('profiles')
-                        .select('email')
+                        .select('username, id') // Use username instead of email
                         .eq('id', mcp.user_id)
                         .single();
 
@@ -122,8 +123,8 @@ export default function AdminMCPs() {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, email')
-                .order('email');
+                .select('id, username') // Changed from 'email' to 'username'
+                .order('username');     // Changed from 'email' to 'username'
 
             if (error) throw error;
             setUsers(data as unknown as User[] || []);
@@ -338,7 +339,7 @@ export default function AdminMCPs() {
     const filteredMCPs = mcps.filter(mcp =>
         mcp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         mcp.repository_url.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (mcp.profiles?.email && mcp.profiles.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        (mcp.profiles?.username && mcp.profiles.username.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (isLoading) {
@@ -386,7 +387,7 @@ export default function AdminMCPs() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Repository</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Current Owner</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Views</th> {/* Added Views column header */}
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Views</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Last Refreshed</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -409,7 +410,7 @@ export default function AdminMCPs() {
                                         </a>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
-                                        {mcp.profiles?.email || <span className="text-gray-500 dark:text-gray-400 italic">Unclaimed</span>}
+                                        {mcp.profiles?.username || <span className="text-gray-500 dark:text-gray-400 italic">Unclaimed</span>}
                                     </td>
                                     {/* Views Column */}
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-800 dark:text-gray-200">
@@ -477,7 +478,7 @@ export default function AdminMCPs() {
                                 <option value="">-- Unclaimed --</option>
                                 {users.map((user) => (
                                     <option key={user.id} value={user.id}>
-                                        {user.email}
+                                        {user.username}
                                     </option>
                                 ))}
                             </select>
