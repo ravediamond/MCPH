@@ -7,8 +7,9 @@ interface GitHubRateLimitInfo {
   resource: string;
 }
 
-// Import our updated cache utility
+// Import our updated cache utility and rate limiter
 import { cacheFetch, invalidateCache, CACHE_REGIONS } from '../utils/cacheUtils';
+import { githubRateLimiter } from '../utils/githubRateLimiter';
 
 // Cache TTL constants (in seconds)
 const README_CACHE_TTL = 6 * 60 * 60; // 6 hours
@@ -49,6 +50,11 @@ export async function handleGitHubResponse(response: Response): Promise<Response
   // Extract rate limit info regardless of success/failure
   const rateLimitInfo = extractRateLimitInfo(response.headers);
 
+  // Update our rate limiter with the latest headers
+  if (rateLimitInfo) {
+    githubRateLimiter.updateFromHeaders(response.headers);
+  }
+
   if (response.ok) {
     // Log remaining rate limit if it's getting low (less than 10% remaining)
     if (rateLimitInfo && rateLimitInfo.limit > 0 && rateLimitInfo.remaining < rateLimitInfo.limit * 0.1) {
@@ -85,6 +91,39 @@ function createGitHubCacheKey(type: string, owner: string, repo: string): string
   return `${type}:${owner}/${repo}`;
 }
 
+/**
+ * Wrapper for GitHub API requests that applies rate limiting
+ * @param apiUrl The GitHub API URL to fetch
+ * @param options Fetch options
+ * @returns Response from the API
+ */
+async function githubFetch(apiUrl: string, options: RequestInit = {}): Promise<Response> {
+  // Apply rate limit delay before making the request
+  await githubRateLimiter.applyRateLimitDelay();
+
+  // Add Authorization header if GitHub token is available
+  const headers = {
+    ...options.headers,
+    ...(process.env.GITHUB_TOKEN && {
+      Authorization: `token ${process.env.GITHUB_TOKEN}`
+    })
+  };
+
+  // Make the request
+  const response = await fetch(apiUrl, {
+    ...options,
+    headers
+  });
+
+  // Update rate limiter from response headers
+  githubRateLimiter.updateFromHeaders(response.headers);
+
+  // Process and validate the response
+  await handleGitHubResponse(response);
+
+  return response;
+}
+
 export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: string, repositoryName?: string): Promise<{ readme: string; ownerUsername: string }> {
   let owner: string;
   let repo: string;
@@ -108,19 +147,11 @@ export async function fetchGithubReadme(repositoryUrl: string, ownerUsername?: s
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
-
-      const response = await fetch(apiUrl, {
+      const response = await githubFetch(apiUrl, {
         headers: {
-          Accept: 'application/vnd.github.v3.raw',
-          // Use GitHub token if available for higher rate limits
-          ...(process.env.GITHUB_TOKEN && {
-            Authorization: `token ${process.env.GITHUB_TOKEN}`
-          })
+          Accept: 'application/vnd.github.v3.raw'
         }
       });
-
-      // Process the response with the new handler
-      await handleGitHubResponse(response);
 
       return await response.text();
     },
@@ -144,19 +175,11 @@ export async function fetchReadmeFromGitHub(owner: string, repo: string): Promis
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/readme`;
-
-      const response = await fetch(apiUrl, {
+      const response = await githubFetch(apiUrl, {
         headers: {
-          Accept: 'application/vnd.github.v3.raw',
-          // Use GitHub token if available for higher rate limits
-          ...(process.env.GITHUB_TOKEN && {
-            Authorization: `token ${process.env.GITHUB_TOKEN}`
-          })
+          Accept: 'application/vnd.github.v3.raw'
         }
       });
-
-      // Process the response with the new handler
-      await handleGitHubResponse(response);
 
       return await response.text();
     },
@@ -240,19 +263,11 @@ export async function fetchRepoDetails(owner: string, repo: string): Promise<any
     async () => {
       // This function will only run if cache miss
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
-
-      const response = await fetch(apiUrl, {
+      const response = await githubFetch(apiUrl, {
         headers: {
-          Accept: 'application/vnd.github.v3+json',
-          // Use GitHub token if available for higher rate limits
-          ...(process.env.GITHUB_TOKEN && {
-            Authorization: `token ${process.env.GITHUB_TOKEN}`
-          })
+          Accept: 'application/vnd.github.v3+json'
         }
       });
-
-      // Process the response with the handler
-      await handleGitHubResponse(response);
 
       return await response.json();
     },
@@ -397,29 +412,27 @@ export async function fetchComprehensiveRepoData(
     }
   }
 
-  // Fetch both README and repo details
+  // Fetch both README and repo details concurrently with rate limiting
+  // Use cache to reduce the number of API calls
   const [readme, repoDetails] = await Promise.all([
     fetchReadmeFromGitHub(owner, repo),
     fetchRepoDetails(owner, repo)
   ]);
 
-  // Fetch languages
+  // Fetch languages with rate limiting
   let languages: string[] = [];
   try {
-    const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, {
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/languages`;
+    const languagesResponse = await githubFetch(apiUrl, {
       headers: {
-        Accept: 'application/vnd.github.v3+json',
-        ...(process.env.GITHUB_TOKEN && {
-          Authorization: `token ${process.env.GITHUB_TOKEN}`
-        })
+        Accept: 'application/vnd.github.v3+json'
       }
     });
 
-    await handleGitHubResponse(languagesResponse);
     const languagesData = await languagesResponse.json();
     languages = Object.keys(languagesData);
   } catch (error) {
-    console.error('Error fetching repository languages:', error);
+    console.error(`Error fetching repository languages for ${owner}/${repo}:`, error);
   }
 
   return {
