@@ -49,8 +49,8 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
             }
 
-            // Get MCPs data from request body
-            const { mcps } = await request.json();
+            // Get MCPs data and overwrite flag from request body
+            const { mcps, overwrite } = await request.json();
 
             if (!mcps || !Array.isArray(mcps) || mcps.length === 0) {
                 return NextResponse.json({ error: 'Invalid MCPs data format' }, { status: 400 });
@@ -59,7 +59,8 @@ export async function POST(request: Request) {
             // Results tracking
             const results = {
                 success: 0,
-                skipped: 0, // Added skipped counter
+                skipped: 0,
+                updated: 0, // For tracking overwritten MCPs
                 failed: 0,
                 errors: [] as string[]
             };
@@ -87,13 +88,6 @@ export async function POST(request: Request) {
                         results.errors.push(`Error checking existence for MCP "${mcp.name}": ${checkError.message}`);
                         continue; // Skip this MCP if check fails
                     }
-
-                    if (existingMcp) {
-                        results.skipped++;
-                        results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
-                        continue; // Skip if MCP already exists
-                    }
-                    // --- End Check ---
 
                     // Create a copy of the MCP object for enrichment
                     const mcpData = { ...mcp };
@@ -132,34 +126,73 @@ export async function POST(request: Request) {
                         // Continue with import despite GitHub API errors
                     }
 
-                    // Use supabaseAdmin to bypass RLS
-                    const { error: insertError } = await supabaseAdmin
-                        .from('mcps')
-                        .insert({
-                            name: mcpData.name,
-                            description: mcpData.description || '',
-                            repository_url: mcpData.repository_url,
-                            owner_username: mcpData.owner_username,
-                            repository_name: mcpData.repository_name,
-                            author: mcpData.author,
-                            tags: mcpData.tags || [],
-                            user_id: mcpData.user_id || currentUser.id,
-                            is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
-                            view_count: mcpData.view_count || 0,
-                            readme: mcpData.readme || '',
-                            stars: mcpData.stars || 0,
-                            forks: mcpData.forks || 0,
-                            open_issues: mcpData.open_issues || 0,
-                            last_repo_update: mcpData.last_repo_update,
-                            last_refreshed: mcpData.last_refreshed
-                            // version field removed as it's no longer in the MCP type
-                        } as any); // Using type assertion to bypass TypeScript check
+                    // Handle based on existence and overwrite flag
+                    if (existingMcp) {
+                        // MCP exists - either update it or skip based on overwrite flag
+                        if (overwrite) {
+                            // Update the existing MCP
+                            const { error: updateError } = await supabaseAdmin
+                                .from('mcps')
+                                .update({
+                                    name: mcpData.name,
+                                    description: mcpData.description || '',
+                                    repository_url: mcpData.repository_url,
+                                    owner_username: mcpData.owner_username,
+                                    repository_name: mcpData.repository_name,
+                                    author: mcpData.author,
+                                    tags: mcpData.tags || [],
+                                    user_id: mcpData.user_id || currentUser.id,
+                                    is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                                    view_count: mcpData.view_count || 0,
+                                    readme: mcpData.readme || '',
+                                    stars: mcpData.stars || 0,
+                                    forks: mcpData.forks || 0,
+                                    open_issues: mcpData.open_issues || 0,
+                                    last_repo_update: mcpData.last_repo_update,
+                                    last_refreshed: mcpData.last_refreshed
+                                } as any)
+                                .eq('id', existingMcp.id);
 
-                    if (insertError) {
-                        throw insertError;
+                            if (updateError) {
+                                throw updateError;
+                            }
+
+                            results.updated++;
+                        } else {
+                            // Skip if the MCP exists and overwrite is false
+                            results.skipped++;
+                            results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
+                            continue;
+                        }
+                    } else {
+                        // Insert new MCP
+                        const { error: insertError } = await supabaseAdmin
+                            .from('mcps')
+                            .insert({
+                                name: mcpData.name,
+                                description: mcpData.description || '',
+                                repository_url: mcpData.repository_url,
+                                owner_username: mcpData.owner_username,
+                                repository_name: mcpData.repository_name,
+                                author: mcpData.author,
+                                tags: mcpData.tags || [],
+                                user_id: mcpData.user_id || currentUser.id,
+                                is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                                view_count: mcpData.view_count || 0,
+                                readme: mcpData.readme || '',
+                                stars: mcpData.stars || 0,
+                                forks: mcpData.forks || 0,
+                                open_issues: mcpData.open_issues || 0,
+                                last_repo_update: mcpData.last_repo_update,
+                                last_refreshed: mcpData.last_refreshed
+                            } as any);
+
+                        if (insertError) {
+                            throw insertError;
+                        }
+
+                        results.success++;
                     }
-
-                    results.success++;
                 } catch (error) {
                     console.error('Error importing MCP:', error);
                     results.failed++;
@@ -168,7 +201,7 @@ export async function POST(request: Request) {
             }
 
             return NextResponse.json({
-                message: `Import completed: ${results.success} MCPs imported, ${results.skipped} skipped, ${results.failed} failed`, // Updated message
+                message: `Import completed: ${results.success} MCPs imported, ${results.updated} updated, ${results.skipped} skipped, ${results.failed} failed`,
                 results
             });
         } else {
@@ -191,8 +224,8 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Admin privileges required' }, { status: 403 });
             }
 
-            // Get MCPs data from request body
-            const { mcps } = await request.json();
+            // Get MCPs data and overwrite flag from request body
+            const { mcps, overwrite } = await request.json();
 
             if (!mcps || !Array.isArray(mcps) || mcps.length === 0) {
                 return NextResponse.json({ error: 'Invalid MCPs data format' }, { status: 400 });
@@ -201,7 +234,8 @@ export async function POST(request: Request) {
             // Results tracking
             const results = {
                 success: 0,
-                skipped: 0, // Added skipped counter
+                skipped: 0,
+                updated: 0, // For tracking overwritten MCPs
                 failed: 0,
                 errors: [] as string[]
             };
@@ -229,13 +263,6 @@ export async function POST(request: Request) {
                         results.errors.push(`Error checking existence for MCP "${mcp.name}": ${checkError.message}`);
                         continue; // Skip this MCP if check fails
                     }
-
-                    if (existingMcp) {
-                        results.skipped++;
-                        results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
-                        continue; // Skip if MCP already exists
-                    }
-                    // --- End Check ---
 
                     // Create a copy of the MCP object for enrichment
                     const mcpData = { ...mcp };
@@ -274,34 +301,73 @@ export async function POST(request: Request) {
                         // Continue with import despite GitHub API errors
                     }
 
-                    // Use supabaseAdmin to bypass RLS
-                    const { error: insertError } = await supabaseAdmin
-                        .from('mcps')
-                        .insert({
-                            name: mcpData.name,
-                            description: mcpData.description || '',
-                            repository_url: mcpData.repository_url,
-                            owner_username: mcpData.owner_username,
-                            repository_name: mcpData.repository_name,
-                            author: mcpData.author,
-                            tags: mcpData.tags || [],
-                            user_id: mcpData.user_id || currentUser.id,
-                            is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
-                            view_count: mcpData.view_count || 0,
-                            readme: mcpData.readme || '',
-                            stars: mcpData.stars || 0,
-                            forks: mcpData.forks || 0,
-                            open_issues: mcpData.open_issues || 0,
-                            last_repo_update: mcpData.last_repo_update,
-                            last_refreshed: mcpData.last_refreshed
-                            // version field removed as it's no longer in the MCP type
-                        } as any); // Using type assertion to bypass TypeScript check
+                    // Handle based on existence and overwrite flag
+                    if (existingMcp) {
+                        // MCP exists - either update it or skip based on overwrite flag
+                        if (overwrite) {
+                            // Update the existing MCP
+                            const { error: updateError } = await supabaseAdmin
+                                .from('mcps')
+                                .update({
+                                    name: mcpData.name,
+                                    description: mcpData.description || '',
+                                    repository_url: mcpData.repository_url,
+                                    owner_username: mcpData.owner_username,
+                                    repository_name: mcpData.repository_name,
+                                    author: mcpData.author,
+                                    tags: mcpData.tags || [],
+                                    user_id: mcpData.user_id || currentUser.id,
+                                    is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                                    view_count: mcpData.view_count || 0,
+                                    readme: mcpData.readme || '',
+                                    stars: mcpData.stars || 0,
+                                    forks: mcpData.forks || 0,
+                                    open_issues: mcpData.open_issues || 0,
+                                    last_repo_update: mcpData.last_repo_update,
+                                    last_refreshed: mcpData.last_refreshed
+                                } as any)
+                                .eq('id', existingMcp.id);
 
-                    if (insertError) {
-                        throw insertError;
+                            if (updateError) {
+                                throw updateError;
+                            }
+
+                            results.updated++;
+                        } else {
+                            // Skip if the MCP exists and overwrite is false
+                            results.skipped++;
+                            results.errors.push(`MCP "${mcp.name}" already exists (URL: ${mcp.repository_url}). Skipped.`);
+                            continue;
+                        }
+                    } else {
+                        // Insert new MCP
+                        const { error: insertError } = await supabaseAdmin
+                            .from('mcps')
+                            .insert({
+                                name: mcpData.name,
+                                description: mcpData.description || '',
+                                repository_url: mcpData.repository_url,
+                                owner_username: mcpData.owner_username,
+                                repository_name: mcpData.repository_name,
+                                author: mcpData.author,
+                                tags: mcpData.tags || [],
+                                user_id: mcpData.user_id || currentUser.id,
+                                is_mcph_owned: mcpData.is_mcph_owned !== undefined ? mcpData.is_mcph_owned : false,
+                                view_count: mcpData.view_count || 0,
+                                readme: mcpData.readme || '',
+                                stars: mcpData.stars || 0,
+                                forks: mcpData.forks || 0,
+                                open_issues: mcpData.open_issues || 0,
+                                last_repo_update: mcpData.last_repo_update,
+                                last_refreshed: mcpData.last_refreshed
+                            } as any);
+
+                        if (insertError) {
+                            throw insertError;
+                        }
+
+                        results.success++;
                     }
-
-                    results.success++;
                 } catch (error) {
                     console.error('Error importing MCP:', error);
                     results.failed++;
@@ -310,7 +376,7 @@ export async function POST(request: Request) {
             }
 
             return NextResponse.json({
-                message: `Import completed: ${results.success} MCPs imported, ${results.skipped} skipped, ${results.failed} failed`, // Updated message
+                message: `Import completed: ${results.success} MCPs imported, ${results.updated} updated, ${results.skipped} skipped, ${results.failed} failed`,
                 results
             });
         }
