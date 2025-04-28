@@ -212,7 +212,106 @@ export default function DocsPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
+                            <Link href="/docs/local-usage" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium ml-6">
+                                Learn to use MCPs locally
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Using MCPs Locally */}
+            <section className="py-10 px-4 bg-gray-900 mb-10">
+                <div className="max-w-5xl mx-auto">
+                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
+                        <span className="mr-2">🚀</span>
+                        Using MCPs Locally
+                    </h2>
+
+                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
+                        <h3 className="text-xl font-medium text-gray-100 mb-4">Using MCP Servers in Repositories</h3>
+
+                        <div className="mb-6">
+                            <h4 className="font-medium text-gray-100 mb-2">TypeScript-based servers</h4>
+                            <p className="text-gray-300 mb-3">
+                                TypeScript-based servers can be used directly with npx.
+                            </p>
+                            <div className="bg-gray-900 p-4 rounded-md mb-4">
+                                <code className="text-green-400">npx -y @modelcontextprotocol/server-memory</code>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <h4 className="font-medium text-gray-100 mb-2">Python-based servers</h4>
+                            <p className="text-gray-300 mb-3">
+                                Python-based servers can be used directly with uvx or pip. uvx is recommended for ease of use and setup.
+                            </p>
+                            <div className="bg-gray-900 p-4 rounded-md mb-4">
+                                <code className="text-green-400"># With uvx<br />
+                                    uvx mcp-server-git<br /><br />
+                                    # With pip<br />
+                                    pip install mcp-server-git<br />
+                                    python -m mcp_server_git</code>
+                            </div>
+                            <p className="text-gray-300">
+                                Follow these instructions to install <a href="https://github.com/astral-sh/uv" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">uv / uvx</a> and <a href="https://pip.pypa.io/en/stable/installation/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">pip</a>.
+                            </p>
+                        </div>
+
+                        <h3 className="text-xl font-medium text-gray-100 mb-4 mt-8">Using an MCP Client</h3>
+                        <p className="text-gray-300 mb-4">
+                            Running a server on its own isn't very useful, and should instead be configured into an MCP client. For example, here's the Claude Desktop configuration to use the above server:
+                        </p>
+                        <div className="bg-gray-900 p-4 rounded-md mb-6">
+                            <pre className="text-blue-400 whitespace-pre-wrap">{`{
+  "mcpServers": {
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}`}</pre>
+                        </div>
+
+                        <p className="text-gray-300 mb-4">
+                            Additional examples of using the Claude Desktop as an MCP client might look like:
+                        </p>
+                        <div className="bg-gray-900 p-4 rounded-md mb-6">
+                            <pre className="text-blue-400 whitespace-pre-wrap">{`{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git", "--repository", "path/to/git/repo"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+    }
+  }
+}`}</pre>
+                        </div>
+
+                        <h3 className="text-xl font-medium text-gray-100 mb-4 mt-8">
+                            <span className="mr-2">🛠️</span>
+                            Creating Your Own Server
+                        </h3>
+                        <p className="text-gray-300">
+                            Interested in creating your own MCP server? Visit the <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">official documentation</a> at modelcontextprotocol.io for comprehensive guides, best practices, and technical details on implementing MCP servers.
+                        </p>
                     </div>
                 </div>
             </section>
