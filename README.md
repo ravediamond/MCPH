@@ -134,3 +134,70 @@ This helps catch errors early in the development process, ensuring the applicati
 INSERT INTO public.profiles (id, username, is_admin)
 VALUES ('USER_ID', 'admin', true)
 ON CONFLICT (id) DO UPDATE SET is_admin = true;
+
+
+## 🛡️ Pre-push Checks (Husky + lint-staged)
+
+We enforce fast, incremental type-checks and linting on every `git push` to catch build-only errors locally:
+
+### 1. Install dev-deps
+```bash
+npm install --save-dev husky lint-staged typescript eslint
+```
+
+### 2. Enable Husky
+```json
+{
+  "scripts": {
+    "prepare": "husky install"
+  }
+}
+```  
+
+Then bootstrap Husky:
+```bash
+npm run prepare
+```
+
+### 3. Configure lint-staged
+```json
+{
+  "scripts": {
+    "type-check": "tsc --noEmit --incremental",
+    "lint":       "next lint",
+    "check":      "npm run type-check && npm run lint"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "npm run type-check",
+      "npm run lint"
+    ]
+  }
+}
+```
+
+- type-check runs a no-emit incremental TypeScript pass.
+- lint runs next lint.
+- check combines both for full sweeps (e.g. in CI).
+
+### 4. Create the pre-push hook
+```bash
+mkdir -p .husky
+
+cat > .husky/pre-push << 'EOF'
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx lint-staged
+EOF
+
+chmod +x .husky/pre-push
+```   
+
+## Usage
+Local fast checks:
+- On every git push, only your staged files will be type-checked and linted instantly.
+- Full sweep (CI or manual):
+```bash
+npm run check
+```
