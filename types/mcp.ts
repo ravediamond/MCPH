@@ -22,8 +22,10 @@ export interface MCP {
   last_repo_update?: string | null; // Updated to accept null values
   languages?: string[];    // Programming languages used in the repository
   default_branch?: string | null; // Add the default branch property
-  profiles?: {             // Added profiles property for join data
-    email: string;
+  profiles?: {             // Updated profiles property to include username
+    email?: string;
+    username?: string;
+    id?: string;
   };
 }
 
