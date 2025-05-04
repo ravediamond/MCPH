@@ -1,220 +1,217 @@
 // app/api/sse/route.ts
 
-import { NextRequest } from 'next/server';
+import { NextRequest } from 'next/server'
+import { z } from 'zod'
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// Zod schema for our "search" tool
+const SearchParams = z.object({
+    query: z.string()
+})
 
 type Session = {
-    controller: ReadableStreamDefaultController<Uint8Array>;
-    nextId: number;
-};
-
-const sessions = new Map<string, Session>();
+    controller: ReadableStreamDefaultController<Uint8Array>
+    nextId: number
+}
+const sessions = new Map<string, Session>()
 
 export async function GET(req: NextRequest) {
-    const url = new URL(req.url);
-    const basePath = url.pathname;               // "/api/sse"
-    const sessionId = crypto.randomUUID();
-    const endpoint = `${basePath}?sessionId=${sessionId}`;
+    const url = new URL(req.url)
+    const basePath = url.pathname                  // "/api/sse"
+    const sessionId = crypto.randomUUID()
+    const endpoint = `${basePath}?sessionId=${sessionId}`
+
+    console.log(`[sse][GET] New session ${sessionId}, endpoint → "${endpoint}"`)
 
     const headers = new Headers({
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         Connection: 'keep-alive',
-    });
+    })
 
-    const encoder = new TextEncoder();
+    const encoder = new TextEncoder()
     const stream = new ReadableStream<Uint8Array>({
         start(controller) {
-            // 1) register session
-            sessions.set(sessionId, { controller, nextId: 1 });
+            // 1) Flush a comment so the client starts parsing immediately
+            controller.enqueue(encoder.encode(':\n\n'))
 
-            // 2) handshake event
-            controller.enqueue(encoder.encode(
-                `event: endpoint\ndata: ${endpoint}\n\n`
-            ));
+            // 2) Send the MCP endpoint handshake
+            const handshake = `event: endpoint\ndata: ${endpoint}\n\n`
+            console.log(`[sse][GET] → handshake:\n${handshake}`)
+            controller.enqueue(encoder.encode(handshake))
 
-            // 3) keep-alive every 15s
-            const iv = setInterval(() => {
-                controller.enqueue(encoder.encode(`:\n\n`));
-            }, 15_000);
+            // 3) Register this session
+            sessions.set(sessionId, { controller, nextId: 1 })
 
-            // 4) cleanup on client disconnect
+            // 4) Heartbeats every 15s
+            const iv = setInterval(
+                () => controller.enqueue(encoder.encode(':\n\n')),
+                15_000
+            )
+
+            // 5) Cleanup on client disconnect
             req.signal.addEventListener('abort', () => {
-                clearInterval(iv);
-                controller.close();
-                sessions.delete(sessionId);
-            });
+                clearInterval(iv)
+                controller.close()
+                sessions.delete(sessionId)
+                console.log(`[sse][GET] Session ${sessionId} closed`)
+            })
         },
         cancel() {
-            sessions.delete(sessionId);
+            sessions.delete(sessionId)
+            console.log(`[sse][GET] Session ${sessionId} cancelled`)
         },
-    });
+    })
 
-    return new Response(stream, { headers });
+    return new Response(stream, { headers })
 }
 
 export async function POST(req: NextRequest) {
-    const url = req.nextUrl;
-    const sessionId = url.searchParams.get('sessionId');
+    const url = req.nextUrl
+    const sessionId = url.searchParams.get('sessionId')
     if (!sessionId || !sessions.has(sessionId)) {
-        return new Response('Session not found', { status: 404 });
+        console.warn(`[sse][POST] Session not found: ${sessionId}`)
+        return new Response('Session not found', { status: 404 })
     }
 
-    let rpcReq: { jsonrpc: string; id?: number; method: string; params?: any };
+    // parse the incoming JSON-RPC envelope
+    let rpcReq: { jsonrpc: string; id?: number; method: string; params?: any }
     try {
-        rpcReq = await req.json();
+        rpcReq = await req.json()
+        console.log(
+            `[sse][POST] ← RPC on session ${sessionId}:`,
+            JSON.stringify(rpcReq)
+        )
     } catch {
-        return new Response('Invalid JSON', { status: 400 });
+        console.error(`[sse][POST] Invalid JSON in session ${sessionId}`)
+        return new Response('Invalid JSON', { status: 400 })
     }
 
-    const { id, method, params } = rpcReq;
-    let rpcRes: any;
+    // If it's a JSON-RPC notification (no id), just ACK and do nothing
+    if (rpcReq.id === undefined) {
+        console.log(
+            `[sse][POST] ⧗ Notification "${rpcReq.method}" — no reply sent`
+        )
+        return new Response(null, { status: 200 })
+    }
 
-    switch (method) {
+    const session = sessions.get(sessionId)!
+    const encoder = new TextEncoder()
+
+    // helper to enqueue an SSE "message" event
+    const send = (payload: any) => {
+        const frame = [
+            `id: ${session.nextId}`,
+            `event: message`,
+            `data: ${JSON.stringify(payload)}`,
+            ``,
+        ].join('\n')
+        console.log(`[sse][POST] → SSE frame to ${sessionId}:\n${frame}`)
+        session.controller.enqueue(encoder.encode(frame))
+        session.nextId++
+    }
+
+    // common MCP metadata
+    const serverInfo = { name: 'Dummy SSE Server', version: '1.0.0' }
+    const capabilities = {
+        tools: { listChanged: true },
+        resources: {},
+        prompts: {},
+        logging: {},
+        roots: {},
+        sampling: {},
+    }
+
+    // dispatch the JSON-RPC method
+    switch (rpcReq.method) {
         case 'initialize':
-            rpcRes = {
+            send({
                 jsonrpc: '2.0',
-                id,
+                id: rpcReq.id,
                 result: {
-                    // must match the SSE transport spec version
                     protocolVersion: '2024-11-05',
-                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
-                    capabilities: {
-                        tools: { listChanged: true },
-                        resources: { listChanged: true, subscribe: true },
-                        prompts: { listChanged: true },
-                        logging: true,
-                        roots: { listChanged: true },
-                        sampling: true,
-                    },
+                    serverInfo,
+                    capabilities,
                 },
-            };
-            break;
+            })
+            break
 
         case 'listOfferings':
-            rpcRes = {
+            send({
                 jsonrpc: '2.0',
-                id,
+                id: rpcReq.id,
                 result: {
-                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
-                    capabilities: {
-                        tools: { listChanged: true },
-                        resources: { listChanged: true, subscribe: true },
-                        prompts: { listChanged: true },
-                        logging: true,
-                        roots: { listChanged: true },
-                        sampling: true,
-                    },
+                    serverInfo,
+                    capabilities,
                     offerings: [
-                        { name: 'echo', description: 'Echo tool' },
-                        // add other offerings here
+                        { name: 'search', description: 'Dummy GitHub search' },
                     ],
                 },
-            };
-            break;
+            })
+            break
 
         case 'tools/list':
         case 'listTools':
-            rpcRes = {
+            send({
                 jsonrpc: '2.0',
-                id,
+                id: rpcReq.id,
                 result: {
-                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
+                    serverInfo,
+                    capabilities,
                     tools: [
                         {
-                            name: 'echo',
-                            description: 'Echo tool',
+                            name: 'search',
+                            description: 'Dummy GitHub search',
                             inputSchema: {
                                 type: 'object',
-                                properties: { message: { type: 'string' } },
-                                required: ['message'],
+                                properties: { query: { type: 'string' } },
+                                required: ['query'],
                             },
                         },
                     ],
                 },
-            };
-            break;
+            })
+            break
 
-        case 'resources/list':
-        case 'listResources':
-            rpcRes = {
-                jsonrpc: '2.0',
-                id,
-                result: {
-                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
-                    resources: [
-                        {
-                            uri: 'dummy://resource',
-                            name: 'Dummy Resource',
-                            description: 'Just a placeholder',
+        case 'search':
+            const parsed = SearchParams.safeParse(rpcReq.params)
+            if (!parsed.success) {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpcReq.id,
+                    error: {
+                        code: -32602,
+                        message: 'Invalid params',
+                        data: parsed.error.issues,
+                    },
+                })
+            } else {
+                const { query } = parsed.data
+                send({
+                    jsonrpc: '2.0',
+                    id: rpcReq.id,
+                    result: {
+                        repository: {
+                            name: 'dummy-repo',
+                            url: `https://github.com/octocat/dummy-repo`,
+                            description: `A dummy repo for query “${query}”`,
                         },
-                    ],
-                },
-            };
-            break;
-
-        case 'resources/subscribe':
-            rpcRes = {
-                jsonrpc: '2.0',
-                id,
-                result: { subscribed: true },
-            };
-            break;
-
-        case 'resources/read':
-            rpcRes = {
-                jsonrpc: '2.0',
-                id,
-                result: {
-                    contents: [
-                        { type: 'text', text: 'Dummy contents for resource' },
-                    ],
-                },
-            };
-            break;
-
-        case 'prompts/list':
-        case 'listPrompts':
-            rpcRes = {
-                jsonrpc: '2.0',
-                id,
-                result: {
-                    prompts: [
-                        {
-                            name: 'echoPrompt',
-                            description: 'Prompt that echoes',
-                            arguments: [
-                                { name: 'message', required: true },
-                            ],
-                        },
-                    ],
-                },
-            };
-            break;
-
-        case 'ping':
-            rpcRes = { jsonrpc: '2.0', id, result: 'pong' };
-            break;
+                    },
+                })
+            }
+            break
 
         default:
-            rpcRes = {
+            send({
                 jsonrpc: '2.0',
-                id,
-                error: { code: -32601, message: `Method not found: ${method}` },
-            };
+                id: rpcReq.id,
+                error: { code: -32601, message: `Method not found: ${rpcReq.method}` },
+            })
     }
 
-    const session = sessions.get(sessionId)!;
-    const payload = [
-        `id: ${session.nextId++}`,
-        `event: message`,
-        `data: ${JSON.stringify(rpcRes)}`,
-        ``,
-    ].join('\n');
-
-    session.controller.enqueue(new TextEncoder().encode(payload));
-    return new Response(null, { status: 200 });
+    console.log(`[sse][POST] Responded HTTP 200 to session ${sessionId}`)
+    return new Response(null, { status: 200 })
 }
