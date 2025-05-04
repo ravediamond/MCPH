@@ -1,3 +1,5 @@
+// app/api/sse/route.ts
+
 import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
@@ -9,14 +11,13 @@ type Session = {
     nextId: number;
 };
 
-// In-module in-memory session map
 const sessions = new Map<string, Session>();
 
 export async function GET(req: NextRequest) {
     const url = new URL(req.url);
-    const basePath = url.pathname; // "/api/sse"
+    const basePath = url.pathname;               // "/api/sse"
     const sessionId = crypto.randomUUID();
-    const endpointUrl = `${basePath}?sessionId=${sessionId}`;
+    const endpoint = `${basePath}?sessionId=${sessionId}`;
 
     const headers = new Headers({
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -27,31 +28,20 @@ export async function GET(req: NextRequest) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream<Uint8Array>({
         start(controller) {
-            // 1) Register session
+            // 1) register session
             sessions.set(sessionId, { controller, nextId: 1 });
 
-            // 2) Handshake
-            controller.enqueue(
-                encoder.encode(`event: endpoint\ndata: ${endpointUrl}\n\n`)
-            );
+            // 2) handshake event
+            controller.enqueue(encoder.encode(
+                `event: endpoint\ndata: ${endpoint}\n\n`
+            ));
 
-            // 3) (Optional) initial MCP init event
-            controller.enqueue(
-                encoder.encode(
-                    `event: message\ndata: ${JSON.stringify({
-                        jsonrpc: '2.0',
-                        method: 'mcp/init',
-                        params: { sessionId },
-                    })}\n\n`
-                )
-            );
-
-            // 4) Heartbeat every 15s
+            // 3) keep-alive every 15s
             const iv = setInterval(() => {
                 controller.enqueue(encoder.encode(`:\n\n`));
             }, 15_000);
 
-            // 5) Cleanup on disconnect
+            // 4) cleanup on client disconnect
             req.signal.addEventListener('abort', () => {
                 clearInterval(iv);
                 controller.close();
@@ -59,7 +49,6 @@ export async function GET(req: NextRequest) {
             });
         },
         cancel() {
-            // if stream is closed server-side
             sessions.delete(sessionId);
         },
     });
@@ -74,57 +63,150 @@ export async function POST(req: NextRequest) {
         return new Response('Session not found', { status: 404 });
     }
 
-    let rpcReq: {
-        jsonrpc: string;
-        id: number | string;
-        method: string;
-        params?: any;
-    };
+    let rpcReq: { jsonrpc: string; id?: number; method: string; params?: any };
     try {
         rpcReq = await req.json();
     } catch {
         return new Response('Invalid JSON', { status: 400 });
     }
 
-    // --- dispatch JSON-RPC ---
+    const { id, method, params } = rpcReq;
     let rpcRes: any;
-    switch (rpcReq.method) {
+
+    switch (method) {
         case 'initialize':
             rpcRes = {
                 jsonrpc: '2.0',
-                id: rpcReq.id,
+                id,
                 result: {
-                    protocolVersion: '1.0.0',
-                    supportedTransports: ['sse'],
+                    // must match the SSE transport spec version
+                    protocolVersion: '2024-11-05',
+                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
+                    capabilities: {
+                        tools: { listChanged: true },
+                        resources: { listChanged: true, subscribe: true },
+                        prompts: { listChanged: true },
+                        logging: true,
+                        roots: { listChanged: true },
+                        sampling: true,
+                    },
                 },
             };
             break;
+
+        case 'listOfferings':
+            rpcRes = {
+                jsonrpc: '2.0',
+                id,
+                result: {
+                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
+                    capabilities: {
+                        tools: { listChanged: true },
+                        resources: { listChanged: true, subscribe: true },
+                        prompts: { listChanged: true },
+                        logging: true,
+                        roots: { listChanged: true },
+                        sampling: true,
+                    },
+                    offerings: [
+                        { name: 'echo', description: 'Echo tool' },
+                        // add other offerings here
+                    ],
+                },
+            };
+            break;
+
+        case 'tools/list':
         case 'listTools':
             rpcRes = {
                 jsonrpc: '2.0',
-                id: rpcReq.id,
+                id,
                 result: {
+                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
                     tools: [
                         {
                             name: 'echo',
+                            description: 'Echo tool',
                             inputSchema: {
                                 type: 'object',
                                 properties: { message: { type: 'string' } },
+                                required: ['message'],
                             },
                         },
                     ],
                 },
             };
             break;
+
+        case 'resources/list':
+        case 'listResources':
+            rpcRes = {
+                jsonrpc: '2.0',
+                id,
+                result: {
+                    serverInfo: { name: 'MCP SSE Server', version: '1.0.0' },
+                    resources: [
+                        {
+                            uri: 'dummy://resource',
+                            name: 'Dummy Resource',
+                            description: 'Just a placeholder',
+                        },
+                    ],
+                },
+            };
+            break;
+
+        case 'resources/subscribe':
+            rpcRes = {
+                jsonrpc: '2.0',
+                id,
+                result: { subscribed: true },
+            };
+            break;
+
+        case 'resources/read':
+            rpcRes = {
+                jsonrpc: '2.0',
+                id,
+                result: {
+                    contents: [
+                        { type: 'text', text: 'Dummy contents for resource' },
+                    ],
+                },
+            };
+            break;
+
+        case 'prompts/list':
+        case 'listPrompts':
+            rpcRes = {
+                jsonrpc: '2.0',
+                id,
+                result: {
+                    prompts: [
+                        {
+                            name: 'echoPrompt',
+                            description: 'Prompt that echoes',
+                            arguments: [
+                                { name: 'message', required: true },
+                            ],
+                        },
+                    ],
+                },
+            };
+            break;
+
+        case 'ping':
+            rpcRes = { jsonrpc: '2.0', id, result: 'pong' };
+            break;
+
         default:
             rpcRes = {
                 jsonrpc: '2.0',
-                id: rpcReq.id,
-                error: { code: -32601, message: `Method not found: ${rpcReq.method}` },
+                id,
+                error: { code: -32601, message: `Method not found: ${method}` },
             };
     }
 
-    // 6) Send back over SSE as a "message" event
     const session = sessions.get(sessionId)!;
     const payload = [
         `id: ${session.nextId++}`,
@@ -134,6 +216,5 @@ export async function POST(req: NextRequest) {
     ].join('\n');
 
     session.controller.enqueue(new TextEncoder().encode(payload));
-
     return new Response(null, { status: 200 });
 }
