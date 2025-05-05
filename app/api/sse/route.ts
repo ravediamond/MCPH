@@ -1,7 +1,7 @@
-// app/api/sse/route.ts
-
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import { supabase, createServiceRoleClient } from 'lib/supabaseClient'
+import { MCP } from 'types/mcp'
 
 export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -17,6 +17,12 @@ const sessions = new Map<string, Session>()
 // Zod schema for our "search" tool
 const SearchParams = z.object({
     query: z.string()
+})
+
+// Zod schema for our "search-mcps" tool
+const SearchMCPsParams = z.object({
+    query: z.string(),
+    limit: z.number().optional().default(5)
 })
 
 /**
@@ -147,6 +153,24 @@ export async function POST(req: NextRequest) {
                                 properties: { query: { type: 'string' } },
                                 required: ['query']
                             }
+                        },
+                        {
+                            name: 'search-mcps',
+                            description: 'Search for MCPs from the Model Context Protocol Hub',
+                            inputSchema: {
+                                type: 'object',
+                                properties: {
+                                    query: {
+                                        type: 'string',
+                                        description: 'Search query to find MCPs by name, description, or tags'
+                                    },
+                                    limit: {
+                                        type: 'number',
+                                        description: 'Maximum number of MCPs to return (default: 5)'
+                                    }
+                                },
+                                required: ['query']
+                            }
                         }
                     ]
                 }
@@ -178,6 +202,104 @@ export async function POST(req: NextRequest) {
                         }
                     }
                 })
+            }
+            break
+
+        case 'search-mcps':
+            const mcpSearchParams = SearchMCPsParams.safeParse(rpc.params)
+            if (!mcpSearchParams.success) {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: -32602,
+                        message: 'Invalid params',
+                        data: mcpSearchParams.error.issues
+                    }
+                })
+            } else {
+                const { query, limit } = mcpSearchParams.data
+                try {
+                    // Build the base query to select relevant fields
+                    const selectFields = [
+                        'id',
+                        'name',
+                        'description',
+                        'repository_url',
+                        'tags',
+                        'author',
+                        'stars',
+                        'forks',
+                        'avg_rating',
+                        'review_count',
+                        'view_count',
+                        'last_repo_update'
+                    ].join(', ');
+
+                    // Create query builder
+                    let queryBuilder = supabase
+                        .from('mcps')
+                        .select(selectFields);
+
+                    // Apply search filter if query exists
+                    if (query && query.trim() !== '') {
+                        queryBuilder = queryBuilder.or(
+                            `name.ilike.%${query}%,description.ilike.%${query}%`
+                        );
+                    }
+
+                    // Apply pagination and order
+                    const { data: mcpsData, error } = await queryBuilder
+                        .order('stars', { ascending: false })
+                        .limit(limit);
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    // Explicitly type and format MCPs
+                    const mcps = mcpsData as unknown as MCP[];
+
+                    // Format and enhance each MCP for display
+                    const formattedMcps = mcps.map(mcp => ({
+                        id: mcp.id,
+                        name: mcp.name,
+                        description: mcp.description || 'No description available',
+                        repository_url: mcp.repository_url || '',
+                        tags: Array.isArray(mcp.tags) ? mcp.tags : [],
+                        author: mcp.author || '',
+                        stars: mcp.stars || 0,
+                        forks: mcp.forks || 0,
+                        avg_rating: mcp.avg_rating || 0,
+                        review_count: mcp.review_count || 0,
+                        view_count: mcp.view_count || 0,
+                        last_repo_update: mcp.last_repo_update || null,
+                        url: `/mcp/${mcp.id}`
+                    }));
+
+                    send({
+                        jsonrpc: '2.0',
+                        id: rpc.id,
+                        result: {
+                            mcps: formattedMcps,
+                            meta: {
+                                query: query,
+                                count: formattedMcps.length,
+                                limit: limit
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error searching MCPs:', error);
+                    send({
+                        jsonrpc: '2.0',
+                        id: rpc.id,
+                        error: {
+                            code: -32603,
+                            message: 'Internal error searching MCPs'
+                        }
+                    });
+                }
             }
             break
 
