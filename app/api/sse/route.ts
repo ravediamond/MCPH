@@ -303,6 +303,159 @@ export async function POST(req: NextRequest) {
             }
             break
 
+        case 'tools/call':
+            // Parse the tool name and arguments from the request
+            if (rpc.params?.name === 'search-mcps') {
+                const mcpSearchParams = SearchMCPsParams.safeParse(rpc.params.arguments)
+                if (!mcpSearchParams.success) {
+                    send({
+                        jsonrpc: '2.0',
+                        id: rpc.id,
+                        error: {
+                            code: -32602,
+                            message: 'Invalid params',
+                            data: mcpSearchParams.error.issues
+                        }
+                    })
+                } else {
+                    const { query, limit } = mcpSearchParams.data
+                    try {
+                        // Build the base query to select relevant fields
+                        const selectFields = [
+                            'id',
+                            'name',
+                            'description',
+                            'repository_url',
+                            'tags',
+                            'author',
+                            'stars',
+                            'forks',
+                            'avg_rating',
+                            'review_count',
+                            'view_count',
+                            'last_repo_update'
+                        ].join(', ');
+
+                        // Create query builder
+                        let queryBuilder = supabase
+                            .from('mcps')
+                            .select(selectFields);
+
+                        // Apply search filter if query exists
+                        if (query && query.trim() !== '') {
+                            queryBuilder = queryBuilder.or(
+                                `name.ilike.%${query}%,description.ilike.%${query}%`
+                            );
+                        }
+
+                        // Apply pagination and order
+                        const { data: mcpsData, error } = await queryBuilder
+                            .order('stars', { ascending: false })
+                            .limit(limit);
+
+                        if (error) {
+                            throw error;
+                        }
+
+                        // Explicitly type and format MCPs
+                        const mcps = mcpsData as unknown as MCP[];
+
+                        // Format and enhance each MCP for display
+                        const formattedMcps = mcps.map(mcp => ({
+                            id: mcp.id,
+                            name: mcp.name,
+                            description: mcp.description || 'No description available',
+                            repository_url: mcp.repository_url || '',
+                            tags: Array.isArray(mcp.tags) ? mcp.tags : [],
+                            author: mcp.author || '',
+                            stars: mcp.stars || 0,
+                            forks: mcp.forks || 0,
+                            avg_rating: mcp.avg_rating || 0,
+                            review_count: mcp.review_count || 0,
+                            view_count: mcp.view_count || 0,
+                            last_repo_update: mcp.last_repo_update || null,
+                            url: `/mcp/${mcp.id}`
+                        }));
+
+                        // Format results according to the CallToolResult schema
+                        // Plus include the actual raw data in a structured format for clients that can't parse JSON
+                        const resultText = `Found ${formattedMcps.length} MCPs matching "${query}":\n\n` +
+                            formattedMcps.map(mcp =>
+                                `- ${mcp.name} by ${mcp.author}\n  ${mcp.description}\n  URL: ${mcp.repository_url}\n  Stars: ${mcp.stars}, Views: ${mcp.view_count}`
+                            ).join('\n\n') +
+                            '\n\n--- Raw JSON Data ---\n' +
+                            JSON.stringify({ mcps: formattedMcps }, null, 2);
+
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            result: {
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: resultText
+                                    }
+                                ],
+                                // Including raw data in the result for clients that can process it
+                                mcps: formattedMcps,
+                                meta: {
+                                    query: query,
+                                    count: formattedMcps.length,
+                                    limit: limit
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error searching MCPs:', error);
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: {
+                                code: -32603,
+                                message: 'Internal error searching MCPs'
+                            }
+                        });
+                    }
+                }
+            } else if (rpc.params?.name === 'search') {
+                const searchParams = SearchParams.safeParse(rpc.params.arguments)
+                if (!searchParams.success) {
+                    send({
+                        jsonrpc: '2.0',
+                        id: rpc.id,
+                        error: {
+                            code: -32602,
+                            message: 'Invalid params',
+                            data: searchParams.error.issues
+                        }
+                    })
+                } else {
+                    const { query } = searchParams.data
+                    send({
+                        jsonrpc: '2.0',
+                        id: rpc.id,
+                        result: {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: `Search results for "${query}" from GitHub`
+                                }
+                            ]
+                        }
+                    })
+                }
+            } else {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: -32601,
+                        message: `Tool not found: ${rpc.params?.name}`
+                    }
+                })
+            }
+            break
+
         default:
             send({
                 jsonrpc: '2.0',
