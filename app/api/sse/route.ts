@@ -14,13 +14,8 @@ type Session = {
 }
 const sessions = new Map<string, Session>()
 
-// Zod schema for our "search" tool
+// Zod schema for our unified "search" tool
 const SearchParams = z.object({
-    query: z.string()
-})
-
-// Zod schema for our "search-mcps" tool
-const SearchMCPsParams = z.object({
     query: z.string(),
     limit: z.number().optional().default(5)
 })
@@ -116,6 +111,13 @@ export async function POST(req: NextRequest) {
         session.nextEventId++
     }
 
+    // Log the RPC message for debugging
+    console.log('RPC Message:', JSON.stringify({
+        method: rpc.method,
+        id: rpc.id,
+        params: rpc.params
+    }, null, 2))
+
     // Dispatch JSON-RPC methods
     switch (rpc.method) {
         case 'initialize':
@@ -147,15 +149,6 @@ export async function POST(req: NextRequest) {
                     tools: [
                         {
                             name: 'search',
-                            description: 'Dummy GitHub search',
-                            inputSchema: {
-                                type: 'object',
-                                properties: { query: { type: 'string' } },
-                                required: ['query']
-                            }
-                        },
-                        {
-                            name: 'search-mcps',
                             description: 'Search for MCPs from the Model Context Protocol Hub',
                             inputSchema: {
                                 type: 'object',
@@ -190,35 +183,7 @@ export async function POST(req: NextRequest) {
                     }
                 })
             } else {
-                const { query } = parsed.data
-                send({
-                    jsonrpc: '2.0',
-                    id: rpc.id,
-                    result: {
-                        repository: {
-                            name: 'dummy-repo',
-                            url: `https://github.com/octocat/dummy-repo`,
-                            description: `Results for “${query}”`
-                        }
-                    }
-                })
-            }
-            break
-
-        case 'search-mcps':
-            const mcpSearchParams = SearchMCPsParams.safeParse(rpc.params)
-            if (!mcpSearchParams.success) {
-                send({
-                    jsonrpc: '2.0',
-                    id: rpc.id,
-                    error: {
-                        code: -32602,
-                        message: 'Invalid params',
-                        data: mcpSearchParams.error.issues
-                    }
-                })
-            } else {
-                const { query, limit } = mcpSearchParams.data
+                const { query, limit } = parsed.data
                 try {
                     // Build the base query to select relevant fields
                     const selectFields = [
@@ -304,9 +269,16 @@ export async function POST(req: NextRequest) {
             break
 
         case 'tools/call':
+            // Additional detailed logging for tools/call
+            console.log('Tools/Call Details:', {
+                toolName: rpc.params?.name,
+                toolArgs: rpc.params?.arguments,
+                rawParams: JSON.stringify(rpc.params)
+            });
+
             // Parse the tool name and arguments from the request
-            if (rpc.params?.name === 'search-mcps') {
-                const mcpSearchParams = SearchMCPsParams.safeParse(rpc.params.arguments)
+            if (rpc.params?.name === 'search') {
+                const mcpSearchParams = SearchParams.safeParse(rpc.params.arguments)
                 if (!mcpSearchParams.success) {
                     send({
                         jsonrpc: '2.0',
@@ -416,33 +388,6 @@ export async function POST(req: NextRequest) {
                             }
                         });
                     }
-                }
-            } else if (rpc.params?.name === 'search') {
-                const searchParams = SearchParams.safeParse(rpc.params.arguments)
-                if (!searchParams.success) {
-                    send({
-                        jsonrpc: '2.0',
-                        id: rpc.id,
-                        error: {
-                            code: -32602,
-                            message: 'Invalid params',
-                            data: searchParams.error.issues
-                        }
-                    })
-                } else {
-                    const { query } = searchParams.data
-                    send({
-                        jsonrpc: '2.0',
-                        id: rpc.id,
-                        result: {
-                            content: [
-                                {
-                                    type: 'text',
-                                    text: `Search results for "${query}" from GitHub`
-                                }
-                            ]
-                        }
-                    })
                 }
             } else {
                 send({
