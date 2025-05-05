@@ -7,160 +7,137 @@ export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+// In-memory sessions map
+type Session = {
+    controller: ReadableStreamDefaultController<Uint8Array>
+    nextEventId: number
+}
+const sessions = new Map<string, Session>()
+
 // Zod schema for our "search" tool
 const SearchParams = z.object({
     query: z.string()
 })
 
-type Session = {
-    controller: ReadableStreamDefaultController<Uint8Array>
-    nextId: number
-}
-const sessions = new Map<string, Session>()
-
+/**
+ * Handles incoming SSE connection requests.
+ */
 export async function GET(req: NextRequest) {
-    const url = new URL(req.url)
-    const basePath = url.pathname                  // "/api/sse"
+    // Generate a new session ID
     const sessionId = crypto.randomUUID()
-    const endpoint = `${basePath}?sessionId=${sessionId}`
 
-    console.log(`[sse][GET] New session ${sessionId}, endpoint → "${endpoint}"`)
-
-    const headers = new Headers({
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-    })
-
-    const encoder = new TextEncoder()
+    // Create the ReadableStream and register the session
     const stream = new ReadableStream<Uint8Array>({
         start(controller) {
-            // 1) Flush a comment so the client starts parsing immediately
+            const encoder = new TextEncoder()
+            sessions.set(sessionId, { controller, nextEventId: 1 })
+
+            // 1) Kick-start the parser
             controller.enqueue(encoder.encode(':\n\n'))
 
-            // 2) Send the MCP endpoint handshake
-            const handshake = `event: endpoint\ndata: ${endpoint}\n\n`
-            console.log(`[sse][GET] → handshake:\n${handshake}`)
-            controller.enqueue(encoder.encode(handshake))
+            // 2) MCP handshake → tell client where to POST
+            const endpoint = `/api/sse?sessionId=${sessionId}`
+            controller.enqueue(
+                encoder.encode(`event: endpoint\ndata: ${endpoint}\n\n`)
+            )
 
-            // 3) Register this session
-            sessions.set(sessionId, { controller, nextId: 1 })
-
-            // 4) Heartbeats every 15s
+            // 3) Heartbeat every 15s
             const iv = setInterval(
                 () => controller.enqueue(encoder.encode(':\n\n')),
                 15_000
             )
 
-            // 5) Cleanup on client disconnect
+            // 4) Cleanup on client disconnect
             req.signal.addEventListener('abort', () => {
                 clearInterval(iv)
                 controller.close()
                 sessions.delete(sessionId)
-                console.log(`[sse][GET] Session ${sessionId} closed`)
             })
         },
         cancel() {
             sessions.delete(sessionId)
-            console.log(`[sse][GET] Session ${sessionId} cancelled`)
-        },
+        }
     })
 
-    return new Response(stream, { headers })
+    return new Response(stream, {
+        status: 200,
+        headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive'
+        }
+    })
 }
 
+/**
+ * Handles JSON-RPC messages sent via POST.
+ */
 export async function POST(req: NextRequest) {
-    const url = req.nextUrl
+    const url = new URL(req.url)
     const sessionId = url.searchParams.get('sessionId')
     if (!sessionId || !sessions.has(sessionId)) {
-        console.warn(`[sse][POST] Session not found: ${sessionId}`)
         return new Response('Session not found', { status: 404 })
     }
 
-    // parse the incoming JSON-RPC envelope
-    let rpcReq: { jsonrpc: string; id?: number; method: string; params?: any }
+    // Parse JSON-RPC envelope
+    let rpc: { jsonrpc: string; id?: number; method: string; params?: any }
     try {
-        rpcReq = await req.json()
-        console.log(
-            `[sse][POST] ← RPC on session ${sessionId}:`,
-            JSON.stringify(rpcReq)
-        )
+        rpc = await req.json()
     } catch {
-        console.error(`[sse][POST] Invalid JSON in session ${sessionId}`)
         return new Response('Invalid JSON', { status: 400 })
     }
 
-    // If it's a JSON-RPC notification (no id), just ACK and do nothing
-    if (rpcReq.id === undefined) {
-        console.log(
-            `[sse][POST] ⧗ Notification "${rpcReq.method}" — no reply sent`
-        )
-        return new Response(null, { status: 200 })
+    // If it's a notification (no id), just ACK
+    if (rpc.id === undefined) {
+        return new Response(null, {
+            status: 200,
+            headers: { 'mcp-session-id': sessionId }
+        })
     }
 
     const session = sessions.get(sessionId)!
     const encoder = new TextEncoder()
 
-    // helper to enqueue an SSE "message" event
+    // Helper to enqueue an SSE "message" event
     const send = (payload: any) => {
         const frame = [
-            `id: ${session.nextId}`,
+            `id: ${session.nextEventId}`,
             `event: message`,
             `data: ${JSON.stringify(payload)}`,
-            ``,
+            ``
         ].join('\n')
-        console.log(`[sse][POST] → SSE frame to ${sessionId}:\n${frame}`)
         session.controller.enqueue(encoder.encode(frame))
-        session.nextId++
+        session.nextEventId++
     }
 
-    // common MCP metadata
-    const serverInfo = { name: 'Dummy SSE Server', version: '1.0.0' }
-    const capabilities = {
-        tools: { listChanged: true },
-        resources: {},
-        prompts: {},
-        logging: {},
-        roots: {},
-        sampling: {},
-    }
-
-    // dispatch the JSON-RPC method
-    switch (rpcReq.method) {
+    // Dispatch JSON-RPC methods
+    switch (rpc.method) {
         case 'initialize':
             send({
                 jsonrpc: '2.0',
-                id: rpcReq.id,
+                id: rpc.id,
                 result: {
+                    // Use a version your client supports (e.g. 2024-11-05)
                     protocolVersion: '2024-11-05',
-                    serverInfo,
-                    capabilities,
-                },
-            })
-            break
-
-        case 'listOfferings':
-            send({
-                jsonrpc: '2.0',
-                id: rpcReq.id,
-                result: {
-                    serverInfo,
-                    capabilities,
-                    offerings: [
-                        { name: 'search', description: 'Dummy GitHub search' },
-                    ],
-                },
+                    serverInfo: { name: 'Dummy SSE Server', version: '1.0.0' },
+                    capabilities: {
+                        tools: { listChanged: true },
+                        resources: {},
+                        prompts: {},
+                        logging: {},
+                        roots: {},
+                        sampling: {}
+                    }
+                    // instructions?: 'You can list tools with "tools/list", call search, etc.'
+                }
             })
             break
 
         case 'tools/list':
-        case 'listTools':
             send({
                 jsonrpc: '2.0',
-                id: rpcReq.id,
+                id: rpc.id,
                 result: {
-                    serverInfo,
-                    capabilities,
                     tools: [
                         {
                             name: 'search',
@@ -168,38 +145,38 @@ export async function POST(req: NextRequest) {
                             inputSchema: {
                                 type: 'object',
                                 properties: { query: { type: 'string' } },
-                                required: ['query'],
-                            },
-                        },
-                    ],
-                },
+                                required: ['query']
+                            }
+                        }
+                    ]
+                }
             })
             break
 
         case 'search':
-            const parsed = SearchParams.safeParse(rpcReq.params)
+            const parsed = SearchParams.safeParse(rpc.params)
             if (!parsed.success) {
                 send({
                     jsonrpc: '2.0',
-                    id: rpcReq.id,
+                    id: rpc.id,
                     error: {
                         code: -32602,
                         message: 'Invalid params',
-                        data: parsed.error.issues,
-                    },
+                        data: parsed.error.issues
+                    }
                 })
             } else {
                 const { query } = parsed.data
                 send({
                     jsonrpc: '2.0',
-                    id: rpcReq.id,
+                    id: rpc.id,
                     result: {
                         repository: {
                             name: 'dummy-repo',
                             url: `https://github.com/octocat/dummy-repo`,
-                            description: `A dummy repo for query “${query}”`,
-                        },
-                    },
+                            description: `Results for “${query}”`
+                        }
+                    }
                 })
             }
             break
@@ -207,11 +184,17 @@ export async function POST(req: NextRequest) {
         default:
             send({
                 jsonrpc: '2.0',
-                id: rpcReq.id,
-                error: { code: -32601, message: `Method not found: ${rpcReq.method}` },
+                id: rpc.id,
+                error: {
+                    code: -32601,
+                    message: `Method not found: ${rpc.method}`
+                }
             })
     }
 
-    console.log(`[sse][POST] Responded HTTP 200 to session ${sessionId}`)
-    return new Response(null, { status: 200 })
+    // Acknowledge the POST; return the same session ID so client can reuse it
+    return new Response(null, {
+        status: 200,
+        headers: { 'mcp-session-id': sessionId }
+    })
 }
