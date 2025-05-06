@@ -1,6 +1,7 @@
 export interface MCP {
   id?: string;
   created_at?: string;
+  updated_at?: string | null; // Added for sitemap generation
   name: string;
   description?: string;
   repository_url: string;
