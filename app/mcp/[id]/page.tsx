@@ -6,12 +6,15 @@ import { notFound } from 'next/navigation';
 import { refreshReadmeIfNeeded } from 'services/githubService'; // Keep server-side functions here
 
 // Define Props type for the page and generateMetadata
+// Include searchParams to satisfy the PageProps constraint
 type Props = {
   params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 // Generate metadata (Server-side)
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// generateMetadata only receives params and searchParams, but we only need params here
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const id = params.id;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const canonicalUrl = `${baseUrl}/mcp/${id}`;
@@ -33,7 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // Server Component Page
-export default async function MCPDetailPage({ params }: Props) {
+// Use the updated Props type which includes searchParams
+export default async function MCPDetailPage({ params, searchParams }: Props) {
   const id = params.id;
 
   // Fetch initial MCP data on the server
