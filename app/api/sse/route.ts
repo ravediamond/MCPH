@@ -27,6 +27,10 @@ const SearchParams = z.object({
         .max(20, { message: 'limit cannot exceed 20' })
         .optional()
         .default(5),
+    tags: z
+        .array(z.string())
+        .optional()
+        .describe('Optional tags to filter MCPs by, especially provider and deployment tags'),
 })
 
 // List of allowed origins; use ['*'] to allow all
@@ -243,7 +247,7 @@ export async function POST(req: NextRequest) {
                     tools: [
                         {
                             name: 'search',
-                            description: 'Search for MCPs from the Model Context Protocol Hub',
+                            description: 'Search for MCPs from the Model Context Protocol Hub. You can filter by provider tags (like "provider:Official" or "provider:Community") and deployment tags (like "deployment:Docker" or "deployment:Serverless").',
                             inputSchema: {
                                 type: 'object',
                                 properties: {
@@ -254,6 +258,13 @@ export async function POST(req: NextRequest) {
                                     limit: {
                                         type: 'number',
                                         description: 'Maximum number of MCPs to return (default: 5)'
+                                    },
+                                    tags: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'string'
+                                        },
+                                        description: 'Filter MCPs by specific tags, particularly useful for provider tags (provider:Official, provider:Community) and deployment tags (deployment:Docker, deployment:Serverless, etc.)'
                                     }
                                 },
                                 required: ['query']
@@ -266,13 +277,6 @@ export async function POST(req: NextRequest) {
 
         case 'tools/call':
             // Additional detailed logging for tools/call
-            console.log('Tools/Call Details:', {
-                toolName: rpc.params?.name,
-                toolArgs: rpc.params?.arguments,
-                rawParams: JSON.stringify(rpc.params)
-            });
-
-            // Parse the tool name and arguments from the request
             if (rpc.params?.name === 'search') {
                 const mcpSearchParams = SearchParams.safeParse(rpc.params.arguments)
                 if (!mcpSearchParams.success) {
@@ -286,7 +290,7 @@ export async function POST(req: NextRequest) {
                         }
                     })
                 } else {
-                    const { query, limit } = mcpSearchParams.data
+                    const { query, limit, tags } = mcpSearchParams.data
                     try {
                         // Build the base query to select relevant fields
                         const selectFields = [
@@ -316,7 +320,7 @@ export async function POST(req: NextRequest) {
                             );
                         }
 
-                        // Apply pagination and order
+                        // Get data
                         const { data: mcpsData, error } = await queryBuilder
                             .order('stars', { ascending: false })
                             .limit(limit);
@@ -326,7 +330,29 @@ export async function POST(req: NextRequest) {
                         }
 
                         // Explicitly type and format MCPs
-                        const mcps = mcpsData as unknown as MCP[];
+                        let mcps = mcpsData as unknown as MCP[];
+
+                        // Filter by tags if specified
+                        if (tags && tags.length > 0) {
+                            mcps = mcps.filter(mcp => {
+                                if (!mcp.tags || !Array.isArray(mcp.tags)) return false;
+
+                                // Check if MCP has all specified tags
+                                return tags.every(searchTag => {
+                                    // Handle prefixed tags (provider:, deployment:)
+                                    if (searchTag.includes(':')) {
+                                        return mcp.tags!.includes(searchTag);
+                                    }
+                                    // Handle raw tag names or partial matches
+                                    else {
+                                        return mcp.tags!.some(mcpTag =>
+                                            mcpTag.includes(searchTag) ||
+                                            mcpTag.replace(/^(provider:|deployment:|domain:)/, '') === searchTag
+                                        );
+                                    }
+                                });
+                            });
+                        }
 
                         // Format and enhance each MCP for display
                         const formattedMcps = mcps.map(mcp => ({
@@ -346,11 +372,20 @@ export async function POST(req: NextRequest) {
                         }));
 
                         // Format results according to the CallToolResult schema
-                        // Plus include the actual raw data in a structured format for clients that can't parse JSON
-                        const resultText = `Found ${formattedMcps.length} MCPs matching "${query}":\n\n` +
-                            formattedMcps.map(mcp =>
-                                `- ${mcp.name} by ${mcp.author}\n  ${mcp.description}\n  URL: ${mcp.repository_url}\n  Stars: ${mcp.stars}, Views: ${mcp.view_count}`
-                            ).join('\n\n') +
+                        // Include tag information in the description
+                        const resultText = `Found ${formattedMcps.length} MCPs matching "${query}"${tags && tags.length > 0 ? ` with tags: ${tags.join(', ')}` : ''}:\n\n` +
+                            formattedMcps.map(mcp => {
+                                // Extract provider and deployment tags for display
+                                const providerTags = mcp.tags.filter(t => t.startsWith('provider:')).map(t => t.replace('provider:', ''));
+                                const deploymentTags = mcp.tags.filter(t => t.startsWith('deployment:')).map(t => t.replace('deployment:', ''));
+
+                                return `- ${mcp.name} by ${mcp.author}\n` +
+                                    `  ${mcp.description}\n` +
+                                    `  URL: ${mcp.repository_url}\n` +
+                                    `  Stars: ${mcp.stars}, Views: ${mcp.view_count}\n` +
+                                    (providerTags.length > 0 ? `  Provider: ${providerTags.join(', ')}\n` : '') +
+                                    (deploymentTags.length > 0 ? `  Deployment: ${deploymentTags.join(', ')}\n` : '');
+                            }).join('\n\n') +
                             '\n\n--- Raw JSON Data ---\n' +
                             JSON.stringify({ mcps: formattedMcps }, null, 2);
 
@@ -368,6 +403,7 @@ export async function POST(req: NextRequest) {
                                 mcps: formattedMcps,
                                 meta: {
                                     query: query,
+                                    tags: tags || [],
                                     count: formattedMcps.length,
                                     limit: limit
                                 }
