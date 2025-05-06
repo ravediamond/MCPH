@@ -6,16 +6,15 @@ import { notFound } from 'next/navigation';
 import { refreshReadmeIfNeeded } from 'services/githubService'; // Keep server-side functions here
 
 // Define Props type for the page and generateMetadata
-// Include searchParams to satisfy the PageProps constraint
+// Update for Next.js 15: both params and searchParams are now Promises
 type Props = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // Generate metadata (Server-side)
-// generateMetadata only receives params and searchParams, but we only need params here
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const id = params.id;
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const canonicalUrl = `${baseUrl}/mcp/${id}`;
 
@@ -36,9 +35,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 // Server Component Page
-// Use the updated Props type which includes searchParams
+// Update for Next.js 15: await both params and searchParams
 export default async function MCPDetailPage({ params, searchParams }: Props) {
-  const id = params.id;
+  const { id } = await params;
+  // Resolve searchParams but we don't need to pass it to the client component
+  await searchParams;
 
   // Fetch initial MCP data on the server
   let initialMcp: MCP | null = null;
