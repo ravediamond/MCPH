@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { ipAddress } from '@vercel/edge'; // Import ipAddress
+import { Ratelimit, Duration } from '@upstash/ratelimit'; // Import Ratelimit AND Duration
+import { Redis } from '@upstash/redis'; // Corrected Redis import for edge runtime
 
 import { z } from 'zod'
 import { supabase, createServiceRoleClient } from 'lib/supabaseClient'
@@ -18,7 +21,12 @@ const sessions = new Map<string, Session>()
 // Zod schema for our unified "search" tool
 const SearchParams = z.object({
     query: z.string(),
-    limit: z.number().optional().default(5)
+    limit: z
+        .number()
+        .min(1, { message: 'limit must be at least 1' })
+        .max(20, { message: 'limit cannot exceed 20' })
+        .optional()
+        .default(5),
 })
 
 // List of allowed origins; use ['*'] to allow all
@@ -37,6 +45,29 @@ function getCorsHeaders(origin: string | null) {
     }
 }
 
+// Initialize Upstash Redis client and Rate Limiter
+// Ensure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are set in your environment variables
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+// Read rate limit configuration from environment variables, with defaults
+const rateLimitRequests = parseInt(process.env.UPSTASH_RATE_LIMIT_REQUESTS || '10', 10);
+const rateLimitWindow = (process.env.UPSTASH_RATE_LIMIT_WINDOW || '10 s') as Duration;
+
+const ratelimit = new Ratelimit({
+    redis: redis,
+    limiter: Ratelimit.slidingWindow(rateLimitRequests, rateLimitWindow), // Use the casted duration
+    analytics: true,
+    /**
+     * Optional prefix for the keys used in redis. This is useful if you want to share a redis
+     * instance with other applications and want to avoid key collisions. The default prefix is
+     * "@upstash/ratelimit"
+     */
+    prefix: "@upstash/ratelimit/sse",
+});
+
 /**
  * Handle preflight CORS requests
  */
@@ -52,6 +83,21 @@ export async function OPTIONS(req: NextRequest) {
  * Handles incoming SSE connection requests.
  */
 export async function GET(req: NextRequest) {
+    // Rate limit check
+    const ip = ipAddress(req) || '127.0.0.1'; // Get IP address
+    const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+
+    if (!success) {
+        return new Response('Rate limit exceeded', {
+            status: 429,
+            headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': reset.toString(),
+            },
+        });
+    }
+
     const origin = req.headers.get('origin')
     const cors = getCorsHeaders(origin)
 
@@ -106,6 +152,21 @@ export async function GET(req: NextRequest) {
  * Handles JSON-RPC messages sent via POST.
  */
 export async function POST(req: NextRequest) {
+    // Rate limit check
+    const ip = ipAddress(req) || '127.0.0.1'; // Get IP address
+    const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+
+    if (!success) {
+        return new Response('Rate limit exceeded', {
+            status: 429,
+            headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': reset.toString(),
+            },
+        });
+    }
+
     const origin = req.headers.get('origin')
     const cors = getCorsHeaders(origin)
 
