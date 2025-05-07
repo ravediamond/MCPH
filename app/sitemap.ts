@@ -1,6 +1,7 @@
 // app/sitemap.ts
 import { MetadataRoute } from 'next';
-import { createServiceRoleClient } from 'lib/supabaseClient';
+import fs from 'fs';
+import { createServiceRoleClient } from '@/lib/supabaseClient';
 import { MCP } from 'types/mcp'; // Kept for now, can be removed if not used elsewhere in this file after changes
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 import { Redis } from '@upstash/redis';
 import lunr from 'lunr';
 import { CACHE_REGIONS } from 'utils/cacheUtils';

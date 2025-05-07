@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from 'lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import AddEditMCPModal from 'components/AddEditMCPModal';
 import MCPCard from 'components/MCPCard';
 import Button from 'components/ui/Button';

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { fetchComprehensiveRepoData } from 'services/githubService';
 import { MCP } from 'types/mcp';
 

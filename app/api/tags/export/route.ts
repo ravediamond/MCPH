@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from 'types/database.types';
 

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 import { cacheFetch, CACHE_REGIONS } from 'utils/cacheUtils';
 
 // Cache TTL for search results (2 minutes)

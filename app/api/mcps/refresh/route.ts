@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 import { fetchReadmeFromGitHub, invalidateGitHubCache } from 'services/githubService';
 import { cache } from 'utils/cacheUtils';
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { cacheFetch, CACHE_REGIONS } from 'utils/cacheUtils';
 
 // Cache TTL for featured MCPs (10 minutes)

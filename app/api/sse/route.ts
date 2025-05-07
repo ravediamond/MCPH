@@ -4,7 +4,7 @@ import { Ratelimit, Duration } from '@upstash/ratelimit'; // Import Ratelimit AN
 import { Redis } from '@upstash/redis'; // Corrected Redis import for edge runtime
 
 import { z } from 'zod'
-import { supabase, createServiceRoleClient } from 'lib/supabaseClient'
+import { supabase, createServiceRoleClient } from '@/lib/supabaseClient'
 import { MCP } from 'types/mcp'
 
 export const runtime = 'edge'

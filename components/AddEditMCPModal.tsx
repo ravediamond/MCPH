@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from 'lib/supabaseClient';
-import { extractRateLimitInfo } from 'services/githubService';
+import { supabase } from '@/lib/supabaseClient';
 
 interface TagItem {
     id: number;

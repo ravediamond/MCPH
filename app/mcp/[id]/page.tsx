@@ -1,5 +1,6 @@
+import React from 'react';
 import { Metadata } from 'next';
-import { supabase } from 'lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import { MCP } from 'types/mcp';
 import MCPDetailClient from 'components/MCPDetailClient'; // Import the new client component
 import { notFound } from 'next/navigation';

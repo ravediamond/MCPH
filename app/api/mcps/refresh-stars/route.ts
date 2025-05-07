@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { supabase } from 'lib/supabaseClient';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabaseClient';
 import { fetchRepoDetails, invalidateGitHubCache, fetchReadmeFromGitHub } from 'services/githubService';
 import { Redis } from '@upstash/redis';
 import lunr from 'lunr';
