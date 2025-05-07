@@ -1,185 +1,156 @@
 'use client';
 
-import Link from 'next/link';
-import Button from 'components/ui/Button';
-import Card from 'components/ui/Card';
-import SearchBar from 'components/SearchBar';
-import FeaturedMCPs from 'components/FeaturedMCPs';
-import { useSupabase } from './supabase-provider';
-import { useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react'; // Added useState, useEffect
+import { useState } from 'react';
+import FileUpload from '@/components/FileUpload';
 
 export default function Home() {
-    const { session, supabase } = useSupabase(); // Get supabase client
-    const router = useRouter();
-    const [mcpCount, setMcpCount] = useState<number | null>(null);
-    const [loadingCount, setLoadingCount] = useState(true);
-
-    useEffect(() => {
-        const fetchMcpCount = async () => {
-            setLoadingCount(true);
-            try {
-                // Fetch only the count, not the data
-                const { count, error } = await supabase
-                    .from('mcps')
-                    .select('*', { count: 'exact', head: true });
-
-                if (error) {
-                    console.error('Error fetching MCP count:', error);
-                    setMcpCount(null); // Handle error state if needed
-                } else {
-                    setMcpCount(count);
-                }
-            } catch (err) {
-                console.error('Unexpected error fetching MCP count:', err);
-                setMcpCount(null);
-            } finally {
-                setLoadingCount(false);
-            }
-        };
-
-        fetchMcpCount();
-    }, [supabase]); // Re-run if supabase client changes
-
-    // No automatic redirect - allow logged-in users to view the landing page
+    const [uploadSuccess, setUploadSuccess] = useState(false);
 
     return (
-        <div className="bg-gray-900 min-h-screen">
-            {/* Refined Hero Section with Prominent Search */}
-            <section className="py-16 px-4 border-b border-gray-800">
-                <div className="max-w-5xl mx-auto">
-                    <h1 className="text-4xl font-semibold mb-4 text-center text-gray-100">
-                        The Model Context Protocol Hub
+        <div className="bg-beige-200 min-h-screen">
+            {/* Hero Section */}
+            <section className="py-16 px-4 border-b border-gray-200">
+                <div className="max-w-5xl mx-auto text-center">
+                    <h1 className="text-4xl font-bold mb-4 text-gray-800">
+                        Secure, Simple File Sharing
                     </h1>
-                    <p className="text-gray-300 text-center mb-6 max-w-3xl mx-auto text-lg"> {/* Reduced bottom margin */}
-                        Find, install, and publish MCP endpoints to enhance your AI systems
+                    <p className="text-gray-600 mb-8 text-lg max-w-3xl mx-auto">
+                        Upload and share files that automatically expire. No account required.
                     </p>
 
-                    {/* Prominent MCP Count */}
-                    <div className="text-center mb-10"> {/* Added margin bottom */}
-                        {loadingCount && (
-                            <span className="text-gray-500 text-lg">
-                                Loading MCP count...
-                            </span>
-                        )}
-                        {!loadingCount && mcpCount !== null && (
-                            <div className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md shadow-md">
-                                <span className="font-bold text-xl">{mcpCount}</span>
-                                <span className="ml-2 text-lg">MCPs available</span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="max-w-4xl mx-auto mb-8">
-                        {/* Wrap SearchBar in Suspense boundary */}
-                        <Suspense fallback={<div className="w-full py-2 px-4 border border-gray-700 bg-gray-800 text-gray-400 rounded-md">Loading search...</div>}>
-                            <SearchBar />
-                        </Suspense>
-                        <div className="text-center mt-4"> {/* Removed space-x-4 and the old count span */}
-                            <Link href="/browse" className="text-blue-400 hover:text-blue-300 font-medium">
-                                Or browse all available MCPs →
-                            </Link>
-                            {/* Old count location removed */}
-                        </div>
-                    </div>
+                    {/* Upload Form */}
+                    <FileUpload
+                        onUploadSuccess={(data) => {
+                            setUploadSuccess(true);
+                            // Optional analytics or tracking
+                            console.log('File uploaded successfully:', data.id);
+                        }}
+                        onUploadError={(error) => {
+                            console.error('Upload error:', error);
+                        }}
+                    />
                 </div>
             </section>
 
-            {/* New User Onboarding - What is MCP? */}
-            <section className="py-12 px-4 bg-gray-800">
+            {/* Features Section */}
+            <section className="py-12 px-4 bg-beige-100">
                 <div className="max-w-5xl mx-auto">
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-8 shadow-md">
-                        <h2 className="text-2xl font-semibold mb-4 text-center text-gray-100">
-                            New to MCP? Here's What You Need to Know
-                        </h2>
+                    <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
+                        Why Choose Our File Sharing Service?
+                    </h2>
 
-                        <div className="mb-6 p-4 bg-gray-700 rounded-lg">
-                            <p className="text-gray-200">
-                                <strong>Model Context Protocol (MCP)</strong> enables AI systems to discover, access and use external tools and APIs.
-                                Think of it as a standardized way for AI models to interact with various capabilities beyond their built-in knowledge.
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Feature 1 */}
+                        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                            <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mb-4 text-primary-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-medium mb-2 text-gray-800">Secure & Private</h3>
+                            <p className="text-gray-600">
+                                All files are encrypted in transit and at rest. Files are automatically deleted after they expire.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div className="border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition-colors bg-gray-800/50">
-                                <h3 className="font-medium text-lg mb-2 text-gray-100">For AI Developers</h3>
-                                <p className="text-gray-300 text-sm">
-                                    MCPs let your AI applications access external capabilities like databases, web searches, or specialized tools without custom integration code for each service.
-                                </p>
+                        {/* Feature 2 */}
+                        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                            <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mb-4 text-primary-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
                             </div>
-                            <div className="border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition-colors bg-gray-800/50">
-                                <h3 className="font-medium text-lg mb-2 text-gray-100">For Service Providers</h3>
-                                <p className="text-gray-300 text-sm">
-                                    Create MCPs to make your APIs and services easily discoverable and usable by AI systems, expanding your reach to the AI ecosystem.
-                                </p>
-                            </div>
+                            <h3 className="text-xl font-medium mb-2 text-gray-800">Lightning Fast</h3>
+                            <p className="text-gray-600">
+                                Upload files in seconds and share instantly with a generated link. No waiting or complex processes.
+                            </p>
                         </div>
 
-                        <div className="text-center">
-                            <Link href="/docs" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium">
-                                Learn more about MCP in our documentation
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        {/* Feature 3 */}
+                        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                            <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mb-4 text-primary-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                                 </svg>
-                            </Link>
+                            </div>
+                            <h3 className="text-xl font-medium mb-2 text-gray-800">Simple to Use</h3>
+                            <p className="text-gray-600">
+                                No accounts, no logins, no complexity. Just upload and share - it's that easy.
+                            </p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Featured MCPs Sections */}
-            <div className="max-w-6xl mx-auto py-12 px-4">
-                <div className="grid grid-cols-1 gap-8">
-                    {/* Most Starred MCPs */}
-                    <FeaturedMCPs title="Most Popular MCPs" type="starred" limit={3} />
-                </div>
-            </div>
-
-            {/* How It Works - Smaller and more compact */}
-            <div className="max-w-5xl mx-auto pt-8 pb-10 px-4">
-                <section className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
-                    <h2 className="text-xl font-semibold mb-6 text-center text-gray-100">
-                        How to use the MCPH
+            {/* How It Works */}
+            <section className="py-12 px-4">
+                <div className="max-w-4xl mx-auto">
+                    <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
+                        How It Works
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                        {/* Step 1 */}
                         <div className="text-center">
-                            <div className="bg-blue-900 text-blue-300 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-3 shadow-md">
+                            <div className="bg-primary-100 text-primary-500 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-4 shadow-sm">
                                 <span className="font-bold text-lg">1</span>
                             </div>
-                            <h3 className="text-gray-100 font-medium mb-2 text-base">Find an MCP</h3>
-                            <p className="text-gray-300 text-sm">
-                                Search or browse the hub to find MCPs that enhance your AI application's capabilities.
+                            <h3 className="text-lg font-medium mb-2 text-gray-800">Upload Your File</h3>
+                            <p className="text-gray-600">
+                                Choose any file from your device and set your preferred expiration time.
                             </p>
                         </div>
+
+                        {/* Step 2 */}
                         <div className="text-center">
-                            <div className="bg-blue-900 text-blue-300 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-3 shadow-md">
+                            <div className="bg-primary-100 text-primary-500 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-4 shadow-sm">
                                 <span className="font-bold text-lg">2</span>
                             </div>
-                            <h3 className="text-gray-100 font-medium mb-2 text-base">Install the MCP</h3>
-                            <p className="text-gray-300 text-sm">
-                                Follow the documentation to connect the MCP to your system or add it to your dependencies.
+                            <h3 className="text-lg font-medium mb-2 text-gray-800">Get a Secure Link</h3>
+                            <p className="text-gray-600">
+                                Instantly receive a secure link that you can share with anyone.
                             </p>
                         </div>
+
+                        {/* Step 3 */}
                         <div className="text-center">
-                            <div className="bg-blue-900 text-blue-300 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-3 shadow-md">
+                            <div className="bg-primary-100 text-primary-500 rounded-full h-12 w-12 flex items-center justify-center mx-auto mb-4 shadow-sm">
                                 <span className="font-bold text-lg">3</span>
                             </div>
-                            <h3 className="text-gray-100 font-medium mb-2 text-base">Use in your project</h3>
-                            <p className="text-gray-300 text-sm">
-                                Import and use the MCP in your AI systems to extend functionality and capabilities.
+                            <h3 className="text-lg font-medium mb-2 text-gray-800">Auto-Expiring Files</h3>
+                            <p className="text-gray-600">
+                                Files are automatically deleted after the expiration time for enhanced privacy.
                             </p>
                         </div>
                     </div>
-                    <div className="mt-6 pt-4 border-t border-gray-700 text-center">
-                        <Button variant="primary" className="px-6 py-2 shadow-sm text-sm bg-blue-600 hover:bg-blue-700">
-                            Get Started
-                        </Button>
-                        <Button variant="outline" className="ml-3 px-6 py-2 border-blue-500 text-blue-400 hover:bg-blue-900/50 text-sm">
-                            Read Documentation
-                        </Button>
+
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
+                        <h3 className="text-lg font-medium mb-3 text-gray-800">AI Integration Ready</h3>
+                        <p className="text-gray-600 mb-4">
+                            Our file sharing service includes Server-Sent Events (SSE) endpoints for AI agent integration. Easily upload and download files from AI systems using our API.
+                        </p>
+                        <div className="bg-beige-100 p-3 rounded font-mono text-sm text-gray-700 overflow-x-auto">
+              // Example: AI agent uploading a file via SSE<br />
+                            {`const result = await callTool('CreateUploadLink', {`}<br />
+                            {`  fileName: 'report.pdf',`}<br />
+                            {`  contentType: 'application/pdf',`}<br />
+                            {`  ttlHours: 2,`}<br />
+                            {`  base64Content: 'base64-encoded-content'`}<br />
+                            {`});`}
+                        </div>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
+
+            {/* Footer & Info */}
+            <section className="py-8 px-4 border-t border-gray-200 text-center">
+                <div className="max-w-4xl mx-auto">
+                    <p className="text-gray-600 text-sm">
+                        All files are stored securely on Google Cloud Storage and automatically purged after expiration.
+                        <br />No registration or personal information is required to use this service.
+                    </p>
+                </div>
+            </section>
         </div>
     );
 }

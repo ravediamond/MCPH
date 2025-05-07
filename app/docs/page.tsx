@@ -1,320 +1,337 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
-import Button from 'components/ui/Button';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
 
 export default function DocsPage() {
     return (
-        <div className="bg-gray-900 min-h-screen">
-            {/* Hero Section */}
-            <section className="py-16 px-4 border-b border-gray-800">
-                <div className="max-w-5xl mx-auto text-center">
-                    <h1 className="text-4xl font-semibold text-gray-100 mb-4">
-                        About MCPs
-                    </h1>
-                    <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-                        Learn the basics of Model Context Protocol (MCP) and how to use the MCPs you discover on our hub.
-                    </p>
-                    <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-                        <a
-                            href="https://modelcontextprotocol.io/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-white bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-md transition-colors font-medium"
-                        >
-                            Official MCP Website
-                        </a>
-                        <a
-                            href="https://github.com/modelcontextprotocol"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-100 bg-gray-800 border border-gray-700 hover:bg-gray-750 px-5 py-2 rounded-md transition-colors font-medium"
-                        >
-                            GitHub Repository
-                        </a>
-                    </div>
+        <div className="bg-beige-200 min-h-screen py-12">
+            <div className="max-w-5xl mx-auto px-4">
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">API Documentation</h1>
+                    <p className="text-gray-600">Integrate file sharing into your applications</p>
                 </div>
-            </section>
 
-            {/* What is MCP Section */}
-            <section className="py-10 px-4 bg-gray-800">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">What is Model Context Protocol?</h2>
-
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
-                        <p className="text-gray-300 mb-4">
-                            MCP is a specification that enables AI systems to communicate with external tools and APIs in a standardized way.
-                            It defines how AI models can discover capabilities, send requests, and receive structured responses.
-                        </p>
-                        <p className="text-gray-300 mb-6">
-                            With MCP, AI applications can access specialized services like database interactions, web searches, or domain-specific tools
-                            without needing custom integration for each one.
-                        </p>
-
-                        <div className="flex justify-center">
-                            <Image
-                                src="https://raw.githubusercontent.com/modelcontextprotocol/.github/main/profile/mcp-explanation.png"
-                                alt="MCP Flow Diagram"
-                                width={800} // Added width - adjust if needed
-                                height={400} // Added height - adjust if needed
-                                className="max-w-full h-auto rounded-lg shadow-md border border-gray-700"
-                            />
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {/* Sidebar Navigation */}
+                    <div className="md:col-span-1">
+                        <div className="bg-white border border-gray-200 rounded-lg p-4 sticky top-24 shadow-sm">
+                            <h3 className="text-lg font-medium text-gray-800 mb-4">Contents</h3>
+                            <nav className="space-y-2">
+                                <a href="#overview" className="block text-primary-500 hover:text-primary-600">Overview</a>
+                                <a href="#rest-api" className="block text-primary-500 hover:text-primary-600">REST API</a>
+                                <a href="#upload-endpoint" className="block text-primary-500 hover:text-primary-600 pl-4">Upload Endpoint</a>
+                                <a href="#download-endpoint" className="block text-primary-500 hover:text-primary-600 pl-4">Download Endpoint</a>
+                                <a href="#sse-api" className="block text-primary-500 hover:text-primary-600">SSE API for AI</a>
+                                <a href="#create-upload-link" className="block text-primary-500 hover:text-primary-600 pl-4">CreateUploadLink</a>
+                                <a href="#get-download-link" className="block text-primary-500 hover:text-primary-600 pl-4">GetDownloadLink</a>
+                                <a href="#rate-limits" className="block text-primary-500 hover:text-primary-600">Rate Limits</a>
+                                <a href="#errors" className="block text-primary-500 hover:text-primary-600">Error Handling</a>
+                            </nav>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            {/* Official Resources */}
-            <section className="py-10 px-4 bg-gray-900">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">Official Resources</h2>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md"
-                        >
-                            <h3 className="text-xl font-medium text-gray-100 mb-3">SDK Libraries</h3>
-                            <div className="space-y-4">
-                                <a
-                                    href="https://github.com/modelcontextprotocol/python-sdk"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
-                                >
-                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
-                                        <span className="text-lg font-medium">Py</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-100">Python SDK</h4>
-                                        <p className="text-gray-300 text-sm">
-                                            Official Python implementation of the MCP specification
-                                        </p>
-                                    </div>
-                                </a>
-                                <a
-                                    href="https://github.com/modelcontextprotocol/typescript-sdk"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
-                                >
-                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
-                                        <span className="text-lg font-medium">TS</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-100">TypeScript SDK</h4>
-                                        <p className="text-gray-300 text-sm">
-                                            Official TypeScript implementation of the MCP specification
-                                        </p>
-                                    </div>
-                                </a>
-                            </div>
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6, delay: 0.1 }}
-                            className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md"
-                        >
-                            <h3 className="text-xl font-medium text-gray-100 mb-3">Documentation</h3>
-                            <div className="space-y-4">
-                                <a
-                                    href="https://docs.modelcontextprotocol.io/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
-                                >
-                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
-                                        <span className="text-lg font-medium">📚</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-100">Official Documentation</h4>
-                                        <p className="text-gray-300 text-sm">
-                                            Comprehensive guides, API references, and tutorials
-                                        </p>
-                                    </div>
-                                </a>
-                                <a
-                                    href="https://github.com/modelcontextprotocol/spec"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-start p-3 border border-gray-700 rounded-lg hover:bg-gray-750 transition-colors"
-                                >
-                                    <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0">
-                                        <span className="text-lg font-medium">📝</span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium text-gray-100">Specification</h4>
-                                        <p className="text-gray-300 text-sm">
-                                            Technical details and implementation guidelines
-                                        </p>
-                                    </div>
-                                </a>
-                            </div>
-                        </motion.div>
-                    </div>
-                </div>
-            </section>
-
-            {/* How to Use MCPs */}
-            <section className="py-10 px-4 bg-gray-800 mb-10">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">How to Use MCPs</h2>
-
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
-                        <div className="space-y-6">
-                            <div className="flex">
-                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                    <span className="font-bold text-sm">1</span>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium text-gray-100 mb-1">Find a Compatible MCP</h4>
-                                    <p className="text-gray-300">
-                                        Browse our hub to discover MCPs that provide the capabilities you need for your AI application.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex">
-                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                    <span className="font-bold text-sm">2</span>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium text-gray-100 mb-1">Configure Your Environment</h4>
-                                    <p className="text-gray-300">
-                                        Install the appropriate MCP SDK for your programming language and configure it with the MCP's endpoint.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex">
-                                <div className="bg-blue-900 text-blue-300 rounded-full h-8 w-8 flex items-center justify-center mr-3 flex-shrink-0 mt-1">
-                                    <span className="font-bold text-sm">3</span>
-                                </div>
-                                <div>
-                                    <h4 className="font-medium text-gray-100 mb-1">Integrate and Use</h4>
-                                    <p className="text-gray-300">
-                                        Connect your AI model to the MCP to extend its capabilities with the external tools and services.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-gray-700 text-center">
-                            <Link href="/browse" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium">
-                                Start browsing MCPs
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                            <Link href="/docs/local-usage" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-medium ml-6">
-                                Learn to use MCPs locally
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Using MCPs Locally */}
-            <section className="py-10 px-4 bg-gray-900 mb-10">
-                <div className="max-w-5xl mx-auto">
-                    <h2 className="text-2xl font-semibold text-gray-100 mb-6 text-center">
-                        <span className="mr-2">🚀</span>
-                        Using MCPs Locally
-                    </h2>
-
-                    <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-md">
-                        <h3 className="text-xl font-medium text-gray-100 mb-4">Using MCP Servers in Repositories</h3>
-
-                        <div className="mb-6">
-                            <h4 className="font-medium text-gray-100 mb-2">TypeScript-based servers</h4>
-                            <p className="text-gray-300 mb-3">
-                                TypeScript-based servers can be used directly with npx.
+                    {/* Main Content */}
+                    <div className="md:col-span-3">
+                        {/* Overview Section */}
+                        <section id="overview" className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+                            <p className="text-gray-600 mb-4">
+                                MCPH offers a simple API for uploading and downloading files. Our API supports both traditional
+                                REST endpoints and Server-Sent Events (SSE) for AI integration.
                             </p>
-                            <div className="bg-gray-900 p-4 rounded-md mb-4">
-                                <code className="text-green-400">npx -y @modelcontextprotocol/server-memory</code>
-                            </div>
-                        </div>
-
-                        <div className="mb-6">
-                            <h4 className="font-medium text-gray-100 mb-2">Python-based servers</h4>
-                            <p className="text-gray-300 mb-3">
-                                Python-based servers can be used directly with uvx or pip. uvx is recommended for ease of use and setup.
+                            <p className="text-gray-600 mb-4">
+                                All files uploaded through our API are temporary and will be automatically deleted after their
+                                expiration time (default: 1 hour, maximum: 24 hours).
                             </p>
-                            <div className="bg-gray-900 p-4 rounded-md mb-4">
-                                <code className="text-green-400"># With uvx<br />
-                                    uvx mcp-server-git<br /><br />
-                                    # With pip<br />
-                                    pip install mcp-server-git<br />
-                                    python -m mcp_server_git</code>
-                            </div>
-                            <p className="text-gray-300">
-                                Follow these instructions to install <a href="https://github.com/astral-sh/uv" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">uv / uvx</a> and <a href="https://pip.pypa.io/en/stable/installation/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">pip</a>.
+                            <p className="text-gray-600">
+                                All API endpoints are public and do not require authentication, but they are subject to rate limiting
+                                to prevent abuse.
                             </p>
-                        </div>
+                        </section>
 
-                        <h3 className="text-xl font-medium text-gray-100 mb-4 mt-8">Using an MCP Client</h3>
-                        <p className="text-gray-300 mb-4">
-                            Running a server on its own isn't very useful, and should instead be configured into an MCP client. For example, here's the Claude Desktop configuration to use the above server:
-                        </p>
-                        <div className="bg-gray-900 p-4 rounded-md mb-6">
-                            <pre className="text-blue-400 whitespace-pre-wrap">{`{
-  "mcpServers": {
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"]
-    }
-  }
-}`}</pre>
-                        </div>
+                        {/* REST API Section */}
+                        <section id="rest-api" className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">REST API</h2>
+                            <p className="text-gray-600 mb-4">
+                                Our REST API provides two main endpoints for uploading and downloading files.
+                            </p>
 
-                        <p className="text-gray-300 mb-4">
-                            Additional examples of using the Claude Desktop as an MCP client might look like:
-                        </p>
-                        <div className="bg-gray-900 p-4 rounded-md mb-6">
-                            <pre className="text-blue-400 whitespace-pre-wrap">{`{
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
-    },
-    "git": {
-      "command": "uvx",
-      "args": ["mcp-server-git", "--repository", "path/to/git/repo"]
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_TOKEN>"
-      }
-    },
-    "postgres": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
-    }
-  }
-}`}</pre>
-                        </div>
+                            {/* Upload Endpoint */}
+                            <div id="upload-endpoint" className="mb-8">
+                                <h3 className="text-xl font-semibold text-primary-500 mb-4">Upload Endpoint</h3>
+                                <div className="bg-beige-100 p-4 rounded-md mb-4">
+                                    <code className="text-green-600">POST /api/uploads</code>
+                                </div>
 
-                        <h3 className="text-xl font-medium text-gray-100 mb-4 mt-8">
-                            <span className="mr-2">🛠️</span>
-                            Creating Your Own Server
-                        </h3>
-                        <p className="text-gray-300">
-                            Interested in creating your own MCP server? Visit the <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">official documentation</a> at modelcontextprotocol.io for comprehensive guides, best practices, and technical details on implementing MCP servers.
-                        </p>
+                                <p className="text-gray-600 mb-4">
+                                    Uploads a file and returns a file ID and download URL.
+                                </p>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Request</h4>
+                                <p className="text-gray-600 mb-2">
+                                    Content-Type: <code className="text-primary-600">multipart/form-data</code>
+                                </p>
+
+                                <div className="mb-4">
+                                    <h5 className="text-gray-800 font-medium">Form Parameters:</h5>
+                                    <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                                        <li><code className="text-primary-600">file</code> (required) - The file to upload</li>
+                                        <li><code className="text-primary-600">ttl</code> (optional) - Time-to-live in hours (default: 1, min: 0.016, max: 24)</li>
+                                        <li><code className="text-primary-600">[key: string]</code> (optional) - Additional metadata fields</li>
+                                    </ul>
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Response</h4>
+                                <p className="text-gray-600 mb-2">
+                                    Status: <code className="text-primary-600">201 Created</code>
+                                </p>
+
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "id": "string",          // Unique file ID
+  "fileName": "string",    // Original filename
+  "contentType": "string", // MIME type
+  "size": number,          // File size in bytes
+  "uploadedAt": "string",  // ISO datetime
+  "expiresAt": "string",   // ISO datetime
+  "downloadUrl": "string"  // URL to download the file
+}`}
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Example</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto">
+                                    {`// Using fetch with FormData
+const formData = new FormData();
+formData.append('file', fileObject);
+formData.append('ttl', '2'); // 2 hours TTL
+
+const response = await fetch('https://your-domain.com/api/uploads', {
+  method: 'POST',
+  body: formData
+});
+
+const data = await response.json();
+console.log(data.downloadUrl); // Use this URL to download the file`}
+                                </div>
+                            </div>
+
+                            {/* Download Endpoint */}
+                            <div id="download-endpoint">
+                                <h3 className="text-xl font-semibold text-primary-500 mb-4">Download Endpoint</h3>
+                                <div className="bg-beige-100 p-4 rounded-md mb-4">
+                                    <code className="text-green-600">GET /api/uploads/{'{id}'}</code>
+                                </div>
+
+                                <p className="text-gray-600 mb-4">
+                                    Downloads a file by its ID or returns file metadata if the <code className="text-primary-600">info</code> parameter is set to <code className="text-primary-600">true</code>.
+                                </p>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Parameters</h4>
+                                <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
+                                    <li><code className="text-primary-600">id</code> (required) - The unique file ID</li>
+                                    <li><code className="text-primary-600">info</code> (optional) - Set to <code className="text-primary-600">true</code> to get file metadata instead of downloading</li>
+                                </ul>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Response: Download</h4>
+                                <p className="text-gray-600 mb-2">
+                                    Status: <code className="text-primary-600">302 Found</code> (redirect to signed download URL)
+                                </p>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Response: Info</h4>
+                                <p className="text-gray-600 mb-2">
+                                    Status: <code className="text-primary-600">200 OK</code>
+                                </p>
+
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "id": "string",          // Unique file ID
+  "fileName": "string",    // Original filename
+  "contentType": "string", // MIME type
+  "size": number,          // File size in bytes
+  "uploadedAt": "string",  // ISO datetime
+  "expiresAt": "string",   // ISO datetime
+  "downloadCount": number  // Number of downloads
+}`}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* SSE API Section */}
+                        <section id="sse-api" className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">SSE API for AI Integration</h2>
+                            <p className="text-gray-600 mb-4">
+                                We provide a Model Context Protocol (MCP) compatible Server-Sent Events (SSE) API for AI agents to upload and download files.
+                            </p>
+                            <p className="text-gray-600 mb-4">
+                                The SSE API is available at <code className="text-primary-600">/api/sse</code> and follows the JSON-RPC protocol.
+                            </p>
+
+                            {/* CreateUploadLink Tool */}
+                            <div id="create-upload-link" className="mb-6">
+                                <h3 className="text-xl font-semibold text-primary-500 mb-4">CreateUploadLink Tool</h3>
+                                <p className="text-gray-600 mb-3">
+                                    This tool allows AI agents to upload files via base64-encoded content.
+                                </p>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Input Schema</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "fileName": "string",     // Required: Name of the file
+  "contentType": "string",  // Required: MIME type of the file
+  "ttlHours": number,       // Optional: Time-to-live in hours (default: 1)
+  "base64Content": "string" // Required: Base64-encoded file content
+}`}
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Response</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "fileId": "string",       // Unique file ID
+  "fileName": "string",     // Original filename
+  "size": number,           // File size in bytes
+  "downloadUrl": "string",  // URL to download the file
+  "uploadedAt": "string",   // ISO datetime
+  "expiresAt": "string"     // ISO datetime
+}`}
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Example</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto">
+                                    {`// Example AI agent usage
+const result = await callTool('CreateUploadLink', {
+  fileName: 'example.txt',
+  contentType: 'text/plain',
+  ttlHours: 2,
+  base64Content: 'SGVsbG8gV29ybGQh' // "Hello World!" in base64
+});
+
+console.log(result.downloadUrl);`}
+                                </div>
+                            </div>
+
+                            {/* GetDownloadLink Tool */}
+                            <div id="get-download-link">
+                                <h3 className="text-xl font-semibold text-primary-500 mb-4">GetDownloadLink Tool</h3>
+                                <p className="text-gray-600 mb-3">
+                                    This tool allows AI agents to get a download link for an existing file.
+                                </p>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Input Schema</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "fileId": "string" // Required: The unique file ID
+}`}
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Response</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mb-4">
+                                    {`{
+  "fileId": "string",         // Unique file ID
+  "fileName": "string",       // Original filename
+  "contentType": "string",    // MIME type
+  "size": number,             // File size in bytes
+  "downloadUrl": "string",    // Signed URL to download the file
+  "directUrl": "string",      // Direct URL to the file
+  "uploadedAt": "string",     // ISO datetime
+  "expiresAt": "string",      // ISO datetime
+  "downloadCount": number     // Number of downloads
+}`}
+                                </div>
+
+                                <h4 className="text-gray-800 font-medium mb-2">Example</h4>
+                                <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto">
+                                    {`// Example AI agent usage
+const result = await callTool('GetDownloadLink', {
+  fileId: '1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p'
+});
+
+console.log(result.downloadUrl);`}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Rate Limits Section */}
+                        <section id="rate-limits" className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Rate Limits</h2>
+                            <p className="text-gray-600 mb-4">
+                                To ensure service stability and prevent abuse, we apply the following rate limits:
+                            </p>
+
+                            <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                                <li><strong>Uploads:</strong> 20 uploads per 10 minutes per IP address</li>
+                                <li><strong>Downloads:</strong> 100 downloads per minute per IP address</li>
+                                <li><strong>SSE connections:</strong> 10 requests per 10 seconds per IP address</li>
+                            </ul>
+
+                            <p className="text-gray-600 mt-4">
+                                If you exceed these limits, you will receive a <code className="text-primary-600">429 Too Many Requests</code> response
+                                with appropriate headers indicating the wait time before your next allowed request.
+                            </p>
+                        </section>
+
+                        {/* Error Handling Section */}
+                        <section id="errors" className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Error Handling</h2>
+                            <p className="text-gray-600 mb-4">
+                                Our API uses standard HTTP status codes to indicate the success or failure of requests.
+                            </p>
+
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full bg-beige-100 rounded-lg">
+                                    <thead>
+                                        <tr>
+                                            <th className="py-2 px-4 text-left text-primary-600 border-b border-gray-300">Status Code</th>
+                                            <th className="py-2 px-4 text-left text-primary-600 border-b border-gray-300">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-gray-600">
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">200 OK</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">The request was successful</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">201 Created</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">The file was uploaded successfully</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">400 Bad Request</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">The request was invalid or malformed</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">404 Not Found</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">The requested file does not exist</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">410 Gone</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">The file has expired and been deleted</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4 border-b border-gray-200">429 Too Many Requests</td>
+                                            <td className="py-2 px-4 border-b border-gray-200">You have exceeded the rate limit</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="py-2 px-4">500 Internal Server Error</td>
+                                            <td className="py-2 px-4">An unexpected error occurred on the server</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p className="text-gray-600 mt-6">
+                                In case of errors, the response body will contain a JSON object with an <code className="text-primary-600">error</code> property
+                                providing additional details about the error.
+                            </p>
+
+                            <div className="bg-beige-100 p-4 rounded-md font-mono text-sm text-gray-700 overflow-x-auto mt-4">
+                                {`{
+  "error": "File not found or expired"
+}`}
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </section>
+            </div>
         </div>
     );
 }

@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ipAddress } from '@vercel/edge'; // Import ipAddress
 import { Ratelimit, Duration } from '@upstash/ratelimit'; // Import Ratelimit AND Duration
 import { Redis } from '@upstash/redis'; // Corrected Redis import for edge runtime
-import { v4 as uuidv4 } from 'uuid'; // Import uuidv4
 
 import { z } from 'zod'
 import { supabase, createServiceRoleClient } from '@/lib/supabaseClient'
 import { MCP } from 'types/mcp'
-// Import from edge-compatible storage service instead of the Node.js-specific one
-import { uploadFile, getSignedDownloadUrl } from '@/services/edgeStorageService'
+import { uploadFile, getSignedDownloadUrl } from '@/services/storageService'
 import { saveFileMetadata, getFileMetadata, incrementDownloadCount, logEvent } from '@/services/redisService'
 
 export const runtime = 'edge'
@@ -104,182 +102,10 @@ export async function OPTIONS(req: NextRequest) {
     })
 }
 
-// Map to store active connections
-const connections = new Map<string, ReadableStreamController<Uint8Array>>();
-
-// Function to send event to a specific client
-const sendEvent = (connectionId: string, event: string, data: any) => {
-    const controller = connections.get(connectionId);
-    if (controller) {
-        // Format the SSE data
-        const formattedData = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-        controller.enqueue(new TextEncoder().encode(formattedData));
-    }
-};
-
-// Function to send a ping to keep the connection alive
-const sendPing = (connectionId: string) => {
-    sendEvent(connectionId, 'ping', { timestamp: Date.now() });
-};
-
-// Function to extract client IP
-const getClientIp = (req: NextRequest): string => {
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
-    }
-    return '127.0.0.1';
-};
-
 /**
  * Handles incoming SSE connection requests.
  */
 export async function GET(req: NextRequest) {
-    const connectionId = uuidv4();
-    const clientIp = getClientIp(req);
-
-    // Log connection event
-    await logEvent('sse_connect', connectionId, clientIp);
-
-    // Create a stream for SSE
-    const stream = new ReadableStream({
-        start(controller) {
-            // Store the controller for this connection
-            connections.set(connectionId, controller);
-
-            // Send welcome message
-            const welcomeEvent = {
-                connectionId,
-                message: 'Welcome to File Share Hub SSE API',
-                features: ['file_upload', 'file_info', 'ping'],
-            };
-
-            // Send the welcome event
-            const welcomeData = `event: welcome\ndata: ${JSON.stringify(welcomeEvent)}\n\n`;
-            controller.enqueue(new TextEncoder().encode(welcomeData));
-
-            // Set up ping interval to keep connection alive
-            const pingInterval = setInterval(() => {
-                // Check if connection still exists
-                if (connections.has(connectionId)) {
-                    sendPing(connectionId);
-                } else {
-                    clearInterval(pingInterval);
-                }
-            }, 30000); // Send ping every 30 seconds
-        },
-        cancel() {
-            // Remove connection when it's closed
-            connections.delete(connectionId);
-            logEvent('sse_disconnect', connectionId, clientIp);
-        }
-    });
-
-    // Accept POST requests with the same connection ID for file uploads
-    const url = new URL(req.url);
-    url.searchParams.set('connectionId', connectionId);
-
-    // Return SSE response
-    return new Response(stream, {
-        headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'X-Connection-Id': connectionId,
-        },
-    });
-}
-
-/**
- * Handles JSON-RPC messages sent via POST.
- */
-export async function POST(req: NextRequest) {
-    // Get connection ID from the request
-    const url = new URL(req.url);
-    const connectionId = url.searchParams.get('connectionId');
-
-    if (!connectionId || !connections.has(connectionId)) {
-        return new Response(JSON.stringify({ error: 'Invalid or expired connection' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
-    try {
-        // Parse the request body
-        const body = await req.json();
-        const { action } = body;
-
-        if (action === 'file_upload') {
-            // Handle file upload
-            const { base64Data, fileName, contentType = 'application/octet-stream', ttlHours = 1 } = body;
-
-            if (!base64Data || !fileName) {
-                sendEvent(connectionId, 'error', { message: 'Missing required parameters' });
-                return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' },
-                });
-            }
-
-            // Decode the base64 data
-            const fileBuffer = Buffer.from(base64Data, 'base64');
-
-            // Upload the file
-            const fileData = await uploadFile(fileBuffer, fileName, contentType, ttlHours);
-
-            // Generate download URL
-            const downloadUrl = `${url.origin}/api/uploads/${fileData.id}`;
-
-            // Send success event via SSE
-            sendEvent(connectionId, 'file_uploaded', {
-                id: fileData.id,
-                fileName: fileData.fileName,
-                contentType: fileData.contentType,
-                size: fileData.size,
-                downloadUrl,
-                uploadedAt: fileData.uploadedAt.toISOString(),
-                expiresAt: fileData.expiresAt.toISOString(),
-            });
-
-            // Return success response for the POST request as well
-            return new Response(JSON.stringify({
-                success: true,
-                id: fileData.id,
-                downloadUrl
-            }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        } else if (action === 'ping') {
-            // Handle ping request (useful for checking if connection is alive)
-            sendEvent(connectionId, 'pong', { timestamp: Date.now() });
-
-            return new Response(JSON.stringify({ success: true }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        } else {
-            // Unknown action
-            sendEvent(connectionId, 'error', { message: `Unknown action: ${action}` });
-
-            return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-    } catch (error) {
-        console.error('Error processing SSE POST:', error);
-
-        // Send error via SSE
-        sendEvent(connectionId, 'error', { message: 'Server error processing request' });
-
-        return new Response(JSON.stringify({ error: 'Server error processing request' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
     // Rate limit check
     const ip = ipAddress(req) || '127.0.0.1'; // Get IP address
     const { success, limit, remaining, reset } = await ratelimit.limit(ip);
@@ -298,6 +124,76 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin')
     const cors = getCorsHeaders(origin)
 
+    // Generate a new session ID
+    const sessionId = crypto.randomUUID()
+
+    // Create the ReadableStream and register the session
+    const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+            const encoder = new TextEncoder()
+            sessions.set(sessionId, { controller, nextEventId: 1 })
+
+            // 1) Kick-start the parser
+            controller.enqueue(encoder.encode(':\n\n'))
+
+            // 2) MCP handshake → tell client where to POST
+            const endpoint = `/api/sse?sessionId=${sessionId}`
+            controller.enqueue(
+                encoder.encode(`event: endpoint\ndata: ${endpoint}\n\n`)
+            )
+
+            // 3) Heartbeat every 15s
+            const iv = setInterval(
+                () => controller.enqueue(encoder.encode(':\n\n')),
+                15_000
+            )
+
+            // 4) Cleanup on client disconnect
+            req.signal.addEventListener('abort', () => {
+                clearInterval(iv)
+                controller.close()
+                sessions.delete(sessionId)
+            })
+        },
+        cancel() {
+            sessions.delete(sessionId)
+        }
+    })
+
+    return new Response(stream, {
+        status: 200,
+        headers: {
+            ...cors,
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive'
+        }
+    })
+}
+
+/**
+ * Handles JSON-RPC messages sent via POST.
+ */
+export async function POST(req: NextRequest) {
+    // Rate limit check
+    const ip = ipAddress(req) || '127.0.0.1'; // Get IP address
+    const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+
+    if (!success) {
+        return new Response('Rate limit exceeded', {
+            status: 429,
+            headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': reset.toString(),
+            },
+        });
+    }
+
+    const origin = req.headers.get('origin')
+    const cors = getCorsHeaders(origin)
+
+    const url = new URL(req.url)
     const sessionId = url.searchParams.get('sessionId')
     if (!sessionId || !sessions.has(sessionId)) {
         return new Response('Session not found', { status: 404, headers: cors, })
@@ -601,7 +497,7 @@ export async function POST(req: NextRequest) {
                     }
 
                     const { fileName, contentType, ttlHours, base64Content } = uploadParams.data;
-
+                    
                     // Decode base64 content
                     let fileBuffer;
                     try {
@@ -630,10 +526,10 @@ export async function POST(req: NextRequest) {
 
                     // Calculate TTL in seconds for Redis
                     const ttlSeconds = Math.floor(ttlHours * 60 * 60);
-
+                    
                     // Save metadata in Redis with TTL
                     await saveFileMetadata(fileData, ttlSeconds);
-
+                    
                     // Log upload event
                     await logEvent('upload', fileData.id, ip, {
                         fileName: fileData.fileName,
@@ -693,10 +589,10 @@ export async function POST(req: NextRequest) {
                     }
 
                     const { fileId } = downloadParams.data;
-
+                    
                     // Get file metadata from Redis
                     const fileData = await getFileMetadata(fileId);
-
+                    
                     if (!fileData) {
                         send({
                             jsonrpc: '2.0',
@@ -708,7 +604,7 @@ export async function POST(req: NextRequest) {
                         });
                         break;
                     }
-
+                    
                     // Check if file has expired
                     const now = new Date();
                     if (fileData.expiresAt < now) {
@@ -725,16 +621,16 @@ export async function POST(req: NextRequest) {
 
                     // Increment download count
                     await incrementDownloadCount(fileId);
-
+                    
                     // Log download event
                     await logEvent('download', fileId, ip, {
                         fileName: fileData.fileName,
                         via: 'SSE API'
                     });
-
+                    
                     // Generate a signed URL
                     const signedUrl = await getSignedDownloadUrl(fileId, fileData.fileName);
-
+                    
                     // Generate direct download URL
                     const host = req.headers.get('host');
                     const protocol = host?.includes('localhost') ? 'http' : 'https';
@@ -801,7 +697,3 @@ export async function POST(req: NextRequest) {
         headers: { 'mcp-session-id': sessionId }
     })
 }
-
-export const config = {
-    runtime: 'nodejs',
-};

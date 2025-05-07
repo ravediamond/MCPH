@@ -1,7 +1,6 @@
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import Layout from 'components/layout/Layout';
 import { Toaster } from 'react-hot-toast';
-import SupabaseProvider from './supabase-provider';
 import './globals.css';
 
 // Load fonts
@@ -19,13 +18,13 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata = {
     metadataBase: new URL('https://mcph.io'),
-    title: 'MCPH',
-    description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
-    keywords: ['MCP', 'Model Context Protocol', 'AI tools', 'AI endpoints', 'API registry'],
+    title: 'MCPH | Secure, Simple File Sharing',
+    description: 'Upload and share files that automatically expire. No account required.',
+    keywords: ['file sharing', 'temporary files', 'secure file transfer', 'file upload', 'auto-expiring'],
     authors: [{ name: 'MCPH Team' }],
     openGraph: {
-        title: 'MCPH',
-        description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
+        title: 'MCPH | Secure, Simple File Sharing',
+        description: 'Upload and share files that automatically expire. No account required.',
         url: 'https://mcph.io',
         siteName: 'MCPH',
         images: [
@@ -41,8 +40,8 @@ export const metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'MCPH',
-        description: 'Discover and publish Model Context Protocol (MCP) endpoints for AI tools',
+        title: 'MCPH | Secure, Simple File Sharing',
+        description: 'Upload and share files that automatically expire. No account required.',
         images: ['/icon-transparent.png'],
     },
     robots: {
@@ -69,9 +68,7 @@ export default function RootLayout({
                         }
                     }}
                 />
-                <SupabaseProvider>
-                    <Layout>{children}</Layout>
-                </SupabaseProvider>
+                <Layout>{children}</Layout>
             </body>
         </html>
     );

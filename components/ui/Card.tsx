@@ -15,7 +15,7 @@ export default function Card({ children, className = '', hoverable = false }: Ca
         rounded-lg 
         shadow-sm 
         overflow-hidden
-        ${hoverable ? 'transition-all duration-200 hover:shadow hover:border-gray-300' : ''}
+        ${hoverable ? 'transition-all duration-200 hover:shadow-md hover:border-gray-300' : ''}
         ${className}
       `}
         >

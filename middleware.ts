@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { API } from './app/config/constants';
-import { validateApiKey } from './utils/apiKeyValidation';
 import type { Database } from './types/database.types';
 
 // Rate limiting constants
@@ -155,33 +154,12 @@ export async function middleware(request: NextRequest) {
         console.error('Unexpected error in middleware:', error.message);
     }
 
-    // Only apply API key validation and rate limiting to public API routes
+    // Only apply rate limiting to public API routes
     if (pathname.startsWith(API.PUBLIC.BASE_PATH)) {
-        // 1. API Key Authentication
-        const apiKey = request.headers.get('x-api-key') || '';
-
-        // Validate the API key
-        const apiKeyValidation = await validateApiKey(apiKey);
-
-        if (!apiKeyValidation?.valid) {
-            return new NextResponse(
-                JSON.stringify({
-                    success: false,
-                    message: `Authentication failed: ${apiKeyValidation?.error || 'Invalid API key'}`,
-                }),
-                {
-                    status: 401,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                }
-            );
-        }
-
-        // 2. Rate Limiting - customized per API key if available
-        const maxRequests = apiKeyValidation.key?.rate_limit_per_minute || DEFAULT_RATE_LIMIT;
+        // Rate Limiting with default rate limit
+        const maxRequests = DEFAULT_RATE_LIMIT;
         const clientIp = getClientIp(request);
-        const keyIdentifier = apiKey || clientIp || 'unknown';
+        const keyIdentifier = clientIp || 'unknown';
 
         // Check if the client has exceeded their rate limit
         const rateCheck = rateLimiter.check(keyIdentifier, maxRequests);

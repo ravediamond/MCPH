@@ -1,20 +1,32 @@
-export const README_REFRESH_THRESHOLD_MS =
-  process.env.README_REFRESH_THRESHOLD_MS
-    ? Number(process.env.README_REFRESH_THRESHOLD_MS)
-    : 24 * 60 * 60 * 1000;
-
-// API versioning and access constants
+/**
+ * API Constants
+ * These constants are used for API route configuration and middleware.
+ */
 export const API = {
-  // Internal API routes (used only by the web app)
-  INTERNAL: {
-    BASE_PATH: '/api',
-  },
-  // Public API routes (exposed to external consumers)
-  PUBLIC: {
-    BASE_PATH: '/api/public',
-    VERSION: 'v1',
-    get VERSIONED_PATH() {
-      return `${this.BASE_PATH}/${this.VERSION}`;
+    /**
+     * Public API endpoints configuration
+     * These endpoints are exposed to the public and may require API key authentication.
+     */
+    PUBLIC: {
+        /** Base path for all public API routes */
+        BASE_PATH: '/api',
+
+        /** API version */
+        VERSION: 'v1',
+
+        /** Maximum file upload size in bytes (default: 10MB) */
+        MAX_UPLOAD_SIZE: 10 * 1024 * 1024,
+
+        /** Default rate limit for API requests (requests per minute) */
+        DEFAULT_RATE_LIMIT: 30
+    },
+
+    /**
+     * Internal API endpoints configuration
+     * These endpoints are used for internal services and require authentication.
+     */
+    INTERNAL: {
+        /** Base path for internal API routes */
+        BASE_PATH: '/api/internal'
     }
-  }
 };

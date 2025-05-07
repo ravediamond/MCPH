@@ -6,6 +6,7 @@
 
 # Environment Variables
 .env.local
+*credentials.json
 
 # Logs
 npm-debug.log*

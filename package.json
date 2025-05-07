@@ -8,7 +8,8 @@
         "lint": "next lint",
         "type-check": "tsc --noEmit --incremental",
         "check": "npm run type-check && npm run lint",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "reset-db": "node scripts/reset-db.js"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
@@ -17,8 +18,8 @@
         ]
     },
     "dependencies": {
+        "@google-cloud/storage": "^7.16.0",
         "@heroicons/react": "^2.2.0",
-        "@octokit/rest": "^19.0.13",
         "@supabase/auth-helpers-nextjs": "^0.10.0",
         "@supabase/supabase-js": "^2.49.4",
         "@tailwindcss/forms": "^0.5.10",
@@ -31,17 +32,14 @@
         "framer-motion": "^12.6.3",
         "github-markdown-css": "^5.8.1",
         "lucide-react": "^0.487.0",
-        "lunr": "^2.3.9",
         "next": "^15.3.0",
-        "octokit": "^4.1.3",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
+        "react-dropzone": "^14.3.8",
         "react-hot-toast": "^2.5.2",
         "react-icons": "^5.5.0",
-        "react-markdown": "^10.1.0",
-        "rehype-raw": "^7.0.0",
-        "remark-gfm": "^4.0.1",
         "utf-8-validate": "^6.0.5",
+        "uuid": "^11.1.0",
         "zod": "^3.24.4"
     },
     "devDependencies": {
