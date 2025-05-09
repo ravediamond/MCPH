@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getFileMetadata, incrementDownloadCount, logEvent } from '@/services/redisService';
+import { NextResponse, NextRequest } from 'next/server'; // Removed unused Request import
+import { getFileMetadata, incrementDownloadCount, logEvent } from '@/services/firebaseService';
 import { streamFile, getSignedDownloadUrl } from '@/services/storageService';
 
 export const config = {
@@ -9,11 +9,12 @@ export const config = {
 /**
  * Extract client IP address from request
  */
-function getClientIp(req: NextRequest): string {
+function getClientIp(req: NextRequest): string { // Changed to NextRequest
     const forwardedFor = req.headers.get('x-forwarded-for');
     if (forwardedFor) {
         return forwardedFor.split(',')[0].trim();
     }
+    // req.ip could be used here if available and preferred for NextRequest
     return '127.0.0.1';
 }
 
@@ -21,10 +22,10 @@ function getClientIp(req: NextRequest): string {
  * GET handler for file downloads
  */
 export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    context: { params: { id: string } } // Explicitly type context
 ): Promise<NextResponse | Response> {
-    const fileId = params.id;
+    const fileId = context.params.id; // Access id via context.params
 
     if (!fileId) {
         return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
@@ -32,7 +33,7 @@ export async function GET(
 
     try {
         // Get client IP
-        const clientIp = getClientIp(req);
+        const clientIp = getClientIp(request);
 
         // Get file metadata from Redis
         const fileData = await getFileMetadata(fileId);
@@ -54,7 +55,7 @@ export async function GET(
         await logEvent('file_download', fileId, clientIp);
 
         // Check for direct parameter to determine download method
-        const url = new URL(req.url);
+        const url = new URL(request.url);
         const direct = url.searchParams.get('direct') === 'true';
         const download = url.searchParams.get('download') === 'true';
 
@@ -84,7 +85,7 @@ export async function GET(
         const { stream, contentType, size } = await streamFile(fileId, fileData.fileName);
 
         // Create a readable stream response
-        return new Response(stream as ReadableStream, {
+        return new Response(stream as unknown as ReadableStream, { // Cast to unknown first, then to ReadableStream
             headers: {
                 'Content-Type': contentType,
                 'Content-Disposition': `attachment; filename="${encodeURIComponent(fileData.fileName)}"`,
@@ -105,10 +106,10 @@ export async function GET(
  * DELETE handler for removing a file
  */
 export async function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    context: { params: { id: string } } // Explicitly type context
 ): Promise<NextResponse> {
-    const fileId = params.id;
+    const fileId = context.params.id; // Access id via context.params
 
     if (!fileId) {
         return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
@@ -116,7 +117,7 @@ export async function DELETE(
 
     try {
         // Get client IP
-        const clientIp = getClientIp(req);
+        const clientIp = getClientIp(request);
 
         // Get file metadata from Redis
         const fileData = await getFileMetadata(fileId);
@@ -134,7 +135,7 @@ export async function DELETE(
 
         if (deleted) {
             // Delete metadata from Redis
-            const { deleteFileMetadata } = await import('@/services/redisService');
+            const { deleteFileMetadata } = await import('@/services/firebaseService');
             await deleteFileMetadata(fileId);
 
             // Log deletion event

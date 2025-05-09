@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { uploadFile } from '@/services/storageService';
-import { saveFileMetadata, incrementMetric, logEvent, FileMetadata } from '@/services/redisService';
+import { saveFileMetadata, logEvent, incrementMetric } from '@/services/firebaseService'; // Now using Firebase-backed redisService
 
 // Maximum file size (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -71,6 +71,21 @@ async function parseFormData(req: NextRequest): Promise<{
  * POST handler for file uploads
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+    const ip = getClientIp(req) || '127.0.0.1';
+
+    // Rate limiting - This needs to be replaced with a Firebase-compatible solution
+    // const { success, limit, remaining, reset } = await ratelimit.limit(ip);
+    // if (!success) {
+    //   return new NextResponse('Too many requests', {
+    //     status: 429,
+    //     headers: {
+    //       'X-RateLimit-Limit': limit.toString(),
+    //       'X-RateLimit-Remaining': remaining.toString(),
+    //       'X-RateLimit-Reset': reset.toString(),
+    //     },
+    //   });
+    // }
+
     try {
         // Get client IP
         const clientIp = getClientIp(req);

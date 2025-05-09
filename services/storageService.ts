@@ -1,6 +1,6 @@
 import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { getFileMetadata, deleteFileMetadata, FileMetadata } from './redisService';
+import { getFileMetadata, deleteFileMetadata, FileMetadata } from './firebaseService';
 
 // Initialize Google Cloud Storage
 let storage: Storage;

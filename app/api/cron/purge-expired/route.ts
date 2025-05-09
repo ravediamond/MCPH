@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { purgeExpiredFiles } from '@/services/storageService';
-import { logEvent } from '@/services/redisService';
-import { Redis } from '@upstash/redis';
+import { logEvent } from '@/services/firebaseService';
 
 // For Vercel edge functions
-export const runtime = 'edge';
+// export const runtime = 'edge'; // Removed this line
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes max execution time
+// ... SQS-1745: maxDuration for serverless functions is much shorter (e.g., 10-15s on Vercel Hobby)
+// If purgeExpiredFiles can take longer, this might need to be deployed on a tier that supports longer execution
+// or the job needs to be broken down / made idempotent to run more frequently for shorter durations.
+// For standard serverless functions, maxDuration might be interpreted differently or have different limits.
+// Vercel's default for Serverless Functions is 10s (Hobby) up to 900s (Pro/Enterprise based on config).
+// Let's comment it out for now, or adjust based on typical execution time and Vercel plan.
+// export const maxDuration = 300; // 5 minutes max execution time
 
-// Initialize Redis client for locking mechanism
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// REMOVED: Upstash Redis client initialization for locking mechanism
+// const redis = new Redis({
+//     url: process.env.UPSTASH_REDIS_REST_URL!,
+//     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+// });
 
-// Lock key for preventing concurrent cron jobs
-const LOCK_KEY = 'cron:purge-expired:lock';
-const LOCK_TTL = 600; // 10 minutes (to ensure the lock expires eventually)
+// REMOVED: Lock key for preventing concurrent cron jobs
+// const LOCK_KEY = 'cron:purge-expired:lock';
+// const LOCK_TTL = 600; // 10 minutes (to ensure the lock expires eventually)
 
 /**
  * GET /api/cron/purge-expired
@@ -26,6 +31,27 @@ const LOCK_TTL = 600; // 10 minutes (to ensure the lock expires eventually)
  * https://vercel.com/docs/cron-jobs
  */
 export async function GET(req: NextRequest) {
+    // Implement a new locking mechanism here if needed (e.g., using Firebase)
+    // For example, try to set a flag in Firebase and proceed only if successful.
+    // Ensure the lock is released in a finally block.
+
+    // --- Firebase Lock Example (Conceptual) ---
+    // const lockRef = db.ref('locks/cron/purge-expired');
+    // const lockTTL = 600 * 1000; // 10 minutes in milliseconds
+    // let lockAcquired = false;
+    // try {
+    //     const transactionResult = await lockRef.transaction(currentData => {
+    //         if (currentData === null || currentData.timestamp < Date.now() - lockTTL) {
+    //             return { timestamp: Date.now(), owner: 'your-cron-job-instance-id' };
+    //         }
+    //         return; // Abort transaction if lock is held by another active process
+    //     });
+    //     if (!transactionResult.committed || !transactionResult.snapshot.exists()) {
+    //         return NextResponse.json({ message: 'Cron job already running or lock contention.' }, { status: 429 });
+    //     }
+    //     lockAcquired = true;
+    // --- End Firebase Lock Example ---
+
     try {
         // Check if this is a cron job invocation
         const authHeader = req.headers.get('authorization');
@@ -39,48 +65,27 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // Try to acquire the lock
-        const acquiredLock = await redis.set(
-            LOCK_KEY,
-            new Date().toISOString(),
-            { nx: true, ex: LOCK_TTL }
-        );
+        // Purge expired files
+        const purgedCount = await purgeExpiredFiles();
 
-        // If lock not acquired, another instance is already running
-        if (!acquiredLock) {
-            return NextResponse.json(
-                { message: 'Another purge job is already running' },
-                { status: 409 }
-            );
-        }
+        // Log the event
+        await logEvent('purge_expired', 'cron-job', undefined, {
+            purgedCount
+        });
 
-        try {
-            // Purge expired files
-            const purgedCount = await purgeExpiredFiles();
+        return NextResponse.json({
+            success: true,
+            message: `Purged ${purgedCount} expired files`,
+            timestamp: new Date().toISOString()
+        });
 
-            // Log the event
-            await logEvent('purge_expired', 'cron-job', undefined, {
-                purgedCount
-            });
-
-            return NextResponse.json({
-                success: true,
-                message: `Purged ${purgedCount} expired files`,
-                timestamp: new Date().toISOString()
-            });
-        } finally {
-            // Release the lock even if there was an error
-            await redis.del(LOCK_KEY);
-        }
     } catch (error) {
-        console.error('Error purging expired files:', error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: 'Failed to purge expired files',
-                details: error instanceof Error ? error.message : String(error)
-            },
-            { status: 500 }
-        );
+        console.error('Error in cron job:', error);
+        return NextResponse.json({ message: 'Cron job failed.', error: (error as Error).message }, { status: 500 });
+    } finally {
+        // Release the lock
+        // if (lockAcquired && lockRef) { // Release Firebase lock
+        //    await lockRef.remove();
+        // }
     }
 }

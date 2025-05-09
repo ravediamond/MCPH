@@ -4,35 +4,23 @@ const nextConfig = {
   images: {
     domains: ['mcph.io', 'www.mcph.io'],
   },
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-        ],
-      },
-    ];
-  },
-  async redirects() {
-    return [
-      {
-        source: '/api/docs',
-        destination: '/docs',
-        permanent: true,
-      },
-    ];
+  webpack: (config, { isServer }) => {
+    // Add fallbacks for Node.js core modules
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        stream: require.resolve('stream-browserify'),
+        buffer: require.resolve('buffer/'), // Often needed with stream
+        http: require.resolve('http-browserify'), // Added http fallback
+        net: require.resolve('net-browserify'), // Added net fallback
+        https: require.resolve('https-browserify'), // Added https fallback
+        crypto: require.resolve('crypto-browserify'), // Added crypto fallback
+        tls: require.resolve('tls-browserify'), // Added tls fallback
+      };
+    }
+
+    // Important: return the modified config
+    return config;
   },
 };
 

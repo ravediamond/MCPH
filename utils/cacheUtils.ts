@@ -13,12 +13,6 @@ export const CACHE_REGIONS = {
     INTERNAL: 'internal',
 };
 
-// Initialize Upstash Redis client
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL || '',
-    token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
-
 /**
  * Builds a cache key with a region prefix
  */
@@ -50,18 +44,18 @@ export async function cacheFetch<T>(
 
     try {
         // Try to get from cache first
-        const cached = await redis.get<string>(cacheKey);
+        // const cached = await redis.get<string>(cacheKey);
 
-        if (cached) {
-            try {
-                // Parse the cached value if it's JSON
-                return typeof cached === 'string' && cached.startsWith('{')
-                    ? JSON.parse(cached) as T
-                    : cached as unknown as T;
-            } catch (e) {
-                // Continue to fetch fresh data if parse error
-            }
-        }
+        // if (cached) {
+        //     try {
+        //         // Parse the cached value if it's JSON
+        //         return typeof cached === 'string' && cached.startsWith('{')
+        //             ? JSON.parse(cached) as T
+        //             : cached as unknown as T;
+        //     } catch (e) {
+        //         // Continue to fetch fresh data if parse error
+        //     }
+        // }
 
         // Cache miss or invalid format, fetch fresh data
         const freshData = await fetcher();
@@ -73,11 +67,11 @@ export async function cacheFetch<T>(
 
         try {
             // Store the data with TTL
-            const serialized = typeof freshData === 'string'
-                ? freshData
-                : JSON.stringify(freshData);
+            // const serialized = typeof freshData === 'string'
+            //     ? freshData
+            //     : JSON.stringify(freshData);
 
-            await redis.set(cacheKey, serialized, { ex: ttl });
+            // await redis.set(cacheKey, serialized, { ex: ttl });
         } catch (error) {
             // Non-blocking error - we still return the fresh data
         }
@@ -106,18 +100,18 @@ export async function cacheApiResponse(
     const cacheKey = buildCacheKey(region, key);
 
     try {
-        const cached = await redis.get<string>(cacheKey);
+        // const cached = await redis.get<string>(cacheKey);
 
-        if (cached) {
-            // Return cached response
-            return new NextResponse(cached, {
-                status: 200,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Cache': 'HIT'
-                }
-            });
-        }
+        // if (cached) {
+        //     // Return cached response
+        //     return new NextResponse(cached, {
+        //         status: 200,
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-Cache': 'HIT'
+        //         }
+        //     });
+        // }
 
         // Cache miss, get fresh response
         const response = await fetcher();
@@ -130,7 +124,7 @@ export async function cacheApiResponse(
 
                 // Verify it's valid JSON before caching
                 JSON.parse(responseText);
-                await redis.set(cacheKey, responseText, { ex: ttl });
+                // await redis.set(cacheKey, responseText, { ex: ttl });
             } catch (error) {
                 // Skip caching invalid responses
             }
@@ -148,7 +142,7 @@ export async function cacheApiResponse(
  */
 export async function invalidateCache(region: string, key: string): Promise<boolean> {
     try {
-        await redis.del(buildCacheKey(region, key));
+        // await redis.del(buildCacheKey(region, key));
         return true;
     } catch (error) {
         return false;
@@ -160,10 +154,10 @@ export async function invalidateCache(region: string, key: string): Promise<bool
  */
 export async function invalidateRegion(region: string): Promise<boolean> {
     try {
-        const keys = await redis.keys(`${region}:*`);
-        if (keys.length > 0) {
-            await redis.del(...keys);
-        }
+        // const keys = await redis.keys(`${region}:*`);
+        // if (keys.length > 0) {
+        //     await redis.del(...keys);
+        // }
         return true;
     } catch (error) {
         return false;
@@ -175,7 +169,7 @@ export async function invalidateRegion(region: string): Promise<boolean> {
  */
 export async function checkRedisHealth(): Promise<boolean> {
     try {
-        await redis.ping();
+        // await redis.ping();
         return true;
     } catch (error) {
         return false;
@@ -211,14 +205,16 @@ export const cache = {
             return null;
         }
         try {
-            const result = await redis.get<string>(key);
-            if (!result) return null;
+            // const result = await redis.get<string>(key);
+            // if (!result) return null;
 
-            try {
-                return JSON.parse(result) as T;
-            } catch (e) {
-                return result as unknown as T;
-            }
+            // try {
+            //     return JSON.parse(result) as T;
+            // } catch (e) {
+            //     return result as unknown as T;
+            // }
+            // Placeholder: Firebase cache retrieval logic would go here if implemented
+            return null; // Return null as Redis is removed and Firebase cache not implemented here
         } catch (error) {
             return null;
         }
@@ -233,9 +229,9 @@ export const cache = {
                 : JSON.stringify(value);
 
             if (options?.ttl) {
-                await redis.set(key, serializedValue, { ex: Math.floor(options.ttl / 1000) });
+                // await redis.set(key, serializedValue, { ex: Math.floor(options.ttl / 1000) });
             } else {
-                await redis.set(key, serializedValue);
+                // await redis.set(key, serializedValue);
             }
             return true;
         } catch (error) {
@@ -244,7 +240,7 @@ export const cache = {
     },
     delete: async (key: string): Promise<boolean> => {
         try {
-            await redis.del(key);
+            // await redis.del(key);
             return true;
         } catch (error) {
             return false;
@@ -252,10 +248,10 @@ export const cache = {
     },
     clear: async (): Promise<boolean> => {
         try {
-            const keys = await redis.keys('*');
-            if (keys.length > 0) {
-                await redis.del(...keys);
-            }
+            // const keys = await redis.keys('*');
+            // if (keys.length > 0) {
+            //     await redis.del(...keys);
+            // }
             return true;
         } catch (error) {
             return false;

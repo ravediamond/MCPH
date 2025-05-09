@@ -5,7 +5,7 @@ import {
     getFileMetadata,
     incrementDownloadCount,
     deleteFileMetadata
-} from '@/services/redisService';
+} from '@/services/firebaseService';
 
 // Mock external services
 jest.mock('@google-cloud/storage', () => {

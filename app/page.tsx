@@ -130,7 +130,7 @@ export default function Home() {
                             Our file sharing service includes Server-Sent Events (SSE) endpoints for AI agent integration. Easily upload and download files from AI systems using our API.
                         </p>
                         <div className="bg-beige-100 p-3 rounded font-mono text-sm text-gray-700 overflow-x-auto">
-              // Example: AI agent uploading a file via SSE<br />
+                            {/* Example: AI agent uploading a file via SSE */}<br />
                             {`const result = await callTool('CreateUploadLink', {`}<br />
                             {`  fileName: 'report.pdf',`}<br />
                             {`  contentType: 'application/pdf',`}<br />
