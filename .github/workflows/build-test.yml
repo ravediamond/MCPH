@@ -25,8 +25,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
-    - name: Install platform-specific dependencies
-      run: npm rebuild lightningcss --platform=linux --arch=x64
+    - name: Fix lightningcss for Linux
+      run: |
+        npm uninstall lightningcss
+        npm install lightningcss@1.22.0 --platform=linux --arch=x64
       
     - name: Lint
       run: npm run lint
@@ -37,6 +39,7 @@ jobs:
         GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        LIGHTNINGCSS_SKIP_NATIVE_TARGETS: 1
       run: npm run build
 
     - name: Upload build artifacts
