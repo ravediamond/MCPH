@@ -31,7 +31,12 @@ type UploadedFile = {
     expiresAt: string;
 };
 
-export default function FileUpload() {
+interface FileUploadProps {
+    onUploadSuccess?: (data: UploadedFile) => void;
+    onUploadError?: (error: Error | string) => void;
+}
+
+export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) {
     // Refs
     const formRef = useRef<HTMLFormElement>(null);
     const urlRef = useRef<HTMLInputElement>(null);
@@ -156,9 +161,20 @@ export default function FileUpload() {
             }
 
             toast.success('File uploaded successfully!');
+
+            // Call the onUploadSuccess callback if provided
+            if (onUploadSuccess) {
+                onUploadSuccess(data);
+            }
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error(error instanceof Error ? error.message : 'Upload failed');
+            const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+            toast.error(errorMessage);
+
+            // Call the onUploadError callback if provided
+            if (onUploadError) {
+                onUploadError(error instanceof Error ? error : errorMessage);
+            }
         } finally {
             setIsUploading(false);
         }

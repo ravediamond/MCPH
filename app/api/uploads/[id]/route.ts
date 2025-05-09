@@ -23,9 +23,9 @@ function getClientIp(req: NextRequest): string { // Changed to NextRequest
  */
 export async function GET(
     request: NextRequest,
-    context: { params: { id: string } } // Explicitly type context
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse | Response> {
-    const fileId = context.params.id; // Access id via context.params
+    const fileId = (await params).id; // Access id via awaited params
 
     if (!fileId) {
         return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
@@ -107,9 +107,9 @@ export async function GET(
  */
 export async function DELETE(
     request: NextRequest,
-    context: { params: { id: string } } // Explicitly type context
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-    const fileId = context.params.id; // Access id via context.params
+    const fileId = (await params).id; // Access id via awaited params
 
     if (!fileId) {
         return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
