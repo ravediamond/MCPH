@@ -25,7 +25,10 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-
+      
+    - name: Install platform-specific dependencies
+      run: npm rebuild lightningcss --platform=linux --arch=x64
+      
     - name: Lint
       run: npm run lint
 
