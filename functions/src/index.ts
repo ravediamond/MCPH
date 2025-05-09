@@ -1,24 +1,26 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import * as express from 'express';
+import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+import multer from 'multer';  // Changed from namespace import to default import
+import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
 /**
- * NOTE: Stateless SSE Implementation
+ * NOTE: Firebase Functions Implementation
  * 
- * This implementation handles stateless SSE requests where the client 
- * establishes short-lived connections rather than maintaining long-lived ones.
- * 
- * For Firebase/GCP, we use an Express app to handle the SSE endpoints
- * because it gives us better control over headers and response handling
- * than trying to directly map Next.js API routes.
+ * This implementation handles both SSE and file operations:
+ * 1. SSE for real-time events
+ * 2. File uploads/downloads
+ * 3. Cron jobs for cleanup
  */
 
 // Initialize Firebase Admin SDK
 admin.initializeApp();
 
-// Define Zod schema for the dummy tool input
+// Define Zod schemas
 const DummyToolInputSchema = z.object({
     message: z.string().optional().describe("An optional message for the dummy tool."),
 });
@@ -35,7 +37,7 @@ app.use((req, res, next) => {
         : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
 
     res.header('Access-Control-Allow-Origin', allowOrigin);
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
 
     if (req.method === 'OPTIONS') {
@@ -51,7 +53,19 @@ app.use(express.json());
 // Type definitions
 type Session = {
     nextEventId: number
-}
+};
+
+type FileMetadata = {
+    id: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    uploadedAt: string;
+    expiresAt: string;
+    downloadCount: number;
+    downloadLimit?: number;
+    ipAddress?: string;
+};
 
 // Function to get client IP
 const getClientIp = (req: express.Request): string => {
@@ -289,3 +303,257 @@ export const nextServerSSE = functions
         memory: '256MB',
     })
     .https.onRequest(app);
+
+// Create a new Express app for file operations
+const fileApp = express();
+
+// Enable CORS for file operations
+fileApp.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowOrigin = ALLOWED_ORIGINS.includes('*')
+        ? '*'
+        : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
+
+    res.header('Access-Control-Allow-Origin', allowOrigin);
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(204).send();
+    }
+
+    next();
+});
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage,
+    limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
+});
+
+// File upload endpoint
+fileApp.post('/api/uploads', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file provided' });
+        }
+
+        const file = req.file;
+        const fileId = uuidv4();
+        const bucket = admin.storage().bucket();
+
+        // Create a temp file path
+        const tempFilePath = path.join(os.tmpdir(), file.originalname);
+        fs.writeFileSync(tempFilePath, file.buffer);
+
+        // Upload to Firebase Storage
+        await bucket.upload(tempFilePath, {
+            destination: `uploads/${fileId}`,
+            metadata: {
+                contentType: file.mimetype,
+                metadata: {
+                    originalName: file.originalname,
+                    fileId
+                }
+            }
+        });
+
+        // Clean up temp file
+        fs.unlinkSync(tempFilePath);
+
+        // Calculate expiration (default: 7 days)
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        // Store metadata in Firestore
+        const fileMetadata: FileMetadata = {
+            id: fileId,
+            originalName: file.originalname,
+            mimeType: file.mimetype,
+            size: file.size,
+            uploadedAt: now.toISOString(),
+            expiresAt: expiresAt.toISOString(),
+            downloadCount: 0,
+            downloadLimit: req.body.downloadLimit ? parseInt(req.body.downloadLimit) : undefined,
+            ipAddress: getClientIp(req)
+        };
+
+        await admin.firestore().collection('files').doc(fileId).set(fileMetadata);
+
+        // Log the upload event
+        await logEvent('file_upload', fileId, getClientIp(req), {
+            filename: file.originalname,
+            size: file.size
+        });
+
+        res.status(201).json({
+            fileId,
+            url: `/api/uploads/${fileId}`,
+            expiresAt: expiresAt.toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        res.status(500).json({ error: 'Failed to upload file' });
+    }
+});
+
+// File download endpoint
+fileApp.get('/api/uploads/:id', async (req, res) => {
+    try {
+        const fileId = req.params.id;
+        const clientIp = getClientIp(req);
+
+        // Get file metadata from Firestore
+        const fileDoc = await admin.firestore().collection('files').doc(fileId).get();
+
+        if (!fileDoc.exists) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const fileData = fileDoc.data() as FileMetadata;
+
+        // Check if file has expired
+        if (new Date(fileData.expiresAt) < new Date()) {
+            return res.status(410).json({ error: 'File has expired and is no longer available' });
+        }
+
+        // Check download limit if set
+        if (fileData.downloadLimit && fileData.downloadCount >= fileData.downloadLimit) {
+            return res.status(403).json({ error: 'Download limit reached for this file' });
+        }
+
+        // Get file from Firebase Storage
+        const bucket = admin.storage().bucket();
+        const file = bucket.file(`uploads/${fileId}`);
+        const [exists] = await file.exists();
+
+        if (!exists) {
+            return res.status(404).json({ error: 'File storage error' });
+        }
+
+        // Update download count
+        await admin.firestore().collection('files').doc(fileId).update({
+            downloadCount: admin.firestore.FieldValue.increment(1)
+        });
+
+        // Log download event
+        await logEvent('file_download', fileId, clientIp, {
+            filename: fileData.originalName
+        });
+
+        // Set headers for download
+        res.setHeader('Content-Type', fileData.mimeType);
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileData.originalName)}"`);
+
+        // Stream file to response
+        const fileStream = file.createReadStream();
+        fileStream.pipe(res);
+
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        res.status(500).json({ error: 'Failed to download file' });
+    }
+});
+
+// File deletion endpoint
+fileApp.delete('/api/uploads/:id', async (req, res) => {
+    try {
+        const fileId = req.params.id;
+        const clientIp = getClientIp(req);
+
+        // Get file metadata from Firestore
+        const fileDoc = await admin.firestore().collection('files').doc(fileId).get();
+
+        if (!fileDoc.exists) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const fileData = fileDoc.data() as FileMetadata;
+
+        // Delete from Firebase Storage
+        const bucket = admin.storage().bucket();
+        const file = bucket.file(`uploads/${fileId}`);
+        await file.delete();
+
+        // Delete metadata from Firestore
+        await admin.firestore().collection('files').doc(fileId).delete();
+
+        // Log deletion event
+        await logEvent('file_delete', fileId, clientIp, {
+            filename: fileData.originalName
+        });
+
+        res.status(200).json({ message: 'File deleted successfully' });
+
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        res.status(500).json({ error: 'Failed to delete file' });
+    }
+});
+
+// Export the file operations Express app as a Cloud Function
+export const fileOperations = functions
+    .runWith({
+        timeoutSeconds: 300,
+        memory: '512MB',
+    })
+    .https.onRequest(fileApp);
+
+// Scheduled function to purge expired files (runs daily)
+export const purgeExpiredFiles = functions.pubsub
+    .schedule('every 24 hours')
+    .onRun(async context => {
+        try {
+            const now = new Date();
+
+            // Query for expired files
+            const expiredFilesQuery = await admin.firestore()
+                .collection('files')
+                .where('expiresAt', '<', now.toISOString())
+                .get();
+
+            if (expiredFilesQuery.empty) {
+                console.log('No expired files to purge');
+                return null;
+            }
+
+            const bucket = admin.storage().bucket();
+            const batch = admin.firestore().batch();
+            const deletedCount = expiredFilesQuery.size;
+
+            // Delete each expired file
+            for (const doc of expiredFilesQuery.docs) {
+                const fileData = doc.data() as FileMetadata;
+                const fileId = fileData.id;
+
+                // Delete from Storage
+                try {
+                    const file = bucket.file(`uploads/${fileId}`);
+                    await file.delete();
+                } catch (err) {
+                    console.error(`Error deleting file ${fileId} from storage:`, err);
+                }
+
+                // Add to batch delete for Firestore
+                batch.delete(doc.ref);
+
+                // Log purge event
+                await logEvent('file_purge', fileId, undefined, {
+                    reason: 'expired',
+                    filename: fileData.originalName
+                });
+            }
+
+            // Commit the batch delete
+            await batch.commit();
+
+            console.log(`Successfully purged ${deletedCount} expired files`);
+            return null;
+
+        } catch (error) {
+            console.error('Error purging expired files:', error);
+            return null;
+        }
+    });

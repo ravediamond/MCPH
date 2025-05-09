@@ -2,6 +2,9 @@
 import { MetadataRoute } from 'next';
 import { API } from './config/constants'; // Changed APP_CONFIG to API
 
+// Mark this route as static for Next.js static export
+export const dynamic = 'force-static';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'; // Added a fallback for appUrl
 

@@ -1,158 +1,59 @@
-import { NextResponse, NextRequest } from 'next/server'; // Removed unused Request import
-import { getFileMetadata, incrementDownloadCount, logEvent } from '@/services/firebaseService';
-import { streamFile, getSignedDownloadUrl } from '@/services/storageService';
+import { NextRequest, NextResponse } from 'next/server';
 
+// Change to static for compatibility with Next.js static export
+export const dynamic = 'force-static';
+
+// Configure as static API
 export const config = {
-    runtime: 'nodejs',
+    runtime: 'edge',
 };
 
+type ParamsType = Promise<{ id: string }>;
+
 /**
- * Extract client IP address from request
+ * Generate static params for all possible dynamic routes
+ * This is required when using "output: export" in next.config.js
  */
-function getClientIp(req: NextRequest): string { // Changed to NextRequest
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
-    }
-    // req.ip could be used here if available and preferred for NextRequest
-    return '127.0.0.1';
+export async function generateStaticParams() {
+    // You'll need to return an array of objects with the id parameter
+    // for each dynamic route you want to pre-render
+    return [
+        { id: 'placeholder' }
+        // Add more IDs if you want to pre-render specific file routes
+    ];
 }
 
 /**
- * GET handler for file downloads
+ * Static placeholder for the file download API
+ * In a static export, file downloads need to be handled by Firebase Functions
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse | Response> {
-    const fileId = (await params).id; // Access id via awaited params
+    { params }: { params: ParamsType }
+) {
+    const { id }: { id: string } = await params;
 
-    if (!fileId) {
-        return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
-    }
-
-    try {
-        // Get client IP
-        const clientIp = getClientIp(request);
-
-        // Get file metadata from Redis
-        const fileData = await getFileMetadata(fileId);
-
-        // Check if file exists
-        if (!fileData) {
-            return NextResponse.json({ error: 'File not found' }, { status: 404 });
-        }
-
-        // Check if file has expired
-        if (fileData.expiresAt < new Date()) {
-            return NextResponse.json({ error: 'File has expired' }, { status: 410 });
-        }
-
-        // Increment download count
-        await incrementDownloadCount(fileId);
-
-        // Log download event
-        await logEvent('file_download', fileId, clientIp);
-
-        // Check for direct parameter to determine download method
-        const url = new URL(request.url);
-        const direct = url.searchParams.get('direct') === 'true';
-        const download = url.searchParams.get('download') === 'true';
-
-        // If direct download is requested, redirect to a signed URL
-        if (direct) {
-            // Generate signed URL (expires in 10 minutes)
-            const signedUrl = await getSignedDownloadUrl(fileId, fileData.fileName);
-            return NextResponse.redirect(signedUrl);
-        }
-
-        // If download info is requested (default behavior without any params)
-        if (!download) {
-            return NextResponse.json({
-                id: fileData.id,
-                fileName: fileData.fileName,
-                contentType: fileData.contentType,
-                size: fileData.size,
-                downloadCount: fileData.downloadCount,
-                uploadedAt: fileData.uploadedAt.toISOString(),
-                expiresAt: fileData.expiresAt.toISOString(),
-                directUrl: `${url.origin}/api/uploads/${fileId}?direct=true`,
-                downloadUrl: `${url.origin}/api/uploads/${fileId}?download=true`,
-            });
-        }
-
-        // Stream the file directly (when download=true)
-        const { stream, contentType, size } = await streamFile(fileId, fileData.fileName);
-
-        // Create a readable stream response
-        return new Response(stream as unknown as ReadableStream, { // Cast to unknown first, then to ReadableStream
-            headers: {
-                'Content-Type': contentType,
-                'Content-Disposition': `attachment; filename="${encodeURIComponent(fileData.fileName)}"`,
-                'Content-Length': size.toString(),
-                'Cache-Control': 'no-cache',
-            },
-        });
-    } catch (error) {
-        console.error('Error handling download:', error);
-        return NextResponse.json(
-            { error: 'Failed to process download' },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json({
+        message: "This is a static placeholder. In production, file download functionality is provided by Firebase Functions.",
+        fileId: id,
+        endpoint: `/api/uploads/${id}`,
+        firebaseFunctionUrl: `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url"}/fileDownload/${id}`
+    }, { status: 200 });
 }
 
 /**
- * DELETE handler for removing a file
+ * DELETE handler placeholder for removing a file
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
-    const fileId = (await params).id; // Access id via awaited params
+    { params }: { params: ParamsType }
+) {
+    const { id }: { id: string } = await params;
 
-    if (!fileId) {
-        return NextResponse.json({ error: 'File ID is required' }, { status: 400 });
-    }
-
-    try {
-        // Get client IP
-        const clientIp = getClientIp(request);
-
-        // Get file metadata from Redis
-        const fileData = await getFileMetadata(fileId);
-
-        // Check if file exists
-        if (!fileData) {
-            return NextResponse.json({ error: 'File not found' }, { status: 404 });
-        }
-
-        // TODO: Implement authorization check if needed
-
-        // Delete the file (implement this in storageService)
-        const { deleteFile } = await import('@/services/storageService');
-        const deleted = await deleteFile(fileId, fileData.fileName);
-
-        if (deleted) {
-            // Delete metadata from Redis
-            const { deleteFileMetadata } = await import('@/services/firebaseService');
-            await deleteFileMetadata(fileId);
-
-            // Log deletion event
-            await logEvent('file_delete', fileId, clientIp);
-
-            return NextResponse.json({ success: true });
-        } else {
-            return NextResponse.json(
-                { error: 'Failed to delete file' },
-                { status: 500 }
-            );
-        }
-    } catch (error) {
-        console.error('Error handling file deletion:', error);
-        return NextResponse.json(
-            { error: 'Failed to process deletion' },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json({
+        message: "This is a static placeholder. In production, file deletion functionality is provided by Firebase Functions.",
+        fileId: id,
+        endpoint: `/api/uploads/${id}`,
+        firebaseFunctionUrl: `${process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url"}/fileDelete/${id}`
+    }, { status: 200 });
 }

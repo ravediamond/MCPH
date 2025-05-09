@@ -327,19 +327,3 @@ export async function getEvents(
         return [];
     }
 }
-
-// --- Functions that might need review or were specific to Redis features like raw client access ---
-
-// The old Redis client instance is no longer here.
-// If any part of the app was using `redis.get(...)` directly,
-// it needs to be refactored to use the new Firebase-based functions.
-
-// Rate limiting logic that was previously implemented using Upstash/Redis
-// will need a new implementation strategy using Firebase (e.g., Cloud Functions + RTDB)
-// or a third-party service. The Ratelimit class from '@upstash/ratelimit'
-// and its direct usage will no longer work without a Redis instance.
-
-// Consider removing or refactoring cacheUtils.ts if it was purely Redis-based
-// or adapt it to use Firebase if a similar caching pattern is desired.
-// Firebase RTDB can act as a cache, but its performance characteristics and
-// query capabilities are different from Redis.

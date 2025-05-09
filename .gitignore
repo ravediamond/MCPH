@@ -4,6 +4,10 @@
 # Next.js build output
 **/.next
 
+# Firebase build output
+out
+*.log
+
 # Environment Variables
 .env.local
 *credentials.json

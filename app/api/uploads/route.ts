@@ -1,165 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import { uploadFile } from '@/services/storageService';
-import { saveFileMetadata, logEvent, incrementMetric } from '@/services/firebaseService'; // Now using Firebase-backed redisService
 
-// Maximum file size (500MB)
-const MAX_FILE_SIZE = 500 * 1024 * 1024;
+// Change to static for compatibility with Next.js static export
+export const dynamic = 'force-static';
 
-// Default TTL if not specified (1 hour)
-const DEFAULT_TTL_HOURS = 1;
-
-// Maximum TTL allowed (24 hours)
-const MAX_TTL_HOURS = 24;
-
+// Configure as static API
 export const config = {
-    api: {
-        bodyParser: false,
-    },
-    runtime: 'nodejs',
+    runtime: 'edge',
 };
 
 /**
- * Extract client IP address from request
- */
-function getClientIp(req: NextRequest): string {
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
-    }
-    return '127.0.0.1';
-}
-
-/**
- * Parse the form data and extract file and parameters
- */
-async function parseFormData(req: NextRequest): Promise<{
-    file: File;
-    ttl: number;
-}> {
-    try {
-        const formData = await req.formData();
-        const file = formData.get('file') as File;
-
-        if (!file) {
-            throw new Error('No file provided');
-        }
-
-        // Get TTL from form data (in hours)
-        let ttl = DEFAULT_TTL_HOURS;
-        const ttlValue = formData.get('ttl');
-
-        if (ttlValue) {
-            ttl = parseFloat(ttlValue.toString());
-
-            // Validate TTL
-            if (isNaN(ttl) || ttl <= 0) {
-                ttl = DEFAULT_TTL_HOURS;
-            } else if (ttl > MAX_TTL_HOURS) {
-                ttl = MAX_TTL_HOURS;
-            }
-        }
-
-        return { file, ttl };
-    } catch (error) {
-        console.error('Error parsing form data:', error);
-        throw new Error('Failed to parse upload request');
-    }
-}
-
-/**
- * POST handler for file uploads
+ * Static placeholder for the file uploads API
+ * In a static export, file uploads need to be handled by Firebase Functions
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
-    const ip = getClientIp(req) || '127.0.0.1';
-
-    // Rate limiting - This needs to be replaced with a Firebase-compatible solution
-    // const { success, limit, remaining, reset } = await ratelimit.limit(ip);
-    // if (!success) {
-    //   return new NextResponse('Too many requests', {
-    //     status: 429,
-    //     headers: {
-    //       'X-RateLimit-Limit': limit.toString(),
-    //       'X-RateLimit-Remaining': remaining.toString(),
-    //       'X-RateLimit-Reset': reset.toString(),
-    //     },
-    //   });
-    // }
-
-    try {
-        // Get client IP
-        const clientIp = getClientIp(req);
-
-        // Parse form data
-        const { file, ttl } = await parseFormData(req);
-
-        // Check file size
-        if (file.size > MAX_FILE_SIZE) {
-            return NextResponse.json(
-                { error: `File is too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB` },
-                { status: 413 }
-            );
-        }
-
-        // Read file as buffer
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-
-        // Upload file to storage
-        const fileData = await uploadFile(
-            fileBuffer,
-            file.name,
-            file.type || 'application/octet-stream',
-            ttl
-        );
-
-        // Calculate TTL in seconds
-        const ttlSeconds = Math.round(ttl * 3600);
-
-        // Save file metadata to Redis
-        await saveFileMetadata(fileData, ttlSeconds);
-
-        // Calculate expiration time in UTC string
-        const expiresAt = fileData.expiresAt.toISOString();
-
-        // Generate download URL (this will be a link to our API endpoint)
-        const downloadUrl = `${req.nextUrl.origin}/api/uploads/${fileData.id}`;
-
-        // Log the upload event
-        await logEvent('file_upload', fileData.id, clientIp, {
-            fileName: file.name,
-            fileSize: file.size,
-            ttl,
-        });
-
-        // Increment upload count metric
-        await incrementMetric('uploads');
-
-        // Return response
-        return NextResponse.json({
-            id: fileData.id,
-            fileName: fileData.fileName,
-            contentType: fileData.contentType,
-            size: fileData.size,
-            downloadUrl,
-            uploadedAt: fileData.uploadedAt.toISOString(),
-            expiresAt,
-        });
-    } catch (error) {
-        console.error('Error handling upload:', error);
-        return NextResponse.json(
-            { error: 'Failed to process upload' },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json({
+        message: "This is a static placeholder. In production, file upload functionality is provided by Firebase Functions.",
+        endpoint: "/api/uploads",
+        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/fileUpload"
+    }, { status: 200 });
 }
 
 /**
- * GET handler to check API status
+ * GET handler to provide information about the API
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
-        status: 'ok',
-        maxFileSize: MAX_FILE_SIZE,
-        maxTtlHours: MAX_TTL_HOURS,
+        message: "This is a static placeholder. In production, file upload functionality is provided by Firebase Functions.",
+        info: "Please use the Firebase Function endpoint for file uploads.",
+        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/fileUpload"
     });
 }
