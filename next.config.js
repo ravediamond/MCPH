@@ -4,6 +4,10 @@ const nextConfig = {
   images: {
     domains: ['mcph.io', 'www.mcph.io'],
   },
+  output: 'export', // Enable static HTML export for Firebase Hosting
+  distDir: 'out', // Output to 'out' directory for Firebase Hosting
+  // We'll handle the API routes with Cloud Functions
+  trailingSlash: true, // For better Firebase Hosting compatibility
   webpack: (config, { isServer }) => {
     // Add fallbacks for Node.js core modules
     if (!isServer) {

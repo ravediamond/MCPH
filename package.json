@@ -9,7 +9,13 @@
         "type-check": "tsc --noEmit --incremental",
         "check": "npm run type-check && npm run lint",
         "prepare": "husky install",
-        "reset-db": "node scripts/reset-db.js"
+        "reset-db": "node scripts/reset-db.js",
+        "firebase:emulators": "firebase emulators:start",
+        "firebase:serve": "firebase serve",
+        "firebase:deploy": "firebase deploy",
+        "functions:build": "cd functions && npm run build",
+        "functions:serve": "cd functions && npm run serve",
+        "build:export": "next build && next export"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
@@ -50,6 +56,7 @@
         "crypto-browserify": "^3.12.1",
         "eslint": "^9.25.1",
         "eslint-config-next": "^15.3.1",
+        "firebase-tools": "^13.5.0",
         "http-browserify": "^1.7.0",
         "https-browserify": "^1.0.0",
         "husky": "^9.1.7",
