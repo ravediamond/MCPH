@@ -23,15 +23,6 @@ const nextConfig = {
       };
     }
 
-    // Configure lightningcss to avoid platform compatibility issues
-    config.experiments = {
-      ...config.experiments,
-      css: {
-        ...config.experiments?.css,
-        skipNativeTailwind: true,
-      }
-    };
-
     // Important: return the modified config
     return config;
   },

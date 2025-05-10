@@ -2,11 +2,9 @@
 
 :root {
     --background-beige: #f5f3ef;
-    /* Light beige/cream background from Claude interface */
     --text-primary: #202123;
     --text-secondary: #5d5e61;
     --accent-coral: #e57a56;
-    /* Coral/orange accent color from Claude */
     --border-color: #e5e5e5;
     --card-bg: #ffffff;
     --hover-bg: rgba(0, 0, 0, 0.05);
