@@ -1,11 +1,16 @@
 # Dependencies
-/node_modules
+**/node_modules
 
 # Next.js build output
-/.next
+**/.next
+
+# Firebase build output
+out
+*.log
 
 # Environment Variables
 .env.local
+*credentials.json
 
 # Logs
 npm-debug.log*

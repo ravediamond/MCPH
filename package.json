@@ -8,7 +8,14 @@
         "lint": "next lint",
         "type-check": "tsc --noEmit --incremental",
         "check": "npm run type-check && npm run lint",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "reset-db": "node scripts/reset-db.js",
+        "firebase:emulators": "firebase emulators:start",
+        "firebase:serve": "firebase serve",
+        "firebase:deploy": "firebase deploy",
+        "functions:build": "cd functions && npm run build",
+        "functions:serve": "cd functions && npm run serve",
+        "build:export": "next build && next export"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
@@ -17,32 +24,36 @@
         ]
     },
     "dependencies": {
+        "@google-cloud/storage": "^7.16.0",
         "@heroicons/react": "^2.2.0",
-        "@octokit/rest": "^19.0.13",
-        "@supabase/auth-helpers-nextjs": "^0.10.0",
-        "@supabase/supabase-js": "^2.49.4",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/typography": "^0.5.16",
         "@upstash/ratelimit": "^2.0.5",
         "@upstash/redis": "^1.34.8",
-        "@vercel/edge": "^1.2.1",
         "bufferutil": "^4.0.9",
         "date-fns": "^4.1.0",
+        "firebase-admin": "^13.3.0",
         "framer-motion": "^12.6.3",
         "github-markdown-css": "^5.8.1",
+        "lightningcss": "^1.29.3",
         "lucide-react": "^0.487.0",
-        "lunr": "^2.3.9",
         "next": "^15.3.0",
-        "octokit": "^4.1.3",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
+        "react-dropzone": "^14.3.8",
         "react-hot-toast": "^2.5.2",
         "react-icons": "^5.5.0",
-        "react-markdown": "^10.1.0",
-        "rehype-raw": "^7.0.0",
-        "remark-gfm": "^4.0.1",
         "utf-8-validate": "^6.0.5",
+        "uuid": "^11.1.0",
         "zod": "^3.24.4"
+    },
+    "optionalDependencies": {
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.0",
+        "@tailwindcss/oxide-darwin-x64": "^4.0.0",
+        "@tailwindcss/oxide-darwin-arm64": "^4.0.0",
+        "lightningcss-linux-x64-gnu": "^1.24.0",
+        "lightningcss-darwin-x64": "^1.24.0",
+        "lightningcss-darwin-arm64": "^1.24.0"
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.1.3",
@@ -50,12 +61,23 @@
         "@types/node": "22.14.0",
         "@types/react": "19.1.0",
         "autoprefixer": "^10.4.21",
+        "buffer": "^6.0.3",
+        "crypto-browserify": "^3.12.1",
         "eslint": "^9.25.1",
         "eslint-config-next": "^15.3.1",
+        "firebase-tools": "^13.5.0",
+        "http-browserify": "^1.7.0",
+        "https-browserify": "^1.0.0",
         "husky": "^9.1.7",
         "lint-staged": "^15.5.1",
+        "net-browserify": "^0.1.4",
         "postcss": "^8.5.3",
+        "process": "^0.11.10",
+        "readable-stream": "^4.7.0",
+        "stream-browserify": "^3.0.0",
         "tailwindcss": "^4.1.3",
-        "typescript": "^5.8.3"
+        "tls-browserify": "^0.2.2",
+        "typescript": "^5.8.3",
+        "vm-browserify": "^1.1.2"
     }
 }

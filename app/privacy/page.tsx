@@ -1,154 +1,159 @@
 'use client';
 
-import Link from 'next/link';
-import Button from 'components/ui/Button';
-import { motion } from 'framer-motion';
+import React from 'react';
 
-export default function PrivacyPolicy() {
+export default function PrivacyPage() {
     return (
-        <div className="bg-white min-h-screen">
-            {/* Hero Section */}
-            <section className="py-16 px-4 border-b border-neutral-100">
-                <div className="max-w-5xl mx-auto text-center">
-                    <h1 className="text-4xl font-semibold text-neutral-800 mb-4">
-                        Privacy Policy
-                    </h1>
-                    <p className="text-lg text-neutral-600 max-w-3xl mx-auto">
-                        This Privacy Policy outlines how we collect, use, and protect your data.
+        <div className="bg-beige-200 min-h-screen py-12">
+            <div className="max-w-4xl mx-auto px-4">
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Privacy Policy</h1>
+                    <p className="text-gray-600">Last updated: May 7, 2025</p>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+                    <p className="text-gray-600 mb-6">
+                        MCPH is committed to protecting your privacy. This Privacy Policy explains how we collect, use,
+                        and safeguard your information when you use our file-sharing service. We've designed our service
+                        with privacy as a core principle, minimizing data collection and ensuring all files are automatically
+                        deleted after their expiration period.
+                    </p>
+
+                    <p className="text-gray-600">
+                        By using MCPH, you agree to the collection and use of information in accordance with this policy.
                     </p>
                 </div>
-            </section>
 
-            {/* Privacy Policy Content */}
-            <section className="py-16 px-4">
-                <div className="max-w-5xl mx-auto">
-                    {/* Introduction */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            Introduction
-                        </h2>
-                        <p className="text-neutral-600 text-lg mb-4">
-                            Your privacy is critically important to us. We only collect data necessary to provide and enhance our services while ensuring a seamless user experience.
-                        </p>
-                        <p className="text-neutral-600 text-lg">
-                            By using our website, you agree to the terms of this Privacy Policy and any updates we may make.
-                        </p>
-                    </motion.div>
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Information Collection</h2>
 
-                    {/* Information We Collect */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            Information We Collect
-                        </h2>
-                        <p className="text-neutral-600 text-lg mb-4">
-                            We collect various types of data to optimize our service:
+                    <div className="mb-6">
+                        <h3 className="text-xl font-semibold text-primary-500 mb-3">Files and Content</h3>
+                        <p className="text-gray-600 mb-3">
+                            When you upload files to MCPH, we temporarily store:
                         </p>
-                        <ul className="list-disc pl-5 text-neutral-600 text-lg">
-                            <li>
-                                <strong>Personal Information:</strong> Such as your name, email address, and contact details.
-                            </li>
-                            <li>
-                                <strong>Usage Data:</strong> Information about how you interact with our website.
-                            </li>
-                            <li>
-                                <strong>Cookies and Tracking Technologies:</strong> Used to personalize your experience.
-                            </li>
+                        <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
+                            <li>The file itself (encrypted at rest in Google Cloud Storage)</li>
+                            <li>Basic metadata such as filename, file type, and size</li>
+                            <li>Expiration time as set by you (default: 1 hour)</li>
                         </ul>
-                    </motion.div>
-
-                    {/* How We Use Your Information */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            How We Use Your Information
-                        </h2>
-                        <p className="text-neutral-600 text-lg mb-4">
-                            The data we collect is used for several purposes, including:
+                        <p className="text-gray-600 font-medium">
+                            All files and associated metadata are automatically and permanently deleted after the expiration period.
                         </p>
-                        <ul className="list-decimal pl-5 text-neutral-600 text-lg">
-                            <li>Providing and maintaining our services.</li>
-                            <li>Improving and personalizing your experience.</li>
-                            <li>Communicating updates and special offers.</li>
-                            <li>Ensuring the security and integrity of our systems.</li>
+                    </div>
+
+                    <div className="mb-6">
+                        <h3 className="text-xl font-semibold text-primary-500 mb-3">Technical Information</h3>
+                        <p className="text-gray-600 mb-3">
+                            We collect minimal technical information necessary to provide and secure our service:
+                        </p>
+                        <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                            <li>IP addresses (for abuse prevention and rate limiting)</li>
+                            <li>HTTP request information (browser type, referring site)</li>
+                            <li>Event timestamps (upload and download times)</li>
+                            <li>Error information (if something goes wrong)</li>
                         </ul>
-                    </motion.div>
-
-                    {/* Security */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            Security
-                        </h2>
-                        <p className="text-neutral-600 text-lg">
-                            We employ robust security measures to protect your data from unauthorized access, disclosure, alteration, and destruction.
+                        <p className="text-gray-600 mt-3">
+                            All logs have a short retention period (7 days) after which they are automatically purged.
                         </p>
-                    </motion.div>
-
-                    {/* Third-Party Services */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            Third-Party Services
-                        </h2>
-                        <p className="text-neutral-600 text-lg mb-4">
-                            We may share your data with trusted third-party services that help us operate our website, analyze usage, and enhance your experience.
-                        </p>
-                        <p className="text-neutral-600 text-lg">
-                            These third parties are obligated to maintain the confidentiality and security of your data.
-                        </p>
-                    </motion.div>
-
-                    {/* Contact */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.5 }}
-                        className="mb-8"
-                    >
-                        <h2 className="text-2xl font-semibold text-neutral-800 mb-4">
-                            Contact Us
-                        </h2>
-                        <p className="text-neutral-600 text-lg">
-                            If you have any questions or concerns about our Privacy Policy, please feel free to contact us at{' '}
-                            <a
-                                className="text-blue-600 hover:text-blue-800 underline"
-                                href="mailto:privacy@example.com"
-                            >
-                                privacy@example.com
-                            </a>.
-                        </p>
-                    </motion.div>
-
-                    {/* Return Button */}
-                    <div className="text-center">
-                        <Button variant="primary" className="px-6 py-3">
-                            <Link href="/">Return to Homepage</Link>
-                        </Button>
                     </div>
                 </div>
-            </section>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">How We Use Information</h2>
+
+                    <p className="text-gray-600 mb-4">
+                        We use the information we collect for the following purposes:
+                    </p>
+                    <ul className="list-disc pl-6 text-gray-600 space-y-3">
+                        <li>To provide the file-sharing service (storing and making your files available for download)</li>
+                        <li>To enforce expiration times and automatically delete expired content</li>
+                        <li>To prevent abuse of our service (rate limiting, blocking malicious uploads)</li>
+                        <li>To improve the service and fix issues</li>
+                        <li>To gather anonymous aggregate statistics about service usage</li>
+                    </ul>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Data Storage and Security</h2>
+
+                    <p className="text-gray-600 mb-4">
+                        Files are stored in Google Cloud Storage with the following security measures:
+                    </p>
+                    <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
+                        <li>Encryption at rest using Google-managed encryption keys</li>
+                        <li>Transport encryption (TLS/HTTPS) for all data in transit</li>
+                        <li>Access controls limiting who can access stored files</li>
+                        <li>Physical security measures at Google's data centers</li>
+                    </ul>
+
+                    <p className="text-gray-600 mb-4">
+                        Metadata is stored in Upstash Redis with automatic time-based expiration to match file TTLs.
+                    </p>
+
+                    <p className="text-gray-600 font-medium">
+                        While we implement robust security measures, no online service can guarantee absolute security.
+                        Please don't use MCPH for highly sensitive information that requires enhanced security guarantees.
+                    </p>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cookie Policy</h2>
+
+                    <p className="text-gray-600 mb-3">
+                        MCPH does not use cookies for tracking or advertising purposes.
+                    </p>
+                    <p className="text-gray-600">
+                        We use only essential technical cookies required for the service to function correctly (e.g., for CSRF protection).
+                    </p>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Third-Party Services</h2>
+
+                    <p className="text-gray-600 mb-4">
+                        We use the following third-party services:
+                    </p>
+                    <ul className="list-disc pl-6 text-gray-600 space-y-3">
+                        <li><strong>Google Cloud Storage</strong> - For file storage</li>
+                        <li><strong>Upstash Redis</strong> - For metadata and rate limiting</li>
+                        <li><strong>Vercel</strong> - For hosting our application</li>
+                    </ul>
+                    <p className="text-gray-600 mt-4">
+                        Each of these services has its own privacy policy, and we encourage you to review them. However, our usage of these
+                        services is configured to maximize privacy and minimize data retention.
+                    </p>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Prohibited Content</h2>
+
+                    <p className="text-gray-600 mb-4">
+                        The following content is prohibited from being uploaded to MCPH:
+                    </p>
+                    <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                        <li>Illegal content of any kind</li>
+                        <li>Malware, viruses, or other harmful software</li>
+                        <li>Content that violates intellectual property rights</li>
+                        <li>Explicit adult content or pornography</li>
+                        <li>Private data of individuals without consent</li>
+                        <li>Material that promotes harm or violence</li>
+                    </ul>
+                    <p className="text-gray-600 mt-4">
+                        We reserve the right to remove content that violates these terms and may cooperate with legal authorities if required.
+                    </p>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Contact Us</h2>
+
+                    <p className="text-gray-600">
+                        If you have any questions about this Privacy Policy, please contact us at:
+                    </p>
+                    <p className="text-primary-500 mt-2">privacy@mcph.io</p>
+                </div>
+            </div>
         </div>
     );
 }

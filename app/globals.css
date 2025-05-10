@@ -1,37 +1,35 @@
-@import "tailwindcss";
+@import "tailwindcss/index.css";
 
 :root {
-    --background-dark: #111827;
-    /* Dark blue/black like the icon background */
-    --text-primary: #e5e7eb;
-    --text-secondary: #9ca3af;
-    --accent-blue: #3b82f6;
-    --accent-purple: #8b5cf6;
-    --border-color: #374151;
-    --card-bg: #1f2937;
-    --hover-bg: rgba(255, 255, 255, 0.05);
+    --background-beige: #f5f3ef;
+    --text-primary: #202123;
+    --text-secondary: #5d5e61;
+    --accent-coral: #e57a56;
+    --border-color: #e5e5e5;
+    --card-bg: #ffffff;
+    --hover-bg: rgba(0, 0, 0, 0.05);
 }
 
 body {
-    background-color: var(--background-dark);
+    background-color: var(--background-beige);
     color: var(--text-primary);
 }
 
-/* Custom scrollbar for dark theme */
+/* Custom scrollbar for light theme */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #1f2937;
+    background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #4b5563;
+    background: #d1d1d1;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #6b7280;
+    background: #b1b1b1;
 }
