@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['mcph.io', 'www.mcph.io'],
+    unoptimized: true, // Disable the Image Optimization API for static export
   },
   output: 'export', // Enable static HTML export for Firebase Hosting
   distDir: 'out', // Output to 'out' directory for Firebase Hosting
