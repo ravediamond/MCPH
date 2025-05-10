@@ -69,4 +69,6 @@ module.exports = {
     plugins: [
         require('@tailwindcss/forms'),
     ],
+    // Disable Oxide engine to fallback to stable processor
+    oxide: false,
 }

@@ -15,8 +15,7 @@
         "firebase:deploy": "firebase deploy",
         "functions:build": "cd functions && npm run build",
         "functions:serve": "cd functions && npm run serve",
-        "build:export": "next build && next export",
-        "postinstall": "node ./scripts/fix-native-deps.js"
+        "build:export": "next build && next export"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
@@ -46,6 +45,9 @@
         "react-icons": "^5.5.0",
         "utf-8-validate": "^6.0.5",
         "uuid": "^11.1.0",
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.0",
+        "@tailwindcss/oxide-darwin-x64": "^4.0.0",
+        "@tailwindcss/oxide-darwin-arm64": "^4.0.0",
         "zod": "^3.24.4"
     },
     "devDependencies": {

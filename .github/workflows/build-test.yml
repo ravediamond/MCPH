@@ -27,9 +27,6 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-      
-    - name: Make script executable
-      run: chmod +x ./scripts/fix-native-deps.js
 
     - name: Lint
       run: npm run lint
@@ -40,6 +37,9 @@ jobs:
         GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
         FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Disable TailwindCSS Oxide engine
+        OXIDE: '0'
+        NODE_OPTIONS: '--max_old_space_size=4096'
       run: npm run build
 
     - name: Upload build artifacts
