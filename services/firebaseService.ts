@@ -1,14 +1,10 @@
 import { initializeApp, cert, App, ServiceAccount } from 'firebase-admin/app';
-import { getDatabase, ServerValue } from 'firebase-admin/database';
+import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 // --- Firebase Admin SDK Initialization ---
 let firebaseApp: App;
-const databaseURL = process.env.FIREBASE_DATABASE_URL;
-
-if (!databaseURL) {
-    throw new Error('FIREBASE_DATABASE_URL environment variable is not set. Ensure it is configured in your environment.');
-}
+let db: Firestore;
 
 try {
     console.log('Attempting to initialize Firebase Admin SDK using Application Default Credentials (ADC).');
@@ -20,11 +16,16 @@ try {
     // with appropriate Firebase permissions, or that the application is running in a GCP environment
     // where ADC is automatically configured (e.g., Cloud Run, GCE, GKE, App Engine).
     firebaseApp = initializeApp({
-        databaseURL: databaseURL,
         // No 'credential' property is provided, so ADC will be used.
     });
 
     console.log('Firebase Admin SDK initialized successfully using Application Default Credentials.');
+
+    // Initialize Firestore
+    db = getFirestore(firebaseApp);
+
+    // Enable Firestore timestamp snapshots
+    db.settings({ ignoreUndefinedProperties: true });
 
 } catch (error: any) {
     console.error('Error initializing Firebase Admin SDK with Application Default Credentials:', error.message);
@@ -34,41 +35,29 @@ try {
         error.message.includes('getDefaultCredential') ||
         error.message.includes('Error getting access token from GOOGLE_APPLICATION_CREDENTIALS')) {
         detailedError += 'Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is correctly set to the path of a valid service account JSON file. ';
-        detailedError += 'The service account must have the necessary Firebase permissions (e.g., Firebase Realtime Database Admin). ';
+        detailedError += 'The service account must have the necessary Firebase permissions (e.g., Firestore Admin). ';
         detailedError += 'If running in a Google Cloud environment, ensure the runtime service account has these permissions. ';
     } else {
         detailedError += `An unexpected error occurred: ${error.message}. `;
     }
-    detailedError += `Also, verify that FIREBASE_DATABASE_URL ("${databaseURL}") is correct.`;
     console.error(detailedError);
     throw new Error(detailedError);
 }
 
-const db = getDatabase(firebaseApp);
-
 // --- End Firebase Admin SDK Initialization ---
 
+// Collection names for Firestore
+const FILES_COLLECTION = 'files';
+const METRICS_COLLECTION = 'metrics';
+const EVENTS_COLLECTION = 'events';
 
-// Prefix for file metadata in Firebase (paths in Realtime Database)
-const FILES_PATH = 'files'; // Replaces FILE_PREFIX
-
-// Prefix for metrics in Firebase
-const METRICS_PATH = 'metrics'; // Replaces METRICS_PREFIX
-const DAILY_METRICS_PATH = `${METRICS_PATH}/daily`;
-
-// Prefix for events log in Firebase
-const EVENTS_LOG_PATH = 'event_logs'; // Replaces EVENTS_PREFIX
-
-// Maximum events to keep in the log (can be managed with queries and cleanup functions)
-const MAX_EVENTS = 1000; // This will need a different implementation strategy
-
-// File metadata type (remains the same)
+// File metadata type
 export interface FileMetadata {
     id: string;
     fileName: string;
     contentType: string;
     size: number;
-    gcsPath: string; // Assuming this is still relevant with Google Cloud Storage
+    gcsPath: string;
     uploadedAt: Date;
     expiresAt: Date;
     downloadCount: number;
@@ -78,136 +67,176 @@ export interface FileMetadata {
 }
 
 /**
- * Save file metadata to Firebase.
- * TTL is handled by storing expiresAt and checking it or using a cleanup function.
+ * Convert Firebase timestamp to Date and vice versa
+ */
+const toFirestoreData = (data: any): any => {
+    // Deep copy the object and handle Date conversion
+    const result = { ...data };
+
+    // Convert Date objects to Firestore timestamps
+    Object.keys(result).forEach(key => {
+        if (result[key] instanceof Date) {
+            // We'll keep it as a Date; Firestore will convert it automatically
+        } else if (typeof result[key] === 'object' && result[key] !== null) {
+            result[key] = toFirestoreData(result[key]);
+        }
+    });
+
+    return result;
+};
+
+const fromFirestoreData = (data: any): any => {
+    if (!data) return null;
+
+    // Convert Firestore timestamps to Date objects
+    const result = { ...data };
+
+    // Convert Firestore timestamps back to Date objects
+    Object.keys(result).forEach(key => {
+        if (result[key] && typeof result[key].toDate === 'function') {
+            result[key] = result[key].toDate();
+        } else if (typeof result[key] === 'object' && result[key] !== null) {
+            result[key] = fromFirestoreData(result[key]);
+        }
+    });
+
+    return result;
+};
+
+/**
+ * Save file metadata to Firestore.
  */
 export async function saveFileMetadata(
     fileData: FileMetadata,
-    // ttlSeconds is no longer directly used by Firebase for auto-expiry in the same way as Redis.
-    // The expiresAt field in fileData should be set appropriately by the caller.
-    _ttlSeconds: number // Parameter kept for signature compatibility if needed, but ignored.
+    _ttlSeconds: number // Parameter kept for signature compatibility
 ): Promise<boolean> {
-    const fileRef = db.ref(`${FILES_PATH}/${fileData.id}`);
     try {
-        // Convert Date objects to ISO strings for Firebase
-        const dataToSave = {
+        // Convert the data for Firestore
+        const dataToSave = toFirestoreData({
             ...fileData,
-            uploadedAt: fileData.uploadedAt.toISOString(),
-            expiresAt: fileData.expiresAt.toISOString(),
-        };
-        await fileRef.set(dataToSave);
+        });
+
+        // Add to Firestore
+        await db.collection(FILES_COLLECTION).doc(fileData.id).set(dataToSave);
+
         return true;
     } catch (error) {
-        console.error('Error saving file metadata to Firebase:', error);
+        console.error('Error saving file metadata to Firestore:', error);
         return false;
     }
 }
 
 /**
- * Get file metadata from Firebase
+ * Get file metadata from Firestore
  */
 export async function getFileMetadata(
     fileId: string
 ): Promise<FileMetadata | null> {
-    const fileRef = db.ref(`${FILES_PATH}/${fileId}`);
     try {
-        const snapshot = await fileRef.once('value');
-        const data = snapshot.val();
+        const docRef = db.collection(FILES_COLLECTION).doc(fileId);
+        const doc = await docRef.get();
 
-        if (!data) return null;
+        if (!doc.exists) {
+            return null;
+        }
 
-        // Convert ISO date strings back to Date objects
-        const fileMetadata: FileMetadata = {
-            ...data,
-            uploadedAt: new Date(data.uploadedAt),
-            expiresAt: new Date(data.expiresAt),
-        };
+        const data = doc.data();
 
-        // Optional: Check for expiry here if needed, though usually done by the caller or cleanup
-        // if (fileMetadata.expiresAt <= new Date()) {
-        //     // Optionally delete it if expired and accessed
-        //     // await deleteFileMetadata(fileId); 
-        //     return null; 
-        // }
-
-        return fileMetadata;
+        // Convert Firestore timestamps back to Date objects
+        return fromFirestoreData(data) as FileMetadata;
     } catch (error) {
-        console.error('Error getting file metadata from Firebase:', error);
+        console.error('Error getting file metadata from Firestore:', error);
         return null;
     }
 }
 
 /**
- * Increment download count for a file in Firebase
+ * Increment download count for a file in Firestore
  */
 export async function incrementDownloadCount(fileId: string): Promise<number> {
-    const downloadCountRef = db.ref(`${FILES_PATH}/${fileId}/downloadCount`);
-    const fileRef = db.ref(`${FILES_PATH}/${fileId}`);
-
     try {
-        const snapshot = await fileRef.once('value');
-        if (!snapshot.exists()) {
+        const docRef = db.collection(FILES_COLLECTION).doc(fileId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
             console.warn(`File metadata not found for ID: ${fileId} when incrementing download count.`);
-            return 0; // Or throw an error
+            return 0;
         }
 
-        const transactionResult = await downloadCountRef.transaction((currentCount: number | null) => { // Explicitly type currentCount
-            return (currentCount || 0) + 1;
+        // Use FieldValue.increment() for atomic increment operation
+        await docRef.update({
+            downloadCount: FieldValue.increment(1)
         });
 
-        if (transactionResult.committed && transactionResult.snapshot.exists()) {
-            const newCount = transactionResult.snapshot.val();
-            // Also update general metrics
-            await incrementMetric('downloads');
-            return newCount;
-        } else {
-            console.error('Failed to increment download count transactionally for fileId:', fileId);
-            return snapshot.val()?.downloadCount || 0; // Return old count or 0
-        }
+        // Also update general metrics
+        await incrementMetric('downloads');
+
+        // Get the updated document to return the new count
+        const updatedDoc = await docRef.get();
+        const downloadCount = updatedDoc.data()?.downloadCount || 0;
+
+        return downloadCount;
     } catch (error) {
-        console.error('Error incrementing download count in Firebase:', error);
-        // Attempt to get current count if transaction failed for other reasons
-        const snapshot = await downloadCountRef.once('value');
-        return snapshot.val() || 0;
+        console.error('Error incrementing download count in Firestore:', error);
+
+        // Attempt to get current count if update failed
+        try {
+            const doc = await db.collection(FILES_COLLECTION).doc(fileId).get();
+            return doc.data()?.downloadCount || 0;
+        } catch (e) {
+            return 0;
+        }
     }
 }
 
 /**
- * Delete file metadata from Firebase
+ * Delete file metadata from Firestore
  */
 export async function deleteFileMetadata(fileId: string): Promise<boolean> {
-    const fileRef = db.ref(`${FILES_PATH}/${fileId}`);
     try {
-        await fileRef.remove();
+        await db.collection(FILES_COLLECTION).doc(fileId).delete();
         return true;
     } catch (error) {
-        console.error('Error deleting file metadata from Firebase:', error);
+        console.error('Error deleting file metadata from Firestore:', error);
         return false;
     }
 }
 
 /**
- * Increment a general metric counter (e.g., total downloads, total uploads)
+ * Increment a general metric counter
  */
 export async function incrementMetric(
-    metric: string, // e.g., "uploads", "downloads"
+    metric: string,
     amount: number = 1
 ): Promise<number> {
-    const metricRef = db.ref(`${METRICS_PATH}/${metric}`);
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const dailyMetricRef = db.ref(`${DAILY_METRICS_PATH}/${today}/${metric}`);
-
     try {
-        // Increment total metric
-        const totalResult = await metricRef.transaction(currentValue => (currentValue as number || 0) + amount);
+        const metricRef = db.collection(METRICS_COLLECTION).doc('counters');
 
-        // Increment daily metric
-        await dailyMetricRef.transaction(currentValue => (currentValue as number || 0) + amount);
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+        const dailyMetricRef = db.collection(METRICS_COLLECTION).doc(`daily_${today}`);
 
-        return totalResult.snapshot.val() || 0;
+        // Use FieldValue.increment for atomic increment
+        const updateData: Record<string, any> = {};
+        updateData[metric] = FieldValue.increment(amount);
+
+        // Update the total counters
+        await metricRef.set(updateData, { merge: true });
+
+        // Also update the timestamp
+        await metricRef.update({
+            lastUpdated: new Date()
+        });
+
+        // Update daily counters
+        await dailyMetricRef.set(updateData, { merge: true });
+
+        // Get updated value
+        const updatedDoc = await metricRef.get();
+        return updatedDoc.data()?.[metric] || 0;
     } catch (error) {
-        console.error(`Error incrementing metric '${metric}' in Firebase:`, error);
-        return 0; // Or handle error appropriately
+        console.error(`Error incrementing metric '${metric}' in Firestore:`, error);
+        return 0;
     }
 }
 
@@ -215,12 +244,17 @@ export async function incrementMetric(
  * Get a general metric value
  */
 export async function getMetric(metric: string): Promise<number> {
-    const metricRef = db.ref(`${METRICS_PATH}/${metric}`);
     try {
-        const snapshot = await metricRef.once('value');
-        return snapshot.val() || 0;
+        const metricRef = db.collection(METRICS_COLLECTION).doc('counters');
+        const doc = await metricRef.get();
+
+        if (!doc.exists) {
+            return 0;
+        }
+
+        return doc.data()?.[metric] || 0;
     } catch (error) {
-        console.error(`Error getting metric '${metric}' from Firebase:`, error);
+        console.error(`Error getting metric '${metric}' from Firestore:`, error);
         return 0;
     }
 }
@@ -229,32 +263,38 @@ export async function getMetric(metric: string): Promise<number> {
  * Get daily metrics for a specific metric type over a number of days
  */
 export async function getDailyMetrics(
-    metric: string, // e.g., "uploads", "downloads"
+    metric: string,
     days: number = 30
 ): Promise<Record<string, number>> {
     const result: Record<string, number> = {};
     const today = new Date();
 
     try {
+        const promises = [];
+
         for (let i = 0; i < days; i++) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
 
-            const dailyMetricRef = db.ref(`${DAILY_METRICS_PATH}/${dateStr}/${metric}`);
-            const snapshot = await dailyMetricRef.once('value');
-            result[dateStr] = snapshot.val() || 0;
+            promises.push(
+                db.collection(METRICS_COLLECTION).doc(`daily_${dateStr}`).get()
+                    .then(doc => {
+                        result[dateStr] = doc.exists ? (doc.data()?.[metric] || 0) : 0;
+                    })
+            );
         }
+
+        await Promise.all(promises);
         return result;
     } catch (error) {
-        console.error(`Error getting daily metrics for '${metric}' from Firebase:`, error);
+        console.error(`Error getting daily metrics for '${metric}' from Firestore:`, error);
         return {};
     }
 }
 
 /**
- * Log an event to Firebase.
- * Events are stored under /event_logs/{eventType}/{eventId}
+ * Log an event to Firestore
  */
 export async function logEvent(
     eventType: string,
@@ -262,68 +302,56 @@ export async function logEvent(
     ipAddress?: string,
     details: Record<string, any> = {}
 ): Promise<void> {
-    const eventLogTypeRef = db.ref(`${EVENTS_LOG_PATH}/${eventType}`);
     try {
         const timestamp = new Date();
-        const eventId = uuidv4(); // Generate a unique ID for the event
+        const eventId = uuidv4();
 
         const eventData = {
             id: eventId,
             type: eventType,
             resourceId,
-            timestamp: timestamp.toISOString(),
+            timestamp,
             ipAddress,
             details,
         };
 
-        // Use push to generate a unique key and add to the list-like structure
-        const newEventRef = eventLogTypeRef.push();
-        await newEventRef.set(eventData);
+        // Add to the events collection with auto-generated ID
+        await db.collection(EVENTS_COLLECTION).doc(eventId).set(eventData);
 
-        // Trimming old events (MAX_EVENTS) needs a more complex strategy with Firebase:
-        // 1. Query the oldest N events beyond MAX_EVENTS and delete them.
-        // This is often done by a scheduled function or periodically.
-        // Example:
-        // const query = eventLogTypeRef.orderByChild('timestamp').limitToFirst(MAX_EVENTS_TO_TRIM_IF_OVER_LIMIT);
-        // This is a simplified placeholder; actual trimming logic can be complex.
-        // For now, we'll just add and rely on manual/scheduled cleanup for trimming.
-
-        // Increment event counter metric
+        // Create a query for cleanup (to run in a scheduled function)
+        // This just increments the event counter; actual cleanup is done separately
         await incrementMetric(`events:${eventType}`);
     } catch (error) {
-        console.error('Error logging event to Firebase:', error);
+        console.error('Error logging event to Firestore:', error);
     }
 }
 
 /**
- * Get recent events of a specific type from Firebase.
- * Returns events in descending order of addition (most recent first if using push()).
- * To get them by timestamp, you'd order by 'timestamp'.
+ * Get recent events of a specific type from Firestore
  */
 export async function getEvents(
     eventType: string,
     limit: number = 100
 ): Promise<any[]> {
-    const eventLogTypeRef = db.ref(`${EVENTS_LOG_PATH}/${eventType}`);
     try {
-        // Firebase's push() keys are chronologically ordered.
-        // limitToLast will get the most recent 'limit' items.
-        const snapshot = await eventLogTypeRef.orderByKey().limitToLast(limit).once('value');
+        const querySnapshot = await db.collection(EVENTS_COLLECTION)
+            .where('type', '==', eventType)
+            .orderBy('timestamp', 'desc')
+            .limit(limit)
+            .get();
 
-        if (!snapshot.exists()) {
+        if (querySnapshot.empty) {
             return [];
         }
 
-        const eventsData = snapshot.val();
-        // Convert the object of events into an array
-        const eventsArray = Object.keys(eventsData)
-            .map(key => eventsData[key])
-            // Firebase returns them in ascending order by key, so reverse for most recent first
-            .reverse();
-
-        return eventsArray;
+        // Convert to array of data
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            // Convert any Firestore timestamps to Date objects
+            return fromFirestoreData(data);
+        });
     } catch (error) {
-        console.error('Error getting events from Firebase:', error);
+        console.error('Error getting events from Firestore:', error);
         return [];
     }
 }
