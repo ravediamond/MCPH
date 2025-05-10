@@ -16,7 +16,7 @@
         "functions:build": "cd functions && npm run build",
         "functions:serve": "cd functions && npm run serve",
         "build:export": "next build && next export",
-        "postinstall": "cd node_modules/@tailwindcss/oxide && npm run build || true"
+        "postinstall": "node ./scripts/fix-native-deps.js"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": [
