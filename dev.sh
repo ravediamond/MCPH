@@ -23,8 +23,12 @@ if [ -z "$PROJECT_ID" ]; then
   echo "Could not extract project ID from credentials. Using default."
   PROJECT_ID="mpch-458204" # Fallback project ID
 else
-  echo "Using project ID: $PROJECT_ID"
+  echo "Using project ID from credentials: $PROJECT_ID"
 fi
+
+# Create a demo project ID for the emulators to avoid production calls
+EMULATOR_PROJECT_ID="demo-${PROJECT_ID}"
+echo "Using emulator project ID: $EMULATOR_PROJECT_ID"
 
 # Create default storage rules file if it doesn't exist
 if [ ! -f "storage.rules" ]; then
@@ -66,9 +70,9 @@ if [ ! -f "functions/lib/index.js" ]; then
   (cd functions && npm run build)
 fi
 
-# Start Firebase emulators in the background
+# Start Firebase emulators in the background with the demo project ID
 echo "Starting Firebase emulators..."
-firebase emulators:start --project="$PROJECT_ID" &
+firebase emulators:start --project="$EMULATOR_PROJECT_ID" &
 FIREBASE_PID=$!
 
 # Wait for Firebase emulators to start up
@@ -76,6 +80,7 @@ echo "Waiting for emulators to start..."
 sleep 10
 
 # Export environment variables to point to emulated Firebase services
+# Still use the real project ID for the endpoints as that's what the code expects
 export NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL="http://localhost:5001/$PROJECT_ID/us-central1"
 export FIRESTORE_EMULATOR_HOST="localhost:8080"
 export FIREBASE_STORAGE_EMULATOR_HOST="localhost:9199"
