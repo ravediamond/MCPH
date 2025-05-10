@@ -2,36 +2,69 @@
 
 # This script runs both the Firebase emulators and the Next.js development server
 
-# Load environment variables from .env.local
-if [ -f .env.local ]; then
-  echo "Loading environment variables from .env.local..."
-  export $(grep -v '^#' .env.local | xargs)
+echo "Loading environment variables from .env.local..."
+if [ ! -f .env.local ]; then
+  echo "Error: .env.local file not found! Please create it first."
+  exit 1
 fi
 
-# Extract project ID from Google application credentials
-if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-  # Remove the triple quotes and escape characters from the credentials string
-  CLEAN_CREDS=$(echo "$GOOGLE_APPLICATION_CREDENTIALS" | sed "s/^'''//" | sed "s/'''$//" | sed 's/\\n/\\\\n/g')
-  
-  # Extract the project_id using grep and sed
-  PROJECT_ID=$(echo "$CLEAN_CREDS" | grep -o '"project_id":"[^"]*' | sed 's/"project_id":"//')
-  
-  if [ -n "$PROJECT_ID" ]; then
-    echo "Detected project ID: $PROJECT_ID"
-  else
-    echo "Could not extract project ID from credentials. Using default."
-    PROJECT_ID="mpch-458204" # Fallback to what we saw in the credentials
-  fi
+# Extract values directly from .env.local file
+# Using grep and sed to extract values without sourcing the file to avoid export issues
+GEMINI_API_KEY=$(grep -E "^GEMINI_API_KEY=" .env.local | sed -E 's/^GEMINI_API_KEY=(.*)/\1/')
+GCS_BUCKET_NAME=$(grep -E "^GCS_BUCKET_NAME=" .env.local | sed -E 's/^GCS_BUCKET_NAME=(.*)/\1/')
+FIREBASE_DATABASE_URL=$(grep -E "^FIREBASE_DATABASE_URL=" .env.local | sed -E 's/^FIREBASE_DATABASE_URL=(.*)/\1/')
+PROJECT_ID=$(grep -E "^GOOGLE_APPLICATION_CREDENTIALS=" .env.local | grep -o '"project_id":"[^"]*"' | cut -d':' -f2 | tr -d '"')
+
+if [ -z "$PROJECT_ID" ]; then
+  PROJECT_ID=$(grep -E "^FIREBASE_PROJECT_ID=" .env.local | sed -E 's/^FIREBASE_PROJECT_ID=(.*)/\1/')
+fi
+
+if [ -z "$PROJECT_ID" ]; then
+  echo "Could not extract project ID from credentials. Using default."
+  PROJECT_ID="mpch-458204" # Fallback project ID
 else
-  echo "GOOGLE_APPLICATION_CREDENTIALS not found. Using default project ID."
-  PROJECT_ID="mpch-458204" # Fallback to what we saw in the credentials
+  echo "Using project ID: $PROJECT_ID"
 fi
 
-# Write the credentials to a temporary file for the emulators
+# Create default storage rules file if it doesn't exist
+if [ ! -f "storage.rules" ]; then
+  echo "Creating default storage.rules file..."
+  cat > storage.rules << 'EOF'
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+EOF
+fi
+
+# Create a temporary credentials file from the env var
 echo "Setting up temporary credentials file..."
 TEMP_CREDS_FILE="./.tmp-gcp-creds.json"
-echo "$CLEAN_CREDS" > "$TEMP_CREDS_FILE"
+
+# Extract the JSON content directly from the file to avoid shell parsing issues
+CREDS_JSON=$(grep -E "^GOOGLE_APPLICATION_CREDENTIALS=" .env.local | cut -d= -f2-)
+
+# Remove any triple quotes
+CREDS_JSON=$(echo "$CREDS_JSON" | sed -e "s/^'''//" -e "s/'''$//" -e 's/^"//' -e 's/"$//')
+
+# Write the credentials to a temporary file
+echo "$CREDS_JSON" > "$TEMP_CREDS_FILE"
+
+# Export for the current session
 export GOOGLE_APPLICATION_CREDENTIALS="$TEMP_CREDS_FILE"
+export GEMINI_API_KEY="$GEMINI_API_KEY"
+export GCS_BUCKET_NAME="$GCS_BUCKET_NAME"
+export FIREBASE_DATABASE_URL="$FIREBASE_DATABASE_URL"
+
+# Build functions if needed
+if [ ! -f "functions/lib/index.js" ]; then
+  echo "Building Cloud Functions..."
+  (cd functions && npm run build)
+fi
 
 # Start Firebase emulators in the background
 echo "Starting Firebase emulators..."
