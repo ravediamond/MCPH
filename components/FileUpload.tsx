@@ -8,6 +8,10 @@ import { toast } from 'react-hot-toast';
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
+// Use Next.js API routes for local development, will switch to Firebase Functions later
+const API_BASE_URL = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || 
+                    (typeof window !== 'undefined' ? '' : ''); // Empty string will use relative URLs
+
 // Valid TTL options in hours
 const TTL_OPTIONS = [
     { value: 0.016, label: '1 minute' },
@@ -137,8 +141,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 });
             }, 300);
 
+            // Use the API_BASE_URL for Firebase Functions
+            const uploadUrl = `${API_BASE_URL}/api/uploads`;
+
             // Send the upload request
-            const response = await fetch('/api/uploads', {
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
                 body: formData,
             });
@@ -152,6 +159,14 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
             // Get the uploaded file data
             const data = await response.json();
+
+            // Update download URL to use absolute URL if needed
+            if (data.url && !data.url.startsWith('http') && API_BASE_URL) {
+                data.downloadUrl = `${API_BASE_URL}${data.url}`;
+            } else if (data.url) {
+                data.downloadUrl = data.url;
+            }
+
             setUploadedFile(data);
             setUploadProgress(100);
 

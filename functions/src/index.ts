@@ -29,12 +29,12 @@ const DummyToolInputSchema = z.object({
 const app = express();
 
 // Enable CORS
-const ALLOWED_ORIGINS = ['*']; // Update this with your allowed origins
+const ALLOWED_ORIGINS = ['http://localhost:3000', 'https://mcphub.vercel.app', '*']; // Update with all allowed origins
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    const allowOrigin = ALLOWED_ORIGINS.includes('*')
-        ? '*'
-        : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
+    const allowOrigin = ALLOWED_ORIGINS.includes('*') ||
+        (origin && ALLOWED_ORIGINS.includes(origin))
+        ? origin : 'null';
 
     res.header('Access-Control-Allow-Origin', allowOrigin);
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
@@ -136,8 +136,13 @@ app.get('/api/sse', (req, res) => {
 // JSON-RPC handler - POST /api/sse
 app.post('/api/sse', async (req, res) => {
     try {
-        const clientIp = getClientIp(req);
+        // Remove the unused clientIp variable declaration
         const body = req.body;
+
+        // Log RPC request with client IP for monitoring/debugging purposes
+        if (body && body.jsonrpc === '2.0') {
+            console.log(`RPC request from ${getClientIp(req)}`);
+        }
 
         // Handle action requests (ping, etc)
         if (body && body.action) {
@@ -308,13 +313,13 @@ const fileApp = express();
 // Enable CORS for file operations
 fileApp.use((req, res, next) => {
     const origin = req.headers.origin;
-    const allowOrigin = ALLOWED_ORIGINS.includes('*')
-        ? '*'
-        : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
+    const allowOrigin = ALLOWED_ORIGINS.includes('*') ||
+        (origin && ALLOWED_ORIGINS.includes(origin))
+        ? origin : 'null';
 
     res.header('Access-Control-Allow-Origin', allowOrigin);
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
 
     if (req.method === 'OPTIONS') {
         return res.status(204).send();

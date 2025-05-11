@@ -63,19 +63,19 @@ const DummyToolInputSchema = zod_1.z.object({
 // Define your Express app
 const app = (0, express_1.default)();
 // Enable CORS
-const ALLOWED_ORIGINS = ['*']; // Update this with your allowed origins
+const ALLOWED_ORIGINS = ['http://localhost:3000', 'https://mcphub.vercel.app', '*']; // Update with all allowed origins
 app.use((req, res, next) => {
     const origin = req.headers.origin;
-    const allowOrigin = ALLOWED_ORIGINS.includes('*')
-        ? '*'
-        : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
+    const allowOrigin = ALLOWED_ORIGINS.includes('*') ||
+        (origin && ALLOWED_ORIGINS.includes(origin))
+        ? origin : 'null';
     res.header('Access-Control-Allow-Origin', allowOrigin);
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
     if (req.method === 'OPTIONS') {
         return res.status(204).send();
     }
-    next();
+    return next();
 });
 // Parse JSON body for POST requests
 app.use(express_1.default.json());
@@ -112,14 +112,13 @@ const logEvent = async (eventType, resourceId, ipAddress, details = {}) => {
 // SSE endpoint handler - GET /api/sse
 app.get('/api/sse', (req, res) => {
     const connectionId = (0, uuid_1.v4)();
-    const clientIp = getClientIp(req);
     // Set headers for SSE
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Connection-Id', connectionId);
     // Log connection event
-    logEvent('sse_connect', connectionId, clientIp);
+    logEvent('sse_connect', connectionId, getClientIp(req));
     // Send welcome message
     const welcomeEvent = {
         connectionId,
@@ -131,14 +130,20 @@ app.get('/api/sse', (req, res) => {
     // For stateless SSE, we can end the response after sending the initial data
     res.end();
     // Log disconnect
-    logEvent('sse_disconnect', connectionId, clientIp);
+    logEvent('sse_disconnect', connectionId, getClientIp(req));
+    // Return to satisfy TypeScript
+    return;
 });
 // JSON-RPC handler - POST /api/sse
 app.post('/api/sse', async (req, res) => {
     var _a, _b;
     try {
-        const clientIp = getClientIp(req);
+        // Remove the unused clientIp variable declaration
         const body = req.body;
+        // Log RPC request with client IP for monitoring/debugging purposes
+        if (body && body.jsonrpc === '2.0') {
+            console.log(`RPC request from ${getClientIp(req)}`);
+        }
         // Handle action requests (ping, etc)
         if (body && body.action) {
             const { action } = body;
@@ -298,16 +303,16 @@ const fileApp = (0, express_1.default)();
 // Enable CORS for file operations
 fileApp.use((req, res, next) => {
     const origin = req.headers.origin;
-    const allowOrigin = ALLOWED_ORIGINS.includes('*')
-        ? '*'
-        : (origin && ALLOWED_ORIGINS.includes(origin) ? origin : 'null');
+    const allowOrigin = ALLOWED_ORIGINS.includes('*') ||
+        (origin && ALLOWED_ORIGINS.includes(origin))
+        ? origin : 'null';
     res.header('Access-Control-Allow-Origin', allowOrigin);
     res.header('Access-Control-Allow-Methods', 'GET, OPTIONS, POST, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
     if (req.method === 'OPTIONS') {
         return res.status(204).send();
     }
-    next();
+    return next();
 });
 // Configure multer for file uploads
 const storage = multer_1.default.memoryStorage();
@@ -366,10 +371,12 @@ fileApp.post('/api/uploads', upload.single('file'), async (req, res) => {
             url: `/api/uploads/${fileId}`,
             expiresAt: expiresAt.toISOString()
         });
+        return;
     }
     catch (error) {
         console.error('Error uploading file:', error);
         res.status(500).json({ error: 'Failed to upload file' });
+        return;
     }
 });
 // File download endpoint
@@ -412,10 +419,12 @@ fileApp.get('/api/uploads/:id', async (req, res) => {
         // Stream file to response
         const fileStream = file.createReadStream();
         fileStream.pipe(res);
+        return;
     }
     catch (error) {
         console.error('Error downloading file:', error);
         res.status(500).json({ error: 'Failed to download file' });
+        return;
     }
 });
 // File deletion endpoint
@@ -440,10 +449,12 @@ fileApp.delete('/api/uploads/:id', async (req, res) => {
             filename: fileData.originalName
         });
         res.status(200).json({ message: 'File deleted successfully' });
+        return;
     }
     catch (error) {
         console.error('Error deleting file:', error);
         res.status(500).json({ error: 'Failed to delete file' });
+        return;
     }
 });
 // Export the file operations Express app as a Cloud Function
