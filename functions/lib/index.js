@@ -1,22 +1,22 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
     if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
+        desc = { enumerable: true, get: function () { return m[k]; } };
     }
     Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
+}) : (function (o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
 }));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function (o, v) {
     Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
+}) : function (o, v) {
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
+    var ownKeys = function (o) {
         ownKeys = Object.getOwnPropertyNames || function (o) {
             var ar = [];
             for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.purgeExpiredFiles = exports.fileOperations = exports.nextServerSSE = void 0;
+exports.purgeExpiredFiles = exports.fileOperations = exports.MCPSSE = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const express_1 = __importDefault(require("express"));
@@ -292,11 +292,11 @@ app.get('/api/sse/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: Date.now() });
 });
 // Export the Express API as a Cloud Function
-exports.nextServerSSE = functions
+exports.MCPSSE = functions
     .runWith({
-    timeoutSeconds: 60, // Reduced timeout since we don't need long-lived connections
-    memory: '256MB',
-})
+        timeoutSeconds: 60, // Reduced timeout since we don't need long-lived connections
+        memory: '256MB',
+    })
     .https.onRequest(app);
 // Create a new Express app for file operations
 const fileApp = (0, express_1.default)();
@@ -460,56 +460,56 @@ fileApp.delete('/api/uploads/:id', async (req, res) => {
 // Export the file operations Express app as a Cloud Function
 exports.fileOperations = functions
     .runWith({
-    timeoutSeconds: 300,
-    memory: '512MB',
-})
+        timeoutSeconds: 300,
+        memory: '512MB',
+    })
     .https.onRequest(fileApp);
 // Scheduled function to purge expired files (runs daily)
 exports.purgeExpiredFiles = functions.pubsub
     .schedule('every 24 hours')
     .onRun(async (context) => {
-    try {
-        const now = new Date();
-        // Query for expired files
-        const expiredFilesQuery = await admin.firestore()
-            .collection('files')
-            .where('expiresAt', '<', now.toISOString())
-            .get();
-        if (expiredFilesQuery.empty) {
-            console.log('No expired files to purge');
+        try {
+            const now = new Date();
+            // Query for expired files
+            const expiredFilesQuery = await admin.firestore()
+                .collection('files')
+                .where('expiresAt', '<', now.toISOString())
+                .get();
+            if (expiredFilesQuery.empty) {
+                console.log('No expired files to purge');
+                return null;
+            }
+            const bucket = admin.storage().bucket();
+            const batch = admin.firestore().batch();
+            const deletedCount = expiredFilesQuery.size;
+            // Delete each expired file
+            for (const doc of expiredFilesQuery.docs) {
+                const fileData = doc.data();
+                const fileId = fileData.id;
+                // Delete from Storage
+                try {
+                    const file = bucket.file(`uploads/${fileId}`);
+                    await file.delete();
+                }
+                catch (err) {
+                    console.error(`Error deleting file ${fileId} from storage:`, err);
+                }
+                // Add to batch delete for Firestore
+                batch.delete(doc.ref);
+                // Log purge event
+                await logEvent('file_purge', fileId, undefined, {
+                    reason: 'expired',
+                    filename: fileData.originalName
+                });
+            }
+            // Commit the batch delete
+            await batch.commit();
+            console.log(`Successfully purged ${deletedCount} expired files`);
             return null;
         }
-        const bucket = admin.storage().bucket();
-        const batch = admin.firestore().batch();
-        const deletedCount = expiredFilesQuery.size;
-        // Delete each expired file
-        for (const doc of expiredFilesQuery.docs) {
-            const fileData = doc.data();
-            const fileId = fileData.id;
-            // Delete from Storage
-            try {
-                const file = bucket.file(`uploads/${fileId}`);
-                await file.delete();
-            }
-            catch (err) {
-                console.error(`Error deleting file ${fileId} from storage:`, err);
-            }
-            // Add to batch delete for Firestore
-            batch.delete(doc.ref);
-            // Log purge event
-            await logEvent('file_purge', fileId, undefined, {
-                reason: 'expired',
-                filename: fileData.originalName
-            });
+        catch (error) {
+            console.error('Error purging expired files:', error);
+            return null;
         }
-        // Commit the batch delete
-        await batch.commit();
-        console.log(`Successfully purged ${deletedCount} expired files`);
-        return null;
-    }
-    catch (error) {
-        console.error('Error purging expired files:', error);
-        return null;
-    }
-});
+    });
 //# sourceMappingURL=index.js.map

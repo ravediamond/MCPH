@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return new Response(JSON.stringify({
         message: "This is a static placeholder. In production, SSE functionality is provided by Firebase Functions.",
         endpoint: "/api/sse",
-        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/nextServerSSE"
+        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/sse"
     }), {
         status: 200,
         headers: {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({
         message: "This is a static placeholder. In production, SSE functionality is provided by Firebase Functions.",
         endpoint: "/api/sse",
-        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/nextServerSSE"
+        firebaseFunctionUrl: process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL || "https://your-firebase-function-url/sse"
     }), {
         status: 200,
         headers: {

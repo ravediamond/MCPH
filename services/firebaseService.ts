@@ -59,7 +59,6 @@ export interface FileMetadata {
     size: number;
     gcsPath: string;
     uploadedAt: Date;
-    expiresAt: Date;
     downloadCount: number;
     ipAddress?: string;
     userId?: string;
