@@ -8,9 +8,8 @@ import { toast } from 'react-hot-toast';
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
-// Use Next.js API routes for local development, will switch to Firebase Functions later
-const API_BASE_URL = process.env.NEXT_PUBLIC_FIREBASE_FUNCTIONS_URL ||
-    (typeof window !== 'undefined' ? '' : ''); // Empty string will use relative URLs
+// API base URL is now relative since we're using Next.js API routes on Vercel
+const API_BASE_URL = '';
 
 type UploadedFile = {
     id: string;
@@ -68,7 +67,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
 
-    // Handle file upload
+    // Handle file upload using pre-signed URLs
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -81,53 +80,78 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         setUploadProgress(0);
 
         try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Simulate progress (actual progress not available with fetch)
-            const progressInterval = setInterval(() => {
-                setUploadProgress(prev => {
-                    const newProgress = prev + Math.random() * 15;
-                    return newProgress >= 95 ? 95 : newProgress;
-                });
-            }, 300);
-
-            // Use the API_BASE_URL for Firebase Functions
-            const uploadUrl = `${API_BASE_URL}/api/uploads`;
-
-            // Send the upload request
-            const response = await fetch(uploadUrl, {
+            // First, get a pre-signed URL for the upload
+            const signedUrlResponse = await fetch('/api/uploads/signed-url', {
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    contentType: file.type,
+                    // Optional TTL in hours
+                    ttlHours: 24 * 7, // 7 days default
+                }),
             });
 
-            clearInterval(progressInterval);
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Upload failed');
+            if (!signedUrlResponse.ok) {
+                const errorData = await signedUrlResponse.json();
+                throw new Error(errorData.error || 'Failed to get upload URL');
             }
 
-            // Get the uploaded file data
-            const data = await response.json();
+            const { uploadUrl, fileId } = await signedUrlResponse.json();
 
-            // Update download URL to use absolute URL if needed
-            if (data.url && !data.url.startsWith('http') && API_BASE_URL) {
-                data.downloadUrl = `${API_BASE_URL}${data.url}`;
-            } else if (data.url) {
-                data.downloadUrl = data.url;
+            // Progress tracking setup
+            let uploadedBytes = 0;
+            const totalBytes = file.size;
+
+            // Set up progress reporting
+            const updateProgressInterval = setInterval(() => {
+                if (uploadedBytes < totalBytes) {
+                    // Simulate progress until we get real progress (WebKit browsers don't support upload progress reliably)
+                    const simulatedProgress = Math.min(95, (uploadProgress + Math.random() * 5));
+                    setUploadProgress(simulatedProgress);
+                }
+            }, 300);
+
+            // Upload the file directly to GCS using the pre-signed URL
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': file.type,
+                },
+                body: file,
+            });
+
+            clearInterval(updateProgressInterval);
+
+            if (!uploadResponse.ok) {
+                throw new Error(`Upload failed with status: ${uploadResponse.status}`);
             }
+
+            // Set progress to 100% when upload is complete
+            setUploadProgress(100);
+
+            // Get a signed download URL
+            const signedDownloadResponse = await fetch(`/api/uploads/${fileId}/signed-url?expires=1440`, {
+                method: 'GET',
+            });
+
+            if (!signedDownloadResponse.ok) {
+                console.warn('Could not generate signed download URL, falling back to direct URL');
+            }
+
+            const signedData = signedDownloadResponse.ok ? await signedDownloadResponse.json() : null;
+            const downloadUrl = signedData?.url || `/api/uploads/${fileId}`;
 
             setUploadedFile({
-                id: data.fileId,
+                id: fileId,
                 fileName: file.name,
                 contentType: file.type,
                 size: file.size,
-                downloadUrl: data.downloadUrl || data.url,
+                downloadUrl: downloadUrl,
                 uploadedAt: new Date().toISOString()
             });
-            setUploadProgress(100);
 
             // Reset form
             if (formRef.current) {
@@ -139,11 +163,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             // Call the onUploadSuccess callback if provided
             if (onUploadSuccess) {
                 onUploadSuccess({
-                    id: data.fileId,
+                    id: fileId,
                     fileName: file.name,
                     contentType: file.type,
                     size: file.size,
-                    downloadUrl: data.downloadUrl || data.url,
+                    downloadUrl: downloadUrl,
                     uploadedAt: new Date().toISOString()
                 });
             }
