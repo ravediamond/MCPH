@@ -295,3 +295,12 @@ Local fast checks:
 ```bash
 npm run check
 ```
+
+
+
+## Development
+
+```
+gcloud auth application-default login
+npm run dev
+```

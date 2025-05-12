@@ -75,9 +75,18 @@ export async function generateUploadUrl(
         } as any, 0);
 
         return { url, fileId, gcsPath };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error generating upload URL:', error);
-        throw new Error('Failed to generate upload URL');
+        if (error.message && error.message.includes('Cannot sign data without `client_email`')) {
+            throw new Error(
+                'Failed to generate upload URL due to a signing error. ' +
+                'This usually means the GCS client is missing `client_email` or `private_key` in its credentials. ' +
+                'If running in production (e.g., Vercel), ensure the GCP_SERVICE_ACCOUNT environment variable contains a valid service account JSON key with `client_email` and `private_key`. ' +
+                'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).'
+            );
+        }
+        // Fallback for other errors
+        throw new Error('Failed to generate upload URL. Original error: ' + (error.message || 'Unknown error'));
     }
 }
 

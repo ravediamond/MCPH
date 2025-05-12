@@ -79,6 +79,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         setIsUploading(true);
         setUploadProgress(0);
 
+        const contentType = file.type || 'application/octet-stream'; // Default content type
+
         try {
             // First, get a pre-signed URL for the upload
             const signedUrlResponse = await fetch('/api/uploads/signed-url', {
@@ -88,15 +90,28 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 },
                 body: JSON.stringify({
                     fileName: file.name,
-                    contentType: file.type,
+                    contentType: contentType, // Use defaulted content type
                     // Optional TTL in hours
                     ttlHours: 24 * 7, // 7 days default
                 }),
             });
 
             if (!signedUrlResponse.ok) {
-                const errorData = await signedUrlResponse.json();
-                throw new Error(errorData.error || 'Failed to get upload URL');
+                let errorResponseMessage = 'Failed to get upload URL';
+                try {
+                    const contentType = signedUrlResponse.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await signedUrlResponse.json();
+                        errorResponseMessage = errorData.error || errorResponseMessage;
+                    } else {
+                        const errorText = await signedUrlResponse.text();
+                        console.error("Non-JSON error response from /api/uploads/signed-url:", errorText);
+                        errorResponseMessage = `Server error (status ${signedUrlResponse.status}). Check console for details.`;
+                    }
+                } catch (e) {
+                    console.error("Error parsing error response from /api/uploads/signed-url:", e);
+                }
+                throw new Error(errorResponseMessage);
             }
 
             const { uploadUrl, fileId } = await signedUrlResponse.json();
@@ -118,7 +133,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             const uploadResponse = await fetch(uploadUrl, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': file.type,
+                    'Content-Type': contentType, // Use defaulted content type
                 },
                 body: file,
             });
@@ -126,7 +141,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             clearInterval(updateProgressInterval);
 
             if (!uploadResponse.ok) {
-                throw new Error(`Upload failed with status: ${uploadResponse.status}`);
+                let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+                try {
+                    const errorText = await uploadResponse.text(); // GCS errors are often XML or plain text
+                    console.error("GCS Upload Error Response:", errorText);
+                    // Provide a more specific message if possible, or a snippet
+                    errorDetail = `Upload to GCS failed (status ${uploadResponse.status}): ${errorText.substring(0, 200)}`;
+                } catch (e) {
+                    console.error("Error reading GCS error response body:", e);
+                }
+                throw new Error(errorDetail);
             }
 
             // Set progress to 100% when upload is complete
@@ -137,17 +161,40 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 method: 'GET',
             });
 
-            if (!signedDownloadResponse.ok) {
-                console.warn('Could not generate signed download URL, falling back to direct URL');
+            let signedData = null;
+            if (signedDownloadResponse.ok) {
+                try {
+                    const contentType = signedDownloadResponse.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        signedData = await signedDownloadResponse.json();
+                    } else {
+                        const responseText = await signedDownloadResponse.text();
+                        console.error("Non-JSON response from /api/uploads/[id]/signed-url (status OK):", responseText);
+                        throw new Error("Received non-JSON response for signed download URL when JSON was expected.");
+                    }
+                } catch (e) {
+                    console.error("Error parsing signed download URL response:", e);
+                    toast.error("Failed to process download URL information.");
+                    // Re-throw to be caught by the main catch block, or handle more gracefully
+                    throw e;
+                }
+            } else {
+                console.warn('Could not generate signed download URL, falling back to direct URL. Status:', signedDownloadResponse.status);
+                // Optionally, try to read error text if not OK
+                try {
+                    const errorText = await signedDownloadResponse.text();
+                    console.warn('Error body from signed download URL endpoint:', errorText);
+                } catch (e) {
+                    // Ignore if reading body fails
+                }
             }
 
-            const signedData = signedDownloadResponse.ok ? await signedDownloadResponse.json() : null;
             const downloadUrl = signedData?.url || `/api/uploads/${fileId}`;
 
             setUploadedFile({
                 id: fileId,
                 fileName: file.name,
-                contentType: file.type,
+                contentType: contentType, // Store defaulted content type
                 size: file.size,
                 downloadUrl: downloadUrl,
                 uploadedAt: new Date().toISOString()
@@ -165,7 +212,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 onUploadSuccess({
                     id: fileId,
                     fileName: file.name,
-                    contentType: file.type,
+                    contentType: contentType, // Pass defaulted content type
                     size: file.size,
                     downloadUrl: downloadUrl,
                     uploadedAt: new Date().toISOString()
@@ -225,7 +272,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <FaFile className="text-gray-500 mr-3" />
                             <div>
                                 <p className="font-medium">{uploadedFile.fileName}</p>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
                                 </p>
                             </div>
@@ -317,7 +364,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <div className="overflow-hidden">
                                 <p className="font-medium truncate">{file.name}</p>
                                 <p className="text-sm text-gray-500">
-                                    {formatBytes(file.size)} • {file.type || 'Unknown type'}
+                                    {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
                                 </p>
                             </div>
                             <button
