@@ -35,10 +35,6 @@ jobs:
 
     - name: Build
       env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
-        FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Disable TailwindCSS Oxide engine
         OXIDE: '0'
         NODE_OPTIONS: '--max_old_space_size=4096'
