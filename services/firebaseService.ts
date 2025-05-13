@@ -374,3 +374,25 @@ export async function getEvents(
         return [];
     }
 }
+
+/**
+ * Get file metadata for a specific user from Firestore
+ */
+export async function getUserFiles(userId: string): Promise<FileMetadata[]> {
+    try {
+        const querySnapshot = await db.collection(FILES_COLLECTION)
+            .where('userId', '==', userId)
+            .orderBy('uploadedAt', 'desc')
+            .get();
+
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        // Convert to array of data, converting Firestore timestamps to Date objects
+        return querySnapshot.docs.map(doc => fromFirestoreData(doc.data()) as FileMetadata);
+    } catch (error) {
+        console.error(`Error getting files for user ${userId} from Firestore:`, error);
+        return []; // Return empty array on error
+    }
+}

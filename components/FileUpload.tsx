@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FaUpload, FaFile, FaSpinner, FaCheckCircle, FaTimes, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -45,6 +46,9 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) {
+    // Get current user from auth context
+    const { user } = useAuth();
+
     // Refs
     const formRef = useRef<HTMLFormElement>(null);
     const urlRef = useRef<HTMLInputElement>(null);
@@ -121,6 +125,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             let uploadResponse;
             let uploadedFileData;
 
+            // Get auth token if user is logged in
+            let authToken = null;
+            if (user) {
+                try {
+                    authToken = await user.getIdToken();
+                } catch (error) {
+                    console.error("Error getting auth token:", error);
+                }
+            }
+
             // Select endpoint based on file type
             if (shouldUseFirestore(file)) {
                 // For text files, use the text-content endpoint
@@ -132,7 +146,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     headers: {
                         'Content-Type': file.type || 'text/plain',
                         'x-filename': file.name,
-                        'x-ttl-hours': '24' // Default TTL, could be configurable
+                        'x-ttl-hours': '24', // Default TTL, could be configurable
+                        ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
                     body: content,
                 });
@@ -141,8 +157,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 const formData = new FormData();
                 formData.append('file', file);
 
+                // Add user ID if logged in
+                if (user) {
+                    formData.append('userId', user.uid);
+                }
+
                 uploadResponse = await fetch('/api/uploads/direct-upload', {
                     method: 'POST',
+                    headers: {
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                    },
                     body: formData,
                 });
             }

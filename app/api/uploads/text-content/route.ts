@@ -26,6 +26,7 @@ interface TextContentMetadata {
     uploadedAt: Date;
     expiresAt?: Date;
     downloadCount: number;
+    userId?: string; // Add userId to interface
 }
 
 /**
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
     try {
         const contentType = req.headers.get('Content-Type') || 'text/plain';
         const ttlHours = parseInt(req.headers.get('x-ttl-hours') || '24', 10);
+        const userId = req.headers.get('x-user-id'); // Get user ID from header if provided
 
         // Parse the request to get content and filename
         let fileName = '';
@@ -87,6 +89,7 @@ export async function POST(req: NextRequest) {
                 uploadedAt,
                 expiresAt,
                 downloadCount: 0,
+                ...(userId && { userId }) // Add userId if available
             };
 
             // Save to Firestore collection for text content
@@ -114,6 +117,7 @@ export async function POST(req: NextRequest) {
                     uploadedAt,
                     expiresAt,
                     downloadCount: 0,
+                    ...(userId && { userId }) // Add userId if available
                 };
 
                 // Save metadata with chunks
@@ -129,7 +133,14 @@ export async function POST(req: NextRequest) {
             // If content is very large, use the standard file upload mechanism
             else {
                 const buffer = Buffer.from(content);
-                const fileData = await uploadFile(buffer, fileName, contentType, ttlHours);
+
+                // Create file data with userId if available
+                const fileOptions: any = {
+                    ttlHours,
+                    ...(userId && { userId })
+                };
+
+                const fileData = await uploadFile(buffer, fileName, contentType, fileOptions.ttlHours);
 
                 // Now we can safely reassign fileId
                 fileId = fileData.id;
@@ -143,7 +154,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Log the upload event
-        await logEvent('text_upload', fileId);
+        await logEvent('text_upload', fileId, undefined, userId ? { userId } : undefined);
         await incrementMetric('text_uploads');
 
         return NextResponse.json({

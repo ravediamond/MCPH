@@ -8,6 +8,9 @@ export async function POST(req: NextRequest) {
         const formData = await req.formData();
         const file = formData.get('file') as File;
 
+        // Get user ID from form data (if provided)
+        const userId = formData.get('userId') as string | null;
+
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
@@ -30,6 +33,7 @@ export async function POST(req: NextRequest) {
                     fileId,
                     originalName: file.name,
                     uploadedAt: Date.now().toString(),
+                    ...(userId && { userId }) // Add user ID to metadata if available
                 },
             }
         });
@@ -54,6 +58,7 @@ export async function POST(req: NextRequest) {
             gcsPath,
             uploadedAt,
             downloadCount: 0,
+            ...(userId && { userId }) // Add user ID to file data if available
         };
 
         // Store metadata in Firestore
