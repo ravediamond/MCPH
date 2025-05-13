@@ -25,12 +25,12 @@ if ! command -v gcloud &> /dev/null; then
 fi
 
 # Check for required Firebase Project ID
-if [ -z "$FIREBASE_PROJECT_ID" ]; then
-    echo "Error: FIREBASE_PROJECT_ID environment variable is not set."
+if [ -z "$NEXT_PUBLIC_FIREBASE_PROJECT_ID" ]; then
+    echo "Error: NEXT_PUBLIC_FIREBASE_PROJECT_ID environment variable is not set."
     echo "Please define it in your .env.local file or export it."
     exit 1
 fi
-echo "Using Firebase Project ID: $FIREBASE_PROJECT_ID"
+echo "Using Firebase Project ID: $NEXT_PUBLIC_FIREBASE_PROJECT_ID"
 
 ACCESS_TOKEN=""
 
