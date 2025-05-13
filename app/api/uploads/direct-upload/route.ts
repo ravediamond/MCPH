@@ -34,12 +34,15 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        // Generate a signed URL for download
+        // Generate a signed URL for download (for internal use/direct access)
         const [signedUrl] = await gcsFile.getSignedUrl({
             version: 'v4',
             action: 'read',
             expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
         });
+
+        // Generate download page URL for user-facing link
+        const downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
 
         // Prepare file metadata
         const uploadedAt = Date.now();
@@ -50,7 +53,6 @@ export async function POST(req: NextRequest) {
             size: buffer.length,
             gcsPath,
             uploadedAt,
-            downloadUrl: signedUrl,
             downloadCount: 0,
         };
 
@@ -66,7 +68,8 @@ export async function POST(req: NextRequest) {
             fileName: file.name,
             contentType: file.type || 'application/octet-stream',
             size: file.size,
-            downloadUrl: signedUrl,
+            directUrl: signedUrl, // Renamed to clarify this is the direct file URL
+            downloadUrl: downloadUrl, // New user-friendly download page URL
             uploadedAt: new Date(uploadedAt).toISOString()
         });
 

@@ -41,16 +41,21 @@ export async function POST(req: NextRequest) {
             ttlHours
         );
 
+        // Generate download page URL
+        const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
+
         // Log the upload event
         console.log(`File uploaded: ${fileData.id}, name: ${file.name}, size: ${file.size}`);
 
         return NextResponse.json({
             id: fileData.id,
+            fileId: fileData.id, // For consistency with other endpoints
             fileName: fileData.fileName,
             contentType: fileData.contentType,
             size: fileData.size,
             uploadedAt: fileData.uploadedAt,
-            expiresAt: fileData.expiresAt
+            expiresAt: fileData.expiresAt,
+            downloadUrl: downloadUrl // Add the download page URL
         }, { status: 201 });
 
     } catch (error) {

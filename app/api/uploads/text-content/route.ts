@@ -60,7 +60,8 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const fileId = uuidv4();
+        // Using 'let' instead of 'const' for fileId since it might be reassigned
+        let fileId = uuidv4();
         const size = new TextEncoder().encode(content).length;
         const uploadedAt = new Date();
 
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
 
         let metadata: TextContentMetadata;
         let downloadUrl: string;
+        let apiUrl: string;
 
         // If content is small enough, store directly in Firestore
         if (size <= MAX_FIRESTORE_CONTENT_SIZE) {
@@ -91,8 +93,11 @@ export async function POST(req: NextRequest) {
             const db = getFirestore();
             await db.collection(TEXT_CONTENT_COLLECTION).doc(fileId).set(metadata);
 
-            // Generate download URL (via our API)
-            downloadUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
+            // Generate API URL (for direct content access)
+            apiUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
+
+            // Generate download page URL (for user-friendly page)
+            downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
         }
         // For larger content, split into chunks or store in GCS
         else {
@@ -115,16 +120,25 @@ export async function POST(req: NextRequest) {
                 const db = getFirestore();
                 await db.collection(TEXT_CONTENT_COLLECTION).doc(fileId).set(metadata);
 
-                // Generate download URL
-                downloadUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
+                // Generate API URL for direct access
+                apiUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
+
+                // Generate download page URL for user-friendly page
+                downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
             }
             // If content is very large, use the standard file upload mechanism
             else {
                 const buffer = Buffer.from(content);
                 const fileData = await uploadFile(buffer, fileName, contentType, ttlHours);
 
-                // Get the download URL using the existing mechanism
-                downloadUrl = new URL(`/api/uploads/${fileId}`, req.url).toString();
+                // Now we can safely reassign fileId
+                fileId = fileData.id;
+
+                // Generate API URL for direct access
+                apiUrl = new URL(`/api/uploads/${fileId}`, req.url).toString();
+
+                // Generate download page URL for user-friendly page
+                downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
             }
         }
 
@@ -138,7 +152,8 @@ export async function POST(req: NextRequest) {
             fileName,
             contentType,
             size,
-            downloadUrl,
+            apiUrl,          // Direct API URL for programmatic access
+            downloadUrl,     // User-friendly download page URL
             expiresAt: expiresAt?.toISOString(),
         });
 
