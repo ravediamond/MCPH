@@ -8,17 +8,26 @@ import { toast } from 'react-hot-toast';
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
-// Valid TTL options in hours
-const TTL_OPTIONS = [
-    { value: 0.016, label: '1 minute' },
-    { value: 0.083, label: '5 minutes' },
-    { value: 0.25, label: '15 minutes' },
-    { value: 0.5, label: '30 minutes' },
-    { value: 1, label: '1 hour' },
-    { value: 3, label: '3 hours' },
-    { value: 6, label: '6 hours' },
-    { value: 12, label: '12 hours' },
-    { value: 24, label: '1 day' },
+// API base URL is now relative since we're using Next.js API routes on Vercel
+const API_BASE_URL = '';
+
+// Content types to store in Firestore
+const TEXT_CONTENT_TYPES = [
+    'text/plain',
+    'text/markdown',
+    'application/json',
+    'text/x-markdown',
+    'text/x-json',
+    'application/x-json'
+];
+
+// File extensions to store in Firestore
+const TEXT_FILE_EXTENSIONS = [
+    '.txt',
+    '.md',
+    '.markdown',
+    '.json',
+    '.text'
 ];
 
 type UploadedFile = {
@@ -28,7 +37,6 @@ type UploadedFile = {
     size: number;
     downloadUrl: string;
     uploadedAt: string;
-    expiresAt: string;
 };
 
 interface FileUploadProps {
@@ -43,7 +51,6 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
     // State
     const [file, setFile] = useState<File | null>(null);
-    const [ttl, setTtl] = useState(1); // Default to 1 hour
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -64,29 +71,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         return date.toLocaleString();
     };
 
-    // Calculate time remaining until expiration
-    const formatTimeRemaining = (expirationDate: string): string => {
-        const now = new Date();
-        const expiry = new Date(expirationDate);
-        const diffMs = expiry.getTime() - now.getTime();
-
-        if (diffMs <= 0) return 'Expired';
-
-        const diffSec = Math.floor(diffMs / 1000);
-        const diffMin = Math.floor(diffSec / 60);
-
-        if (diffMin < 60) {
-            return `${diffMin} minute${diffMin !== 1 ? 's' : ''}`;
+    // Check if a file should be stored in Firestore
+    const shouldUseFirestore = (file: File): boolean => {
+        // Check content type
+        if (TEXT_CONTENT_TYPES.includes(file.type)) {
+            return true;
         }
 
-        const diffHours = Math.floor(diffMin / 60);
-
-        if (diffHours < 24) {
-            return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-        }
-
-        const diffDays = Math.floor(diffHours / 24);
-        return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+        // Check file extension if content type is not specified or ambiguous
+        const fileName = file.name.toLowerCase();
+        return TEXT_FILE_EXTENSIONS.some(ext => fileName.endsWith(ext));
     };
 
     // Dropzone setup
@@ -104,7 +98,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
 
-    // Handle file upload
+    // Handle file upload using the appropriate endpoint based on file type
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -113,47 +107,70 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             return;
         }
 
-        // Validate TTL
-        const parsedTtl = parseFloat(ttl.toString());
-        if (isNaN(parsedTtl) || parsedTtl <= 0 || parsedTtl > 24) {
-            toast.error('TTL must be between 0 and 24 hours.');
-            return;
-        }
-
         setIsUploading(true);
         setUploadProgress(0);
 
+        // Set up progress reporting
+        const updateProgressInterval = setInterval(() => {
+            // Simulate progress
+            const simulatedProgress = Math.min(95, (uploadProgress + Math.random() * 5));
+            setUploadProgress(simulatedProgress);
+        }, 300);
+
         try {
-            // Create form data
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('ttl', ttl.toString());
+            let uploadResponse;
+            let uploadedFileData;
 
-            // Simulate progress (actual progress not available with fetch)
-            const progressInterval = setInterval(() => {
-                setUploadProgress(prev => {
-                    const newProgress = prev + Math.random() * 15;
-                    return newProgress >= 95 ? 95 : newProgress;
+            // Select endpoint based on file type
+            if (shouldUseFirestore(file)) {
+                // For text files, use the text-content endpoint
+                const content = await file.text();
+
+                // Upload to text content endpoint
+                uploadResponse = await fetch('/api/uploads/text-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type || 'text/plain',
+                        'x-filename': file.name,
+                        'x-ttl-hours': '24' // Default TTL, could be configurable
+                    },
+                    body: content,
                 });
-            }, 300);
+            } else {
+                // For other files, use the direct-upload endpoint
+                const formData = new FormData();
+                formData.append('file', file);
 
-            // Send the upload request
-            const response = await fetch('/api/uploads', {
-                method: 'POST',
-                body: formData,
-            });
-
-            clearInterval(progressInterval);
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Upload failed');
+                uploadResponse = await fetch('/api/uploads/direct-upload', {
+                    method: 'POST',
+                    body: formData,
+                });
             }
 
-            // Get the uploaded file data
-            const data = await response.json();
-            setUploadedFile(data);
+            if (!uploadResponse.ok) {
+                let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+                try {
+                    const errorData = await uploadResponse.json();
+                    errorDetail = errorData.error || errorData.details || errorDetail;
+                } catch (e) {
+                    console.error("Error reading error response body:", e);
+                }
+                throw new Error(errorDetail);
+            }
+
+            clearInterval(updateProgressInterval);
             setUploadProgress(100);
+
+            uploadedFileData = await uploadResponse.json();
+
+            setUploadedFile({
+                id: uploadedFileData.fileId,
+                fileName: file.name,
+                contentType: file.type || 'application/octet-stream',
+                size: file.size,
+                downloadUrl: uploadedFileData.downloadUrl,
+                uploadedAt: new Date().toISOString()
+            });
 
             // Reset form
             if (formRef.current) {
@@ -164,19 +181,27 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
             // Call the onUploadSuccess callback if provided
             if (onUploadSuccess) {
-                onUploadSuccess(data);
+                onUploadSuccess({
+                    id: uploadedFileData.fileId,
+                    fileName: file.name,
+                    contentType: file.type || 'application/octet-stream',
+                    size: file.size,
+                    downloadUrl: uploadedFileData.downloadUrl,
+                    uploadedAt: new Date().toISOString()
+                });
             }
         } catch (error) {
-            console.error('Upload error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-            toast.error(errorMessage);
-
-            // Call the onUploadError callback if provided
-            if (onUploadError) {
-                onUploadError(error instanceof Error ? error : errorMessage);
-            }
-        } finally {
+            clearInterval(updateProgressInterval);
             setIsUploading(false);
+
+            const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+            console.error('Upload error:', errorMessage);
+            toast.error(`Upload failed: ${errorMessage}`);
+
+            // Call onUploadError callback if provided
+            if (onUploadError) {
+                onUploadError(error instanceof Error ? error : new Error(errorMessage));
+            }
         }
     };
 
@@ -220,8 +245,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <FaFile className="text-gray-500 mr-3" />
                             <div>
                                 <p className="font-medium">{uploadedFile.fileName}</p>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
+                                    {shouldUseFirestore(new File([new Blob()], uploadedFile.fileName, { type: uploadedFile.contentType })) &&
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in Firestore</span>
+                                    }
                                 </p>
                             </div>
                         </div>
@@ -230,10 +258,6 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <div className="flex flex-wrap items-center justify-between mb-4">
                                 <p className="text-sm text-gray-600">
                                     <span className="block md:inline">Uploaded: {formatDate(uploadedFile.uploadedAt)}</span>
-                                    <span className="hidden md:inline mx-2">•</span>
-                                    <span className="block md:inline">
-                                        Expires in: <span className="text-primary-500 font-medium">{formatTimeRemaining(uploadedFile.expiresAt)}</span>
-                                    </span>
                                 </p>
                             </div>
 
@@ -283,7 +307,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         </div>
 
                         <p className="text-sm text-gray-500 text-center mt-4">
-                            This link is valid for one-time download or until the expiration time.
+                            Share this link to allow others to download the file.
                         </p>
                     </div>
                 </div>
@@ -316,7 +340,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <div className="overflow-hidden">
                                 <p className="font-medium truncate">{file.name}</p>
                                 <p className="text-sm text-gray-500">
-                                    {formatBytes(file.size)} • {file.type || 'Unknown type'}
+                                    {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
+                                    {shouldUseFirestore(file) &&
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Will use Firestore</span>
+                                    }
                                 </p>
                             </div>
                             <button
@@ -329,27 +356,6 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             </button>
                         </div>
                     )}
-
-                    <div className="mb-6">
-                        <label htmlFor="ttl" className="block text-sm font-medium mb-2 text-gray-700">
-                            File Expiry Time
-                        </label>
-                        <select
-                            id="ttl"
-                            value={ttl}
-                            onChange={e => setTtl(parseFloat(e.target.value))}
-                            className="w-full bg-white border border-gray-300 rounded-md py-2 px-3 text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                        >
-                            {TTL_OPTIONS.map(option => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Your file will be permanently deleted after this time.
-                        </p>
-                    </div>
 
                     {isUploading && (
                         <div className="mb-4">

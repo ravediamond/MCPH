@@ -1,4 +1,4 @@
-import { initializeApp, cert, App, ServiceAccount } from 'firebase-admin/app';
+import { initializeApp, cert, App, ServiceAccount, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -6,42 +6,57 @@ import { v4 as uuidv4 } from 'uuid';
 let firebaseApp: App;
 let db: Firestore;
 
-try {
-    console.log('Attempting to initialize Firebase Admin SDK using Application Default Credentials (ADC).');
-    console.log('This will use GOOGLE_APPLICATION_CREDENTIALS environment variable if set, or other ADC mechanisms.');
+// Flag to track if settings have been applied
+let settingsApplied = false;
 
-    // Initialize Firebase Admin SDK without explicit credentials.
-    // It will automatically use Application Default Credentials (ADC).
-    // Ensure GOOGLE_APPLICATION_CREDENTIALS is set to the path of a valid service account JSON file
-    // with appropriate Firebase permissions, or that the application is running in a GCP environment
-    // where ADC is automatically configured (e.g., Cloud Run, GCE, GKE, App Engine).
-    firebaseApp = initializeApp({
-        // No 'credential' property is provided, so ADC will be used.
-    });
+if (!getApps().length) {
+    try {
+        console.log('Attempting to initialize Firebase Admin SDK using Application Default Credentials (ADC).');
+        console.log('This will use GOOGLE_APPLICATION_CREDENTIALS environment variable if set, or other ADC mechanisms.');
 
-    console.log('Firebase Admin SDK initialized successfully using Application Default Credentials.');
+        // Initialize Firebase Admin SDK without explicit credentials.
+        // It will automatically use Application Default Credentials (ADC).
+        firebaseApp = initializeApp({
+            // No 'credential' property is provided, so ADC will be used.
+        });
 
-    // Initialize Firestore
-    db = getFirestore(firebaseApp);
+        console.log('Firebase Admin SDK initialized successfully using Application Default Credentials.');
 
-    // Enable Firestore timestamp snapshots
-    db.settings({ ignoreUndefinedProperties: true });
-
-} catch (error: any) {
-    console.error('Error initializing Firebase Admin SDK with Application Default Credentials:', error.message);
-    let detailedError = 'Failed to initialize Firebase Admin SDK using Application Default Credentials. ';
-    if (error.message.includes('Could not load the default credentials') ||
-        error.message.includes('Unable to detect a Project Id') ||
-        error.message.includes('getDefaultCredential') ||
-        error.message.includes('Error getting access token from GOOGLE_APPLICATION_CREDENTIALS')) {
-        detailedError += 'Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is correctly set to the path of a valid service account JSON file. ';
-        detailedError += 'The service account must have the necessary Firebase permissions (e.g., Firestore Admin). ';
-        detailedError += 'If running in a Google Cloud environment, ensure the runtime service account has these permissions. ';
-    } else {
-        detailedError += `An unexpected error occurred: ${error.message}. `;
+    } catch (error: any) {
+        console.error('Error initializing Firebase Admin SDK with Application Default Credentials:', error.message);
+        let detailedError = 'Failed to initialize Firebase Admin SDK using Application Default Credentials. ';
+        if (error.message.includes('Could not load the default credentials') ||
+            error.message.includes('Unable to detect a Project Id') ||
+            error.message.includes('getDefaultCredential') ||
+            error.message.includes('Error getting access token from GOOGLE_APPLICATION_CREDENTIALS')) {
+            detailedError += 'Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is correctly set to the path of a valid service account JSON file. ';
+            detailedError += 'The service account must have the necessary Firebase permissions (e.g., Firestore Admin). ';
+            detailedError += 'If running in a Google Cloud environment, ensure the runtime service account has these permissions. ';
+        } else {
+            detailedError += `An unexpected error occurred: ${error.message}. `;
+        }
+        console.error(detailedError);
+        throw new Error(detailedError);
     }
-    console.error(detailedError);
-    throw new Error(detailedError);
+} else {
+    firebaseApp = getApp(); // Use the already initialized app
+    console.log('Firebase Admin SDK already initialized. Using existing app.');
+}
+
+// Initialize Firestore
+db = getFirestore(firebaseApp);
+
+// Apply settings only once to avoid the "Firestore has already been initialized" error
+if (!settingsApplied) {
+    try {
+        // Enable Firestore timestamp snapshots
+        db.settings({ ignoreUndefinedProperties: true });
+        settingsApplied = true;
+        console.log('Firestore settings applied successfully.');
+    } catch (error) {
+        // If settings have already been applied, this is not a critical error
+        console.warn('Could not apply Firestore settings, they may have already been configured:', error);
+    }
 }
 
 // --- End Firebase Admin SDK Initialization ---
@@ -50,6 +65,10 @@ try {
 const FILES_COLLECTION = 'files';
 const METRICS_COLLECTION = 'metrics';
 const EVENTS_COLLECTION = 'events';
+const TEXT_CONTENT_COLLECTION = 'text_content';
+
+// Export collection names for use in other modules
+export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, TEXT_CONTENT_COLLECTION };
 
 // File metadata type
 export interface FileMetadata {
@@ -59,7 +78,7 @@ export interface FileMetadata {
     size: number;
     gcsPath: string;
     uploadedAt: Date;
-    expiresAt: Date;
+    expiresAt?: Date;  // Added to match the storageService interface
     downloadCount: number;
     ipAddress?: string;
     userId?: string;

@@ -7,10 +7,12 @@
 # Firebase build output
 out
 *.log
+**/*.cache
 
 # Environment Variables
 .env.local
 *credentials.json
+*creds.json
 
 # Logs
 npm-debug.log*

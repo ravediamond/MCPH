@@ -1,0 +1,33 @@
+{
+    "version": 2,
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
+    "outputDirectory": ".next",
+    "headers": [
+        {
+            "source": "/api/sse",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                },
+                {
+                    "key": "Connection",
+                    "value": "keep-alive"
+                }
+            ]
+        },
+        {
+            "source": "/api/uploads/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                }
+            ]
+        }
+    ],
+    "github": {
+        "silent": true
+    }
+}

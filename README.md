@@ -1,3 +1,97 @@
+# MCPHub
+
+A file sharing platform built with Next.js, deployed on Vercel, using Google Cloud Storage for file storage and Firebase Realtime Database for metadata.
+
+## Architecture
+
+- **Frontend/Backend**: Next.js deployed on Vercel
+- **File Storage**: Google Cloud Storage Bucket
+- **Metadata Storage**: Firebase Realtime Database
+- **API Routes**: Next.js API Routes (Vercel Edge Functions)
+
+## Setup Instructions
+
+### Prerequisites
+
+1. Google Cloud Platform account with a project and service account
+2. Firebase project with Realtime Database enabled
+3. Vercel account
+
+### Local Development Setup
+
+1. Clone the repository
+   ```bash
+   git clone <your-repo-url>
+   cd MCPHub
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env.local` file based on the `.env.local.example` template
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+4. Fill in the required environment variables in `.env.local`:
+   - `NEXT_PUBLIC_FIREBASE_DATABASE_URL`: Your Firebase Realtime Database URL
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`: Your Firebase project ID
+   - `GCS_BUCKET_NAME`: Your Google Cloud Storage bucket name
+   - `GCP_PROJECT_ID`: Your Google Cloud Project ID (optional for local dev)
+   - `GEMINI_API_KEY`: Your Gemini API key (if using AI features)
+
+5. For local development, you'll need Application Default Credentials (ADC) set up:
+   ```bash
+   gcloud auth application-default login
+   ```
+
+6. Start the development server
+   ```bash
+   ./dev.sh
+   # or
+   npm run dev
+   ```
+
+### Deploying to Vercel
+
+1. Connect your GitHub repository to Vercel
+2. Configure the following environment variables in the Vercel dashboard:
+   - `NEXT_PUBLIC_FIREBASE_DATABASE_URL`: Your Firebase Realtime Database URL
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`: Your Firebase project ID
+   - `GCS_BUCKET_NAME`: Your Google Cloud Storage bucket name
+   - `GCP_PROJECT_ID`: Your Google Cloud Project ID
+   - `GCP_SERVICE_ACCOUNT`: Your Google Cloud service account JSON (as a string)
+   - `MAINTENANCE_AUTH_KEY`: Secret key for maintenance endpoints
+   - `GEMINI_API_KEY`: Your Gemini API key (if using AI features)
+3. Deploy from the Vercel dashboard or push to your main branch
+
+## Features
+
+- File upload/download
+- Server-sent events (SSE) for real-time notifications
+- Signed URLs for secure file sharing
+- API routes for file operations
+- Automatic cleanup of expired files
+
+## API Endpoints
+
+- `POST /api/uploads`: Upload a file
+- `GET /api/uploads/:id`: Download a file
+- `DELETE /api/uploads/:id`: Delete a file
+- `GET /api/uploads/:id/signed-url`: Generate a signed URL for a file
+- `GET /api/sse`: Server-sent events endpoint
+- `POST /api/maintenance/cleanup`: Cleanup expired files (requires auth)
+
+## Environment Variables
+
+See `.env.local.example` for all required environment variables and their descriptions.
+
+## License
+
+[MIT](LICENSE)
+
 # MCPH🚀
 
 Welcome to **MCPH**, your one-stop hub for discovering, sharing, and exploring Model Context Protocol (MCP) tools! Whether you're a developer looking to publish your awesome MCP or an AI system hunting for the perfect integration, we've got you covered. 😊
@@ -200,4 +294,13 @@ Local fast checks:
 - Full sweep (CI or manual):
 ```bash
 npm run check
+```
+
+
+
+## Development
+
+```
+gcloud auth application-default login
+npm run dev
 ```

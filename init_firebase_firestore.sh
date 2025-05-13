@@ -5,78 +5,78 @@
 echo "Firebase Firestore Initialization Script"
 echo "---------------------------------------"
 echo "This script will initialize the basic collections in your Firebase Firestore database."
-echo "It uses the gcp-credentials.json file for authentication."
+echo "It uses environment variables from .env.local for configuration."
 echo ""
 
-# Set the correct Firebase project ID
-FIREBASE_PROJECT_ID="mpch-458204"
-echo "Using Firebase Project ID: $FIREBASE_PROJECT_ID"
-
-# Use the gcp-credentials.json file directly
-if [ -f "gcp-credentials.json" ]; then
-    echo "Using credentials from gcp-credentials.json"
-    
-    # Try to get access token via gcloud
-    if command -v gcloud &> /dev/null; then
-        echo "Using gcloud for authentication..."
-        gcloud config set project $FIREBASE_PROJECT_ID
-        ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
-        
-        if [ -z "$ACCESS_TOKEN" ]; then
-            echo "Could not get access token from gcloud. Trying service account authentication..."
-        else
-            echo "Access token obtained from gcloud."
-        fi
-    fi
-
-    # If that didn't work, try using the service account directly
-    if [ -z "$ACCESS_TOKEN" ]; then
-        echo "Using service account for authentication..."
-        
-        # Check if jq is available
-        if ! command -v jq &> /dev/null; then
-            echo "Error: jq is required but not installed. Please install jq first."
-            echo "You can install it with: brew install jq"
-            exit 1
-        fi
-        
-        # Extract required fields from credentials
-        CLIENT_EMAIL=$(jq -r .client_email gcp-credentials.json)
-        PRIVATE_KEY=$(jq -r .private_key gcp-credentials.json)
-        
-        # Create JWT header
-        JWT_HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | openssl base64 -e | tr -d '\n' | tr '/+' '_-' | tr -d '=')
-        
-        # Create JWT claim set
-        NOW=$(date +%s)
-        EXP=$((NOW + 3600))
-        
-        JWT_CLAIM_SET=$(echo -n '{"iss":"'$CLIENT_EMAIL'","scope":"https://www.googleapis.com/auth/cloud-platform","aud":"https://www.googleapis.com/oauth2/v4/token","exp":'$EXP',"iat":'$NOW'}' | openssl base64 -e | tr -d '\n' | tr '/+' '_-' | tr -d '=')
-        
-        # Create JWT signature
-        JWT_UNSIGNED=$JWT_HEADER.$JWT_CLAIM_SET
-        PRIVATE_KEY_FILE=temp_private_key.pem
-        echo "$PRIVATE_KEY" > $PRIVATE_KEY_FILE
-        
-        JWT_SIGNATURE=$(echo -n $JWT_UNSIGNED | openssl dgst -sha256 -sign $PRIVATE_KEY_FILE | openssl base64 -e | tr -d '\n' | tr '/+' '_-' | tr -d '=')
-        rm $PRIVATE_KEY_FILE
-        
-        JWT_TOKEN=$JWT_UNSIGNED.$JWT_SIGNATURE
-        
-        # Exchange JWT for access token
-        ACCESS_TOKEN=$(curl -s -X POST https://www.googleapis.com/oauth2/v4/token \
-          -d "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=$JWT_TOKEN" \
-          -H "Content-Type: application/x-www-form-urlencoded" \
-          | jq -r '.access_token')
-    fi
+# Source environment variables if .env.local exists
+if [ -f ".env.local" ]; then
+    echo "Loading environment variables from .env.local..."
+    set -o allexport
+    source .env.local
+    set +o allexport
 else
-    echo "Error: gcp-credentials.json file not found in the current directory."
+    echo "Warning: .env.local file not found. Relying on pre-existing environment variables."
+fi
+
+# Check if gcloud CLI is installed
+if ! command -v gcloud &> /dev/null; then
+    echo "Error: gcloud CLI is required but not installed. Please install and configure it first."
     exit 1
 fi
 
+# Check for required Firebase Project ID
+if [ -z "$FIREBASE_PROJECT_ID" ]; then
+    echo "Error: FIREBASE_PROJECT_ID environment variable is not set."
+    echo "Please define it in your .env.local file or export it."
+    exit 1
+fi
+echo "Using Firebase Project ID: $FIREBASE_PROJECT_ID"
+
+ACCESS_TOKEN=""
+
+# Attempt to get access token
+if [ -n "$GCP_SERVICE_ACCOUNT" ]; then
+    echo "Using GCP_SERVICE_ACCOUNT environment variable for authentication..."
+    # Write the JSON key to a temporary file
+    TEMP_CRED_FILE="temp_gcp_creds.json"
+    echo "$GCP_SERVICE_ACCOUNT" > "$TEMP_CRED_FILE"
+    
+    # Check if the temp file was created successfully and is not empty
+    if [ ! -s "$TEMP_CRED_FILE" ]; then
+        echo "Error: Failed to write GCP_SERVICE_ACCOUNT to temporary file or variable is empty."
+        rm -f "$TEMP_CRED_FILE" # Clean up empty/failed temp file
+        # Fall-through to try ADC without service account file
+    else
+        # Set environment variable for gcloud to use the key file
+        export GCP_SERVICE_ACCOUNT="$TEMP_CRED_FILE"
+        
+        ACCESS_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null)
+        
+        # Unset and remove temporary credentials
+        unset GCP_SERVICE_ACCOUNT
+        rm "$TEMP_CRED_FILE"
+        
+        if [ -n "$ACCESS_TOKEN" ]; then
+            echo "Access token obtained using GCP_SERVICE_ACCOUNT."
+        else
+            echo "Warning: Failed to obtain access token using GCP_SERVICE_ACCOUNT. Trying other methods..."
+        fi
+    fi
+fi
+
+# If access token not obtained yet, try with ambient gcloud ADC
 if [ -z "$ACCESS_TOKEN" ]; then
-    echo "Error: Failed to get access token. Please check your credentials."
-    echo "Make sure you have either gcloud configured or valid service account credentials."
+    echo "Attempting to use ambient gcloud Application Default Credentials..."
+    ACCESS_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null)
+    if [ -n "$ACCESS_TOKEN" ]; then
+        echo "Access token obtained using ambient gcloud ADC."
+    fi
+fi
+
+if [ -z "$ACCESS_TOKEN" ]; then
+    echo "Error: Failed to get access token."
+    echo "Please ensure gcloud is configured correctly (e.g., run 'gcloud auth application-default login')"
+    echo "or provide a valid GCP_SERVICE_ACCOUNT in .env.local."
     exit 1
 fi
 

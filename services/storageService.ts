@@ -1,49 +1,111 @@
-import { Storage } from '@google-cloud/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { getFileMetadata, deleteFileMetadata, FileMetadata } from './firebaseService';
+import { bucket, uploadsFolder } from '../lib/gcpStorageClient';
+import {
+    saveFileMetadata,
+    getFileMetadata,
+    deleteFileMetadata,
+    incrementDownloadCount,
+    logEvent
+} from './firebaseService';
 
-// Initialize Google Cloud Storage
-let storage: Storage;
-
-try {
-    // Parse the credentials from environment variable
-    const credentials = process.env.GOOGLE_CLOUD_CREDENTIALS
-        ? JSON.parse(process.env.GOOGLE_CLOUD_CREDENTIALS)
-        : undefined;
-
-    storage = new Storage({
-        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-        credentials,
-    });
-} catch (error) {
-    console.error('Error initializing Google Cloud Storage:', error);
-    throw new Error('Failed to initialize storage service');
+// File metadata type definition
+export interface FileMetadata {
+    id: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+    gcsPath: string;
+    uploadedAt: number;
+    expiresAt?: number;
+    downloadCount: number;
 }
 
-// Get GCS bucket name from environment variables
-const BUCKET_NAME = process.env.GOOGLE_CLOUD_BUCKET_NAME || 'mcphub-files';
+/**
+ * Generate a pre-signed URL for uploading a file directly to GCS
+ */
+export async function generateUploadUrl(
+    fileName: string,
+    contentType: string,
+    ttlHours?: number
+): Promise<{ url: string, fileId: string, gcsPath: string }> {
+    try {
+        // Generate a unique ID for the file
+        const fileId = uuidv4();
 
-// Base folder for uploaded files
-const BASE_FOLDER = 'uploads/';
+        // Generate GCS path
+        const gcsPath = `${uploadsFolder}${fileId}/${encodeURIComponent(fileName)}`;
 
-// Get the bucket
-const bucket = storage.bucket(BUCKET_NAME);
+        // Create a GCS file object
+        const file = bucket.file(gcsPath);
+
+        // Generate a signed URL for uploads
+        const [url] = await file.getSignedUrl({
+            version: 'v4',
+            action: 'write',
+            expires: Date.now() + (15 * 60 * 1000), // 15 minutes
+            contentType,
+            extensionHeaders: {
+                'x-goog-content-length-range': '0,104857600' // Limit to 100MB
+            }
+        });
+
+        // Calculate expiration time if provided
+        const uploadedAt = Date.now();
+        let expiresAt: number | undefined;
+        if (ttlHours && ttlHours > 0) {
+            expiresAt = uploadedAt + (ttlHours * 60 * 60 * 1000);
+        }
+
+        // Prepare file metadata
+        const fileData: FileMetadata = {
+            id: fileId,
+            fileName,
+            contentType,
+            size: 0, // Will be updated when file is uploaded
+            gcsPath,
+            uploadedAt,
+            expiresAt,
+            downloadCount: 0,
+        };
+
+        // Store metadata in Firestore
+        await saveFileMetadata({
+            ...fileData,
+            uploadedAt: new Date(uploadedAt)
+        } as any, 0);
+
+        return { url, fileId, gcsPath };
+    } catch (error: any) {
+        console.error('Error generating upload URL:', error);
+        if (error.message && error.message.includes('Cannot sign data without `client_email`')) {
+            throw new Error(
+                'Failed to generate upload URL due to a signing error. ' +
+                'This usually means the GCS client is missing `client_email` or `private_key` in its credentials. ' +
+                'If running in production (e.g., Vercel), ensure the GCP_SERVICE_ACCOUNT environment variable contains a valid service account JSON key with `client_email` and `private_key`. ' +
+                'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).'
+            );
+        }
+        // Fallback for other errors
+        throw new Error('Failed to generate upload URL. Original error: ' + (error.message || 'Unknown error'));
+    }
+}
 
 /**
- * Upload a file to Google Cloud Storage
+ * Upload a file directly to Google Cloud Storage (server-side)
+ * This is kept for backward compatibility or server-side uploads
  */
 export async function uploadFile(
     fileBuffer: Buffer,
     fileName: string,
     contentType: string,
-    ttlHours: number = 1
+    ttlHours?: number
 ): Promise<FileMetadata> {
     try {
         // Generate a unique ID for the file
         const fileId = uuidv4();
 
         // Generate GCS path
-        const gcsPath = `${BASE_FOLDER}${fileId}/${encodeURIComponent(fileName)}`;
+        const gcsPath = `${uploadsFolder}${fileId}/${encodeURIComponent(fileName)}`;
 
         // Create a GCS file object
         const file = bucket.file(gcsPath);
@@ -55,19 +117,21 @@ export async function uploadFile(
                 metadata: {
                     fileId,
                     originalName: fileName,
-                    uploadedAt: new Date().toISOString(),
-                    ttlHours: ttlHours.toString(),
+                    uploadedAt: Date.now().toString(),
                 },
             },
             resumable: false,
         });
 
-        // Calculate expiration date
-        const uploadedAt = new Date();
-        const expiresAt = new Date(uploadedAt);
-        expiresAt.setHours(expiresAt.getHours() + ttlHours);
-
         // Prepare file metadata
+        const uploadedAt = Date.now();
+
+        // Calculate expiration time if provided
+        let expiresAt: number | undefined;
+        if (ttlHours && ttlHours > 0) {
+            expiresAt = uploadedAt + (ttlHours * 60 * 60 * 1000);
+        }
+
         const fileData: FileMetadata = {
             id: fileId,
             fileName,
@@ -78,6 +142,12 @@ export async function uploadFile(
             expiresAt,
             downloadCount: 0,
         };
+
+        // Store metadata in Firestore
+        await saveFileMetadata({
+            ...fileData,
+            uploadedAt: new Date(uploadedAt)
+        } as any, 0);
 
         return fileData;
     } catch (error) {
@@ -91,12 +161,18 @@ export async function uploadFile(
  */
 export async function getSignedDownloadUrl(
     fileId: string,
-    fileName: string,
-    expiresInMinutes: number = 10
+    fileName?: string,
+    expiresInMinutes: number = 60
 ): Promise<string> {
     try {
-        // Generate the GCS path
-        const gcsPath = `${BASE_FOLDER}${fileId}/${encodeURIComponent(fileName)}`;
+        // Get file metadata from Firestore
+        const metadata = await getFileMetadata(fileId);
+        if (!metadata) {
+            throw new Error('File not found');
+        }
+
+        const actualFileName = fileName || metadata.fileName;
+        const gcsPath = metadata.gcsPath;
 
         // Get the file
         const file = bucket.file(gcsPath);
@@ -113,8 +189,14 @@ export async function getSignedDownloadUrl(
             action: 'read',
             expires: Date.now() + expiresInMinutes * 60 * 1000,
             // Set content disposition to force download with original filename
-            responseDisposition: `attachment; filename="${encodeURIComponent(fileName)}"`,
+            responseDisposition: `attachment; filename="${encodeURIComponent(actualFileName)}"`,
         });
+
+        // Increment download count in Firestore
+        await incrementDownloadCount(fileId);
+
+        // Log the download event
+        await logEvent('file_download', fileId);
 
         return url;
     } catch (error) {
@@ -124,62 +206,58 @@ export async function getSignedDownloadUrl(
 }
 
 /**
- * Stream a file directly from storage
+ * Check if a file exists in storage
  */
-export async function streamFile(fileId: string, fileName: string): Promise<{
-    stream: NodeJS.ReadableStream;
-    contentType: string;
-    size: number;
-}> {
+export async function fileExists(fileId: string): Promise<boolean> {
     try {
-        // Generate the GCS path
-        const gcsPath = `${BASE_FOLDER}${fileId}/${encodeURIComponent(fileName)}`;
+        // Get file metadata from Firestore
+        const metadata = await getFileMetadata(fileId);
+        if (!metadata) {
+            return false;
+        }
 
         // Get the file
-        const file = bucket.file(gcsPath);
+        const file = bucket.file(metadata.gcsPath);
 
         // Check if file exists
         const [exists] = await file.exists();
-        if (!exists) {
-            throw new Error('File not found in storage');
-        }
-
-        // Get file metadata
-        const [metadata] = await file.getMetadata();
-
-        // Create read stream
-        const stream = file.createReadStream();
-
-        return {
-            stream,
-            contentType: metadata.contentType || 'application/octet-stream',
-            size: metadata.size ? parseInt(metadata.size.toString(), 10) : 0,
-        };
+        return exists;
     } catch (error) {
-        console.error('Error streaming file:', error);
-        throw new Error('Failed to stream file');
+        console.error('Error checking if file exists:', error);
+        return false;
     }
 }
 
 /**
  * Delete a file from storage
  */
-export async function deleteFile(fileId: string, fileName: string): Promise<boolean> {
+export async function deleteFile(fileId: string): Promise<boolean> {
     try {
-        // Generate the GCS path
-        const gcsPath = `${BASE_FOLDER}${fileId}/${encodeURIComponent(fileName)}`;
+        // Get file metadata from Firestore
+        const metadata = await getFileMetadata(fileId);
+        if (!metadata) {
+            return false;
+        }
 
         // Get the file
-        const file = bucket.file(gcsPath);
+        const file = bucket.file(metadata.gcsPath);
 
         // Check if file exists
         const [exists] = await file.exists();
         if (!exists) {
-            return false;
+            // Metadata exists but file doesn't, clean up metadata
+            await deleteFileMetadata(fileId);
+            return true;
         }
 
         // Delete the file
         await file.delete();
+
+        // Delete metadata
+        await deleteFileMetadata(fileId);
+
+        // Log the deletion event
+        await logEvent('file_delete', fileId);
 
         return true;
     } catch (error) {
@@ -189,60 +267,37 @@ export async function deleteFile(fileId: string, fileName: string): Promise<bool
 }
 
 /**
- * Purge expired files from storage and Redis
+ * Stream file content directly
  */
-export async function purgeExpiredFiles(): Promise<number> {
+export async function getFileStream(fileId: string): Promise<{
+    stream: NodeJS.ReadableStream;
+    metadata: FileMetadata;
+}> {
     try {
-        // List all files in the uploads folder
-        const [files] = await bucket.getFiles({ prefix: BASE_FOLDER });
-
-        // Track number of purged files
-        let purgedCount = 0;
-
-        // Current time
-        const now = new Date();
-
-        // Process files in batches to avoid memory issues
-        for (const file of files) {
-            try {
-                // Extract fileId and fileName from the path
-                const pathParts = file.name.split('/');
-                if (pathParts.length < 3) continue;
-
-                const fileId = pathParts[1];
-
-                // Skip if not a properly structured path
-                if (!fileId) continue;
-
-                // Get file metadata from Redis
-                const metadata = await getFileMetadata(fileId);
-
-                // If metadata exists, check if expired
-                if (metadata) {
-                    if (metadata.expiresAt <= now) {
-                        // Delete from storage
-                        await file.delete();
-
-                        // Delete from Redis
-                        await deleteFileMetadata(fileId);
-
-                        purgedCount++;
-                    }
-                } else {
-                    // If no metadata in Redis, delete from storage 
-                    // (orphaned file, metadata may have been lost)
-                    await file.delete();
-                    purgedCount++;
-                }
-            } catch (error) {
-                console.error(`Error processing file ${file.name}:`, error);
-                // Continue with next file
-            }
+        // Get file metadata from Firestore
+        const metadata = await getFileMetadata(fileId) as unknown as FileMetadata;
+        if (!metadata) {
+            throw new Error('File not found');
         }
 
-        return purgedCount;
+        // Get the file
+        const file = bucket.file(metadata.gcsPath);
+
+        // Check if file exists
+        const [exists] = await file.exists();
+        if (!exists) {
+            throw new Error('File not found in storage');
+        }
+
+        // Create a read stream
+        const stream = file.createReadStream();
+
+        // Increment download count
+        await incrementDownloadCount(fileId);
+
+        return { stream, metadata };
     } catch (error) {
-        console.error('Error purging expired files:', error);
-        throw new Error('Failed to purge expired files');
+        console.error('Error streaming file:', error);
+        throw new Error('Failed to stream file');
     }
 }

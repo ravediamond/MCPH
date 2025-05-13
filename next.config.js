@@ -3,27 +3,35 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['mcph.io', 'www.mcph.io'],
+    // We don't need unoptimized with Vercel
+    // unoptimized: true, 
   },
-  output: 'export', // Enable static HTML export for Firebase Hosting
-  distDir: 'out', // Output to 'out' directory for Firebase Hosting
-  // We'll handle the API routes with Cloud Functions
-  trailingSlash: true, // For better Firebase Hosting compatibility
+  // We don't need output: 'export' with Vercel
+  // output: 'export', 
+
+  // We don't need a distDir with Vercel
+  // distDir: 'out', 
+
+  // Vercel handles API routes, so no need for trailing slashes
+  // trailingSlash: true, 
+
+  // Configure webpack for Node.js core modules in browser
   webpack: (config, { isServer }) => {
     // Add fallbacks for Node.js core modules
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         stream: require.resolve('stream-browserify'),
-        buffer: require.resolve('buffer/'), // Often needed with stream
-        http: require.resolve('http-browserify'), // Added http fallback
-        net: require.resolve('net-browserify'), // Added net fallback
-        https: require.resolve('https-browserify'), // Added https fallback
-        crypto: require.resolve('crypto-browserify'), // Added crypto fallback
-        tls: require.resolve('tls-browserify'), // Added tls fallback
+        buffer: require.resolve('buffer/'),
+        http: require.resolve('http-browserify'),
+        net: require.resolve('net-browserify'),
+        https: require.resolve('https-browserify'),
+        crypto: require.resolve('crypto-browserify'),
+        tls: require.resolve('tls-browserify'),
       };
     }
 
-    // Important: return the modified config
+    // Return the modified config
     return config;
   },
 };
