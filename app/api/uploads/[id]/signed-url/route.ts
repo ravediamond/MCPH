@@ -12,10 +12,10 @@ function getClientIp(req: NextRequest): string {
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const fileId = params.id;
+        const fileId = (await params).id;
 
         // Get query parameters
         const searchParams = req.nextUrl.searchParams;

@@ -13,10 +13,10 @@ function getClientIp(req: NextRequest): string {
 // Handle GET requests - Download file
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const fileId = params.id;
+        const fileId = (await params).id;
 
         // Get file as stream
         const { stream, metadata } = await getFileStream(fileId);
@@ -48,10 +48,10 @@ export async function GET(
 // Handle DELETE requests - Delete file
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const fileId = params.id;
+        const fileId = (await params).id;
 
         // Delete the file
         const success = await deleteFile(fileId);

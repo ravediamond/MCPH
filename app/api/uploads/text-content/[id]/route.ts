@@ -25,10 +25,10 @@ interface TextContentMetadata {
  */
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const fileId = params.id;
+        const fileId = (await params).id;
         const db = getFirestore();
 
         // First check if it's in the text_content collection
