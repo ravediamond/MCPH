@@ -38,4 +38,10 @@ jobs:
         # Disable TailwindCSS Oxide engine
         OXIDE: '0'
         NODE_OPTIONS: '--max_old_space_size=4096'
+        # Add GCS bucket name for CI environment
+        GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
+        # If you're using GCP Service Account in production
+        GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        # Optional: Add GCP Project ID if needed
+        GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       run: npm run build
