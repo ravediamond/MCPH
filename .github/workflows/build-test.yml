@@ -9,8 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Always use the Preview environment with dummy values for testing builds
-    environment: Preview
+    # No need for environment: Preview since we're using dummy values directly
 
     steps:
     - uses: actions/checkout@v4
@@ -40,5 +39,8 @@ jobs:
         # Disable TailwindCSS Oxide engine
         OXIDE: '0'
         NODE_OPTIONS: '--max_old_space_size=4096'
-        # Environment variables will be loaded from the Preview environment
+        # Add dummy environment variables directly
+        GCS_BUCKET_NAME: 'dummy-bucket-for-ci'
+        GCP_PROJECT_ID: 'dummy-project-id'
+        GCP_SERVICE_ACCOUNT: '{"type":"service_account","project_id":"dummy-project","client_email":"dummy@example.com","private_key":"-----BEGIN PRIVATE KEY-----\ndummy\n-----END PRIVATE KEY-----\n"}'
       run: npm run build
