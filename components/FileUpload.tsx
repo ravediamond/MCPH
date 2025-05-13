@@ -11,6 +11,25 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024;
 // API base URL is now relative since we're using Next.js API routes on Vercel
 const API_BASE_URL = '';
 
+// Content types to store in Firestore
+const TEXT_CONTENT_TYPES = [
+    'text/plain',
+    'text/markdown',
+    'application/json',
+    'text/x-markdown',
+    'text/x-json',
+    'application/x-json'
+];
+
+// File extensions to store in Firestore
+const TEXT_FILE_EXTENSIONS = [
+    '.txt',
+    '.md',
+    '.markdown',
+    '.json',
+    '.text'
+];
+
 type UploadedFile = {
     id: string;
     fileName: string;
@@ -52,6 +71,18 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         return date.toLocaleString();
     };
 
+    // Check if a file should be stored in Firestore
+    const shouldUseFirestore = (file: File): boolean => {
+        // Check content type
+        if (TEXT_CONTENT_TYPES.includes(file.type)) {
+            return true;
+        }
+
+        // Check file extension if content type is not specified or ambiguous
+        const fileName = file.name.toLowerCase();
+        return TEXT_FILE_EXTENSIONS.some(ext => fileName.endsWith(ext));
+    };
+
     // Dropzone setup
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const selectedFile = acceptedFiles[0];
@@ -67,7 +98,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
 
-    // Handle file upload using pre-signed URLs
+    // Handle file upload using the appropriate endpoint based on file type
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -86,50 +117,53 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             setUploadProgress(simulatedProgress);
         }, 300);
 
-        // Direct upload to server
-        const formData = new FormData();
-        formData.append('file', file);
+        try {
+            let uploadResponse;
+            let uploadedFileData;
 
-        const uploadResponse = await fetch('/api/uploads/direct-upload', {
-            method: 'POST',
-            body: formData,
-        });
+            // Select endpoint based on file type
+            if (shouldUseFirestore(file)) {
+                // For text files, use the text-content endpoint
+                const content = await file.text();
 
-        if (!uploadResponse.ok) {
-            let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
-            try {
-                const errorData = await uploadResponse.json();
-                errorDetail = errorData.error || errorData.details || errorDetail;
-            } catch (e) {
-                console.error("Error reading error response body:", e);
+                // Upload to text content endpoint
+                uploadResponse = await fetch('/api/uploads/text-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type || 'text/plain',
+                        'x-filename': file.name,
+                        'x-ttl-hours': '24' // Default TTL, could be configurable
+                    },
+                    body: content,
+                });
+            } else {
+                // For other files, use the direct-upload endpoint
+                const formData = new FormData();
+                formData.append('file', file);
+
+                uploadResponse = await fetch('/api/uploads/direct-upload', {
+                    method: 'POST',
+                    body: formData,
+                });
             }
-            throw new Error(errorDetail);
-        }
 
-        clearInterval(updateProgressInterval);
-        setUploadProgress(100);
+            if (!uploadResponse.ok) {
+                let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+                try {
+                    const errorData = await uploadResponse.json();
+                    errorDetail = errorData.error || errorData.details || errorDetail;
+                } catch (e) {
+                    console.error("Error reading error response body:", e);
+                }
+                throw new Error(errorDetail);
+            }
 
-        const uploadedFileData = await uploadResponse.json();
+            clearInterval(updateProgressInterval);
+            setUploadProgress(100);
 
-        setUploadedFile({
-            id: uploadedFileData.fileId,
-            fileName: file.name,
-            contentType: file.type || 'application/octet-stream',
-            size: file.size,
-            downloadUrl: uploadedFileData.downloadUrl,
-            uploadedAt: new Date().toISOString()
-        });
+            uploadedFileData = await uploadResponse.json();
 
-        // Reset form
-        if (formRef.current) {
-            formRef.current.reset();
-        }
-
-        toast.success('File uploaded successfully!');
-
-        // Call the onUploadSuccess callback if provided
-        if (onUploadSuccess) {
-            onUploadSuccess({
+            setUploadedFile({
                 id: uploadedFileData.fileId,
                 fileName: file.name,
                 contentType: file.type || 'application/octet-stream',
@@ -137,6 +171,37 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 downloadUrl: uploadedFileData.downloadUrl,
                 uploadedAt: new Date().toISOString()
             });
+
+            // Reset form
+            if (formRef.current) {
+                formRef.current.reset();
+            }
+
+            toast.success('File uploaded successfully!');
+
+            // Call the onUploadSuccess callback if provided
+            if (onUploadSuccess) {
+                onUploadSuccess({
+                    id: uploadedFileData.fileId,
+                    fileName: file.name,
+                    contentType: file.type || 'application/octet-stream',
+                    size: file.size,
+                    downloadUrl: uploadedFileData.downloadUrl,
+                    uploadedAt: new Date().toISOString()
+                });
+            }
+        } catch (error) {
+            clearInterval(updateProgressInterval);
+            setIsUploading(false);
+
+            const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+            console.error('Upload error:', errorMessage);
+            toast.error(`Upload failed: ${errorMessage}`);
+
+            // Call onUploadError callback if provided
+            if (onUploadError) {
+                onUploadError(error instanceof Error ? error : new Error(errorMessage));
+            }
         }
     };
 
@@ -182,6 +247,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="font-medium">{uploadedFile.fileName}</p>
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
+                                    {shouldUseFirestore(new File([new Blob()], uploadedFile.fileName, { type: uploadedFile.contentType })) &&
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in Firestore</span>
+                                    }
                                 </p>
                             </div>
                         </div>
@@ -273,6 +341,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="font-medium truncate">{file.name}</p>
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
+                                    {shouldUseFirestore(file) &&
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Will use Firestore</span>
+                                    }
                                 </p>
                             </div>
                             <button

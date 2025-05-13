@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 let firebaseApp: App;
 let db: Firestore;
 
+// Flag to track if settings have been applied
+let settingsApplied = false;
+
 if (!getApps().length) {
     try {
         console.log('Attempting to initialize Firebase Admin SDK using Application Default Credentials (ADC).');
@@ -13,9 +16,6 @@ if (!getApps().length) {
 
         // Initialize Firebase Admin SDK without explicit credentials.
         // It will automatically use Application Default Credentials (ADC).
-        // Ensure GOOGLE_APPLICATION_CREDENTIALS is set to the path of a valid service account JSON file
-        // with appropriate Firebase permissions, or that the application is running in a GCP environment
-        // where ADC is automatically configured (e.g., Cloud Run, GCE, GKE, App Engine).
         firebaseApp = initializeApp({
             // No 'credential' property is provided, so ADC will be used.
         });
@@ -46,8 +46,18 @@ if (!getApps().length) {
 // Initialize Firestore
 db = getFirestore(firebaseApp);
 
-// Enable Firestore timestamp snapshots
-db.settings({ ignoreUndefinedProperties: true });
+// Apply settings only once to avoid the "Firestore has already been initialized" error
+if (!settingsApplied) {
+    try {
+        // Enable Firestore timestamp snapshots
+        db.settings({ ignoreUndefinedProperties: true });
+        settingsApplied = true;
+        console.log('Firestore settings applied successfully.');
+    } catch (error) {
+        // If settings have already been applied, this is not a critical error
+        console.warn('Could not apply Firestore settings, they may have already been configured:', error);
+    }
+}
 
 // --- End Firebase Admin SDK Initialization ---
 
@@ -55,6 +65,10 @@ db.settings({ ignoreUndefinedProperties: true });
 const FILES_COLLECTION = 'files';
 const METRICS_COLLECTION = 'metrics';
 const EVENTS_COLLECTION = 'events';
+const TEXT_CONTENT_COLLECTION = 'text_content';
+
+// Export collection names for use in other modules
+export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, TEXT_CONTENT_COLLECTION };
 
 // File metadata type
 export interface FileMetadata {

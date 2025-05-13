@@ -124,6 +124,36 @@ export default function Home() {
                         </div>
                     </div>
 
+                    {/* Intelligent Storage Feature */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
+                        <h3 className="text-lg font-medium mb-3 text-gray-800">Intelligent Storage System</h3>
+                        <p className="text-gray-600 mb-4">
+                            Our service automatically optimizes where your content is stored based on file type:
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-beige-100 p-3 rounded">
+                                <h4 className="font-medium text-gray-800 mb-2">Text Files in Firestore</h4>
+                                <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                                    <li>Markdown (.md) documents</li>
+                                    <li>JSON files</li>
+                                    <li>Plain text (.txt)</li>
+                                    <li>Optimized for fast retrieval</li>
+                                    <li>Support for larger text with automatic chunking</li>
+                                </ul>
+                            </div>
+                            <div className="bg-beige-100 p-3 rounded">
+                                <h4 className="font-medium text-gray-800 mb-2">Other Files in Cloud Storage</h4>
+                                <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                                    <li>Images, videos, and audio</li>
+                                    <li>Documents (PDF, Office files)</li>
+                                    <li>Archives and executables</li>
+                                    <li>Any other binary formats</li>
+                                    <li>Support for files up to 500MB</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
                         <h3 className="text-lg font-medium mb-3 text-gray-800">AI Integration Ready</h3>
                         <p className="text-gray-600 mb-4">
@@ -146,8 +176,8 @@ export default function Home() {
             <section className="py-8 px-4 border-t border-gray-200 text-center">
                 <div className="max-w-4xl mx-auto">
                     <p className="text-gray-600 text-sm">
-                        All files are stored securely on Google Cloud Storage and automatically purged after expiration.
-                        <br />No registration or personal information is required to use this service.
+                        Files are stored securely using Google Cloud Storage and Firestore based on content type.
+                        <br />All files are automatically purged after expiration. No registration required.
                     </p>
                 </div>
             </section>
