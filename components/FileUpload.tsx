@@ -79,156 +79,64 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         setIsUploading(true);
         setUploadProgress(0);
 
-        const contentType = file.type || 'application/octet-stream'; // Default content type
+        // Set up progress reporting
+        const updateProgressInterval = setInterval(() => {
+            // Simulate progress
+            const simulatedProgress = Math.min(95, (uploadProgress + Math.random() * 5));
+            setUploadProgress(simulatedProgress);
+        }, 300);
 
-        try {
-            // First, get a pre-signed URL for the upload
-            const signedUrlResponse = await fetch('/api/uploads/signed-url', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fileName: file.name,
-                    contentType: contentType, // Use defaulted content type
-                    // Optional TTL in hours
-                    ttlHours: 24 * 7, // 7 days default
-                }),
-            });
+        // Direct upload to server
+        const formData = new FormData();
+        formData.append('file', file);
 
-            if (!signedUrlResponse.ok) {
-                let errorResponseMessage = 'Failed to get upload URL';
-                try {
-                    const contentType = signedUrlResponse.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await signedUrlResponse.json();
-                        errorResponseMessage = errorData.error || errorResponseMessage;
-                    } else {
-                        const errorText = await signedUrlResponse.text();
-                        console.error("Non-JSON error response from /api/uploads/signed-url:", errorText);
-                        errorResponseMessage = `Server error (status ${signedUrlResponse.status}). Check console for details.`;
-                    }
-                } catch (e) {
-                    console.error("Error parsing error response from /api/uploads/signed-url:", e);
-                }
-                throw new Error(errorResponseMessage);
+        const uploadResponse = await fetch('/api/uploads/direct-upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+            let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+            try {
+                const errorData = await uploadResponse.json();
+                errorDetail = errorData.error || errorData.details || errorDetail;
+            } catch (e) {
+                console.error("Error reading error response body:", e);
             }
+            throw new Error(errorDetail);
+        }
 
-            const { uploadUrl, fileId } = await signedUrlResponse.json();
+        clearInterval(updateProgressInterval);
+        setUploadProgress(100);
 
-            // Progress tracking setup
-            let uploadedBytes = 0;
-            const totalBytes = file.size;
+        const uploadedFileData = await uploadResponse.json();
 
-            // Set up progress reporting
-            const updateProgressInterval = setInterval(() => {
-                if (uploadedBytes < totalBytes) {
-                    // Simulate progress until we get real progress (WebKit browsers don't support upload progress reliably)
-                    const simulatedProgress = Math.min(95, (uploadProgress + Math.random() * 5));
-                    setUploadProgress(simulatedProgress);
-                }
-            }, 300);
+        setUploadedFile({
+            id: uploadedFileData.fileId,
+            fileName: file.name,
+            contentType: file.type || 'application/octet-stream',
+            size: file.size,
+            downloadUrl: uploadedFileData.downloadUrl,
+            uploadedAt: new Date().toISOString()
+        });
 
-            // Upload the file directly to GCS using the pre-signed URL
-            const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': contentType, // Use defaulted content type
-                },
-                body: file,
-            });
+        // Reset form
+        if (formRef.current) {
+            formRef.current.reset();
+        }
 
-            clearInterval(updateProgressInterval);
+        toast.success('File uploaded successfully!');
 
-            if (!uploadResponse.ok) {
-                let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
-                try {
-                    const errorText = await uploadResponse.text(); // GCS errors are often XML or plain text
-                    console.error("GCS Upload Error Response:", errorText);
-                    // Provide a more specific message if possible, or a snippet
-                    errorDetail = `Upload to GCS failed (status ${uploadResponse.status}): ${errorText.substring(0, 200)}`;
-                } catch (e) {
-                    console.error("Error reading GCS error response body:", e);
-                }
-                throw new Error(errorDetail);
-            }
-
-            // Set progress to 100% when upload is complete
-            setUploadProgress(100);
-
-            // Get a signed download URL
-            const signedDownloadResponse = await fetch(`/api/uploads/${fileId}/signed-url?expires=1440`, {
-                method: 'GET',
-            });
-
-            let signedData = null;
-            if (signedDownloadResponse.ok) {
-                try {
-                    const contentType = signedDownloadResponse.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        signedData = await signedDownloadResponse.json();
-                    } else {
-                        const responseText = await signedDownloadResponse.text();
-                        console.error("Non-JSON response from /api/uploads/[id]/signed-url (status OK):", responseText);
-                        throw new Error("Received non-JSON response for signed download URL when JSON was expected.");
-                    }
-                } catch (e) {
-                    console.error("Error parsing signed download URL response:", e);
-                    toast.error("Failed to process download URL information.");
-                    // Re-throw to be caught by the main catch block, or handle more gracefully
-                    throw e;
-                }
-            } else {
-                console.warn('Could not generate signed download URL, falling back to direct URL. Status:', signedDownloadResponse.status);
-                // Optionally, try to read error text if not OK
-                try {
-                    const errorText = await signedDownloadResponse.text();
-                    console.warn('Error body from signed download URL endpoint:', errorText);
-                } catch (e) {
-                    // Ignore if reading body fails
-                }
-            }
-
-            const downloadUrl = signedData?.url || `/api/uploads/${fileId}`;
-
-            setUploadedFile({
-                id: fileId,
+        // Call the onUploadSuccess callback if provided
+        if (onUploadSuccess) {
+            onUploadSuccess({
+                id: uploadedFileData.fileId,
                 fileName: file.name,
-                contentType: contentType, // Store defaulted content type
+                contentType: file.type || 'application/octet-stream',
                 size: file.size,
-                downloadUrl: downloadUrl,
+                downloadUrl: uploadedFileData.downloadUrl,
                 uploadedAt: new Date().toISOString()
             });
-
-            // Reset form
-            if (formRef.current) {
-                formRef.current.reset();
-            }
-
-            toast.success('File uploaded successfully!');
-
-            // Call the onUploadSuccess callback if provided
-            if (onUploadSuccess) {
-                onUploadSuccess({
-                    id: fileId,
-                    fileName: file.name,
-                    contentType: contentType, // Pass defaulted content type
-                    size: file.size,
-                    downloadUrl: downloadUrl,
-                    uploadedAt: new Date().toISOString()
-                });
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-            toast.error(errorMessage);
-
-            // Call the onUploadError callback if provided
-            if (onUploadError) {
-                onUploadError(error instanceof Error ? error : errorMessage);
-            }
-        } finally {
-            setIsUploading(false);
         }
     };
 

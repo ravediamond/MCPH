@@ -112,7 +112,7 @@ echo ""
 
 # Check if bucket already exists
 if gsutil ls "gs://${BUCKET_NAME}" >/dev/null 2>&1; then
-  echo "Bucket gs://${BUCKET_NAME} already exists. Skipping creation, will apply CORS."
+  echo "Bucket gs://${BUCKET_NAME} already exists. Skipping creation."
 else
   echo "Creating bucket gs://${BUCKET_NAME}..."
   GSUTIL_MB_COMMAND="gsutil mb -p \"${PROJECT_ID}\" -c standard -l \"${BUCKET_LOCATION}\" --uniform_bucket_level_access \"gs://${BUCKET_NAME}\""
@@ -122,21 +122,13 @@ else
 fi
 echo ""
 
-echo "Applying CORS configuration to gs://${BUCKET_NAME}..."
-GSUTIL_CORS_SET_COMMAND="gsutil cors set \"${CORS_CONFIG_FILE}\" \"gs://${BUCKET_NAME}\""
-echo "Executing: ${GSUTIL_CORS_SET_COMMAND}"
-eval "${GSUTIL_CORS_SET_COMMAND}"
-echo "CORS configuration applied successfully."
-echo ""
-
-echo "Verifying applied CORS configuration for gs://${BUCKET_NAME}..."
-gsutil cors get "gs://${BUCKET_NAME}"
-echo ""
-
-echo "Cleaning up temporary CORS configuration file: ${CORS_CONFIG_FILE}..."
-rm "${CORS_CONFIG_FILE}"
-echo "Cleanup complete."
-echo ""
+# Clean up temporary CORS configuration file if it exists
+if [ -f "${CORS_CONFIG_FILE}" ]; then
+  echo "Cleaning up temporary CORS configuration file: ${CORS_CONFIG_FILE}..."
+  rm "${CORS_CONFIG_FILE}"
+  echo "Cleanup complete."
+  echo ""
+fi
 
 echo "---------------------------------------------------------------------"
 echo " GCS Bucket Setup Complete for: gs://${BUCKET_NAME}"
