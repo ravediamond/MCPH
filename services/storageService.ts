@@ -18,6 +18,7 @@ export interface FileMetadata {
     description?: string;    // Added description field (optional) 
     contentType: string;
     size: number;
+    fileType?: string;       // Added fileType field (optional)
     gcsPath: string;
     uploadedAt: number; // Timestamp (milliseconds)
     expiresAt?: number; // Timestamp (milliseconds)
@@ -110,7 +111,8 @@ export async function uploadFile(
     contentType: string,
     ttlDays?: number, // Changed from ttlHours to ttlDays
     title?: string,
-    description?: string
+    description?: string,
+    fileType?: string // Added fileType parameter
 ): Promise<FileMetadata> {
     try {
         // Generate a unique ID for the file
@@ -149,6 +151,7 @@ export async function uploadFile(
                     originalName: fileName,
                     ...(title && { title }),
                     ...(description && { description }),
+                    ...(fileType && { fileType }), // Add fileType to metadata if provided
                     uploadedAt: Date.now().toString(),
                     ...(compressionMetadata && {
                         compressed: 'true',
@@ -174,6 +177,7 @@ export async function uploadFile(
             ...(description && { description }),
             contentType,
             size: bufferToSave.length,
+            fileType: fileType || 'file', // Use provided fileType or default to 'file'
             gcsPath,
             uploadedAt, // Store as number (timestamp)
             expiresAt: expiresAtTimestamp, // Store as number (timestamp)

@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
         const userId = req.headers.get('x-user-id');
         const title = req.headers.get('x-title');
         const description = req.headers.get('x-description');
+        const fileTypeParam = req.headers.get('x-file-type');
+        const fileType = fileTypeParam || undefined; // Convert null to undefined
 
         // Validate that title is provided
         if (!title || !title.trim()) {
@@ -58,19 +60,16 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(content);
 
         // Store the text content in GCP Storage bucket
-        const fileData = await uploadFile(buffer, fileName, contentType, ttlDays);
+        const fileData = await uploadFile(buffer, fileName, contentType, ttlDays, title, description, fileType);
 
-        // Add title, description and userId to the fileData
-        const updatedFileData = {
-            ...fileData,
-            title,
-            ...(description && { description }),
-            ...(userId && { userId })
-        };
+        // Add userId to the fileData if available
+        if (userId) {
+            fileData.userId = userId;
+        }
 
         // Store the updated metadata in Firestore
         await saveFileMetadata({
-            ...updatedFileData,
+            ...fileData,
             uploadedAt: new Date(fileData.uploadedAt),
             expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
         } as any);
@@ -87,9 +86,10 @@ export async function POST(req: NextRequest) {
             success: true,
             fileId: fileData.id,
             fileName: fileData.fileName,
-            title,
-            description: description || undefined,
+            title: fileData.title,
+            description: fileData.description,
             contentType: fileData.contentType,
+            fileType: fileData.fileType, // Include fileType in the response
             size: fileData.size,
             apiUrl,
             downloadUrl,

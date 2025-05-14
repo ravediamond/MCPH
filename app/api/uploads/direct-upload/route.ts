@@ -22,6 +22,8 @@ export async function POST(req: NextRequest) {
         const title = formData.get('title') as string;
         const description = formData.get('description') as string;
         const userId = formData.get('userId') as string;
+        const fileTypeParam = formData.get('fileType') as string | null;
+        const fileType = fileTypeParam || undefined; // Convert null to undefined
 
         // Validate that title is provided
         if (!title || !title.trim()) {
@@ -36,7 +38,7 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(arrayBuffer);
 
         // Upload the file to storage
-        const fileData = await uploadFile(buffer, file.name, file.type, ttlDays, title, description);
+        const fileData = await uploadFile(buffer, file.name, file.type, ttlDays, title, description, fileType);
 
         // Add userId to the fileData if available
         if (userId) {
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest) {
             title: fileData.title,
             description: fileData.description,
             contentType: fileData.contentType,
+            fileType: fileData.fileType, // Include fileType in the response
             size: fileData.size,
             apiUrl,
             downloadUrl,

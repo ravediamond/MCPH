@@ -32,13 +32,24 @@ const TEXT_FILE_EXTENSIONS = [
     '.text'
 ];
 
-// Type definition update to include title and description
+// Available file types that users can select
+const FILE_TYPES = [
+    { value: 'file', label: 'Generic File' },
+    { value: 'data', label: 'Data' },
+    { value: 'image', label: 'Image' },
+    { value: 'markdown', label: 'Markdown' },
+    { value: 'diagram', label: 'Diagram' },
+    { value: 'json', label: 'JSON' }
+];
+
+// Type definition update to include title, description and fileType
 type UploadedFile = {
     id: string;
     fileName: string;
     title: string;
     description?: string;
     contentType: string;
+    fileType: string; // Added fileType field
     size: number;
     downloadUrl: string;
     uploadedAt: string;
@@ -66,6 +77,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     const [urlCopied, setUrlCopied] = useState(false);
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
+    const [fileType, setFileType] = useState<string>('file'); // Default file type
 
     // Format bytes to human-readable size
     const formatBytes = (bytes: number): string => {
@@ -105,6 +117,22 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
         setFile(selectedFile);
         setUploadedFile(null);
+
+        // Automatically detect file type based on content type or extension
+        if (selectedFile.type.includes('image')) {
+            setFileType('image');
+        } else if (selectedFile.type.includes('json') || selectedFile.name.endsWith('.json')) {
+            setFileType('json');
+        } else if (selectedFile.name.endsWith('.md') || selectedFile.name.endsWith('.markdown')) {
+            setFileType('markdown');
+        } else if (selectedFile.type.includes('csv') || selectedFile.type.includes('excel') ||
+            selectedFile.name.endsWith('.csv') || selectedFile.name.endsWith('.xlsx')) {
+            setFileType('data');
+        } else if (selectedFile.name.endsWith('.diagram') || selectedFile.name.endsWith('.drawio')) {
+            setFileType('diagram');
+        } else {
+            setFileType('file');
+        }
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
@@ -161,6 +189,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         'x-ttl-days': selectedTtlDays.toString(), // Pass selected TTL
                         'x-title': title, // Add title header
                         'x-description': description, // Add description header
+                        'x-file-type': fileType, // Add file type header
                         ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
                         ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
@@ -173,6 +202,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 formData.append('ttlDays', selectedTtlDays.toString()); // Pass selected TTL
                 formData.append('title', title); // Add title
                 formData.append('description', description); // Add description
+                formData.append('fileType', fileType); // Add file type
 
                 // Add user ID if logged in
                 if (user) {
@@ -210,6 +240,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 title: title,
                 description: description,
                 contentType: file.type || 'application/octet-stream',
+                fileType: fileType, // Add file type
                 size: file.size,
                 downloadUrl: uploadedFileData.downloadUrl,
                 uploadedAt: new Date().toISOString()
@@ -234,6 +265,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     title: title,
                     description: description,
                     contentType: file.type || 'application/octet-stream',
+                    fileType: fileType, // Add file type
                     size: file.size,
                     downloadUrl: uploadedFileData.downloadUrl,
                     uploadedAt: new Date().toISOString()
@@ -296,6 +328,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="font-medium">{uploadedFile.fileName}</p>
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
+                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Type: {uploadedFile.fileType}</span>
                                     <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in GCS Bucket</span>
                                     {uploadedFile.compressionRatio && uploadedFile.compressionRatio > 5 && (
                                         <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
@@ -409,33 +442,54 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         </div>
                     )}
 
-                    {/* TTL Selector - Added Here */}
-                    {file && (
-                        <div className="mb-4">
-                            <label htmlFor="ttlSelect" className="block text-sm font-medium text-gray-700 mb-1">
-                                Set Time-To-Live (TTL):
-                            </label>
-                            <select
-                                id="ttlSelect"
-                                value={selectedTtlDays}
-                                onChange={(e) => setSelectedTtlDays(Number(e.target.value))}
-                                className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                disabled={isUploading}
-                            >
-                                {DATA_TTL.OPTIONS.map(days => (
-                                    <option key={days} value={days}>
-                                        {days} day{days > 1 ? 's' : ''}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="text-xs text-gray-500 mt-1">
-                                The file will be automatically deleted after this period.
-                            </p>
-                        </div>
-                    )}
-
                     {file && (
                         <>
+                            {/* File Type Selector - Added Here */}
+                            <div className="mb-4">
+                                <label htmlFor="fileTypeSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                                    File Type:
+                                </label>
+                                <select
+                                    id="fileTypeSelect"
+                                    value={fileType}
+                                    onChange={(e) => setFileType(e.target.value)}
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    disabled={isUploading}
+                                >
+                                    {FILE_TYPES.map(type => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Select the type of content you're uploading.
+                                </p>
+                            </div>
+
+                            {/* TTL Selector */}
+                            <div className="mb-4">
+                                <label htmlFor="ttlSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Set Time-To-Live (TTL):
+                                </label>
+                                <select
+                                    id="ttlSelect"
+                                    value={selectedTtlDays}
+                                    onChange={(e) => setSelectedTtlDays(Number(e.target.value))}
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    disabled={isUploading}
+                                >
+                                    {DATA_TTL.OPTIONS.map(days => (
+                                        <option key={days} value={days}>
+                                            {days} day{days > 1 ? 's' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    The file will be automatically deleted after this period.
+                                </p>
+                            </div>
+
                             {/* Title and Description Fields */}
                             <div className="mb-4">
                                 <label htmlFor="fileTitle" className="block text-sm font-medium text-gray-700 mb-1">
