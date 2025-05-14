@@ -7,6 +7,7 @@ import { auth, googleProvider, signInWithPopup, signOut as firebaseSignOut } fro
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAdmin: boolean; // Add isAdmin flag
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
@@ -16,11 +17,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false); // Add isAdmin state
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => { // Make async
       setUser(currentUser);
+      if (currentUser) {
+        try {
+          const idTokenResult = await currentUser.getIdTokenResult();
+          setIsAdmin(!!idTokenResult.claims.admin); // Check for admin claim
+        } catch (error) {
+          console.error("Error getting ID token result: ", error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -41,6 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     try {
       await firebaseSignOut(auth);
+      setIsAdmin(false); // Reset isAdmin on sign out
       // onAuthStateChanged will handle setting the user to null
     } catch (error) {
       console.error("Error signing out: ", error);
@@ -62,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut, getIdToken }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, signInWithGoogle, signOut, getIdToken }}>
       {children}
     </AuthContext.Provider>
   );
