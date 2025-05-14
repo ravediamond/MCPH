@@ -32,9 +32,12 @@ const TEXT_FILE_EXTENSIONS = [
     '.text'
 ];
 
+// Type definition update to include title and description
 type UploadedFile = {
     id: string;
     fileName: string;
+    title: string;
+    description?: string;
     contentType: string;
     size: number;
     downloadUrl: string;
@@ -61,6 +64,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
     const [urlCopied, setUrlCopied] = useState(false);
+    const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
 
     // Format bytes to human-readable size
     const formatBytes = (bytes: number): string => {
@@ -113,6 +118,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             return;
         }
 
+        if (!title.trim()) {
+            toast.error('Please enter a title for your file.');
+            return;
+        }
+
         setIsUploading(true);
         setUploadProgress(0);
 
@@ -149,6 +159,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         'Content-Type': file.type || 'text/plain',
                         'x-filename': file.name,
                         'x-ttl-days': selectedTtlDays.toString(), // Pass selected TTL
+                        'x-title': title, // Add title header
+                        'x-description': description, // Add description header
                         ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
                         ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
@@ -159,6 +171,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('ttlDays', selectedTtlDays.toString()); // Pass selected TTL
+                formData.append('title', title); // Add title
+                formData.append('description', description); // Add description
 
                 // Add user ID if logged in
                 if (user) {
@@ -193,6 +207,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             setUploadedFile({
                 id: uploadedFileData.fileId,
                 fileName: file.name,
+                title: title,
+                description: description,
                 contentType: file.type || 'application/octet-stream',
                 size: file.size,
                 downloadUrl: uploadedFileData.downloadUrl,
@@ -204,6 +220,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 formRef.current.reset();
             }
 
+            // Reset state
+            setTitle('');
+            setDescription('');
+
             toast.success('File uploaded successfully!');
 
             // Call the onUploadSuccess callback if provided
@@ -211,6 +231,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 onUploadSuccess({
                     id: uploadedFileData.fileId,
                     fileName: file.name,
+                    title: title,
+                    description: description,
                     contentType: file.type || 'application/octet-stream',
                     size: file.size,
                     downloadUrl: uploadedFileData.downloadUrl,
@@ -409,6 +431,42 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         </div>
                     )}
 
+                    {file && (
+                        <>
+                            {/* Title and Description Fields */}
+                            <div className="mb-4">
+                                <label htmlFor="fileTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    id="fileTitle"
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter a title for your file"
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    required
+                                    disabled={isUploading}
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label htmlFor="fileDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Description (optional)
+                                </label>
+                                <textarea
+                                    id="fileDescription"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Enter a description for your file"
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    rows={3}
+                                    disabled={isUploading}
+                                />
+                            </div>
+                        </>
+                    )}
+
                     {isUploading && (
                         <div className="mb-4">
                             <div className="h-2 bg-gray-200 rounded-full mb-1 overflow-hidden">
@@ -423,10 +481,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
                     <button
                         type="submit"
-                        disabled={!file || isUploading}
-                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading
+                        disabled={!file || isUploading || !title.trim()}
+                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading || !title.trim()
                             ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                            : 'bg-primary-500 hover:bg-primary-600 text-primary-900' // Changed text-white to text-primary-900
+                            : 'bg-primary-500 hover:bg-primary-600 text-primary-900'
                             } transition-colors`}
                     >
                         {isUploading ? (

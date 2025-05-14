@@ -7,18 +7,28 @@ import {
     incrementDownloadCount,
     logEvent
 } from './firebaseService';
-import { DATA_TTL } from '../app/config/constants'; // Added import for DATA_TTL
+import { DATA_TTL } from '../app/config/constants';
+import { shouldCompress, compressBuffer, decompressBuffer } from '../lib/compressionUtils';
 
 // File metadata type definition
 export interface FileMetadata {
     id: string;
     fileName: string;
+    title: string;           // Added title field (mandatory)
+    description?: string;    // Added description field (optional) 
     contentType: string;
     size: number;
     gcsPath: string;
     uploadedAt: number; // Timestamp (milliseconds)
     expiresAt?: number; // Timestamp (milliseconds)
     downloadCount: number;
+    ipAddress?: string;
+    userId?: string;
+    metadata?: Record<string, string>;
+    compressed?: boolean; // Whether the file is compressed
+    originalSize?: number; // Original size before compression (if compressed)
+    compressionMethod?: string; // The compression method used (gzip, brotli, etc.)
+    compressionRatio?: number; // Compression ratio as percentage saved
 }
 
 /**
@@ -58,6 +68,7 @@ export async function generateUploadUrl(
         const fileData: FileMetadata = {
             id: fileId,
             fileName,
+            title: fileName, // Use fileName as the default title
             contentType,
             size: 0, // Will be updated when file is uploaded
             gcsPath,
@@ -97,7 +108,9 @@ export async function uploadFile(
     fileBuffer: Buffer,
     fileName: string,
     contentType: string,
-    ttlDays?: number // Changed from ttlHours to ttlDays
+    ttlDays?: number, // Changed from ttlHours to ttlDays
+    title?: string,
+    description?: string
 ): Promise<FileMetadata> {
     try {
         // Generate a unique ID for the file
@@ -109,14 +122,40 @@ export async function uploadFile(
         // Create a GCS file object
         const file = bucket.file(gcsPath);
 
-        // Upload the file
-        await file.save(fileBuffer, {
+        // Check if the file should be compressed based on content type and filename
+        const shouldUseCompression = shouldCompress(contentType, fileName);
+        let bufferToSave = fileBuffer;
+        let compressionMetadata = null;
+
+        // Apply compression if appropriate
+        if (shouldUseCompression) {
+            console.log(`Compressing file: ${fileName} (${contentType})`);
+            try {
+                const result = await compressBuffer(fileBuffer);
+                bufferToSave = result.compressedBuffer;
+                compressionMetadata = result.compressionMetadata;
+                console.log(`Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`);
+            } catch (compressionError) {
+                console.error('Error during compression, using original buffer:', compressionError);
+            }
+        }
+
+        // Upload the file with metadata
+        await file.save(bufferToSave, {
             metadata: {
                 contentType,
                 metadata: {
                     fileId,
                     originalName: fileName,
+                    ...(title && { title }),
+                    ...(description && { description }),
                     uploadedAt: Date.now().toString(),
+                    ...(compressionMetadata && {
+                        compressed: 'true',
+                        compressionMethod: compressionMetadata.compressionMethod,
+                        originalSize: compressionMetadata.originalSize.toString(),
+                        compressionRatio: compressionMetadata.compressionRatio.toFixed(2)
+                    }),
                 },
             },
             resumable: false,
@@ -131,12 +170,20 @@ export async function uploadFile(
         const fileData: FileMetadata = {
             id: fileId,
             fileName,
+            title: title || fileName, // Use filename as title if not provided
+            ...(description && { description }),
             contentType,
-            size: fileBuffer.length,
+            size: bufferToSave.length,
             gcsPath,
             uploadedAt, // Store as number (timestamp)
             expiresAt: expiresAtTimestamp, // Store as number (timestamp)
             downloadCount: 0,
+            ...(compressionMetadata && {
+                compressed: true,
+                originalSize: compressionMetadata.originalSize,
+                compressionMethod: compressionMetadata.compressionMethod,
+                compressionRatio: compressionMetadata.compressionRatio
+            }),
         };
 
         // Store metadata in Firestore
@@ -264,7 +311,61 @@ export async function deleteFile(fileId: string): Promise<boolean> {
 }
 
 /**
- * Stream file content directly
+ * Get a file's content as a buffer, with automatic decompression if needed
+ */
+export async function getFileContent(fileId: string): Promise<{
+    buffer: Buffer;
+    metadata: FileMetadata;
+}> {
+    try {
+        // Get file metadata from Firestore
+        const metadata = await getFileMetadata(fileId) as unknown as FileMetadata;
+        if (!metadata) {
+            throw new Error('File not found');
+        }
+
+        // Get the file
+        const file = bucket.file(metadata.gcsPath);
+
+        // Check if file exists
+        const [exists] = await file.exists();
+        if (!exists) {
+            throw new Error('File not found in storage');
+        }
+
+        // Download the file content
+        const [content] = await file.download();
+
+        // Check if file is compressed and needs decompression
+        if (metadata.compressed) {
+            try {
+                console.log(`Decompressing file: ${metadata.fileName} (${metadata.compressionMethod})`);
+                const decompressedContent = await decompressBuffer(content);
+                console.log(`Decompression successful: ${metadata.fileName} - Compressed: ${content.length} bytes, Decompressed: ${decompressedContent.length} bytes`);
+
+                // Increment download count
+                await incrementDownloadCount(fileId);
+
+                return { buffer: decompressedContent, metadata };
+            } catch (decompressionError) {
+                console.error('Error during decompression:', decompressionError);
+                // Fall back to returning the compressed content
+                return { buffer: content, metadata };
+            }
+        }
+
+        // Increment download count
+        await incrementDownloadCount(fileId);
+
+        return { buffer: content, metadata };
+    } catch (error) {
+        console.error('Error getting file content:', error);
+        throw new Error('Failed to get file content');
+    }
+}
+
+/**
+ * Stream file content directly, with automatic decompression if needed
  */
 export async function getFileStream(fileId: string): Promise<{
     stream: NodeJS.ReadableStream;
@@ -277,7 +378,20 @@ export async function getFileStream(fileId: string): Promise<{
             throw new Error('File not found');
         }
 
-        // Get the file
+        // Check if file is compressed - if so, we need to handle differently
+        if (metadata.compressed) {
+            // For compressed files, download the full content first, decompress it,
+            // and then create a stream from the decompressed buffer
+            const { buffer } = await getFileContent(fileId);
+
+            // Create a readable stream from the decompressed buffer
+            const { Readable } = require('stream');
+            const stream = Readable.from(buffer);
+
+            return { stream, metadata };
+        }
+
+        // For non-compressed files, stream directly from storage
         const file = bucket.file(metadata.gcsPath);
 
         // Check if file exists

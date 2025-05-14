@@ -65,20 +65,21 @@ if (!settingsApplied) {
 const FILES_COLLECTION = 'files';
 const METRICS_COLLECTION = 'metrics';
 const EVENTS_COLLECTION = 'events';
-const TEXT_CONTENT_COLLECTION = 'text_content';
 
 // Export collection names for use in other modules
-export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, TEXT_CONTENT_COLLECTION };
+export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 
 // File metadata type
 export interface FileMetadata {
     id: string;
     fileName: string;
+    title: string;           // Added title field (mandatory)
+    description?: string;    // Added description field (optional)
     contentType: string;
     size: number;
     gcsPath: string;
-    uploadedAt: Date;
-    expiresAt?: Date;  // Added to match the storageService interface
+    uploadedAt: Date;  // Note: In Firestore we store as Date objects
+    expiresAt?: Date;  // In Firestore we store as Date objects
     downloadCount: number;
     ipAddress?: string;
     userId?: string;

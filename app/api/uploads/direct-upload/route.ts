@@ -12,12 +12,18 @@ export async function POST(req: NextRequest) {
         // Get user ID from form data (if provided)
         const userId = formData.get('userId') as string | null;
         const ttlDaysParam = formData.get('ttlDays') as string | null; // Get ttlDays from formData
+        const title = formData.get('title') as string; // Get title (required)
+        const description = formData.get('description') as string | null; // Get description (optional)
 
         // Determine TTL in days, defaulting to DATA_TTL.DEFAULT_DAYS
         const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        }
+
+        if (!title || !title.trim()) {
+            return NextResponse.json({ error: 'Title is required' }, { status: 400 });
         }
 
         // Generate a unique ID for the file
@@ -37,6 +43,8 @@ export async function POST(req: NextRequest) {
                 metadata: {
                     fileId,
                     originalName: file.name,
+                    title,
+                    ...(description && { description }),
                     uploadedAt: Date.now().toString(),
                     ...(userId && { userId }) // Add user ID to metadata if available
                 },
@@ -61,6 +69,8 @@ export async function POST(req: NextRequest) {
         const fileData = {
             id: fileId,
             fileName: file.name,
+            title, // Add title
+            ...(description && { description }), // Add description if provided
             contentType: file.type || 'application/octet-stream',
             size: buffer.length,
             gcsPath,
@@ -81,6 +91,8 @@ export async function POST(req: NextRequest) {
             success: true,
             fileId,
             fileName: file.name,
+            title,
+            description: description || undefined,
             contentType: file.type || 'application/octet-stream',
             size: file.size,
             directUrl: signedUrl, // Renamed to clarify this is the direct file URL
