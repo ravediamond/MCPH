@@ -7,8 +7,9 @@ import Link from 'next/link';
 import {
     FaFileAlt, FaDownload, FaShareAlt, FaTrash, FaSearch,
     FaClock, FaCalendarAlt, FaLock, FaUpload, FaImage,
-    FaCheck, FaTimesCircle
+    FaCheck, FaTimesCircle, FaEye
 } from 'react-icons/fa';
+import Card from '../../components/ui/Card';
 
 interface FileMetadataExtended extends FileMetadata {
     isExpiringSoon?: boolean;
@@ -115,7 +116,7 @@ export default function HomePage() {
 
     // Copy sharing link
     const copyShareLink = (fileId: string) => {
-        const link = `${window.location.origin}/download/${fileId}`;
+        const link = `${window.location.origin}/artifact/${fileId}`;
         navigator.clipboard.writeText(link)
             .then(() => {
                 setActionSuccess('Link copied to clipboard');
@@ -132,13 +133,25 @@ export default function HomePage() {
             return <img
                 src={`/api/uploads/${file.id}?thumbnail=true`}
                 alt={file.fileName}
-                className="h-10 w-10 object-cover rounded"
+                className="h-full w-full object-cover rounded"
                 onError={(e) => {
                     e.currentTarget.src = '/icon.png';
                 }}
             />;
         }
-        return <FaFileAlt className="text-gray-500 text-xl" />;
+        return <FaFileAlt className="text-gray-500 text-4xl" />;
+    };
+
+    const getFilePreviewBackground = (contentType: string) => {
+        if (contentType.includes('image')) {
+            return 'bg-gradient-to-r from-blue-50 to-indigo-50';
+        } else if (contentType.includes('pdf')) {
+            return 'bg-gradient-to-r from-red-50 to-pink-50';
+        } else if (contentType.includes('text') || contentType.includes('markdown') || contentType.includes('json')) {
+            return 'bg-gradient-to-r from-gray-50 to-slate-50';
+        } else {
+            return 'bg-gradient-to-r from-gray-50 to-gray-100';
+        }
     };
 
     if (authLoading) {
@@ -155,7 +168,7 @@ export default function HomePage() {
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-center">
-                <div className="max-w-md w-full bg-white rounded-lg shadow p-8 text-center">
+                <Card className="max-w-md w-full p-8 text-center">
                     <FaLock className="text-primary-500 text-3xl mx-auto mb-4" />
                     <h1 className="text-2xl font-medium mb-2">My Files</h1>
                     <p className="text-gray-600 mb-6">Sign in to access your files</p>
@@ -165,14 +178,14 @@ export default function HomePage() {
                     >
                         Sign in with Google
                     </button>
-                </div>
+                </Card>
             </div>
         );
     }
 
     return (
         <div className="min-h-screen bg-gray-50 p-4">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 {/* Header with search */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                     <h1 className="text-2xl font-medium text-gray-800 mb-2 md:mb-0">My Files</h1>
@@ -209,8 +222,8 @@ export default function HomePage() {
                     </div>
                 )}
 
-                {/* File list */}
-                <div className="bg-white rounded shadow">
+                {/* File Grid */}
+                <div>
                     {loading ? (
                         <div className="p-8 text-center">
                             <div className="animate-pulse flex flex-col items-center">
@@ -219,7 +232,7 @@ export default function HomePage() {
                             </div>
                         </div>
                     ) : filteredFiles.length === 0 ? (
-                        <div className="p-8 text-center">
+                        <Card className="p-8 text-center">
                             <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
                             <p className="text-gray-500">
                                 {searchQuery ? 'No matching files found' : 'No files uploaded yet'}
@@ -232,65 +245,85 @@ export default function HomePage() {
                                     <FaUpload className="mr-1" /> Upload your first file
                                 </Link>
                             )}
-                        </div>
+                        </Card>
                     ) : (
-                        <div className="divide-y">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredFiles.map((file) => (
-                                <div key={file.id} className={`p-4 ${file.isExpiringSoon ? 'bg-amber-50' : ''} hover:bg-gray-50`}>
-                                    <div className="flex items-center">
-                                        <div className="mr-3">
-                                            {getFileIcon(file)}
-                                        </div>
-                                        <div className="flex-grow min-w-0">
-                                            <div className="flex flex-col sm:flex-row sm:justify-between">
-                                                <h3 className="font-medium text-gray-800 truncate" title={file.fileName}>
-                                                    {file.title || file.fileName}
-                                                </h3>
-                                                <div className="text-xs text-gray-500 mt-1 sm:mt-0 flex items-center">
-                                                    <span className="mr-3">{formatFileSize(file.size)}</span>
-                                                    <span><FaDownload className="inline mr-1" /> {file.downloadCount}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row sm:justify-between mt-1">
-                                                <div className="text-xs text-gray-500">
-                                                    <FaCalendarAlt className="inline mr-1" /> {formatDate(file.uploadedAt)}
-                                                    {file.isExpiringSoon && (
-                                                        <span className="ml-3 text-amber-600">
-                                                            <FaClock className="inline mr-1" />
-                                                            Expires in {file.daysTillExpiry} day{file.daysTillExpiry !== 1 ? 's' : ''}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="flex space-x-2 mt-2 sm:mt-0">
-                                                    <Link
-                                                        href={`/download/${file.id}`}
-                                                        className="p-1 bg-primary-100 text-primary-600 rounded hover:bg-primary-200"
-                                                        title="Download"
-                                                    >
-                                                        <FaDownload />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => copyShareLink(file.id)}
-                                                        className="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200"
-                                                        title="Copy link"
-                                                    >
-                                                        <FaShareAlt />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setFileToDelete(file.id);
-                                                            setDeleteModalVisible(true);
-                                                        }}
-                                                        className="p-1 bg-red-50 text-red-500 rounded hover:bg-red-100"
-                                                        title="Delete"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
+                                <Card 
+                                    key={file.id} 
+                                    hoverable
+                                    className={`${file.isExpiringSoon ? 'ring-2 ring-amber-300' : ''}`}
+                                >
+                                    <div className="relative">
+                                        <Link href={`/artifact/${file.id}`} className="block absolute inset-0 z-10">
+                                            <span className="sr-only">View {file.title || file.fileName}</span>
+                                        </Link>
+
+                                        <div className={`h-40 flex items-center justify-center ${getFilePreviewBackground(file.contentType)}`}>
+                                            <div className="w-24 h-24 flex items-center justify-center">
+                                                {getFileIcon(file)}
                                             </div>
                                         </div>
+                                        
+                                        <Card.Body className="p-4">
+                                            <h3 className="font-medium text-gray-800 truncate" title={file.fileName}>
+                                                {file.title || file.fileName}
+                                            </h3>
+
+                                            <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+                                                <div className="flex items-center">
+                                                    <FaCalendarAlt className="mr-1" />
+                                                    <span>{formatDate(file.uploadedAt)}</span>
+                                                </div>
+                                                <span>{formatFileSize(file.size)}</span>
+                                            </div>
+
+                                            {file.isExpiringSoon && (
+                                                <div className="mt-2 text-xs text-amber-600 flex items-center">
+                                                    <FaClock className="mr-1" />
+                                                    Expires in {file.daysTillExpiry} day{file.daysTillExpiry !== 1 ? 's' : ''}
+                                                </div>
+                                            )}
+                                        </Card.Body>
                                     </div>
-                                </div>
+
+                                    <Card.Footer className="px-4 pb-3 flex justify-between relative z-20">
+                                        <div className="text-xs text-gray-500 flex items-center">
+                                            <FaDownload className="mr-1" /> {file.downloadCount || 0}
+                                        </div>
+                                        <div className="flex space-x-3">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    copyShareLink(file.id);
+                                                }}
+                                                className="p-1 text-gray-500 hover:text-primary-500 relative z-20"
+                                                title="Copy link"
+                                            >
+                                                <FaShareAlt />
+                                            </button>
+                                            <Link
+                                                href={`/artifact/${file.id}`}
+                                                className="p-1 text-gray-500 hover:text-primary-500 relative z-20"
+                                                title="View details"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <FaEye />
+                                            </Link>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setFileToDelete(file.id);
+                                                    setDeleteModalVisible(true);
+                                                }}
+                                                className="p-1 text-gray-500 hover:text-red-500 relative z-20"
+                                                title="Delete"
+                                            >
+                                                <FaTrash />
+                                            </button>
+                                        </div>
+                                    </Card.Footer>
+                                </Card>
                             ))}
                         </div>
                     )}
@@ -308,7 +341,7 @@ export default function HomePage() {
             {/* Delete Modal */}
             {deleteModalVisible && (
                 <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded shadow-lg max-w-sm w-full p-6">
+                    <Card className="max-w-sm w-full p-6">
                         <h3 className="font-medium mb-4">Delete File?</h3>
                         <p className="text-gray-500 mb-6">This action cannot be undone.</p>
                         <div className="flex justify-end space-x-4">
@@ -328,7 +361,7 @@ export default function HomePage() {
                                 Delete
                             </button>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             )}
         </div>
