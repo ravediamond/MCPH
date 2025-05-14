@@ -304,3 +304,10 @@ npm run check
 gcloud auth application-default login
 npm run dev
 ```
+
+
+## Add admin user
+```
+npm run set-admin USER-ID
+where user-id is the id of the user you want to set as admin and can be found in the firebase auth dashboard
+```
