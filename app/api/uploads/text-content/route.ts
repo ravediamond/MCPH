@@ -93,7 +93,11 @@ export async function POST(req: NextRequest) {
             size: fileData.size,
             apiUrl,
             downloadUrl,
+            uploadedAt: new Date(fileData.uploadedAt).toISOString(),
             expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt).toISOString() : undefined,
+            // Include compression information if available
+            compressed: fileData.compressed,
+            compressionRatio: fileData.compressionRatio
         });
 
     } catch (error: any) {

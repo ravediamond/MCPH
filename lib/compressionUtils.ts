@@ -23,6 +23,20 @@ export const COMPRESSIBLE_CONTENT_TYPES = [
     'application/typescript',
     'application/x-yaml',
     'application/yaml',
+    // Office document formats
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+    'application/msword', // .doc
+    'application/vnd.ms-excel', // .xls
+    'application/vnd.ms-powerpoint', // .ppt
+    // PDF format
+    'application/pdf',
+    // Other compressible formats
+    'application/zip', // Already compressed, but might have uncompressed content
+    'image/svg+xml', // SVG is XML-based and compressible
+    'application/xhtml+xml',
+    'application/rtf',
 ];
 
 /**
@@ -30,7 +44,13 @@ export const COMPRESSIBLE_CONTENT_TYPES = [
  */
 export const COMPRESSIBLE_EXTENSIONS = [
     '.txt', '.md', '.markdown', '.html', '.htm', '.css', '.js',
-    '.json', '.csv', '.xml', '.ts', '.tsx', '.jsx', '.yaml', '.yml'
+    '.json', '.csv', '.xml', '.ts', '.tsx', '.jsx', '.yaml', '.yml',
+    // Office document formats
+    '.docx', '.xlsx', '.pptx', '.doc', '.xls', '.ppt',
+    // PDF format
+    '.pdf',
+    // Other compressible formats
+    '.rtf', '.svg', '.xhtml'
 ];
 
 /**

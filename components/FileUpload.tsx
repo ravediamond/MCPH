@@ -296,9 +296,12 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="font-medium">{uploadedFile.fileName}</p>
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
-                                    {shouldUseFirestore(new File([new Blob()], uploadedFile.fileName, { type: uploadedFile.contentType })) &&
-                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in Firestore</span>
-                                    }
+                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in GCS Bucket</span>
+                                    {uploadedFile.compressionRatio && uploadedFile.compressionRatio > 5 && (
+                                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                                            Compressed ({Math.round(uploadedFile.compressionRatio)}% smaller)
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -391,7 +394,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
                                     {shouldUseFirestore(file) &&
-                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Will use Firestore</span>
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Text file</span>
                                     }
                                 </p>
                             </div>

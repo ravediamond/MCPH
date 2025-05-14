@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { initializeFirebaseAdmin } from '../../../../../../lib/firebaseAdmin'; // Assuming you have this
+import { initializeFirebaseAdmin } from '../../../../../lib/firebaseAdmin'; // Assuming you have this
 
 // Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
