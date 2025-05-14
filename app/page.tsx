@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import FileUpload from '@/components/FileUpload';
+import Link from 'next/link';
 
 export default function Home() {
-    const [uploadSuccess, setUploadSuccess] = useState(false);
-
     return (
         <div className="bg-beige-200 min-h-screen">
             {/* Hero Section */}
@@ -18,17 +16,16 @@ export default function Home() {
                         Upload and share files that automatically expire. No account required.
                     </p>
 
-                    {/* Upload Form */}
-                    <FileUpload
-                        onUploadSuccess={(data) => {
-                            setUploadSuccess(true);
-                            // Optional analytics or tracking
-                            console.log('File uploaded successfully:', data.id);
-                        }}
-                        onUploadError={(error) => {
-                            console.error('Upload error:', error);
-                        }}
-                    />
+                    {/* Upload Button */}
+                    <Link
+                        href="/upload"
+                        className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-white bg-primary-500 rounded-lg shadow-lg hover:bg-primary-600 transition duration-300"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        Upload Now
+                    </Link>
                 </div>
             </section>
 
@@ -124,8 +121,18 @@ export default function Home() {
                         </div>
                     </div>
 
+                    {/* CTA Button */}
+                    <div className="text-center mt-8">
+                        <Link
+                            href="/upload"
+                            className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-primary-500 rounded-lg shadow hover:bg-primary-600 transition duration-300"
+                        >
+                            Start Uploading Now
+                        </Link>
+                    </div>
+
                     {/* Intelligent Storage Feature */}
-                    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 my-12 shadow-sm">
                         <h3 className="text-lg font-medium mb-3 text-gray-800">Intelligent Storage System</h3>
                         <p className="text-gray-600 mb-4">
                             Our service automatically optimizes where your content is stored based on file type:
