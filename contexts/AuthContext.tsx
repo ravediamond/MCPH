@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged, ParsedToken } from 'firebase/auth';
 import { auth, googleProvider, signInWithPopup, signOut as firebaseSignOut } from '../lib/firebaseClient';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +20,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false); // Add isAdmin state
   const [loading, setLoading] = useState(true);
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => { // Make async
@@ -27,6 +29,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           const idTokenResult = await currentUser.getIdTokenResult();
           setIsAdmin(!!idTokenResult.claims.admin); // Check for admin claim
+          // Redirect to /home after user is set and confirmed
+          // We check if the current path is not already /home to avoid redundant redirects
+          // or if there's a specific page they were trying to access before login (future enhancement)
+          if (router && typeof window !== 'undefined' && window.location.pathname !== '/home') {
+            router.push('/home');
+          }
         } catch (error) {
           console.error("Error getting ID token result: ", error);
           setIsAdmin(false);
@@ -43,7 +51,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      // onAuthStateChanged will handle setting the user
+      // onAuthStateChanged will handle setting the user and the redirect
     } catch (error) {
       console.error("Error signing in with Google: ", error);
       setLoading(false);

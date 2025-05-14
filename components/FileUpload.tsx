@@ -426,7 +426,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         disabled={!file || isUploading}
                         className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading
                             ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                            : 'bg-primary-500 hover:bg-primary-600 text-white'
+                            : 'bg-primary-500 hover:bg-primary-600 text-primary-900' // Changed text-white to text-primary-900
                             } transition-colors`}
                     >
                         {isUploading ? (

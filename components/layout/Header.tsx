@@ -1,36 +1,22 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserCircle } from 'react-icons/fa'; // Added FaUserCircle
 import Image from 'next/image'; // Import the Image component
-import { auth, googleProvider, signInWithPopup, signOut } from '@/lib/firebaseClient'; // Updated import
-import { User } from 'firebase/auth'; // Import User type
+import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [user, setUser] = useState<User | null>(null); // State to store user
+    const { user, isAdmin, signInWithGoogle, signOut: firebaseSignOut } = useAuth(); // Use useAuth hook
     const pathname = usePathname();
-
-    useEffect(() => {
-        console.log('Header: Subscribing to auth state changes...');
-        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-            console.log('Header: Auth state changed, current user:', currentUser);
-            setUser(currentUser);
-        });
-        return () => {
-            console.log('Header: Unsubscribing from auth state changes.');
-            unsubscribe();
-        };
-    }, []);
 
     const handleGoogleSignIn = async () => {
         try {
             console.log('Header: Attempting Google Sign-In...');
-            const result = await signInWithPopup(auth, googleProvider);
-            console.log('Header: Google Sign-In successful');
-            // onAuthStateChanged should handle setting the user state
+            await signInWithGoogle(); // Use signInWithGoogle from context
+            console.log('Header: Google Sign-In successful trigger');
             setIsMenuOpen(false);
         } catch (error) {
             console.error("Header: Error signing in with Google: ", error);
@@ -40,9 +26,8 @@ export default function Header() {
     const handleSignOut = async () => {
         try {
             console.log('Header: Attempting Sign-Out...');
-            await signOut(auth);
-            console.log('Header: Sign-Out successful.');
-            // onAuthStateChanged should handle setting the user state to null
+            await firebaseSignOut(); // Use signOut from context
+            console.log('Header: Sign-Out successful trigger.');
             setIsMenuOpen(false);
         } catch (error) {
             console.error("Header: Error signing out: ", error);
@@ -80,7 +65,10 @@ export default function Header() {
                         {/* Auth Buttons Desktop */}
                         {user ? (
                             <div className="flex items-center space-x-4">
-                                <span className="text-gray-700">Hi, {user.displayName || user.email}</span>
+                                <Link href={isAdmin ? "/admin/dashboard" : "/home"} className="flex items-center text-gray-700 hover:text-gray-900">
+                                    <FaUserCircle className="mr-2 h-5 w-5" />
+                                    <span>{isAdmin ? 'Admin' : (user.displayName ? user.displayName.split(' ')[0] : 'Account')}</span>
+                                </Link>
                                 <button
                                     onClick={handleSignOut}
                                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
@@ -137,7 +125,10 @@ export default function Header() {
                             <div className="px-4 py-2">
                                 {user ? (
                                     <div className="flex flex-col space-y-2">
-                                        <span className="text-gray-700">Hi, {user.displayName || user.email}</span>
+                                        <Link href={isAdmin ? "/admin/dashboard" : "/home"} className="flex items-center text-gray-700 hover:text-gray-900 py-1" onClick={() => setIsMenuOpen(false)}>
+                                            <FaUserCircle className="mr-2 h-5 w-5" />
+                                            <span>{isAdmin ? 'Admin' : (user.displayName ? user.displayName.split(' ')[0] : 'Account')}</span>
+                                        </Link>
                                         <button
                                             onClick={handleSignOut}
                                             className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"

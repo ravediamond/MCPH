@@ -5,7 +5,9 @@ export async function GET(
     request: Request,
     { params }: { params: { userId: string } }
 ) {
-    const userId = params.userId;
+    // Attempt to satisfy the "params should be awaited" error
+    const awaitedParams = await params; // Added this line
+    const userId = awaitedParams.userId; // Changed to use awaitedParams
 
     if (!userId) {
         return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
