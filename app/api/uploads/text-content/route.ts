@@ -4,11 +4,13 @@ import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { uploadFile } from '@/services/storageService';
 import {
     saveFileMetadata,
-    getFileMetadata,
+    // getFileMetadata, // No longer directly used here for text content logic
     logEvent,
     incrementMetric,
-    TEXT_CONTENT_COLLECTION
+    TEXT_CONTENT_COLLECTION,
+    FileMetadata as FirebaseFileMetadata // Renaming to avoid conflict
 } from '@/services/firebaseService';
+import { DATA_TTL } from '@/app/config/constants'; // Added import
 
 // Maximum size for storing content directly in Firestore (1MB)
 const MAX_FIRESTORE_CONTENT_SIZE = 1024 * 1024; // 1MB
@@ -23,19 +25,22 @@ interface TextContentMetadata {
     content?: string; // For small content stored directly
     chunks?: string[]; // For large content that needs to be split
     size: number;
-    uploadedAt: Date;
-    expiresAt?: Date;
+    uploadedAt: Date; // Storing as Date object
+    expiresAt?: Date; // Storing as Date object
     downloadCount: number;
     userId?: string; // Add userId to interface
 }
 
 /**
- * API route to handle storing text content (markdown, JSON, text) directly to Firestore
+ * API route to handle storing text content (markdown, JSON, text) directly to Firestore or GCS
  */
 export async function POST(req: NextRequest) {
     try {
         const contentType = req.headers.get('Content-Type') || 'text/plain';
-        const ttlHours = parseInt(req.headers.get('x-ttl-hours') || '24', 10);
+        // Read ttlDays from header, default to DATA_TTL.DEFAULT_DAYS
+        const ttlDaysParam = req.headers.get('x-ttl-days');
+        const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
+
         const userId = req.headers.get('x-user-id'); // Get user ID from header if provided
 
         // Parse the request to get content and filename
@@ -65,14 +70,10 @@ export async function POST(req: NextRequest) {
         // Using 'let' instead of 'const' for fileId since it might be reassigned
         let fileId = uuidv4();
         const size = new TextEncoder().encode(content).length;
-        const uploadedAt = new Date();
+        const uploadedAt = new Date(); // Use Date object
 
-        // Calculate expiration time
-        let expiresAt: Date | undefined;
-        if (ttlHours > 0) {
-            expiresAt = new Date(uploadedAt);
-            expiresAt.setHours(expiresAt.getHours() + ttlHours);
-        }
+        // Calculate expiration time using DATA_TTL
+        const expiresAt = new Date(DATA_TTL.getExpirationTimestamp(uploadedAt.getTime(), ttlDays));
 
         let metadata: TextContentMetadata;
         let downloadUrl: string;
@@ -134,15 +135,11 @@ export async function POST(req: NextRequest) {
             else {
                 const buffer = Buffer.from(content);
 
-                // Create file data with userId if available
-                const fileOptions: any = {
-                    ttlHours,
-                    ...(userId && { userId })
-                };
+                // Pass ttlDays to uploadFile
+                const fileData = await uploadFile(buffer, fileName, contentType, ttlDays);
 
-                const fileData = await uploadFile(buffer, fileName, contentType, fileOptions.ttlHours);
-
-                // Now we can safely reassign fileId
+                // fileData from uploadFile is of type StorageFileMetadata, which uses number for timestamps
+                // We need to ensure the response uses ISOString for expiresAt
                 fileId = fileData.id;
 
                 // Generate API URL for direct access
@@ -150,10 +147,25 @@ export async function POST(req: NextRequest) {
 
                 // Generate download page URL for user-friendly page
                 downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
+
+                // Log the upload event (using fileData.id as it's the definitive one)
+                await logEvent('gcs_text_upload', fileData.id, undefined, userId ? { userId } : undefined);
+                await incrementMetric('gcs_text_uploads');
+
+                return NextResponse.json({
+                    success: true,
+                    fileId: fileData.id,
+                    fileName: fileData.fileName,
+                    contentType: fileData.contentType,
+                    size: fileData.size,
+                    apiUrl,
+                    downloadUrl,
+                    expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt).toISOString() : undefined,
+                });
             }
         }
 
-        // Log the upload event
+        // Log the upload event (for Firestore direct/chunked storage)
         await logEvent('text_upload', fileId, undefined, userId ? { userId } : undefined);
         await incrementMetric('text_uploads');
 

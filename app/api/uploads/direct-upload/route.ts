@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { bucket, uploadsFolder } from '@/lib/gcpStorageClient';
 import { saveFileMetadata } from '@/services/firebaseService';
+import { DATA_TTL } from '@/app/config/constants'; // Added import for DATA_TTL
 
 export async function POST(req: NextRequest) {
     try {
@@ -10,6 +11,10 @@ export async function POST(req: NextRequest) {
 
         // Get user ID from form data (if provided)
         const userId = formData.get('userId') as string | null;
+        const ttlDaysParam = formData.get('ttlDays') as string | null; // Get ttlDays from formData
+
+        // Determine TTL in days, defaulting to DATA_TTL.DEFAULT_DAYS
+        const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
 
         if (!file) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -50,13 +55,17 @@ export async function POST(req: NextRequest) {
 
         // Prepare file metadata
         const uploadedAt = Date.now();
+        // Calculate expiresAt using DATA_TTL
+        const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(uploadedAt, ttlDays);
+
         const fileData = {
             id: fileId,
             fileName: file.name,
             contentType: file.type || 'application/octet-stream',
             size: buffer.length,
             gcsPath,
-            uploadedAt,
+            uploadedAt, // Keep as number for internal consistency before saving
+            expiresAt: expiresAtTimestamp, // Add expiresAt timestamp (as number)
             downloadCount: 0,
             ...(userId && { userId }) // Add user ID to file data if available
         };
@@ -64,8 +73,9 @@ export async function POST(req: NextRequest) {
         // Store metadata in Firestore
         await saveFileMetadata({
             ...fileData,
-            uploadedAt: new Date(uploadedAt)
-        } as any, 0);
+            uploadedAt: new Date(uploadedAt),
+            expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined, // Convert to Date for Firestore
+        } as any);
 
         return NextResponse.json({
             success: true,
@@ -75,7 +85,8 @@ export async function POST(req: NextRequest) {
             size: file.size,
             directUrl: signedUrl, // Renamed to clarify this is the direct file URL
             downloadUrl: downloadUrl, // New user-friendly download page URL
-            uploadedAt: new Date(uploadedAt).toISOString()
+            uploadedAt: new Date(uploadedAt).toISOString(),
+            expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp).toISOString() : undefined // Add expiresAt to response as ISO string
         });
 
     } catch (error) {

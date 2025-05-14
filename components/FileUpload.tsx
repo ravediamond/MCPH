@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { FaUpload, FaFile, FaSpinner, FaCheckCircle, FaTimes, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { DATA_TTL } from '../app/config/constants'; // Import DATA_TTL
 
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -55,6 +56,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
     // State
     const [file, setFile] = useState<File | null>(null);
+    const [selectedTtlDays, setSelectedTtlDays] = useState<number>(DATA_TTL.DEFAULT_DAYS); // Added state for TTL
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
@@ -146,7 +148,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     headers: {
                         'Content-Type': file.type || 'text/plain',
                         'x-filename': file.name,
-                        'x-ttl-hours': '24', // Default TTL, could be configurable
+                        'x-ttl-days': selectedTtlDays.toString(), // Pass selected TTL
                         ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
                         ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
@@ -156,6 +158,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 // For other files, use the direct-upload endpoint
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('ttlDays', selectedTtlDays.toString()); // Pass selected TTL
 
                 // Add user ID if logged in
                 if (user) {
@@ -378,6 +381,31 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             >
                                 <FaTimes />
                             </button>
+                        </div>
+                    )}
+
+                    {/* TTL Selector - Added Here */}
+                    {file && (
+                        <div className="mb-4">
+                            <label htmlFor="ttlSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                                Set Time-To-Live (TTL):
+                            </label>
+                            <select
+                                id="ttlSelect"
+                                value={selectedTtlDays}
+                                onChange={(e) => setSelectedTtlDays(Number(e.target.value))}
+                                className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                disabled={isUploading}
+                            >
+                                {DATA_TTL.OPTIONS.map(days => (
+                                    <option key={days} value={days}>
+                                        {days} day{days > 1 ? 's' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">
+                                The file will be automatically deleted after this period.
+                            </p>
                         </div>
                     )}
 

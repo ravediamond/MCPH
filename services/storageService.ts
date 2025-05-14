@@ -7,6 +7,7 @@ import {
     incrementDownloadCount,
     logEvent
 } from './firebaseService';
+import { DATA_TTL } from '../app/config/constants'; // Added import for DATA_TTL
 
 // File metadata type definition
 export interface FileMetadata {
@@ -15,8 +16,8 @@ export interface FileMetadata {
     contentType: string;
     size: number;
     gcsPath: string;
-    uploadedAt: number;
-    expiresAt?: number;
+    uploadedAt: number; // Timestamp (milliseconds)
+    expiresAt?: number; // Timestamp (milliseconds)
     downloadCount: number;
 }
 
@@ -26,7 +27,7 @@ export interface FileMetadata {
 export async function generateUploadUrl(
     fileName: string,
     contentType: string,
-    ttlHours?: number
+    ttlDays?: number // Changed from ttlHours to ttlDays
 ): Promise<{ url: string, fileId: string, gcsPath: string }> {
     try {
         // Generate a unique ID for the file
@@ -51,10 +52,7 @@ export async function generateUploadUrl(
 
         // Calculate expiration time if provided
         const uploadedAt = Date.now();
-        let expiresAt: number | undefined;
-        if (ttlHours && ttlHours > 0) {
-            expiresAt = uploadedAt + (ttlHours * 60 * 60 * 1000);
-        }
+        const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(uploadedAt, ttlDays);
 
         // Prepare file metadata
         const fileData: FileMetadata = {
@@ -63,16 +61,17 @@ export async function generateUploadUrl(
             contentType,
             size: 0, // Will be updated when file is uploaded
             gcsPath,
-            uploadedAt,
-            expiresAt,
+            uploadedAt, // Store as number (timestamp)
+            expiresAt: expiresAtTimestamp, // Store as number (timestamp)
             downloadCount: 0,
         };
 
         // Store metadata in Firestore
         await saveFileMetadata({
             ...fileData,
-            uploadedAt: new Date(uploadedAt)
-        } as any, 0);
+            uploadedAt: new Date(uploadedAt),
+            expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
+        } as any);
 
         return { url, fileId, gcsPath };
     } catch (error: any) {
@@ -98,7 +97,7 @@ export async function uploadFile(
     fileBuffer: Buffer,
     fileName: string,
     contentType: string,
-    ttlHours?: number
+    ttlDays?: number // Changed from ttlHours to ttlDays
 ): Promise<FileMetadata> {
     try {
         // Generate a unique ID for the file
@@ -126,11 +125,8 @@ export async function uploadFile(
         // Prepare file metadata
         const uploadedAt = Date.now();
 
-        // Calculate expiration time if provided
-        let expiresAt: number | undefined;
-        if (ttlHours && ttlHours > 0) {
-            expiresAt = uploadedAt + (ttlHours * 60 * 60 * 1000);
-        }
+        // Calculate expiration time using DATA_TTL
+        const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(uploadedAt, ttlDays);
 
         const fileData: FileMetadata = {
             id: fileId,
@@ -138,16 +134,17 @@ export async function uploadFile(
             contentType,
             size: fileBuffer.length,
             gcsPath,
-            uploadedAt,
-            expiresAt,
+            uploadedAt, // Store as number (timestamp)
+            expiresAt: expiresAtTimestamp, // Store as number (timestamp)
             downloadCount: 0,
         };
 
         // Store metadata in Firestore
         await saveFileMetadata({
             ...fileData,
-            uploadedAt: new Date(uploadedAt)
-        } as any, 0);
+            uploadedAt: new Date(uploadedAt),
+            expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
+        } as any);
 
         return fileData;
     } catch (error) {

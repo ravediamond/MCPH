@@ -127,7 +127,8 @@ const fromFirestoreData = (data: any): any => {
  */
 export async function saveFileMetadata(
     fileData: FileMetadata,
-    _ttlSeconds: number // Parameter kept for signature compatibility
+    // ttlSeconds parameter is no longer used, ttl is handled by expiresAt in fileData
+    // _ttlSeconds: number 
 ): Promise<boolean> {
     try {
         // Convert the data for Firestore
