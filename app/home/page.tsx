@@ -6,8 +6,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
 import {
     FaFileAlt, FaDownload, FaShareAlt, FaTrash, FaSearch,
-    FaClock, FaCalendarAlt, FaLock, FaUpload, FaImage,
-    FaCheck, FaTimesCircle, FaEye
+    FaClock, FaCalendarAlt, FaLock, FaUpload,
+    FaCheck, FaTimesCircle, FaEye, FaExclamationCircle,
+    FaFileImage, FaFilePdf, FaFileCode, FaProjectDiagram
 } from 'react-icons/fa';
 import Card from '../../components/ui/Card';
 
@@ -114,6 +115,26 @@ export default function HomePage() {
         return new Date(date).toLocaleDateString();
     };
 
+    // Get file type icon with proper styling
+    const getFileIcon = (file: FileMetadataExtended) => {
+        const contentType = file.contentType.toLowerCase();
+        const fileName = file.fileName.toLowerCase();
+
+        if (contentType.includes('image')) {
+            return <FaFileImage size={18} className="text-blue-500" />;
+        } else if (contentType.includes('pdf')) {
+            return <FaFilePdf size={18} className="text-red-500" />;
+        } else if (contentType.includes('json') || contentType.includes('javascript') || contentType.includes('typescript')) {
+            return <FaFileCode size={18} className="text-yellow-600" />;
+        } else if ((contentType.includes('text') && fileName.includes('mermaid')) || fileName.endsWith('.mmd')) {
+            return <FaProjectDiagram size={18} className="text-green-500" />;
+        } else if (contentType.includes('text') || contentType.includes('markdown')) {
+            return <FaFileAlt size={18} className="text-purple-500" />;
+        } else {
+            return <FaFileAlt size={18} className="text-gray-500" />;
+        }
+    };
+
     // Copy sharing link
     const copyShareLink = (fileId: string) => {
         const link = `${window.location.origin}/artifact/${fileId}`;
@@ -125,33 +146,6 @@ export default function HomePage() {
             .catch(() => {
                 setError('Failed to copy link');
             });
-    };
-
-    // Get file icon or thumbnail
-    const getFileIcon = (file: FileMetadataExtended) => {
-        if (file.contentType.includes('image')) {
-            return <img
-                src={`/api/uploads/${file.id}?thumbnail=true`}
-                alt={file.fileName}
-                className="h-full w-full object-cover rounded"
-                onError={(e) => {
-                    e.currentTarget.src = '/icon.png';
-                }}
-            />;
-        }
-        return <FaFileAlt className="text-gray-500 text-4xl" />;
-    };
-
-    const getFilePreviewBackground = (contentType: string) => {
-        if (contentType.includes('image')) {
-            return 'bg-gradient-to-r from-blue-50 to-indigo-50';
-        } else if (contentType.includes('pdf')) {
-            return 'bg-gradient-to-r from-red-50 to-pink-50';
-        } else if (contentType.includes('text') || contentType.includes('markdown') || contentType.includes('json')) {
-            return 'bg-gradient-to-r from-gray-50 to-slate-50';
-        } else {
-            return 'bg-gradient-to-r from-gray-50 to-gray-100';
-        }
     };
 
     if (authLoading) {
@@ -247,82 +241,81 @@ export default function HomePage() {
                             )}
                         </Card>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                             {filteredFiles.map((file) => (
-                                <Card 
-                                    key={file.id} 
+                                <Card
+                                    key={file.id}
                                     hoverable
-                                    className={`${file.isExpiringSoon ? 'ring-2 ring-amber-300' : ''}`}
+                                    className="transition-all overflow-hidden"
                                 >
-                                    <div className="relative">
-                                        <Link href={`/artifact/${file.id}`} className="block absolute inset-0 z-10">
-                                            <span className="sr-only">View {file.title || file.fileName}</span>
-                                        </Link>
-
-                                        <div className={`h-40 flex items-center justify-center ${getFilePreviewBackground(file.contentType)}`}>
-                                            <div className="w-24 h-24 flex items-center justify-center">
+                                    <div className="p-3">
+                                        <div className="flex items-start space-x-3">
+                                            {/* File Type Icon */}
+                                            <div className="mt-0.5">
                                                 {getFileIcon(file)}
                                             </div>
-                                        </div>
-                                        
-                                        <Card.Body className="p-4">
-                                            <h3 className="font-medium text-gray-800 truncate" title={file.fileName}>
-                                                {file.title || file.fileName}
-                                            </h3>
 
-                                            <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
-                                                <div className="flex items-center">
-                                                    <FaCalendarAlt className="mr-1" />
-                                                    <span>{formatDate(file.uploadedAt)}</span>
+                                            {/* File Info */}
+                                            <div className="flex-grow min-w-0">
+                                                <Link
+                                                    href={`/artifact/${file.id}`}
+                                                    className="block"
+                                                >
+                                                    <h3
+                                                        className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                                                        title={file.fileName}
+                                                    >
+                                                        {file.title || file.fileName}
+                                                    </h3>
+                                                </Link>
+
+                                                <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                                    <div className="truncate mr-2">{formatFileSize(file.size)}</div>
+                                                    <div className="flex items-center whitespace-nowrap">
+                                                        <FaDownload className="mr-1" size={10} /> {file.downloadCount || 0}
+                                                    </div>
                                                 </div>
-                                                <span>{formatFileSize(file.size)}</span>
                                             </div>
 
+                                            {/* Expiry Indicator - Small Circle */}
                                             {file.isExpiringSoon && (
-                                                <div className="mt-2 text-xs text-amber-600 flex items-center">
-                                                    <FaClock className="mr-1" />
-                                                    Expires in {file.daysTillExpiry} day{file.daysTillExpiry !== 1 ? 's' : ''}
-                                                </div>
+                                                <div
+                                                    className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                                                    title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? 's' : ''}`}
+                                                ></div>
                                             )}
-                                        </Card.Body>
-                                    </div>
-
-                                    <Card.Footer className="px-4 pb-3 flex justify-between relative z-20">
-                                        <div className="text-xs text-gray-500 flex items-center">
-                                            <FaDownload className="mr-1" /> {file.downloadCount || 0}
                                         </div>
-                                        <div className="flex space-x-3">
+
+                                        {/* Action Buttons - Smaller and more compact */}
+                                        <div className="flex justify-end mt-2 space-x-1">
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    copyShareLink(file.id);
-                                                }}
-                                                className="p-1 text-gray-500 hover:text-primary-500 relative z-20"
+                                                onClick={() => copyShareLink(file.id)}
+                                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                                 title="Copy link"
                                             >
-                                                <FaShareAlt />
+                                                <FaShareAlt size={12} />
                                             </button>
+
                                             <Link
                                                 href={`/artifact/${file.id}`}
-                                                className="p-1 text-gray-500 hover:text-primary-500 relative z-20"
+                                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                                 title="View details"
-                                                onClick={(e) => e.stopPropagation()}
                                             >
-                                                <FaEye />
+                                                <FaEye size={12} />
                                             </Link>
+
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                                onClick={() => {
                                                     setFileToDelete(file.id);
                                                     setDeleteModalVisible(true);
                                                 }}
-                                                className="p-1 text-gray-500 hover:text-red-500 relative z-20"
+                                                className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
                                                 title="Delete"
                                             >
-                                                <FaTrash />
+                                                <FaTrash size={12} />
                                             </button>
                                         </div>
-                                    </Card.Footer>
+                                    </div>
                                 </Card>
                             ))}
                         </div>
@@ -342,8 +335,11 @@ export default function HomePage() {
             {deleteModalVisible && (
                 <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
                     <Card className="max-w-sm w-full p-6">
-                        <h3 className="font-medium mb-4">Delete File?</h3>
-                        <p className="text-gray-500 mb-6">This action cannot be undone.</p>
+                        <div className="text-center mb-4">
+                            <FaExclamationCircle className="text-red-500 text-3xl mx-auto mb-2" />
+                            <h3 className="font-medium text-lg">Delete File?</h3>
+                            <p className="text-gray-500 mt-2">This action cannot be undone.</p>
+                        </div>
                         <div className="flex justify-end space-x-4">
                             <button
                                 onClick={() => {

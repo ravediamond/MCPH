@@ -9,12 +9,12 @@ interface StatsCardProps {
     tooltip?: string;
 }
 
-export default function StatsCard({ 
-    title, 
-    icon, 
-    children, 
-    className = '', 
-    tooltip 
+export default function StatsCard({
+    title,
+    icon,
+    children,
+    className = '',
+    tooltip
 }: StatsCardProps) {
     return (
         <div
@@ -61,12 +61,12 @@ interface StatItemProps {
     };
 }
 
-StatsCard.Stat = function Stat({ 
-    label, 
-    value, 
-    icon, 
+StatsCard.Stat = function Stat({
+    label,
+    value,
+    icon,
     className = '',
-    trend 
+    trend
 }: StatItemProps) {
     return (
         <div className={`${className}`}>
@@ -77,7 +77,7 @@ StatsCard.Stat = function Stat({
             <div className="font-medium text-gray-800 flex items-center">
                 <span>{value}</span>
                 {trend && (
-                    <span 
+                    <span
                         className={`ml-2 text-xs ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}
                     >
                         {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
@@ -94,10 +94,10 @@ interface StatGridProps {
     className?: string;
 }
 
-StatsCard.Grid = function StatGrid({ 
-    children, 
-    columns = 2, 
-    className = '' 
+StatsCard.Grid = function StatGrid({
+    children,
+    columns = 2,
+    className = ''
 }: StatGridProps) {
     const getColumnsClass = () => {
         switch (columns) {
@@ -133,13 +133,13 @@ StatsCard.Progress = function StatProgress({
     color = 'primary'
 }: StatProgressProps) {
     const percentage = Math.min(Math.round((value / max) * 100), 100);
-    
+
     const sizeClass = {
         sm: 'h-1',
         md: 'h-2',
         lg: 'h-3'
     }[size];
-    
+
     const colorClass = {
         primary: 'bg-primary-500',
         green: 'bg-green-500',
@@ -157,8 +157,8 @@ StatsCard.Progress = function StatProgress({
                 </div>
             )}
             <div className={`w-full bg-gray-200 rounded-full ${sizeClass}`}>
-                <div 
-                    className={`${colorClass} rounded-full ${sizeClass}`} 
+                <div
+                    className={`${colorClass} rounded-full ${sizeClass}`}
                     style={{ width: `${percentage}%` }}
                 ></div>
             </div>
@@ -185,23 +185,23 @@ StatsCard.Chart = function StatChart({
     // For a simple bar chart
     if (type === 'bar') {
         const maxValue = Math.max(...data.map(item => item.value));
-        
+
         return (
             <div className="w-full" style={{ height: `${height}px` }}>
                 <div className="flex h-full items-end justify-between">
                     {data.map((item, index) => {
                         const barHeight = (item.value / maxValue) * 100;
                         return (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className="flex flex-col items-center"
                                 style={{ width: `${100 / data.length - 2}%` }}
                             >
-                                <div 
-                                    className="w-full rounded-t" 
-                                    style={{ 
-                                        height: `${barHeight}%`, 
-                                        backgroundColor: color 
+                                <div
+                                    className="w-full rounded-t"
+                                    style={{
+                                        height: `${barHeight}%`,
+                                        backgroundColor: color
                                     }}
                                 ></div>
                                 <div className="text-xs text-gray-500 mt-1 text-center truncate w-full">
@@ -214,11 +214,11 @@ StatsCard.Chart = function StatChart({
             </div>
         );
     }
-    
+
     // For horizontal bar chart
     if (type === 'horizontal-bar') {
         const maxValue = Math.max(...data.map(item => item.value));
-        
+
         return (
             <div className="w-full space-y-2" style={{ height: `${height}px`, overflowY: 'auto' }}>
                 {data.map((item, index) => {
@@ -232,11 +232,11 @@ StatsCard.Chart = function StatChart({
                                 <span className="text-gray-500">{item.value}</span>
                             </div>
                             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div 
-                                    className="h-full rounded-full" 
-                                    style={{ 
-                                        width: `${barWidth}%`, 
-                                        backgroundColor: color 
+                                <div
+                                    className="h-full rounded-full"
+                                    style={{
+                                        width: `${barWidth}%`,
+                                        backgroundColor: color
                                     }}
                                 ></div>
                             </div>
@@ -246,6 +246,6 @@ StatsCard.Chart = function StatChart({
             </div>
         );
     }
-    
+
     return null;
 };

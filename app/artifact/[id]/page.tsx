@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-    FaFileDownload, FaFile, FaClock, FaCalendarAlt, 
-    FaExclamationTriangle, FaCheck, FaShareAlt, FaUpload, 
+    FaFileDownload, FaFile, FaClock, FaCalendarAlt,
+    FaExclamationTriangle, FaCheck, FaShareAlt, FaUpload,
     FaFileAlt, FaFileImage, FaFilePdf, FaProjectDiagram,
     FaArrowLeft, FaFileCode, FaChartBar, FaUsers,
     FaDownload, FaEye, FaHistory, FaInfoCircle,
@@ -21,7 +21,7 @@ const SyntaxHighlighter = dynamic(() => import('react-syntax-highlighter'), { ss
 
 // Dynamic import for mermaid diagram rendering
 const MermaidDiagram = dynamic(
-    () => import('@lightenna/react-mermaid-diagram').then(mod => mod.MermaidDiagram), 
+    () => import('@lightenna/react-mermaid-diagram').then(mod => mod.MermaidDiagram),
     {
         ssr: false,
         loading: () => <div className="py-4 text-center text-gray-500 text-sm">Loading diagram...</div>
@@ -124,10 +124,10 @@ export default function ArtifactPage() {
                 }
 
                 const data = await response.json();
-                
+
                 // Track view for stats - in a real app this would be a separate API call
                 data.viewCount = (data.viewCount || 0) + 1;
-                
+
                 setFileInfo(data);
 
                 if (data.expiresAt) {
@@ -205,30 +205,30 @@ export default function ArtifactPage() {
         const today = Math.floor(downloadCount * 0.2) || 1;
         const week = Math.floor(downloadCount * 0.6) || 3;
         const month = downloadCount;
-        
+
         setAccessStats({
             today,
             week,
             month
         });
-        
+
         // Generate mock access history data (last 7 days)
         const mockHistory = [];
         const now = new Date();
-        
+
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(now.getDate() - i);
-            const count = i === 0 
-                ? today 
-                : Math.floor(Math.random() * (week/7) * 1.5);
-                
+            const count = i === 0
+                ? today
+                : Math.floor(Math.random() * (week / 7) * 1.5);
+
             mockHistory.push({
                 date: date.toISOString().split('T')[0],
                 count
             });
         }
-        
+
         if (fileInfo) {
             setFileInfo({
                 ...fileInfo,
@@ -236,15 +236,15 @@ export default function ArtifactPage() {
             });
         }
     };
-    
+
     const calculateAccessStats = (history: { date: string; count: number }[]) => {
         const now = new Date();
         const today = now.toISOString().split('T')[0];
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(now.getDate() - 7);
-        
+
         const todayCount = history.find(entry => entry.date === today)?.count || 0;
-        
+
         const weekCount = history.reduce((sum, entry) => {
             const entryDate = new Date(entry.date);
             if (entryDate >= oneWeekAgo) {
@@ -252,9 +252,9 @@ export default function ArtifactPage() {
             }
             return sum;
         }, 0);
-        
+
         const monthCount = history.reduce((sum, entry) => sum + entry.count, 0);
-        
+
         setAccessStats({
             today: todayCount,
             week: weekCount,
@@ -411,11 +411,11 @@ export default function ArtifactPage() {
         ? Math.round((1 - fileInfo.size / fileInfo.originalSize) * 100)
         : 0;
 
-    const expiryDate = fileInfo.expiresAt 
-        ? new Date(fileInfo.expiresAt) 
+    const expiryDate = fileInfo.expiresAt
+        ? new Date(fileInfo.expiresAt)
         : null;
-        
-    const daysUntilExpiry = expiryDate 
+
+    const daysUntilExpiry = expiryDate
         ? Math.max(0, Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)))
         : null;
 
@@ -438,7 +438,7 @@ export default function ArtifactPage() {
                     <span className="mx-2 text-gray-400">/</span>
                     <span className="text-gray-700">File Details</span>
                 </div>
-                
+
                 {/* Main Info Card */}
                 <Card className="mb-4">
                     <Card.Header className="flex justify-between items-center">
@@ -455,39 +455,39 @@ export default function ArtifactPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {timeRemaining && (
                             <div className="text-xs px-2 py-1 rounded bg-primary-50 text-primary-700 flex items-center">
                                 <FaClock className="mr-1" /> {timeRemaining} remaining
                             </div>
                         )}
                     </Card.Header>
-                    
+
                     <Card.Body>
                         {fileInfo.description && (
                             <div className="text-sm text-gray-700 mb-4 pb-3 border-b border-gray-100">
                                 {fileInfo.description}
                             </div>
                         )}
-                        
+
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
                             <div>
                                 <div className="text-xs text-gray-500 mb-1">Filename</div>
                                 <div className="truncate" title={fileInfo.fileName}>{fileInfo.fileName}</div>
                             </div>
-                            
+
                             <div>
                                 <div className="text-xs text-gray-500 mb-1">Downloads</div>
                                 <div className="font-medium">{fileInfo.downloadCount}</div>
                             </div>
-                            
+
                             {fileInfo.expiresAt && (
                                 <div>
                                     <div className="text-xs text-gray-500 mb-1">Expiration</div>
                                     <div>{formatDate(fileInfo.expiresAt)}</div>
                                 </div>
                             )}
-                            
+
                             <div>
                                 <div className="text-xs text-gray-500 mb-1">Size</div>
                                 <div>
@@ -500,7 +500,7 @@ export default function ArtifactPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Action Buttons */}
                         <div className="flex flex-wrap gap-2">
                             <button
@@ -516,7 +516,7 @@ export default function ArtifactPage() {
                             >
                                 {linkCopied ? <><FaCheck className="mr-1" /> Copied</> : <><FaShareAlt className="mr-1" /> Share</>}
                             </button>
-                            
+
                             {(isTextFile(fileInfo.contentType) || isMermaidDiagram || isImageFile(fileInfo.contentType)) && (
                                 <button
                                     onClick={() => setShowPreview(!showPreview)}
@@ -528,34 +528,34 @@ export default function ArtifactPage() {
                         </div>
                     </Card.Body>
                 </Card>
-                
+
                 {/* KPI Stats Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     {/* Usage Stats Card */}
-                    <StatsCard 
-                        title="Usage Statistics" 
+                    <StatsCard
+                        title="Usage Statistics"
                         icon={<FaChartBar className="text-primary-500" />}
                         tooltip="File access statistics over time"
                     >
                         <div className="mb-5">
                             <StatsCard.Grid columns={3} className="mb-4">
-                                <StatsCard.Stat 
-                                    label="Today" 
-                                    value={accessStats.today} 
+                                <StatsCard.Stat
+                                    label="Today"
+                                    value={accessStats.today}
                                     icon={<FaEye />}
                                 />
-                                <StatsCard.Stat 
-                                    label="This week" 
-                                    value={accessStats.week} 
+                                <StatsCard.Stat
+                                    label="This week"
+                                    value={accessStats.week}
                                     icon={<FaEye />}
                                 />
-                                <StatsCard.Stat 
-                                    label="Total views" 
-                                    value={fileInfo.viewCount || 0} 
+                                <StatsCard.Stat
+                                    label="Total views"
+                                    value={fileInfo.viewCount || 0}
                                     icon={<FaEye />}
                                 />
                             </StatsCard.Grid>
-                            
+
                             {usageChartData.length > 0 && (
                                 <div>
                                     <div className="text-xs text-gray-500 mb-2">7-Day Access Trend</div>
@@ -569,26 +569,26 @@ export default function ArtifactPage() {
                             )}
                         </div>
                     </StatsCard>
-                    
+
                     {/* Storage Stats */}
-                    <StatsCard 
-                        title="Storage Details" 
+                    <StatsCard
+                        title="Storage Details"
                         icon={<FaDatabase className="text-blue-500" />}
                     >
                         <div className="mb-2">
                             <StatsCard.Grid columns={2} className="mb-4">
-                                <StatsCard.Stat 
-                                    label="Size" 
+                                <StatsCard.Stat
+                                    label="Size"
                                     value={formatBytes(fileInfo.size)}
-                                    icon={<FaFileAlt />} 
+                                    icon={<FaFileAlt />}
                                 />
-                                <StatsCard.Stat 
-                                    label="Downloads" 
-                                    value={fileInfo.downloadCount} 
+                                <StatsCard.Stat
+                                    label="Downloads"
+                                    value={fileInfo.downloadCount}
                                     icon={<FaDownload />}
                                 />
                             </StatsCard.Grid>
-                            
+
                             {fileInfo.originalSize && fileInfo.originalSize > fileInfo.size && (
                                 <div className="mt-3">
                                     <StatsCard.Progress
@@ -605,29 +605,29 @@ export default function ArtifactPage() {
                             )}
                         </div>
                     </StatsCard>
-                    
+
                     {/* Time Related Stats */}
-                    <StatsCard 
-                        title="Timeline" 
+                    <StatsCard
+                        title="Timeline"
                         icon={<FaHistory className="text-purple-500" />}
                     >
                         <div className="space-y-4">
-                            <StatsCard.Stat 
-                                label="Uploaded on" 
+                            <StatsCard.Stat
+                                label="Uploaded on"
                                 value={formatDate(fileInfo.uploadedAt)}
-                                icon={<FaCalendarAlt />} 
+                                icon={<FaCalendarAlt />}
                                 className="mb-2"
                             />
-                            
+
                             {fileInfo.expiresAt && (
                                 <>
-                                    <StatsCard.Stat 
-                                        label="Expires on" 
+                                    <StatsCard.Stat
+                                        label="Expires on"
                                         value={formatDate(fileInfo.expiresAt)}
-                                        icon={<FaClock />} 
+                                        icon={<FaClock />}
                                         className="mb-2"
                                     />
-                                    
+
                                     {daysUntilExpiry !== null && daysUntilExpiry > 0 && (
                                         <div className="mt-3">
                                             <StatsCard.Progress
@@ -646,7 +646,7 @@ export default function ArtifactPage() {
                         </div>
                     </StatsCard>
                 </div>
-                
+
                 {/* Preview Card - Only shown when preview is toggled */}
                 {showPreview && (fileContent || isImageFile(fileInfo.contentType)) && (
                     <Card className="mb-4">
@@ -659,7 +659,7 @@ export default function ArtifactPage() {
                                 Close
                             </button>
                         </Card.Header>
-                        
+
                         <Card.Body>
                             {/* Mermaid Diagram Preview */}
                             {isMermaidDiagram && fileContent && (
@@ -667,7 +667,7 @@ export default function ArtifactPage() {
                                     <MermaidDiagram>{fileContent}</MermaidDiagram>
                                 </div>
                             )}
-                            
+
                             {/* Text Content Preview */}
                             {isTextFile(fileInfo.contentType) && fileContent && !contentLoading && !isMermaidDiagram && (
                                 <div className="bg-gray-50 rounded border overflow-auto max-h-96">
@@ -684,7 +684,7 @@ export default function ArtifactPage() {
                                     )}
                                 </div>
                             )}
-                            
+
                             {/* Image Preview */}
                             {isImageFile(fileInfo.contentType) && (
                                 <div className="flex items-center justify-center">
@@ -701,7 +701,7 @@ export default function ArtifactPage() {
                                     />
                                 </div>
                             )}
-                            
+
                             {contentLoading && (
                                 <div className="h-48 flex items-center justify-center">
                                     <div className="animate-pulse">Loading content...</div>
@@ -710,7 +710,7 @@ export default function ArtifactPage() {
                         </Card.Body>
                     </Card>
                 )}
-                
+
                 {/* Footer Navigation */}
                 <div className="flex justify-between items-center text-sm mt-4 px-1">
                     <Link href="/" className="text-primary-500 hover:text-primary-600 transition-colors flex items-center">
