@@ -30,6 +30,29 @@ export async function POST(req: NextRequest) {
         const ttl = formData.get('ttl');
         const ttlHours = ttl ? parseInt(ttl.toString(), 10) : undefined;
 
+        // Parse metadata if provided (expects JSON string or array of key-value pairs)
+        let metadata: Record<string, string> | undefined = undefined;
+        const metadataRaw = formData.get('metadata');
+        if (metadataRaw) {
+            try {
+                const parsed = JSON.parse(metadataRaw.toString());
+                if (Array.isArray(parsed)) {
+                    // Convert array of {key, value} to object
+                    metadata = {};
+                    parsed.forEach((item: any) => {
+                        if (item.key && typeof item.value === 'string') {
+                            metadata![item.key] = item.value;
+                        }
+                    });
+                } else if (typeof parsed === 'object' && parsed !== null) {
+                    metadata = parsed;
+                }
+            } catch (e) {
+                // Ignore invalid metadata
+                console.warn('Invalid metadata provided, ignoring:', metadataRaw);
+            }
+        }
+
         // Convert file to buffer
         const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -38,7 +61,11 @@ export async function POST(req: NextRequest) {
             buffer,
             file.name,
             file.type,
-            ttlHours
+            ttlHours,
+            undefined, // title
+            undefined, // description
+            undefined, // fileType
+            metadata // pass metadata
         );
 
         // Generate download page URL

@@ -115,6 +115,21 @@ export default function HomePage() {
         return new Date(date).toLocaleDateString();
     };
 
+    // Render metadata key-value pairs
+    const renderMetadata = (metadata?: Record<string, string>) => {
+        if (!metadata || Object.keys(metadata).length === 0) return null;
+        return (
+            <div className="mt-2 text-xs text-gray-600">
+                <div className="font-semibold mb-1">Metadata:</div>
+                <ul className="list-disc ml-4">
+                    {Object.entries(metadata).map(([key, value]) => (
+                        <li key={key}><span className="font-medium">{key}:</span> {value}</li>
+                    ))}
+                </ul>
+            </div>
+        );
+    };
+
     // Get file type icon with proper styling
     const getFileIcon = (file: FileMetadataExtended) => {
         const contentType = file.contentType.toLowerCase();
@@ -275,6 +290,8 @@ export default function HomePage() {
                                                         <FaDownload className="mr-1" size={10} /> {file.downloadCount || 0}
                                                     </div>
                                                 </div>
+                                                {/* Metadata display */}
+                                                {renderMetadata(file.metadata)}
                                             </div>
 
                                             {/* Expiry Indicator - Small Circle */}

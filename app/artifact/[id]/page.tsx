@@ -47,6 +47,7 @@ interface FileMetadata {
         date: string;
         count: number;
     }[];
+    metadata?: Record<string, string>;
 }
 
 export default function ArtifactPage() {
@@ -365,6 +366,21 @@ export default function ArtifactPage() {
         }
     };
 
+    // Render metadata key-value pairs
+    const renderMetadata = (metadata?: Record<string, string>) => {
+        if (!metadata || Object.keys(metadata).length === 0) return null;
+        return (
+            <div className="mt-2 text-xs text-gray-600">
+                <div className="font-semibold mb-1">Metadata:</div>
+                <ul className="list-disc ml-4">
+                    {Object.entries(metadata).map(([key, value]) => (
+                        <li key={key}><span className="font-medium">{key}:</span> {value}</li>
+                    ))}
+                </ul>
+            </div>
+        );
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
@@ -469,6 +485,8 @@ export default function ArtifactPage() {
                                 {fileInfo.description}
                             </div>
                         )}
+                        {/* Metadata display */}
+                        {renderMetadata(fileInfo.metadata)}
 
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
                             <div>

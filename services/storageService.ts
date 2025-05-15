@@ -112,7 +112,8 @@ export async function uploadFile(
     ttlDays?: number, // Changed from ttlHours to ttlDays
     title?: string,
     description?: string,
-    fileType?: string // Added fileType parameter
+    fileType?: string, // Added fileType parameter
+    metadata?: Record<string, string>
 ): Promise<FileMetadata> {
     try {
         // Generate a unique ID for the file
@@ -188,6 +189,7 @@ export async function uploadFile(
                 compressionMethod: compressionMetadata.compressionMethod,
                 compressionRatio: compressionMetadata.compressionRatio
             }),
+            ...(metadata && { metadata }),
         };
 
         // Store metadata in Firestore

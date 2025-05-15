@@ -78,6 +78,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [fileType, setFileType] = useState<string>('file'); // Default file type
+    // Metadata state
+    const [metadataList, setMetadataList] = useState<{ key: string; value: string }[]>([]);
 
     // Format bytes to human-readable size
     const formatBytes = (bytes: number): string => {
@@ -136,6 +138,17 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
+
+    // Handle metadata changes
+    const handleMetadataChange = (index: number, field: 'key' | 'value', value: string) => {
+        setMetadataList(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+    };
+    const handleAddMetadata = () => {
+        setMetadataList(prev => [...prev, { key: '', value: '' }]);
+    };
+    const handleRemoveMetadata = (index: number) => {
+        setMetadataList(prev => prev.filter((_, i) => i !== index));
+    };
 
     // Handle file upload using the appropriate endpoint based on file type
     const handleUpload = async (e: React.FormEvent) => {
@@ -207,6 +220,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 // Add user ID if logged in
                 if (user) {
                     formData.append('userId', user.uid);
+                }
+                // Add metadata as JSON string if any
+                if (metadataList.length > 0) {
+                    formData.append('metadata', JSON.stringify(metadataList.filter(m => m.key)));
                 }
 
                 uploadResponse = await fetch('/api/uploads/direct-upload', {
@@ -330,11 +347,6 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
                                     <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Type: {uploadedFile.fileType}</span>
                                     <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in GCS Bucket</span>
-                                    {uploadedFile.compressionRatio && uploadedFile.compressionRatio > 5 && (
-                                        <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
-                                            Compressed ({Math.round(uploadedFile.compressionRatio)}% smaller)
-                                        </span>
-                                    )}
                                 </p>
                             </div>
                         </div>
@@ -520,6 +532,49 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     rows={3}
                                     disabled={isUploading}
                                 />
+                            </div>
+
+                            {/* Metadata Key-Value Pairs */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Metadata (optional)
+                                </label>
+                                {metadataList.map((item, idx) => (
+                                    <div key={idx} className="flex items-center mb-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Key"
+                                            value={item.key}
+                                            onChange={e => handleMetadataChange(idx, 'key', e.target.value)}
+                                            className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
+                                            disabled={isUploading}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Value"
+                                            value={item.value}
+                                            onChange={e => handleMetadataChange(idx, 'value', e.target.value)}
+                                            className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
+                                            disabled={isUploading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={() => handleRemoveMetadata(idx)}
+                                            disabled={isUploading}
+                                        >
+                                            <FaTimes />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="mt-2 px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs"
+                                    onClick={handleAddMetadata}
+                                    disabled={isUploading}
+                                >
+                                    + Add Metadata
+                                </button>
                             </div>
                         </>
                     )}
