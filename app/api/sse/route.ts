@@ -4,6 +4,7 @@ import { requireApiKeyAuth } from '@/lib/apiKeyAuth'
 import { getFileMetadata } from '@/services/firebaseService'
 import { getFirestore } from 'firebase-admin/firestore'
 import { FILES_COLLECTION } from '@/services/firebaseService'
+import { getSignedDownloadUrl, getFileContent } from '@/services/storageService'
 
 function isValidApiKey(apiKey: string | null): boolean {
     // TODO: Replace with real validation logic
@@ -183,7 +184,16 @@ export async function POST(req: NextRequest) {
                             },
                             {
                                 name: 'artifacts/get',
-                                description: 'Get metadata for a specific artifact by id',
+                                description: 'Get the raw artifact data for a specific artifact by id',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: { id: { type: 'string' } },
+                                    required: ['id']
+                                }
+                            },
+                            {
+                                name: 'artifacts/get_metadata',
+                                description: 'Get all metadata fields as text for a specific artifact by id',
                                 inputSchema: {
                                     type: 'object',
                                     properties: { id: { type: 'string' } },
@@ -264,7 +274,66 @@ export async function POST(req: NextRequest) {
                                 error: { code: 404, message: 'Artifact not found' }
                             })
                         } else {
-                            console.log(`[SSE] artifacts/get returned artifact for id: ${parsed.data.id}`)
+                            let contentText = ''
+                            let contentType = meta.contentType || ''
+                            // If file is generic (binary), return a download link
+                            if (contentType.startsWith('application/') || contentType === 'binary/octet-stream') {
+                                const url = await getSignedDownloadUrl(meta.id, meta.fileName)
+                                contentText = `Download link: ${url}`
+                            } else {
+                                // Otherwise, return the file content as text (if possible)
+                                try {
+                                    const { buffer } = await getFileContent(meta.id)
+                                    contentText = buffer.toString('utf-8')
+                                } catch (e) {
+                                    contentText = '[Error reading file content]'
+                                }
+                            }
+                            send({
+                                jsonrpc: '2.0',
+                                id: rpc.id,
+                                result: {
+                                    artifact: meta,
+                                    content: [{ type: 'text', text: contentText }]
+                                }
+                            })
+                        }
+                    } catch (err) {
+                        console.error('[SSE] Failed to get artifact', err)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: { code: -32000, message: 'Failed to get artifact', data: String(err) }
+                        })
+                    }
+                    break
+                }
+                if (rpc.params?.name === 'artifacts/get_metadata') {
+                    const parsed = GetArtifactParams.safeParse(rpc.params.arguments)
+                    if (!parsed.success) {
+                        console.warn('[SSE] Invalid params for artifacts/get_metadata', parsed.error.issues)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: {
+                                code: -32602,
+                                message: 'Invalid params',
+                                data: parsed.error.issues
+                            }
+                        })
+                        break
+                    }
+                    try {
+                        const meta = await getFileMetadata(parsed.data.id)
+                        if (!meta) {
+                            console.warn(`[SSE] Artifact not found: ${parsed.data.id}`)
+                            send({
+                                jsonrpc: '2.0',
+                                id: rpc.id,
+                                error: { code: 404, message: 'Artifact not found' }
+                            })
+                        } else {
+                            console.log(`[SSE] artifacts/get_metadata returned artifact for id: ${parsed.data.id}`)
                             send({
                                 jsonrpc: '2.0',
                                 id: rpc.id,
@@ -278,11 +347,11 @@ export async function POST(req: NextRequest) {
                             })
                         }
                     } catch (err) {
-                        console.error('[SSE] Failed to get artifact', err)
+                        console.error('[SSE] Failed to get artifact metadata', err)
                         send({
                             jsonrpc: '2.0',
                             id: rpc.id,
-                            error: { code: -32000, message: 'Failed to get artifact', data: String(err) }
+                            error: { code: -32000, message: 'Failed to get artifact metadata', data: String(err) }
                         })
                     }
                     break
