@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getUserFiles, FileMetadata } from '../../../../../services/firebaseService'; // Adjusted path
+import { getUserFiles, FileMetadata } from '../../../../../services/firebaseService';
 
-export async function GET(
-    request: Request,
-    { params }: { params: { userId: string } }
-) {
-    // Attempt to satisfy the "params should be awaited" error
-    const awaitedParams = await params; // Added this line
-    const userId = awaitedParams.userId; // Changed to use awaitedParams
+export async function GET(request: Request) {
+    // Extract userId from the URL pathname
+    const url = new URL(request.url);
+    const match = url.pathname.match(/\/user\/([^/]+)\/files/);
+    const userId = match ? match[1] : null;
 
     if (!userId) {
         return NextResponse.json({ error: 'User ID is required' }, { status: 400 });

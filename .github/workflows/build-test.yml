@@ -43,4 +43,11 @@ jobs:
         GCS_BUCKET_NAME: 'dummy-bucket-for-ci'
         GCP_PROJECT_ID: 'dummy-project-id'
         GCP_SERVICE_ACCOUNT: '{"type":"service_account","project_id":"dummy-project","client_email":"dummy@example.com","private_key":"-----BEGIN PRIVATE KEY-----\ndummy\n-----END PRIVATE KEY-----\n"}'
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: 'dummy-firebase-project'
+        NEXT_PUBLIC_FIREBASE_API_KEY: 'dummy-firebase-api-key'
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: 'dummy.firebaseapp.com'
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: 'dummy.firebasestorage.app'
+        NEXT_PUBLIC_FIREBASE_APP_ID: 'dummy-app-id'
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: 'dummy-messaging-sender-id'
+        NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: 'dummy-measurement-id'
       run: npm run build

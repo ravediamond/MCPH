@@ -12,6 +12,7 @@ import {
     FaServer, FaExternalLinkAlt, FaDatabase, FaLock
 } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import Card from '../../../components/ui/Card';
 import StatsCard from '../../../components/ui/StatsCard';
 
@@ -114,57 +115,6 @@ export default function ArtifactPage() {
         return mermaidPatterns.some(pattern => pattern.test(content.trim()));
     }, []);
 
-    useEffect(() => {
-        async function fetchFileMetadata() {
-            try {
-                const response = await fetch(`/api/files/${fileId}`);
-                if (!response.ok) {
-                    throw new Error(
-                        response.status === 404
-                            ? 'File not found or has expired'
-                            : 'Failed to fetch file information'
-                    );
-                }
-
-                const data = await response.json();
-
-                // Track view for stats - in a real app this would be a separate API call
-                data.viewCount = (data.viewCount || 0) + 1;
-
-                setFileInfo(data);
-
-                if (data.expiresAt) {
-                    updateTimeRemaining(data.expiresAt);
-                    const timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
-                    return () => clearInterval(timer);
-                }
-
-                // Generate some mock access stats if none exist
-                if (!data.accessHistory) {
-                    generateMockAccessStats(data.downloadCount || 0);
-                } else {
-                    calculateAccessStats(data.accessHistory);
-                }
-
-                // Load file content if it's a text-based file
-                if (isTextFile(data.contentType) ||
-                    data.fileName.toLowerCase().endsWith('.mmd') ||
-                    data.fileName.toLowerCase().endsWith('.mermaid')) {
-                    fetchFileContent();
-                }
-            } catch (err: any) {
-                console.error('Error fetching file metadata:', err);
-                setError(err.message || 'An error occurred');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (fileId) {
-            fetchFileMetadata();
-        }
-    }, [fileId, isTextFile]);
-
     const fetchFileContent = async () => {
         if (!fileId) return;
 
@@ -239,6 +189,57 @@ export default function ArtifactPage() {
             });
         }
     };
+
+    useEffect(() => {
+        async function fetchFileMetadata() {
+            try {
+                const response = await fetch(`/api/files/${fileId}`);
+                if (!response.ok) {
+                    throw new Error(
+                        response.status === 404
+                            ? 'File not found or has expired'
+                            : 'Failed to fetch file information'
+                    );
+                }
+
+                const data = await response.json();
+
+                // Track view for stats - in a real app this would be a separate API call
+                data.viewCount = (data.viewCount || 0) + 1;
+
+                setFileInfo(data);
+
+                if (data.expiresAt) {
+                    updateTimeRemaining(data.expiresAt);
+                    const timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
+                    return () => clearInterval(timer);
+                }
+
+                // Generate some mock access stats if none exist
+                if (!data.accessHistory) {
+                    generateMockAccessStats(data.downloadCount || 0);
+                } else {
+                    calculateAccessStats(data.accessHistory);
+                }
+
+                // Load file content if it's a text-based file
+                if (isTextFile(data.contentType) ||
+                    data.fileName.toLowerCase().endsWith('.mmd') ||
+                    data.fileName.toLowerCase().endsWith('.mermaid')) {
+                    fetchFileContent();
+                }
+            } catch (err: any) {
+                console.error('Error fetching file metadata:', err);
+                setError(err.message || 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        if (fileId) {
+            fetchFileMetadata();
+        }
+    }, [fileId, isTextFile, fetchFileContent, generateMockAccessStats]);
 
     const calculateAccessStats = (history: { date: string; count: number }[]) => {
         const now = new Date();
@@ -726,10 +727,12 @@ export default function ArtifactPage() {
                             {/* Image Preview */}
                             {isImageFile(fileInfo.contentType) && (
                                 <div className="flex items-center justify-center">
-                                    <img
+                                    <Image
                                         src={`/api/uploads/${fileId}`}
                                         alt={fileInfo.fileName}
                                         className="max-w-full max-h-96 object-contain"
+                                        width={600}
+                                        height={400}
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             target.src = '/icon.png';

@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(content);
 
         // Store the text content in GCP Storage bucket
-        const fileData = await uploadFile(buffer, fileName, contentType, ttlDays, title, description, fileType);
+        const fileData = await uploadFile(buffer, fileName, contentType, ttlDays, title, description ?? undefined, fileType);
 
         // Add userId to the fileData if available
         if (userId) {
