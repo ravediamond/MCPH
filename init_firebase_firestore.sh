@@ -25,12 +25,12 @@ if ! command -v gcloud &> /dev/null; then
 fi
 
 # Check for required Firebase Project ID
-if [ -z "$FIREBASE_PROJECT_ID" ]; then
-    echo "Error: FIREBASE_PROJECT_ID environment variable is not set."
+if [ -z "$NEXT_PUBLIC_FIREBASE_PROJECT_ID" ]; then
+    echo "Error: NEXT_PUBLIC_FIREBASE_PROJECT_ID environment variable is not set."
     echo "Please define it in your .env.local file or export it."
     exit 1
 fi
-echo "Using Firebase Project ID: $FIREBASE_PROJECT_ID"
+echo "Using Firebase Project ID: $NEXT_PUBLIC_FIREBASE_PROJECT_ID"
 
 ACCESS_TOKEN=""
 
@@ -48,12 +48,12 @@ if [ -n "$GCP_SERVICE_ACCOUNT" ]; then
         # Fall-through to try ADC without service account file
     else
         # Set environment variable for gcloud to use the key file
-        export GCP_SERVICE_ACCOUNT="$TEMP_CRED_FILE"
+        export GOOGLE_APPLICATION_CREDENTIALS="$TEMP_CRED_FILE" # Corrected variable name
         
         ACCESS_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null)
         
         # Unset and remove temporary credentials
-        unset GCP_SERVICE_ACCOUNT
+        unset GOOGLE_APPLICATION_CREDENTIALS # Corrected variable name
         rm "$TEMP_CRED_FILE"
         
         if [ -n "$ACCESS_TOKEN" ]; then
@@ -84,7 +84,7 @@ echo "Access token obtained successfully."
 echo ""
 
 # Firestore base URL for REST API
-FIRESTORE_URL="https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents"
+FIRESTORE_URL="https://firestore.googleapis.com/v1/projects/${NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents" # Corrected variable
 echo "Using Firestore URL: ${FIRESTORE_URL}"
 echo ""
 
@@ -157,6 +157,46 @@ EVENTS_DATA='{
     "message": {"stringValue": "Firestore collections initialized"}
 }'
 create_document "events" "initialization" "${EVENTS_DATA}"
+
+# 4. Deploy Firestore indexes
+echo "--- Deploying Firestore indexes ---"
+if [ -f "firestore.indexes.json" ]; then
+    echo "Found firestore.indexes.json."
+    # First, check if Firebase CLI is installed
+    if ! command -v firebase &> /dev/null; then
+        echo "Error: Firebase CLI is not installed. This is recommended for deploying Firestore indexes."
+        echo "Please install it by following the instructions at: https://firebase.google.com/docs/cli#setup_update_cli"
+        echo "After installation, run 'firebase login' and then 'firebase use ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}' to select your project."
+        echo "Then, you can manually deploy indexes using: firebase deploy --only firestore:indexes --project ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
+        echo "Skipping automatic index deployment."
+    else
+        echo "Firebase CLI found. Attempting to deploy indexes..."
+        # Ensure Firebase project is set (firebase use might be needed interactively if not already set)
+        # We will try to pass the project ID directly to the deploy command.
+        if firebase deploy --only firestore:indexes --project "${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" --non-interactive --debug; then
+            echo "Firestore indexes deployment initiated successfully using Firebase CLI."
+            echo "Note: Index creation can take some time. Check the Firebase console for status."
+        else
+            echo "Error deploying Firestore indexes using Firebase CLI."
+            echo "Please ensure you are logged into Firebase CLI ('firebase login') and have selected your project ('firebase use ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}')."
+            echo "You can try deploying manually: firebase deploy --only firestore:indexes --project ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
+            echo "Alternatively, try updating gcloud components ('gcloud components update') and using gcloud:"
+            echo "  gcloud beta firestore indexes replace firestore.indexes.json --project=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
+            echo "or create the index via the Firebase console."
+        fi
+    fi
+else
+    echo "Warning: firestore.indexes.json not found. Skipping index deployment."
+fi
+echo ""
+
+# 5. Create composite index for apiKeys (userId + createdAt)
+echo "--- Creating composite index for apiKeys (userId + createdAt) ---"
+gcloud firestore indexes composite create \
+  --collection-group="apiKeys" \
+  --field-config field-path="userId",order="ASCENDING" \
+  --field-config field-path="createdAt",order="DESCENDING"
+echo "Composite index for apiKeys created (if not already present)."
 
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."

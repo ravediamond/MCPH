@@ -1,40 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import { uploadFile } from '@/services/storageService';
 import {
-    saveFileMetadata,
-    getFileMetadata,
     logEvent,
     incrementMetric,
-    TEXT_CONTENT_COLLECTION
+    saveFileMetadata
 } from '@/services/firebaseService';
-
-// Maximum size for storing content directly in Firestore (1MB)
-const MAX_FIRESTORE_CONTENT_SIZE = 1024 * 1024; // 1MB
-
-// Maximum chunk size when splitting content
-const MAX_CHUNK_SIZE = 800 * 1024; // 800KB to stay safely under Firestore's 1MB document limit
-
-interface TextContentMetadata {
-    id: string;
-    fileName: string;
-    contentType: string;
-    content?: string; // For small content stored directly
-    chunks?: string[]; // For large content that needs to be split
-    size: number;
-    uploadedAt: Date;
-    expiresAt?: Date;
-    downloadCount: number;
-}
+import { DATA_TTL } from '@/app/config/constants';
 
 /**
- * API route to handle storing text content (markdown, JSON, text) directly to Firestore
+ * API route to handle storing text content (markdown, JSON, text) to GCP Storage
+ * This is an updated implementation that always uses GCP buckets for storage
+ * and Firestore only for metadata management
  */
 export async function POST(req: NextRequest) {
     try {
         const contentType = req.headers.get('Content-Type') || 'text/plain';
-        const ttlHours = parseInt(req.headers.get('x-ttl-hours') || '24', 10);
+        const ttlDaysParam = req.headers.get('x-ttl-days');
+        const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
+        const userId = req.headers.get('x-user-id');
+        const title = req.headers.get('x-title');
+        const description = req.headers.get('x-description');
+        const fileTypeParam = req.headers.get('x-file-type');
+        const fileType = fileTypeParam || undefined; // Convert null to undefined
+
+        // Validate that title is provided
+        if (!title || !title.trim()) {
+            return NextResponse.json(
+                { error: 'Title is required' },
+                { status: 400 }
+            );
+        }
 
         // Parse the request to get content and filename
         let fileName = '';
@@ -60,101 +56,48 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Using 'let' instead of 'const' for fileId since it might be reassigned
-        let fileId = uuidv4();
-        const size = new TextEncoder().encode(content).length;
-        const uploadedAt = new Date();
+        // Convert content to Buffer for storage in GCP
+        const buffer = Buffer.from(content);
 
-        // Calculate expiration time
-        let expiresAt: Date | undefined;
-        if (ttlHours > 0) {
-            expiresAt = new Date(uploadedAt);
-            expiresAt.setHours(expiresAt.getHours() + ttlHours);
+        // Store the text content in GCP Storage bucket
+        const fileData = await uploadFile(buffer, fileName, contentType, ttlDays, title, description ?? undefined, fileType);
+
+        // Add userId to the fileData if available
+        if (userId) {
+            fileData.userId = userId;
         }
 
-        let metadata: TextContentMetadata;
-        let downloadUrl: string;
-        let apiUrl: string;
+        // Store the updated metadata in Firestore
+        await saveFileMetadata({
+            ...fileData,
+            uploadedAt: new Date(fileData.uploadedAt),
+            expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
+        } as any);
 
-        // If content is small enough, store directly in Firestore
-        if (size <= MAX_FIRESTORE_CONTENT_SIZE) {
-            metadata = {
-                id: fileId,
-                fileName,
-                contentType,
-                content,
-                size,
-                uploadedAt,
-                expiresAt,
-                downloadCount: 0,
-            };
-
-            // Save to Firestore collection for text content
-            const db = getFirestore();
-            await db.collection(TEXT_CONTENT_COLLECTION).doc(fileId).set(metadata);
-
-            // Generate API URL (for direct content access)
-            apiUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
-
-            // Generate download page URL (for user-friendly page)
-            downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
-        }
-        // For larger content, split into chunks or store in GCS
-        else {
-            if (size <= MAX_CHUNK_SIZE * 10) { // If it can be reasonably split (up to ~8MB)
-                // Split content into chunks and store in Firestore
-                const chunks = splitContent(content, MAX_CHUNK_SIZE);
-
-                metadata = {
-                    id: fileId,
-                    fileName,
-                    contentType,
-                    chunks,
-                    size,
-                    uploadedAt,
-                    expiresAt,
-                    downloadCount: 0,
-                };
-
-                // Save metadata with chunks
-                const db = getFirestore();
-                await db.collection(TEXT_CONTENT_COLLECTION).doc(fileId).set(metadata);
-
-                // Generate API URL for direct access
-                apiUrl = new URL(`/api/uploads/text-content/${fileId}`, req.url).toString();
-
-                // Generate download page URL for user-friendly page
-                downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
-            }
-            // If content is very large, use the standard file upload mechanism
-            else {
-                const buffer = Buffer.from(content);
-                const fileData = await uploadFile(buffer, fileName, contentType, ttlHours);
-
-                // Now we can safely reassign fileId
-                fileId = fileData.id;
-
-                // Generate API URL for direct access
-                apiUrl = new URL(`/api/uploads/${fileId}`, req.url).toString();
-
-                // Generate download page URL for user-friendly page
-                downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
-            }
-        }
+        // Generate URLs
+        const apiUrl = new URL(`/api/files/${fileData.id}`, req.url).toString();
+        const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
 
         // Log the upload event
-        await logEvent('text_upload', fileId);
+        await logEvent('text_upload', fileData.id, undefined, userId ? { userId } : undefined);
         await incrementMetric('text_uploads');
 
         return NextResponse.json({
             success: true,
-            fileId,
-            fileName,
-            contentType,
-            size,
-            apiUrl,          // Direct API URL for programmatic access
-            downloadUrl,     // User-friendly download page URL
-            expiresAt: expiresAt?.toISOString(),
+            fileId: fileData.id,
+            fileName: fileData.fileName,
+            title: fileData.title,
+            description: fileData.description,
+            contentType: fileData.contentType,
+            fileType: fileData.fileType, // Include fileType in the response
+            size: fileData.size,
+            apiUrl,
+            downloadUrl,
+            uploadedAt: new Date(fileData.uploadedAt).toISOString(),
+            expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt).toISOString() : undefined,
+            // Include compression information if available
+            compressed: fileData.compressed,
+            compressionRatio: fileData.compressionRatio
         });
 
     } catch (error: any) {
@@ -164,38 +107,4 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
-}
-
-/**
- * Split content into chunks that fit within Firestore document size limits
- */
-function splitContent(content: string, maxChunkSize: number): string[] {
-    const chunks: string[] = [];
-    let remaining = content;
-
-    while (remaining.length > 0) {
-        // Find a good break point that's under the max size
-        const chunkSize = Math.min(remaining.length, maxChunkSize);
-
-        // Try to split at paragraph or line breaks if possible
-        let breakPoint = chunkSize;
-        if (chunkSize < remaining.length) {
-            const possibleBreaks = ['\n\n', '\n', '. ', ', ', ' '];
-
-            for (const breakChar of possibleBreaks) {
-                // Look for the last occurrence of the break character before the max size
-                const lastBreak = remaining.lastIndexOf(breakChar, chunkSize);
-                if (lastBreak > 0) {
-                    breakPoint = lastBreak + breakChar.length;
-                    break;
-                }
-            }
-        }
-
-        // Add the chunk and remove it from the remaining content
-        chunks.push(remaining.substring(0, breakPoint));
-        remaining = remaining.substring(breakPoint);
-    }
-
-    return chunks;
 }

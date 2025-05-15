@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { FaFileDownload, FaFile, FaClock, FaCalendarAlt, FaExclamationTriangle } from 'react-icons/fa';
+import {
+    FaFileDownload, FaFile, FaClock, FaCalendarAlt, FaExclamationTriangle,
+    FaCheck, FaShareAlt, FaUpload
+} from 'react-icons/fa';
 
 interface FileMetadata {
     id: string;
@@ -22,26 +25,29 @@ export default function DownloadPage() {
     const [fileInfo, setFileInfo] = useState<FileMetadata | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [linkCopied, setLinkCopied] = useState(false);
+    const [downloadStarted, setDownloadStarted] = useState(false);
+    const [timeRemaining, setTimeRemaining] = useState<string>('');
 
-    // Fetch file metadata when component mounts
     useEffect(() => {
         async function fetchFileMetadata() {
             try {
                 const response = await fetch(`/api/files/${fileId}`);
-
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('File not found or has expired');
-                    } else {
-                        throw new Error('Failed to fetch file information');
-                    }
+                    throw new Error(response.status === 404 ? 'File not found or has expired' : 'Failed to fetch file information');
                 }
 
                 const data = await response.json();
                 setFileInfo(data);
+
+                if (data.expiresAt) {
+                    updateTimeRemaining(data.expiresAt);
+                    const timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
+                    return () => clearInterval(timer);
+                }
             } catch (err: any) {
                 console.error('Error fetching file metadata:', err);
-                setError(err.message || 'An error occurred while retrieving the file');
+                setError(err.message || 'An error occurred');
             } finally {
                 setLoading(false);
             }
@@ -52,91 +58,94 @@ export default function DownloadPage() {
         }
     }, [fileId]);
 
-    // Format bytes to human-readable size
+    // Simplified time remaining calculation
+    const updateTimeRemaining = (expiresAt: string | number) => {
+        const now = new Date();
+        const expiry = new Date(expiresAt);
+        const diffMs = expiry.getTime() - now.getTime();
+
+        if (diffMs <= 0) {
+            setTimeRemaining('Expired');
+            setError('This file has expired');
+            return;
+        }
+
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (diffDays > 0) {
+            setTimeRemaining(`${diffDays}d ${diffHours}h`);
+        } else if (diffHours > 0) {
+            setTimeRemaining(`${diffHours}h ${diffMinutes}m`);
+        } else {
+            setTimeRemaining(`${diffMinutes}m`);
+        }
+    };
+
+    // Format bytes to readable size
     const formatBytes = (bytes: number): string => {
-        if (bytes === 0) return '0 Bytes';
+        if (bytes === 0) return '0 B';
         const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const sizes = ['B', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     };
 
-    // Format date to human-readable
+    // Simple date formatter
     const formatDate = (dateString: string | number): string => {
-        const date = typeof dateString === 'string' ? new Date(dateString) : new Date(dateString);
-        return date.toLocaleString();
+        return new Date(dateString).toLocaleDateString();
     };
 
-    // Handle file download
     const handleDownload = () => {
         if (!fileInfo) return;
-
-        // Redirect to the actual file endpoint
+        setDownloadStarted(true);
+        setFileInfo(prev => prev ? { ...prev, downloadCount: prev.downloadCount + 1 } : prev);
         window.location.href = `/api/uploads/${fileId}`;
     };
 
-    // Handle direct download link copy
-    const handleCopyDirectLink = () => {
-        const downloadUrl = `${window.location.origin}/api/uploads/${fileId}`;
-        navigator.clipboard.writeText(downloadUrl)
+    const handleCopyLink = () => {
+        navigator.clipboard.writeText(`${window.location.origin}/download/${fileId}`)
             .then(() => {
-                alert('Direct download link copied to clipboard!');
-            })
-            .catch(err => {
-                console.error('Failed to copy link:', err);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
             });
     };
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-beige-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-8 text-center">
+            <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+                <div className="w-full max-w-md bg-white rounded-lg shadow p-6 text-center">
                     <div className="animate-pulse flex flex-col items-center">
-                        <div className="h-12 w-12 bg-gray-200 rounded-full mb-4"></div>
-                        <div className="h-6 w-64 bg-gray-200 rounded mb-4"></div>
-                        <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
-                        <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                        <div className="h-12 w-12 bg-primary-100 rounded-full mb-4"></div>
+                        <div className="h-6 w-48 bg-gray-200 rounded mb-4"></div>
                     </div>
-                    <p className="text-gray-500 mt-4">Loading file information...</p>
+                    <p className="text-gray-500">Loading file...</p>
                 </div>
             </div>
         );
     }
 
-    if (error) {
+    if (error || !fileInfo) {
         return (
-            <div className="min-h-screen bg-beige-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-8 text-center">
-                    <div className="flex flex-col items-center">
-                        <FaExclamationTriangle className="text-red-500 text-5xl mb-4" />
-                        <h1 className="text-2xl font-bold text-red-500 mb-4">File Unavailable</h1>
-                        <p className="text-gray-700 mb-6">{error}</p>
-                        <p className="text-gray-500">The file may have expired or been removed.</p>
+            <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+                <div className="w-full max-w-md bg-white rounded-lg shadow p-6 text-center">
+                    <FaExclamationTriangle className="text-yellow-500 text-3xl mx-auto mb-4" />
+                    <h1 className="text-xl font-medium text-gray-800 mb-2">File Unavailable</h1>
+                    <p className="text-gray-600 mb-6">{error || "Unable to retrieve file information"}</p>
+
+                    <div className="flex justify-center space-x-4">
                         <Link
                             href="/"
-                            className="mt-8 px-6 py-3 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
                         >
-                            Return to Home
+                            Home
                         </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (!fileInfo) {
-        return (
-            <div className="min-h-screen bg-beige-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-8 text-center">
-                    <div className="flex flex-col items-center">
-                        <FaExclamationTriangle className="text-yellow-500 text-5xl mb-4" />
-                        <h1 className="text-2xl font-bold text-gray-700 mb-4">File Information Not Available</h1>
-                        <p className="text-gray-500">Unable to retrieve file information.</p>
                         <Link
-                            href="/"
-                            className="mt-8 px-6 py-3 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
+                            href="/upload"
+                            className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors"
                         >
-                            Return to Home
+                            <FaUpload className="inline mr-1" /> Upload
                         </Link>
                     </div>
                 </div>
@@ -145,74 +154,62 @@ export default function DownloadPage() {
     }
 
     return (
-        <div className="min-h-screen bg-beige-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-            <div className="w-full max-w-3xl bg-white rounded-lg shadow-md p-8">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Download File</h1>
-                    <p className="text-gray-500">Secure file sharing with automatic expiration</p>
-                </div>
-
-                <div className="bg-beige-50 rounded-lg p-6 mb-8 flex items-start">
-                    <div className="flex-shrink-0 mr-5">
-                        <div className="p-4 bg-primary-100 rounded-lg">
-                            <FaFile className="text-primary-500 text-3xl" />
-                        </div>
-                    </div>
-
-                    <div className="flex-grow">
-                        <h2 className="text-xl font-semibold text-gray-800 mb-2">{fileInfo.fileName}</h2>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                            <div className="flex items-center">
-                                <span className="font-medium">Type:</span>
-                                <span className="ml-1">{fileInfo.contentType}</span>
+        <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+            <div className="w-full max-w-md bg-white rounded-lg shadow">
+                <div className="bg-primary-500 p-4 text-white">
+                    <div className="flex items-center justify-between">
+                        <h1 className="font-medium">Download File</h1>
+                        {timeRemaining && (
+                            <div className="flex items-center text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
+                                <FaClock className="mr-1" /> Expires in {timeRemaining}
                             </div>
-                            <div className="flex items-center">
-                                <span className="font-medium">Size:</span>
-                                <span className="ml-1">{formatBytes(fileInfo.size)}</span>
-                            </div>
-                            <div className="flex items-center">
-                                <FaCalendarAlt className="mr-1 text-gray-500" />
-                                <span className="font-medium">Uploaded:</span>
-                                <span className="ml-1">{formatDate(fileInfo.uploadedAt)}</span>
-                            </div>
-                            {fileInfo.expiresAt && (
-                                <div className="flex items-center">
-                                    <FaClock className="mr-1 text-gray-500" />
-                                    <span className="font-medium">Expires:</span>
-                                    <span className="ml-1">{formatDate(fileInfo.expiresAt)}</span>
-                                </div>
-                            )}
-                            <div className="flex items-center">
-                                <span className="font-medium">Downloads:</span>
-                                <span className="ml-1">{fileInfo.downloadCount}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-                    <button
-                        onClick={handleDownload}
-                        className="flex items-center justify-center px-6 py-3 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors"
-                    >
-                        <FaFileDownload className="mr-2" />
-                        Download File
-                    </button>
-                    <button
-                        onClick={handleCopyDirectLink}
-                        className="flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-                    >
-                        Copy Direct Link
-                    </button>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-500 text-center">
-                        This file is securely stored and available for a limited time.
-                        {fileInfo.expiresAt && (
-                            <> It will expire on {formatDate(fileInfo.expiresAt)}.</>
                         )}
-                    </p>
+                    </div>
+                </div>
+
+                <div className="p-4">
+                    <div className="mb-4">
+                        <h2 className="font-medium text-gray-800 mb-1 truncate" title={fileInfo.fileName}>
+                            {fileInfo.fileName}
+                        </h2>
+                        <div className="text-xs text-gray-500">
+                            {formatBytes(fileInfo.size)} • {fileInfo.downloadCount} downloads
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 mb-4">
+                        <button
+                            onClick={handleDownload}
+                            className="col-span-3 flex items-center justify-center px-3 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors"
+                        >
+                            {downloadStarted ? (
+                                <><FaCheck className="mr-1" /> Downloaded</>
+                            ) : (
+                                <><FaFileDownload className="mr-1" /> Download</>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={handleCopyLink}
+                            className="flex items-center justify-center p-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                            title="Copy link"
+                        >
+                            {linkCopied ? <FaCheck /> : <FaShareAlt />}
+                        </button>
+                    </div>
+
+                    <div className="text-xs text-gray-500 flex items-center justify-between">
+                        <div><FaCalendarAlt className="inline mr-1" />Uploaded: {formatDate(fileInfo.uploadedAt)}</div>
+                        {fileInfo.expiresAt && (
+                            <div><FaClock className="inline mr-1" />Expires: {formatDate(fileInfo.expiresAt)}</div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="bg-gray-50 p-3 border-t border-gray-100 text-center">
+                    <Link href="/upload" className="text-sm text-primary-500 hover:text-primary-600">
+                        <FaUpload className="inline mr-1" /> Upload your own file
+                    </Link>
                 </div>
             </div>
         </div>

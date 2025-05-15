@@ -1,84 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
-import { bucket, uploadsFolder } from '@/lib/gcpStorageClient';
-import { saveFileMetadata } from '@/services/firebaseService';
+import { uploadFile } from '@/services/storageService';
+import { saveFileMetadata, logEvent, incrementMetric } from '@/services/firebaseService';
+import { DATA_TTL } from '@/app/config/constants';
 
+/**
+ * API route to handle direct file uploads
+ */
 export async function POST(req: NextRequest) {
     try {
         const formData = await req.formData();
-        const file = formData.get('file') as File;
 
+        // Extract file from formData
+        const file = formData.get('file') as File | null;
         if (!file) {
-            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        // Generate a unique ID for the file
-        const fileId = uuidv4();
-        const gcsPath = `${uploadsFolder}${fileId}/${encodeURIComponent(file.name)}`;
+        // Get additional form fields
+        const ttlDaysParam = formData.get('ttlDays') as string | null;
+        const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
+        const title = formData.get('title') as string;
+        const description = formData.get('description') as string;
+        const userId = formData.get('userId') as string;
+        const fileTypeParam = formData.get('fileType') as string | null;
+        const fileType = fileTypeParam || undefined; // Convert null to undefined
 
-        // Convert the file to a buffer
+        // Validate that title is provided
+        if (!title || !title.trim()) {
+            return NextResponse.json(
+                { error: 'Title is required' },
+                { status: 400 }
+            );
+        }
+
+        // Convert File to Buffer for server-side processing
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        // Upload directly to GCS
-        const gcsFile = bucket.file(gcsPath);
-        await gcsFile.save(buffer, {
-            contentType: file.type || 'application/octet-stream',
-            resumable: false,
-            metadata: {
-                metadata: {
-                    fileId,
-                    originalName: file.name,
-                    uploadedAt: Date.now().toString(),
-                },
-            }
-        });
+        // Upload the file to storage
+        const fileData = await uploadFile(buffer, file.name, file.type, ttlDays, title, description, fileType);
 
-        // Generate a signed URL for download (for internal use/direct access)
-        const [signedUrl] = await gcsFile.getSignedUrl({
-            version: 'v4',
-            action: 'read',
-            expires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-        });
+        // Add userId to the fileData if available
+        if (userId) {
+            fileData.userId = userId;
+        }
 
-        // Generate download page URL for user-facing link
-        const downloadUrl = new URL(`/download/${fileId}`, req.url).toString();
-
-        // Prepare file metadata
-        const uploadedAt = Date.now();
-        const fileData = {
-            id: fileId,
-            fileName: file.name,
-            contentType: file.type || 'application/octet-stream',
-            size: buffer.length,
-            gcsPath,
-            uploadedAt,
-            downloadCount: 0,
-        };
-
-        // Store metadata in Firestore
+        // Store the metadata in Firestore with userId if available
         await saveFileMetadata({
             ...fileData,
-            uploadedAt: new Date(uploadedAt)
-        } as any, 0);
-
-        return NextResponse.json({
-            success: true,
-            fileId,
-            fileName: file.name,
-            contentType: file.type || 'application/octet-stream',
-            size: file.size,
-            directUrl: signedUrl, // Renamed to clarify this is the direct file URL
-            downloadUrl: downloadUrl, // New user-friendly download page URL
-            uploadedAt: new Date(uploadedAt).toISOString()
+            uploadedAt: new Date(fileData.uploadedAt),
+            expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
         });
 
-    } catch (error) {
-        console.error('Upload error:', error);
+        // Generate URLs
+        const apiUrl = new URL(`/api/files/${fileData.id}`, req.url).toString();
+        const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
+
+        // Log the upload event
+        await logEvent('file_upload', fileData.id, undefined, userId ? { userId } : undefined);
+        await incrementMetric('file_uploads');
+
+        // Return the upload result with compression info if available
         return NextResponse.json({
-            error: 'Failed to upload file',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+            success: true,
+            fileId: fileData.id,
+            fileName: fileData.fileName,
+            title: fileData.title,
+            description: fileData.description,
+            contentType: fileData.contentType,
+            fileType: fileData.fileType, // Include fileType in the response
+            size: fileData.size,
+            apiUrl,
+            downloadUrl,
+            uploadedAt: new Date(fileData.uploadedAt).toISOString(),
+            expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt).toISOString() : undefined,
+            // Include compression information if available
+            compressed: fileData.compressed,
+            compressionRatio: fileData.compressionRatio
+        });
+
+    } catch (error: any) {
+        console.error('Error handling direct upload:', error);
+        return NextResponse.json(
+            { error: 'Upload failed', message: error.message },
+            { status: 500 }
+        );
     }
 }
 

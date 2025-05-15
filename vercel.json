@@ -29,5 +29,11 @@
     ],
     "github": {
         "silent": true
-    }
+    },
+    "crons": [
+        {
+            "path": "/api/cron/delete-expired-files",
+            "schedule": "0 0 * * *"
+        }
+    ]
 }

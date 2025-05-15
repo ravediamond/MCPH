@@ -4,6 +4,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FaUpload, FaFile, FaSpinner, FaCheckCircle, FaTimes, FaCopy, FaExternalLinkAlt } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import { DATA_TTL } from '../app/config/constants'; // Import DATA_TTL
 
 // Maximum file size in bytes (500MB)
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -30,10 +32,24 @@ const TEXT_FILE_EXTENSIONS = [
     '.text'
 ];
 
+// Available file types that users can select
+const FILE_TYPES = [
+    { value: 'file', label: 'Generic File' },
+    { value: 'data', label: 'Data' },
+    { value: 'image', label: 'Image' },
+    { value: 'markdown', label: 'Markdown' },
+    { value: 'diagram', label: 'Diagram' },
+    { value: 'json', label: 'JSON' }
+];
+
+// Type definition update to include title, description and fileType
 type UploadedFile = {
     id: string;
     fileName: string;
+    title: string;
+    description?: string;
     contentType: string;
+    fileType: string; // Added fileType field
     size: number;
     downloadUrl: string;
     uploadedAt: string;
@@ -45,16 +61,28 @@ interface FileUploadProps {
 }
 
 export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploadProps) {
+    // Get current user from auth context
+    const { user } = useAuth();
+
     // Refs
     const formRef = useRef<HTMLFormElement>(null);
     const urlRef = useRef<HTMLInputElement>(null);
 
     // State
     const [file, setFile] = useState<File | null>(null);
+    const [selectedTtlDays, setSelectedTtlDays] = useState<number>(DATA_TTL.DEFAULT_DAYS); // Added state for TTL
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
     const [urlCopied, setUrlCopied] = useState(false);
+    const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
+    const [fileType, setFileType] = useState<string>('file'); // Default file type
+    // Metadata state
+    const [metadataList, setMetadataList] = useState<{ key: string; value: string }[]>([]);
+    // Sharing state
+    const [isShared, setIsShared] = useState<boolean>(false); // New: sharing toggle
+    const [password, setPassword] = useState<string>(''); // New: optional password
 
     // Format bytes to human-readable size
     const formatBytes = (bytes: number): string => {
@@ -94,9 +122,36 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
         setFile(selectedFile);
         setUploadedFile(null);
+
+        // Automatically detect file type based on content type or extension
+        if (selectedFile.type.includes('image')) {
+            setFileType('image');
+        } else if (selectedFile.type.includes('json') || selectedFile.name.endsWith('.json')) {
+            setFileType('json');
+        } else if (selectedFile.name.endsWith('.md') || selectedFile.name.endsWith('.markdown')) {
+            setFileType('markdown');
+        } else if (selectedFile.type.includes('csv') || selectedFile.type.includes('excel') ||
+            selectedFile.name.endsWith('.csv') || selectedFile.name.endsWith('.xlsx')) {
+            setFileType('data');
+        } else if (selectedFile.name.endsWith('.diagram') || selectedFile.name.endsWith('.drawio')) {
+            setFileType('diagram');
+        } else {
+            setFileType('file');
+        }
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: false });
+
+    // Handle metadata changes
+    const handleMetadataChange = (index: number, field: 'key' | 'value', value: string) => {
+        setMetadataList(prev => prev.map((item, i) => i === index ? { ...item, [field]: value } : item));
+    };
+    const handleAddMetadata = () => {
+        setMetadataList(prev => [...prev, { key: '', value: '' }]);
+    };
+    const handleRemoveMetadata = (index: number) => {
+        setMetadataList(prev => prev.filter((_, i) => i !== index));
+    };
 
     // Handle file upload using the appropriate endpoint based on file type
     const handleUpload = async (e: React.FormEvent) => {
@@ -104,6 +159,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
         if (!file) {
             toast.error('Please select a file to upload.');
+            return;
+        }
+
+        if (!title.trim()) {
+            toast.error('Please enter a title for your file.');
             return;
         }
 
@@ -121,6 +181,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             let uploadResponse;
             let uploadedFileData;
 
+            // Get auth token if user is logged in
+            let authToken = null;
+            if (user) {
+                try {
+                    authToken = await user.getIdToken();
+                } catch (error) {
+                    console.error("Error getting auth token:", error);
+                }
+            }
+
             // Select endpoint based on file type
             if (shouldUseFirestore(file)) {
                 // For text files, use the text-content endpoint
@@ -132,7 +202,14 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     headers: {
                         'Content-Type': file.type || 'text/plain',
                         'x-filename': file.name,
-                        'x-ttl-hours': '24' // Default TTL, could be configurable
+                        'x-ttl-days': selectedTtlDays.toString(), // Pass selected TTL
+                        'x-title': title, // Add title header
+                        'x-description': description, // Add description header
+                        'x-file-type': fileType, // Add file type header
+                        'x-shared': isShared ? 'true' : 'false', // New: sharing status
+                        ...(password && isShared ? { 'x-password': password } : {}), // New: password if set
+                        ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
                     body: content,
                 });
@@ -140,9 +217,29 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 // For other files, use the direct-upload endpoint
                 const formData = new FormData();
                 formData.append('file', file);
+                formData.append('ttlDays', selectedTtlDays.toString()); // Pass selected TTL
+                formData.append('title', title); // Add title
+                formData.append('description', description); // Add description
+                formData.append('fileType', fileType); // Add file type
+                formData.append('isShared', isShared ? 'true' : 'false'); // New: sharing status
+                if (password && isShared) {
+                    formData.append('password', password);
+                }
+
+                // Add user ID if logged in
+                if (user) {
+                    formData.append('userId', user.uid);
+                }
+                // Add metadata as JSON string if any
+                if (metadataList.length > 0) {
+                    formData.append('metadata', JSON.stringify(metadataList.filter(m => m.key)));
+                }
 
                 uploadResponse = await fetch('/api/uploads/direct-upload', {
                     method: 'POST',
+                    headers: {
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                    },
                     body: formData,
                 });
             }
@@ -163,12 +260,18 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
             uploadedFileData = await uploadResponse.json();
 
+            // Use /artifact/[id] as the link instead of /download/[id]
+            const artifactUrl = `/artifact/${uploadedFileData.fileId}`;
+
             setUploadedFile({
                 id: uploadedFileData.fileId,
                 fileName: file.name,
+                title: title,
+                description: description,
                 contentType: file.type || 'application/octet-stream',
+                fileType: fileType, // Add file type
                 size: file.size,
-                downloadUrl: uploadedFileData.downloadUrl,
+                downloadUrl: artifactUrl,
                 uploadedAt: new Date().toISOString()
             });
 
@@ -177,6 +280,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 formRef.current.reset();
             }
 
+            // Reset state
+            setTitle('');
+            setDescription('');
+
             toast.success('File uploaded successfully!');
 
             // Call the onUploadSuccess callback if provided
@@ -184,9 +291,12 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 onUploadSuccess({
                     id: uploadedFileData.fileId,
                     fileName: file.name,
+                    title: title,
+                    description: description,
                     contentType: file.type || 'application/octet-stream',
+                    fileType: fileType, // Add file type
                     size: file.size,
-                    downloadUrl: uploadedFileData.downloadUrl,
+                    downloadUrl: artifactUrl,
                     uploadedAt: new Date().toISOString()
                 });
             }
@@ -247,9 +357,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="font-medium">{uploadedFile.fileName}</p>
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
-                                    {shouldUseFirestore(new File([new Blob()], uploadedFile.fileName, { type: uploadedFile.contentType })) &&
-                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in Firestore</span>
-                                    }
+                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Type: {uploadedFile.fileType}</span>
+                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Stored in GCS Bucket</span>
                                 </p>
                             </div>
                         </div>
@@ -342,7 +451,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
                                     {shouldUseFirestore(file) &&
-                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Will use Firestore</span>
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Text file</span>
                                     }
                                 </p>
                             </div>
@@ -355,6 +464,164 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <FaTimes />
                             </button>
                         </div>
+                    )}
+
+                    {file && (
+                        <>
+                            {/* File Type Selector - Added Here */}
+                            <div className="mb-4">
+                                <label htmlFor="fileTypeSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                                    File Type:
+                                </label>
+                                <select
+                                    id="fileTypeSelect"
+                                    value={fileType}
+                                    onChange={(e) => setFileType(e.target.value)}
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    disabled={isUploading}
+                                >
+                                    {FILE_TYPES.map(type => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Select the type of content you're uploading.
+                                </p>
+                            </div>
+
+                            {/* TTL Selector */}
+                            <div className="mb-4">
+                                <label htmlFor="ttlSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Set Time-To-Live (TTL):
+                                </label>
+                                <select
+                                    id="ttlSelect"
+                                    value={selectedTtlDays}
+                                    onChange={(e) => setSelectedTtlDays(Number(e.target.value))}
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    disabled={isUploading}
+                                >
+                                    {DATA_TTL.OPTIONS.map(days => (
+                                        <option key={days} value={days}>
+                                            {days} day{days > 1 ? 's' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    The file will be automatically deleted after this period.
+                                </p>
+                            </div>
+
+                            {/* Title and Description Fields */}
+                            <div className="mb-4">
+                                <label htmlFor="fileTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Title <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    id="fileTitle"
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter a title for your file"
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    required
+                                    disabled={isUploading}
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label htmlFor="fileDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Description (optional)
+                                </label>
+                                <textarea
+                                    id="fileDescription"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Enter a description for your file"
+                                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    rows={3}
+                                    disabled={isUploading}
+                                />
+                            </div>
+
+                            {/* Metadata Key-Value Pairs */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Metadata (optional)
+                                </label>
+                                {metadataList.map((item, idx) => (
+                                    <div key={idx} className="flex items-center mb-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Key"
+                                            value={item.key}
+                                            onChange={e => handleMetadataChange(idx, 'key', e.target.value)}
+                                            className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
+                                            disabled={isUploading}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Value"
+                                            value={item.value}
+                                            onChange={e => handleMetadataChange(idx, 'value', e.target.value)}
+                                            className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
+                                            disabled={isUploading}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={() => handleRemoveMetadata(idx)}
+                                            disabled={isUploading}
+                                        >
+                                            <FaTimes />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="mt-2 px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs"
+                                    onClick={handleAddMetadata}
+                                    disabled={isUploading}
+                                >
+                                    + Add Metadata
+                                </button>
+                            </div>
+
+                            {/* Sharing Options */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Sharing Options:
+                                </label>
+                                <div className="flex items-center mb-2">
+                                    <input
+                                        id="isShared"
+                                        type="checkbox"
+                                        checked={isShared}
+                                        onChange={e => setIsShared(e.target.checked)}
+                                        disabled={isUploading}
+                                        className="mr-2"
+                                    />
+                                    <label htmlFor="isShared" className="text-sm text-gray-700">
+                                        Make this file shared (anyone with the link can download)
+                                    </label>
+                                </div>
+                                <div className="mt-2">
+                                    <input
+                                        type="password"
+                                        placeholder="Optional password (leave blank for none)"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        disabled={!isShared || isUploading}
+                                        className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        If set, users must enter this password to download the file.
+                                    </p>
+                                </div>
+                            </div>
+                        </>
                     )}
 
                     {isUploading && (
@@ -371,10 +638,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
                     <button
                         type="submit"
-                        disabled={!file || isUploading}
-                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading
+                        disabled={!file || isUploading || !title.trim()}
+                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading || !title.trim()
                             ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                            : 'bg-primary-500 hover:bg-primary-600 text-white'
+                            : 'bg-primary-500 hover:bg-primary-600 text-primary-900'
                             } transition-colors`}
                     >
                         {isUploading ? (

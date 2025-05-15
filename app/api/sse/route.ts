@@ -1,108 +1,212 @@
-import { NextRequest } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+import { NextRequest } from 'next/server'
+import { z } from 'zod'
 
-// Set to true dynamic to enable streaming responses
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-// Helper to get client IP
-function getClientIp(req: NextRequest): string {
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    if (forwardedFor) {
-        return forwardedFor.split(',')[0].trim();
-    }
-    return '127.0.0.1';
+// In-memory sessions map
+type Session = {
+    controller: ReadableStreamDefaultController<Uint8Array>
+    nextEventId: number
 }
+const sessions = new Map<string, Session>()
 
-// Handle GET requests for SSE
+// Zod schema for our dummy "search" tool arguments
+const SearchParams = z.object({
+    query: z.string()
+})
+
+/**
+ * Handles incoming SSE connection requests.
+ */
 export async function GET(req: NextRequest) {
-    const connectionId = uuidv4();
+    const sessionId = crypto.randomUUID()
 
-    // Create a readable stream for SSE
-    const stream = new ReadableStream({
+    const stream = new ReadableStream<Uint8Array>({
         start(controller) {
-            // Send initial connection event
-            const event = `event: connection\ndata: ${JSON.stringify({ connectionId })}\n\n`;
-            controller.enqueue(new TextEncoder().encode(event));
+            const encoder = new TextEncoder()
+            sessions.set(sessionId, { controller, nextEventId: 1 })
 
-            // Send a keepalive every 30 seconds
-            const keepAliveInterval = setInterval(() => {
-                const event = `event: keepalive\ndata: ${Date.now()}\n\n`;
-                controller.enqueue(new TextEncoder().encode(event));
-            }, 30000);
+            // 1) Kick-start the parser
+            controller.enqueue(encoder.encode(':\n\n'))
 
-            // Log connection event (to be implemented with your preferred logging method)
-            console.log(`SSE connection established: ${connectionId} from ${getClientIp(req)}`);
+            // 2) MCP handshake → tell client where to POST
+            const endpoint = `/api/sse?sessionId=${sessionId}`
+            controller.enqueue(
+                encoder.encode(`event: endpoint\ndata: ${endpoint}\n\n`)
+            )
 
-            // Cleanup function (not called in streaming responses, but good practice)
-            return () => {
-                clearInterval(keepAliveInterval);
-            };
+            // 3) Heartbeat every 15s
+            const iv = setInterval(() => {
+                controller.enqueue(encoder.encode(':\n\n'))
+            }, 15_000)
+
+            // 4) Cleanup on client disconnect
+            req.signal.addEventListener('abort', () => {
+                clearInterval(iv)
+                controller.close()
+                sessions.delete(sessionId)
+            })
+        },
+        cancel() {
+            sessions.delete(sessionId)
         }
-    });
+    })
 
-    // Return the stream with appropriate headers
     return new Response(stream, {
+        status: 200,
         headers: {
-            'Content-Type': 'text/event-stream',
+            'Content-Type': 'text/event-stream; charset=utf-8',
             'Cache-Control': 'no-cache, no-transform',
-            'Connection': 'keep-alive',
-            'X-Accel-Buffering': 'no',
-            'Access-Control-Allow-Origin': '*',
-            'X-Connection-Id': connectionId
+            Connection: 'keep-alive'
         }
-    });
+    })
 }
 
-// Handle OPTIONS requests for CORS
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS, POST',
-            'Access-Control-Allow-Headers': 'Content-Type, mcp-session-id',
-        }
-    });
-}
-
-// Handle POST requests (used to send events to specific clients)
+/**
+ * Handles JSON-RPC messages sent via POST.
+ */
 export async function POST(req: NextRequest) {
-    try {
-        const body = await req.json();
-        const { eventType, data, targetConnectionId } = body;
-
-        if (!eventType) {
-            return new Response(JSON.stringify({ error: 'Event type is required' }), {
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                }
-            });
-        }
-
-        // Log the event (to be implemented with your preferred logging method)
-        console.log(`SSE event sent: ${eventType} to ${targetConnectionId || 'broadcast'}`, data);
-
-        return new Response(JSON.stringify({
-            success: true,
-            message: 'Event received successfully'
-        }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-    } catch (error) {
-        console.error('Error processing SSE event:', error);
-        return new Response(JSON.stringify({ error: 'Failed to process event' }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
+    const url = new URL(req.url)
+    const sessionId = url.searchParams.get('sessionId')
+    if (!sessionId || !sessions.has(sessionId)) {
+        return new Response('Session not found', { status: 404 })
     }
+
+    // Parse JSON-RPC envelope
+    let rpc: { jsonrpc: string; id?: number; method: string; params?: any }
+    try {
+        rpc = await req.json()
+    } catch {
+        return new Response('Invalid JSON', { status: 400 })
+    }
+
+    // If it's a notification (no id), just ACK
+    if (rpc.id === undefined) {
+        return new Response(null, {
+            status: 200,
+            headers: { 'mcp-session-id': sessionId }
+        })
+    }
+
+    const session = sessions.get(sessionId)!
+    const encoder = new TextEncoder()
+
+    // Helper to enqueue an SSE "message" event
+    const send = (payload: any) => {
+        const frame = [
+            `id: ${session.nextEventId}`,
+            `event: message`,
+            `data: ${JSON.stringify(payload)}`,
+            ''
+        ].join('\n')
+        session.controller.enqueue(encoder.encode(frame))
+        session.nextEventId++
+    }
+
+    // Dispatch JSON-RPC methods
+    switch (rpc.method) {
+        case 'initialize':
+            send({
+                jsonrpc: '2.0',
+                id: rpc.id,
+                result: {
+                    protocolVersion: '2024-11-05',
+                    serverInfo: { name: 'Dummy SSE Server', version: '1.0.0' },
+                    capabilities: {
+                        tools: { listChanged: true },
+                        resources: {},
+                        prompts: {},
+                        logging: {},
+                        roots: {},
+                        sampling: {}
+                    }
+                }
+            })
+            break
+
+        case 'tools/list':
+            send({
+                jsonrpc: '2.0',
+                id: rpc.id,
+                result: {
+                    tools: [
+                        {
+                            name: 'search',
+                            description: 'Dummy GitHub search',
+                            inputSchema: {
+                                type: 'object',
+                                properties: { query: { type: 'string' } },
+                                required: ['query']
+                            }
+                        }
+                    ]
+                }
+            })
+            break
+
+        case 'tools/call':
+            // 1) Only handle the "search" tool
+            if (rpc.params?.name !== 'search') {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: -32601,
+                        message: `Tool not found: ${rpc.params?.name}`
+                    }
+                })
+                break
+            }
+
+            // 2) Validate just the arguments object
+            const parsed = SearchParams.safeParse(rpc.params.arguments)
+            if (!parsed.success) {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: -32602,
+                        message: 'Invalid params',
+                        data: parsed.error.issues
+                    }
+                })
+                break
+            }
+
+            // 3) Send back a dummy result
+            const { query } = parsed.data
+            send({
+                jsonrpc: '2.0',
+                id: rpc.id,
+                result: {
+                    content: [
+                        { type: 'text', text: `Results for “${query}”` }
+                    ],
+                    data: {
+                        name: 'dummy-repo',
+                        url: 'https://github.com/octocat/dummy-repo',
+                        description: `Results for “${query}”`
+                    }
+                }
+            })
+            break
+
+        default:
+            send({
+                jsonrpc: '2.0',
+                id: rpc.id,
+                error: {
+                    code: -32601,
+                    message: `Method not found: ${rpc.method}`
+                }
+            })
+    }
+
+    // ACK the POST so client can reuse the session
+    return new Response(null, {
+        status: 200,
+        headers: { 'mcp-session-id': sessionId }
+    })
 }

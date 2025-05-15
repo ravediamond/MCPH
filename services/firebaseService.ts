@@ -65,24 +65,27 @@ if (!settingsApplied) {
 const FILES_COLLECTION = 'files';
 const METRICS_COLLECTION = 'metrics';
 const EVENTS_COLLECTION = 'events';
-const TEXT_CONTENT_COLLECTION = 'text_content';
 
 // Export collection names for use in other modules
-export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, TEXT_CONTENT_COLLECTION };
+export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 
 // File metadata type
 export interface FileMetadata {
     id: string;
     fileName: string;
+    title: string;           // Added title field (mandatory)
+    description?: string;    // Added description field (optional)
     contentType: string;
     size: number;
     gcsPath: string;
-    uploadedAt: Date;
-    expiresAt?: Date;  // Added to match the storageService interface
+    uploadedAt: Date;  // Note: In Firestore we store as Date objects
+    expiresAt?: Date;  // In Firestore we store as Date objects
     downloadCount: number;
     ipAddress?: string;
     userId?: string;
     metadata?: Record<string, string>;
+    isShared?: boolean; // New: whether the file is shared (default false)
+    password?: string;  // New: optional hashed password for download
 }
 
 /**
@@ -127,7 +130,8 @@ const fromFirestoreData = (data: any): any => {
  */
 export async function saveFileMetadata(
     fileData: FileMetadata,
-    _ttlSeconds: number // Parameter kept for signature compatibility
+    // ttlSeconds parameter is no longer used, ttl is handled by expiresAt in fileData
+    // _ttlSeconds: number 
 ): Promise<boolean> {
     try {
         // Convert the data for Firestore
@@ -373,4 +377,88 @@ export async function getEvents(
         console.error('Error getting events from Firestore:', error);
         return [];
     }
+}
+
+/**
+ * Get file metadata for a specific user from Firestore
+ */
+export async function getUserFiles(userId: string): Promise<FileMetadata[]> {
+    try {
+        const querySnapshot = await db.collection(FILES_COLLECTION)
+            .where('userId', '==', userId)
+            .orderBy('uploadedAt', 'desc')
+            .get();
+
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        // Convert to array of data, converting Firestore timestamps to Date objects
+        return querySnapshot.docs.map(doc => fromFirestoreData(doc.data()) as FileMetadata);
+    } catch (error) {
+        console.error(`Error getting files for user ${userId} from Firestore:`, error);
+        return []; // Return empty array on error
+    }
+}
+
+// --- API Keys Collection ---
+const API_KEYS_COLLECTION = 'apiKeys';
+
+export interface ApiKeyRecord {
+    id: string; // Firestore doc ID
+    userId: string;
+    hashedKey: string; // Store only hashed version
+    createdAt: Date;
+    lastUsedAt?: Date;
+    name?: string; // Optional: user-friendly name
+}
+
+import * as crypto from 'crypto';
+
+function hashApiKey(apiKey: string): string {
+    return crypto.createHash('sha256').update(apiKey).digest('hex');
+}
+
+export async function createApiKey(userId: string, name?: string): Promise<{ apiKey: string; record: ApiKeyRecord }> {
+    const apiKey = crypto.randomBytes(32).toString('hex');
+    const hashedKey = hashApiKey(apiKey);
+    const id = crypto.randomUUID();
+    const record: ApiKeyRecord = {
+        id,
+        userId,
+        hashedKey,
+        createdAt: new Date(),
+        name,
+    };
+    await db.collection(API_KEYS_COLLECTION).doc(id).set(toFirestoreData(record));
+    return { apiKey, record };
+}
+
+export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
+    const snapshot = await db.collection(API_KEYS_COLLECTION)
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+    return snapshot.docs.map(doc => fromFirestoreData(doc.data()) as ApiKeyRecord);
+}
+
+export async function deleteApiKey(userId: string, keyId: string): Promise<boolean> {
+    const docRef = db.collection(API_KEYS_COLLECTION).doc(keyId);
+    const doc = await docRef.get();
+    if (!doc.exists || doc.data()?.userId !== userId) return false;
+    await docRef.delete();
+    return true;
+}
+
+export async function findUserByApiKey(apiKey: string): Promise<ApiKeyRecord | null> {
+    const hashedKey = hashApiKey(apiKey);
+    const snapshot = await db.collection(API_KEYS_COLLECTION)
+        .where('hashedKey', '==', hashedKey)
+        .limit(1)
+        .get();
+    if (snapshot.empty) return null;
+    const record = fromFirestoreData(snapshot.docs[0].data()) as ApiKeyRecord;
+    // Optionally update lastUsedAt
+    await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
+    return record;
 }
