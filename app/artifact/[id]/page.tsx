@@ -9,7 +9,7 @@ import {
     FaFileAlt, FaFileImage, FaFilePdf, FaProjectDiagram,
     FaArrowLeft, FaFileCode, FaChartBar, FaUsers,
     FaDownload, FaEye, FaHistory, FaInfoCircle,
-    FaServer, FaExternalLinkAlt, FaDatabase
+    FaServer, FaExternalLinkAlt, FaDatabase, FaLock
 } from 'react-icons/fa';
 import dynamic from 'next/dynamic';
 import Card from '../../../components/ui/Card';
@@ -48,6 +48,8 @@ interface FileMetadata {
         count: number;
     }[];
     metadata?: Record<string, string>;
+    isShared?: boolean;
+    password?: string;
 }
 
 export default function ArtifactPage() {
@@ -480,6 +482,23 @@ export default function ArtifactPage() {
                     </Card.Header>
 
                     <Card.Body>
+                        {/* Sharing status and password protection */}
+                        <div className="mb-4 flex items-center gap-3">
+                            {fileInfo.isShared ? (
+                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-green-100 text-green-700">
+                                    <FaShareAlt className="mr-1" /> Shared (anyone with link)
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-gray-200 text-gray-700">
+                                    <FaLock className="mr-1" /> Private (only you)
+                                </span>
+                            )}
+                            {fileInfo.isShared && fileInfo.password && (
+                                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
+                                    <FaLock className="mr-1" /> Password protected
+                                </span>
+                            )}
+                        </div>
                         {fileInfo.description && (
                             <div className="text-sm text-gray-700 mb-4 pb-3 border-b border-gray-100">
                                 {fileInfo.description}

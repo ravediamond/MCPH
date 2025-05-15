@@ -80,6 +80,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     const [fileType, setFileType] = useState<string>('file'); // Default file type
     // Metadata state
     const [metadataList, setMetadataList] = useState<{ key: string; value: string }[]>([]);
+    // Sharing state
+    const [isShared, setIsShared] = useState<boolean>(false); // New: sharing toggle
+    const [password, setPassword] = useState<string>(''); // New: optional password
 
     // Format bytes to human-readable size
     const formatBytes = (bytes: number): string => {
@@ -203,6 +206,8 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         'x-title': title, // Add title header
                         'x-description': description, // Add description header
                         'x-file-type': fileType, // Add file type header
+                        'x-shared': isShared ? 'true' : 'false', // New: sharing status
+                        ...(password && isShared ? { 'x-password': password } : {}), // New: password if set
                         ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
                         ...(authToken && { 'Authorization': `Bearer ${authToken}` })
                     },
@@ -216,6 +221,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 formData.append('title', title); // Add title
                 formData.append('description', description); // Add description
                 formData.append('fileType', fileType); // Add file type
+                formData.append('isShared', isShared ? 'true' : 'false'); // New: sharing status
+                if (password && isShared) {
+                    formData.append('password', password);
+                }
 
                 // Add user ID if logged in
                 if (user) {
@@ -575,6 +584,39 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 >
                                     + Add Metadata
                                 </button>
+                            </div>
+
+                            {/* Sharing Options */}
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Sharing Options:
+                                </label>
+                                <div className="flex items-center mb-2">
+                                    <input
+                                        id="isShared"
+                                        type="checkbox"
+                                        checked={isShared}
+                                        onChange={e => setIsShared(e.target.checked)}
+                                        disabled={isUploading}
+                                        className="mr-2"
+                                    />
+                                    <label htmlFor="isShared" className="text-sm text-gray-700">
+                                        Make this file shared (anyone with the link can download)
+                                    </label>
+                                </div>
+                                <div className="mt-2">
+                                    <input
+                                        type="password"
+                                        placeholder="Optional password (leave blank for none)"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        disabled={!isShared || isUploading}
+                                        className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        If set, users must enter this password to download the file.
+                                    </p>
+                                </div>
                             </div>
                         </>
                     )}

@@ -84,6 +84,8 @@ export interface FileMetadata {
     ipAddress?: string;
     userId?: string;
     metadata?: Record<string, string>;
+    isShared?: boolean; // New: whether the file is shared (default false)
+    password?: string;  // New: optional hashed password for download
 }
 
 /**
