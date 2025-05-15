@@ -305,7 +305,7 @@ export default function ArtifactPage() {
     const handleDownload = () => {
         if (!fileInfo) return;
         window.location.href = `/api/uploads/${fileId}`;
-        setFileInfo(prev => prev ? { ...prev, downloadCount: prev.downloadCount + 1 } : prev);
+        // Do NOT update downloadCount here; let the backend handle it only on real download
     };
 
     const handleCopyLink = () => {
