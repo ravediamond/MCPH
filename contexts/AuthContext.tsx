@@ -29,10 +29,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           const idTokenResult = await currentUser.getIdTokenResult();
           setIsAdmin(!!idTokenResult.claims.admin); // Check for admin claim
-          // Redirect to /home after user is set and confirmed
-          // We check if the current path is not already /home to avoid redundant redirects
-          // or if there's a specific page they were trying to access before login (future enhancement)
-          if (router && typeof window !== 'undefined' && window.location.pathname !== '/home') {
+          // Only redirect to /home if on root or login page
+          if (
+            router &&
+            typeof window !== 'undefined' &&
+            (window.location.pathname === '/' || window.location.pathname === '/login')
+          ) {
             router.push('/home');
           }
         } catch (error) {
