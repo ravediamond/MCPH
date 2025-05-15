@@ -260,6 +260,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
             uploadedFileData = await uploadResponse.json();
 
+            // Use /artifact/[id] as the link instead of /download/[id]
+            const artifactUrl = `/artifact/${uploadedFileData.fileId}`;
+
             setUploadedFile({
                 id: uploadedFileData.fileId,
                 fileName: file.name,
@@ -268,7 +271,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 contentType: file.type || 'application/octet-stream',
                 fileType: fileType, // Add file type
                 size: file.size,
-                downloadUrl: uploadedFileData.downloadUrl,
+                downloadUrl: artifactUrl,
                 uploadedAt: new Date().toISOString()
             });
 
@@ -293,7 +296,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     contentType: file.type || 'application/octet-stream',
                     fileType: fileType, // Add file type
                     size: file.size,
-                    downloadUrl: uploadedFileData.downloadUrl,
+                    downloadUrl: artifactUrl,
                     uploadedAt: new Date().toISOString()
                 });
             }

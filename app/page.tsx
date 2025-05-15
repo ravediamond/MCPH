@@ -17,13 +17,13 @@ export default function Home() {
 
                     {/* Upload Button */}
                     <Link
-                        href="/upload"
-                        className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium text-white bg-primary-500 rounded-lg shadow hover:bg-primary-600 transition duration-300"
+                        href="/login"
+                        className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition duration-300 border border-blue-700"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
-                        Upload Now
+                        Sign In to Upload
                     </Link>
                 </div>
             </section>
@@ -82,14 +82,7 @@ export default function Home() {
                     </div>
 
                     {/* CTA Button */}
-                    <div className="text-center">
-                        <Link
-                            href="/upload"
-                            className="inline-flex items-center justify-center px-4 py-2 text-base font-medium text-white bg-primary-500 rounded shadow hover:bg-primary-600 transition duration-300"
-                        >
-                            Start Uploading
-                        </Link>
-                    </div>
+                    {/* Removed duplicate Sign In to Upload button from the bottom section */}
                 </div>
             </section>
 
