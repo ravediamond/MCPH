@@ -1,5 +1,3 @@
-// app/api/sse/route.ts
-
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
@@ -14,7 +12,7 @@ type Session = {
 }
 const sessions = new Map<string, Session>()
 
-// Zod schema for our "search" tool
+// Zod schema for our dummy "search" tool arguments
 const SearchParams = z.object({
     query: z.string()
 })
@@ -23,10 +21,8 @@ const SearchParams = z.object({
  * Handles incoming SSE connection requests.
  */
 export async function GET(req: NextRequest) {
-    // Generate a new session ID
     const sessionId = crypto.randomUUID()
 
-    // Create the ReadableStream and register the session
     const stream = new ReadableStream<Uint8Array>({
         start(controller) {
             const encoder = new TextEncoder()
@@ -42,10 +38,9 @@ export async function GET(req: NextRequest) {
             )
 
             // 3) Heartbeat every 15s
-            const iv = setInterval(
-                () => controller.enqueue(encoder.encode(':\n\n')),
-                15_000
-            )
+            const iv = setInterval(() => {
+                controller.enqueue(encoder.encode(':\n\n'))
+            }, 15_000)
 
             // 4) Cleanup on client disconnect
             req.signal.addEventListener('abort', () => {
@@ -104,7 +99,7 @@ export async function POST(req: NextRequest) {
             `id: ${session.nextEventId}`,
             `event: message`,
             `data: ${JSON.stringify(payload)}`,
-            ``
+            ''
         ].join('\n')
         session.controller.enqueue(encoder.encode(frame))
         session.nextEventId++
@@ -117,7 +112,6 @@ export async function POST(req: NextRequest) {
                 jsonrpc: '2.0',
                 id: rpc.id,
                 result: {
-                    // Use a version your client supports (e.g. 2024-11-05)
                     protocolVersion: '2024-11-05',
                     serverInfo: { name: 'Dummy SSE Server', version: '1.0.0' },
                     capabilities: {
@@ -128,7 +122,6 @@ export async function POST(req: NextRequest) {
                         roots: {},
                         sampling: {}
                     }
-                    // instructions?: 'You can list tools with "tools/list", call search, etc.'
                 }
             })
             break
@@ -153,8 +146,22 @@ export async function POST(req: NextRequest) {
             })
             break
 
-        case 'search':
-            const parsed = SearchParams.safeParse(rpc.params)
+        case 'tools/call':
+            // 1) Only handle the "search" tool
+            if (rpc.params?.name !== 'search') {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: -32601,
+                        message: `Tool not found: ${rpc.params?.name}`
+                    }
+                })
+                break
+            }
+
+            // 2) Validate just the arguments object
+            const parsed = SearchParams.safeParse(rpc.params.arguments)
             if (!parsed.success) {
                 send({
                     jsonrpc: '2.0',
@@ -165,20 +172,25 @@ export async function POST(req: NextRequest) {
                         data: parsed.error.issues
                     }
                 })
-            } else {
-                const { query } = parsed.data
-                send({
-                    jsonrpc: '2.0',
-                    id: rpc.id,
-                    result: {
-                        repository: {
-                            name: 'dummy-repo',
-                            url: `https://github.com/octocat/dummy-repo`,
-                            description: `Results for “${query}”`
-                        }
-                    }
-                })
+                break
             }
+
+            // 3) Send back a dummy result
+            const { query } = parsed.data
+            send({
+                jsonrpc: '2.0',
+                id: rpc.id,
+                result: {
+                    content: [
+                        { type: 'text', text: `Results for “${query}”` }
+                    ],
+                    data: {
+                        name: 'dummy-repo',
+                        url: 'https://github.com/octocat/dummy-repo',
+                        description: `Results for “${query}”`
+                    }
+                }
+            })
             break
 
         default:
@@ -192,7 +204,7 @@ export async function POST(req: NextRequest) {
             })
     }
 
-    // Acknowledge the POST; return the same session ID so client can reuse it
+    // ACK the POST so client can reuse the session
     return new Response(null, {
         status: 200,
         headers: { 'mcp-session-id': sessionId }
