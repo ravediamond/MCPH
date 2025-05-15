@@ -8,7 +8,8 @@ import {
     FaFileAlt, FaDownload, FaShareAlt, FaTrash, FaSearch,
     FaClock, FaCalendarAlt, FaLock, FaUpload,
     FaCheck, FaTimesCircle, FaEye, FaExclamationCircle,
-    FaFileImage, FaFilePdf, FaFileCode, FaProjectDiagram
+    FaFileImage, FaFilePdf, FaFileCode, FaProjectDiagram,
+    FaKey
 } from 'react-icons/fa';
 import Card from '../../components/ui/Card';
 
@@ -211,9 +212,15 @@ export default function HomePage() {
                         </div>
                         <Link
                             href="/upload"
-                            className="bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 transition-colors flex items-center"
+                            className="bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 transition-colors flex items-center mr-2"
                         >
                             <FaUpload className="mr-1" /> Upload
+                        </Link>
+                        <Link
+                            href="/admin/api-keys"
+                            className="bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200 transition-colors flex items-center"
+                        >
+                            <FaKey className="mr-1" /> API Keys
                         </Link>
                     </div>
                 </div>

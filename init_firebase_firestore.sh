@@ -190,6 +190,14 @@ else
 fi
 echo ""
 
+# 5. Create composite index for apiKeys (userId + createdAt)
+echo "--- Creating composite index for apiKeys (userId + createdAt) ---"
+gcloud firestore indexes composite create \
+  --collection-group="apiKeys" \
+  --field-config field-path="userId",order="ASCENDING" \
+  --field-config field-path="createdAt",order="DESCENDING"
+echo "Composite index for apiKeys created (if not already present)."
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."

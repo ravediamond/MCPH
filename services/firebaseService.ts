@@ -400,3 +400,65 @@ export async function getUserFiles(userId: string): Promise<FileMetadata[]> {
         return []; // Return empty array on error
     }
 }
+
+// --- API Keys Collection ---
+const API_KEYS_COLLECTION = 'apiKeys';
+
+export interface ApiKeyRecord {
+    id: string; // Firestore doc ID
+    userId: string;
+    hashedKey: string; // Store only hashed version
+    createdAt: Date;
+    lastUsedAt?: Date;
+    name?: string; // Optional: user-friendly name
+}
+
+import * as crypto from 'crypto';
+
+function hashApiKey(apiKey: string): string {
+    return crypto.createHash('sha256').update(apiKey).digest('hex');
+}
+
+export async function createApiKey(userId: string, name?: string): Promise<{ apiKey: string; record: ApiKeyRecord }> {
+    const apiKey = crypto.randomBytes(32).toString('hex');
+    const hashedKey = hashApiKey(apiKey);
+    const id = crypto.randomUUID();
+    const record: ApiKeyRecord = {
+        id,
+        userId,
+        hashedKey,
+        createdAt: new Date(),
+        name,
+    };
+    await db.collection(API_KEYS_COLLECTION).doc(id).set(toFirestoreData(record));
+    return { apiKey, record };
+}
+
+export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
+    const snapshot = await db.collection(API_KEYS_COLLECTION)
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .get();
+    return snapshot.docs.map(doc => fromFirestoreData(doc.data()) as ApiKeyRecord);
+}
+
+export async function deleteApiKey(userId: string, keyId: string): Promise<boolean> {
+    const docRef = db.collection(API_KEYS_COLLECTION).doc(keyId);
+    const doc = await docRef.get();
+    if (!doc.exists || doc.data()?.userId !== userId) return false;
+    await docRef.delete();
+    return true;
+}
+
+export async function findUserByApiKey(apiKey: string): Promise<ApiKeyRecord | null> {
+    const hashedKey = hashApiKey(apiKey);
+    const snapshot = await db.collection(API_KEYS_COLLECTION)
+        .where('hashedKey', '==', hashedKey)
+        .limit(1)
+        .get();
+    if (snapshot.empty) return null;
+    const record = fromFirestoreData(snapshot.docs[0].data()) as ApiKeyRecord;
+    // Optionally update lastUsedAt
+    await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
+    return record;
+}
