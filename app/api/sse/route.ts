@@ -6,18 +6,6 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { FILES_COLLECTION } from '@/services/firebaseService'
 import { getSignedDownloadUrl, getFileContent } from '@/services/storageService'
 
-function isValidApiKey(apiKey: string | null): boolean {
-    // TODO: Replace with real validation logic
-    const validKeys = [process.env.VALID_API_KEY]
-    return !!apiKey && validKeys.includes(apiKey)
-}
-
-function getApiKeyFromHeader(req: NextRequest): string | null {
-    const auth = req.headers.get('authorization') || req.headers.get('Authorization')
-    if (!auth || !auth.startsWith('Bearer ')) return null
-    return auth.slice(7).trim()
-}
-
 // export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -199,6 +187,15 @@ export async function POST(req: NextRequest) {
                                     properties: { id: { type: 'string' } },
                                     required: ['id']
                                 }
+                            },
+                            {
+                                name: 'artifacts/search',
+                                description: 'Search for artifacts by query string in fileName or description',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: { query: { type: 'string' } },
+                                    required: ['query']
+                                }
                             }
                         ]
                     }
@@ -352,6 +349,52 @@ export async function POST(req: NextRequest) {
                             jsonrpc: '2.0',
                             id: rpc.id,
                             error: { code: -32000, message: 'Failed to get artifact metadata', data: String(err) }
+                        })
+                    }
+                    break
+                }
+                if (rpc.params?.name === 'artifacts/search') {
+                    const parsed = SearchParams.safeParse(rpc.params.arguments)
+                    if (!parsed.success) {
+                        console.warn('[SSE] Invalid params for search', parsed.error.issues)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: {
+                                code: -32602,
+                                message: 'Invalid params',
+                                data: parsed.error.issues
+                            }
+                        })
+                        break
+                    }
+                    try {
+                        const db = getFirestore()
+                        const queryStr = parsed.data.query.toLowerCase()
+                        const snapshot = await db.collection(FILES_COLLECTION).orderBy('uploadedAt', 'desc').limit(100).get()
+                        const artifacts = snapshot.docs
+                            .map(doc => ({ id: doc.id, ...(doc.data() as { fileName?: string; description?: string }) }))
+                            .filter(a =>
+                                (a.fileName?.toLowerCase().includes(queryStr)) ||
+                                (a.description?.toLowerCase().includes(queryStr))
+                            )
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            result: {
+                                artifacts,
+                                content: [{
+                                    type: 'text',
+                                    text: `IDs: ${artifacts.map(a => a.id).join(', ')}`
+                                }]
+                            }
+                        })
+                    } catch (err) {
+                        console.error('[SSE] Failed to search artifacts', err)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: { code: -32000, message: 'Failed to search artifacts', data: String(err) }
                         })
                     }
                     break
