@@ -463,3 +463,93 @@ export async function findUserByApiKey(apiKey: string): Promise<ApiKeyRecord | n
     await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
     return record;
 }
+
+const API_KEY_USAGE_COLLECTION = 'apiKeyUsage';
+const API_KEY_TOOL_CALL_LIMIT = 1000;
+
+/**
+ * Increment the monthly tool usage for an API key. Returns the new count and remaining quota.
+ */
+export async function incrementApiKeyToolUsage(apiKeyId: string): Promise<{ count: number, remaining: number }> {
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`; // e.g. 202505
+    const docId = `${apiKeyId}_${yearMonth}`;
+    const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
+    const res = await docRef.set({
+        apiKeyId,
+        yearMonth,
+        count: FieldValue.increment(1),
+        updatedAt: new Date(),
+    }, { merge: true });
+    // Read the updated count
+    const doc = await docRef.get();
+    const count = doc.data()?.count || 0;
+    return { count, remaining: Math.max(0, API_KEY_TOOL_CALL_LIMIT - count) };
+}
+
+/**
+ * Get the current monthly tool usage for an API key.
+ */
+export async function getApiKeyToolUsage(apiKeyId: string): Promise<{ count: number, remaining: number }> {
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const docId = `${apiKeyId}_${yearMonth}`;
+    const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
+    const doc = await docRef.get();
+    const count = doc.exists ? (doc.data()?.count || 0) : 0;
+    return { count, remaining: Math.max(0, API_KEY_TOOL_CALL_LIMIT - count) };
+}
+
+const USER_USAGE_COLLECTION = 'userUsage';
+const USER_TOOL_CALL_LIMIT = 1000;
+
+/**
+ * Increment the monthly tool usage for a user. Returns the new count and remaining quota.
+ */
+export async function incrementUserToolUsage(userId: string): Promise<{ count: number, remaining: number }> {
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const docId = `${userId}_${yearMonth}`;
+    const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
+    await docRef.set({
+        userId,
+        yearMonth,
+        count: FieldValue.increment(1),
+        updatedAt: new Date(),
+    }, { merge: true });
+    const doc = await docRef.get();
+    const count = doc.data()?.count || 0;
+    return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
+}
+
+/**
+ * Get the current monthly tool usage for a user.
+ */
+export async function getUserToolUsage(userId: string): Promise<{ count: number, remaining: number }> {
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const docId = `${userId}_${yearMonth}`;
+    const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
+    const doc = await docRef.get();
+    const count = doc.exists ? (doc.data()?.count || 0) : 0;
+    return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
+}
+
+/**
+ * Get total storage used by a user (sum of all file sizes in bytes)
+ */
+export async function getUserStorageUsage(userId: string): Promise<{ used: number, limit: number, remaining: number }> {
+    const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
+    try {
+        const files = await getUserFiles(userId);
+        const used = files.reduce((sum, file) => sum + (file.size || 0), 0);
+        return {
+            used,
+            limit: STORAGE_LIMIT,
+            remaining: Math.max(0, STORAGE_LIMIT - used)
+        };
+    } catch (error) {
+        console.error(`Error calculating storage usage for user ${userId}:`, error);
+        return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
+    }
+}

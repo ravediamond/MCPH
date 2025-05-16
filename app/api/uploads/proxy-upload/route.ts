@@ -15,6 +15,11 @@ export async function POST(req: NextRequest) {
             }, { status: 400 });
         }
 
+        // Enforce 50MB file size limit
+        if (file.size > 50 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File is too large. Maximum size is 50MB.' }, { status: 400 });
+        }
+
         // Extract the path from the signed URL
         // The URL format is like https://storage.googleapis.com/BUCKET_NAME/PATH?QUERY_PARAMS
         const url = new URL(uploadUrl);

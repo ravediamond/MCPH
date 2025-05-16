@@ -68,6 +68,15 @@ export default function ArtifactPage() {
     const [showPreview, setShowPreview] = useState(false);
     const [isMermaidDiagram, setIsMermaidDiagram] = useState(false);
     const [accessStats, setAccessStats] = useState({ today: 0, week: 0, month: 0 });
+    const [showResetExpiry, setShowResetExpiry] = useState(false);
+    const [newExpiryDate, setNewExpiryDate] = useState<string>("");
+    const [resetExpiryLoading, setResetExpiryLoading] = useState(false);
+    const [resetExpiryError, setResetExpiryError] = useState<string | null>(null);
+    const [resetExpirySuccess, setResetExpirySuccess] = useState<string | null>(null);
+    const [expiryUnit, setExpiryUnit] = useState<'days' | 'hours'>('days');
+    const [expiryAmount, setExpiryAmount] = useState<number>(1);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     // Memoized helpers
     const isTextFile = useCallback((contentType: string) => {
@@ -257,6 +266,13 @@ export default function ArtifactPage() {
         }
     };
 
+    // Compute max expiry date string (29 days from today)
+    const maxExpiryDate = (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 29);
+        return d.toISOString().split('T')[0];
+    })();
+
     // Format bytes to readable size
     const formatBytes = (bytes: number): string => {
         if (bytes === 0) return '0 B';
@@ -283,6 +299,70 @@ export default function ArtifactPage() {
                 setLinkCopied(true);
                 setTimeout(() => setLinkCopied(false), 2000);
             });
+    };
+
+    // Handler to reset expiry
+    const handleResetExpiry = async () => {
+        setResetExpiryLoading(true);
+        setResetExpiryError(null);
+        setResetExpirySuccess(null);
+        try {
+            let durationMs = 0;
+            if (expiryUnit === 'days') {
+                durationMs = expiryAmount * 24 * 60 * 60 * 1000;
+            } else {
+                durationMs = expiryAmount * 60 * 60 * 1000;
+            }
+            // Max 29 days
+            const maxMs = 29 * 24 * 60 * 60 * 1000;
+            if (durationMs > maxMs) {
+                setResetExpiryError('Expiry cannot be more than 29 days.');
+                setResetExpiryLoading(false);
+                return;
+            }
+            if (durationMs < 60 * 60 * 1000) {
+                setResetExpiryError('Expiry must be at least 1 hour.');
+                setResetExpiryLoading(false);
+                return;
+            }
+            const pickedDate = new Date(Date.now() + durationMs);
+            const response = await fetch(`/api/files/${fileId}/expiry`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expiresAt: pickedDate.toISOString() })
+            });
+            if (!response.ok) throw new Error('Failed to update expiry');
+            setResetExpirySuccess('Expiry updated');
+            setShowResetExpiry(false);
+            setExpiryAmount(1);
+            // Refresh file info
+            const refreshed = await fetch(`/api/files/${fileId}`);
+            if (refreshed.ok) {
+                const data = await refreshed.json();
+                setFileInfo(data);
+                if (data.expiresAt) updateTimeRemaining(data.expiresAt);
+            }
+        } catch (err: any) {
+            setResetExpiryError(err.message || 'Failed to update expiry');
+        } finally {
+            setResetExpiryLoading(false);
+            setTimeout(() => setResetExpirySuccess(null), 2000);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
+        setDeleteLoading(true);
+        setDeleteError(null);
+        try {
+            const response = await fetch(`/api/files/${fileId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Failed to delete file');
+            window.location.href = '/';
+        } catch (err: any) {
+            setDeleteError(err.message || 'Failed to delete file');
+        } finally {
+            setDeleteLoading(false);
+        }
     };
 
     // Get file type icon
@@ -530,7 +610,64 @@ export default function ArtifactPage() {
                                     <FaEye className="mr-1" /> {showPreview ? "Hide Preview" : "View Content"}
                                 </button>
                             )}
+                            <button
+                                onClick={() => setShowResetExpiry(true)}
+                                className="flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 border border-blue-700 font-semibold shadow transition-colors"
+                                title="Reset Expiry"
+                            >
+                                <FaClock className="mr-1" /> Reset Expiry
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleteLoading}
+                                className="flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 border border-red-700 font-semibold shadow transition-colors"
+                                title="Delete File"
+                            >
+                                {deleteLoading ? 'Deleting...' : (<><FaFile className="mr-1" /> Delete</>)}
+                            </button>
+                            {deleteError && <div className="text-red-600 mt-2 text-sm">{deleteError}</div>}
                         </div>
+                        {/* Reset Expiry Modal/Inline */}
+                        {showResetExpiry && (
+                            <div className="mt-4 p-6 border border-gray-200 rounded-lg bg-white shadow-lg max-w-md">
+                                <div className="mb-3 font-semibold text-gray-800 text-base">Set new expiry duration (max 29 days):</div>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <input
+                                        type="number"
+                                        min={expiryUnit === 'days' ? 1 : 1}
+                                        max={expiryUnit === 'days' ? 29 : 696}
+                                        value={expiryAmount}
+                                        onChange={e => setExpiryAmount(Number(e.target.value))}
+                                        className="border border-gray-300 px-2 py-1 rounded w-20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                    />
+                                    <select
+                                        value={expiryUnit}
+                                        onChange={e => setExpiryUnit(e.target.value as 'days' | 'hours')}
+                                        className="border border-gray-300 px-2 py-1 rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                                    >
+                                        <option value="days">days</option>
+                                        <option value="hours">hours</option>
+                                    </select>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleResetExpiry}
+                                        disabled={resetExpiryLoading || !expiryAmount}
+                                        className="px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-semibold shadow border border-blue-700 transition-colors"
+                                    >
+                                        {resetExpiryLoading ? 'Updating...' : 'Update Expiry'}
+                                    </button>
+                                    <button
+                                        onClick={() => { setShowResetExpiry(false); setResetExpiryError(null); setExpiryAmount(1); setExpiryUnit('days'); }}
+                                        className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                                {resetExpiryError && <div className="text-red-600 mt-3 text-sm">{resetExpiryError}</div>}
+                                {resetExpirySuccess && <div className="text-green-600 mt-3 text-sm">{resetExpirySuccess}</div>}
+                            </div>
+                        )}
                     </Card.Body>
                 </Card>
 
