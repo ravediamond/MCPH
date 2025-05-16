@@ -36,20 +36,3 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ user
     if (!ok) return NextResponse.json({ error: 'Not found or forbidden' }, { status: 404 });
     return NextResponse.json({ success: true });
 }
-
-// New endpoint: GET /api/user/[userId]/quota
-export async function quotaGET(req: NextRequest, context: { params: Promise<{ userId: string }> }) {
-    const { userId } = await context.params;
-    // You may want to add authentication here
-    const apiKeys = await listApiKeys(userId);
-    const quotas = await Promise.all(apiKeys.map(async (key) => {
-        const usage = await getApiKeyToolUsage(key.id);
-        return {
-            keyId: key.id,
-            name: key.name,
-            count: usage.count,
-            remaining: usage.remaining,
-        };
-    }));
-    return NextResponse.json({ quotas });
-}

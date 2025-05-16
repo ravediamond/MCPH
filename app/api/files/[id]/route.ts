@@ -61,11 +61,11 @@ export async function GET(
  */
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
     try {
-        const fileId = params.id;
-        const deleted = await deleteFile(fileId);
+        const deleted = await deleteFile(id);
         if (!deleted) {
             return NextResponse.json({ error: 'File not found or could not be deleted' }, { status: 404 });
         }
