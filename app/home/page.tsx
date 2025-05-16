@@ -27,6 +27,8 @@ export default function HomePage() {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [fileToDelete, setFileToDelete] = useState<string | null>(null);
     const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+    const [userQuota, setUserQuota] = useState<{ count: number; remaining: number } | null>(null);
+    const [quotaLoading, setQuotaLoading] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -65,6 +67,19 @@ export default function HomePage() {
         } else {
             setFiles([]);
             setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            setQuotaLoading(true);
+            fetch(`/api/user/${user.uid}/quota`)
+                .then(res => res.json())
+                .then(data => setUserQuota(data.usage || null))
+                .catch(() => setUserQuota(null))
+                .finally(() => setQuotaLoading(false));
+        } else {
+            setUserQuota(null);
         }
     }, [user]);
 
@@ -196,6 +211,21 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-gray-50 p-4">
             <div className="max-w-6xl mx-auto">
+                {/* MCP API Quota Info */}
+                {user && (
+                    <div className="mb-4">
+                        <h2 className="text-lg font-semibold mb-2 flex items-center"><FaKey className="mr-2" />API Usage Quota</h2>
+                        {quotaLoading ? (
+                            <div className="text-gray-500 text-sm">Loading quota...</div>
+                        ) : userQuota ? (
+                            <div className="text-sm text-gray-700">
+                                Remaining MCP calls this month: <span className={userQuota.remaining === 0 ? 'text-red-600 font-semibold' : 'font-semibold'}>{userQuota.remaining}</span><span className="ml-2 text-gray-400">/ 1000</span>
+                            </div>
+                        ) : (
+                            <div className="text-gray-500 text-sm">No quota information found.</div>
+                        )}
+                    </div>
+                )}
                 {/* Header with search */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                     <h1 className="text-2xl font-medium text-gray-800 mb-2 md:mb-0">My Files</h1>

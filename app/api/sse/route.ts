@@ -5,6 +5,8 @@ import { getFileMetadata } from '@/services/firebaseService'
 import { getFirestore } from 'firebase-admin/firestore'
 import { FILES_COLLECTION } from '@/services/firebaseService'
 import { getSignedDownloadUrl, getFileContent } from '@/services/storageService'
+import { incrementApiKeyToolUsage, incrementUserToolUsage } from '@/services/firebaseService'
+import type { ApiKeyRecord } from '@/services/firebaseService'
 
 // export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
@@ -42,7 +44,7 @@ const UploadArtifactParams = z.object({
 export async function GET(req: NextRequest) {
     console.log('SSE GET called');
     try {
-        let apiKeyRecord
+        let apiKeyRecord: ApiKeyRecord
         try {
             apiKeyRecord = await requireApiKeyAuth(req)
         } catch (err) {
@@ -102,7 +104,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     console.log('SSE POST called');
     try {
-        let apiKeyRecord
+        let apiKeyRecord: ApiKeyRecord
         try {
             apiKeyRecord = await requireApiKeyAuth(req)
         } catch (err) {
@@ -148,6 +150,24 @@ export async function POST(req: NextRequest) {
             session.nextEventId++
         }
 
+        // Rate limit enforcement for tools/list and tools/call
+        async function enforceRateLimit() {
+            const usage = await incrementUserToolUsage(apiKeyRecord.userId)
+            if (usage.count > 1000) {
+                send({
+                    jsonrpc: '2.0',
+                    id: rpc.id,
+                    error: {
+                        code: 42901,
+                        message: 'Monthly tool call quota exceeded (1000/month per account).',
+                        data: { count: usage.count, remaining: 0 }
+                    }
+                })
+                return false
+            }
+            return true
+        }
+
         // Dispatch JSON-RPC methods
         switch (rpc.method) {
             case 'initialize':
@@ -169,6 +189,7 @@ export async function POST(req: NextRequest) {
                 })
                 break
             case 'tools/list':
+                if (!(await enforceRateLimit())) break
                 console.log('[SSE] tools/list called')
                 send({
                     jsonrpc: '2.0',
@@ -231,6 +252,7 @@ export async function POST(req: NextRequest) {
                 break
 
             case 'tools/call':
+                if (!(await enforceRateLimit())) break
                 console.log(`[SSE] tools/call: ${rpc.params?.name}`, rpc.params?.arguments)
                 if (rpc.params?.name === 'artifacts/list') {
                     // No params needed
