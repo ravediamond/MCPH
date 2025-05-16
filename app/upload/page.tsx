@@ -21,9 +21,9 @@ export default function UploadPage() {
                         <FaArrowLeft className="mr-2" /> Back to Home
                     </Link>
 
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Upload a File</h1>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Upload an Artifact</h1>
                     <p className="text-gray-600">
-                        Share files securely with automatic expiration. Maximum file size is 500MB.
+                        Share artifacts securely with automatic expiration. Maximum artifact size is 500MB.
                     </p>
                 </div>
 
@@ -39,16 +39,16 @@ export default function UploadPage() {
                                     console.error('Upload error:', error);
                                 }}
                             />
-                            {/* File type information */}
+                            {/* Artifact type information */}
                             <div className="mt-8">
-                                <h2 className="text-lg font-semibold text-gray-800 mb-2">About File Types</h2>
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">About Artifact Types</h2>
                                 <ul className="list-disc pl-5 text-gray-700 text-sm space-y-2">
-                                    <li><b>Data (CSV, TSV):</b> Tabular data files, visualized as tables or charts.</li>
-                                    <li><b>Markdown:</b> .md files, rendered as formatted text with headings, lists, and code blocks.</li>
-                                    <li><b>JSON:</b> .json files, shown as formatted code or parsed data.</li>
-                                    <li><b>Diagram (Mermaid):</b> .mmd or .mermaid files, rendered as diagrams using Mermaid syntax.</li>
+                                    <li><b>Data (CSV, TSV):</b> Tabular artifact files, visualized as tables or charts.</li>
+                                    <li><b>Markdown:</b> .md artifacts, rendered as formatted text with headings, lists, and code blocks.</li>
+                                    <li><b>JSON:</b> .json artifacts, shown as formatted code or parsed data.</li>
+                                    <li><b>Diagram (Mermaid):</b> .mmd or .mermaid artifacts, rendered as diagrams using Mermaid syntax.</li>
                                     <li><b>Image:</b> Common image formats (PNG, JPG, GIF, SVG), displayed as images.</li>
-                                    <li><b>Generic File:</b> Any binary file that cannot be streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not previewed and must be downloaded to view.</li>
+                                    <li><b>Generic Artifact:</b> Any binary artifact that cannot be streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not previewed and must be downloaded to view.</li>
                                 </ul>
                             </div>
                         </div>
@@ -62,19 +62,19 @@ export default function UploadPage() {
                                 </li>
                                 <li className="flex items-start">
                                     <span className="text-primary-500 font-bold mr-2">•</span>
-                                    <span>Add a clear title to help identify your file later</span>
+                                    <span>Add a clear title to help identify your artifact later</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="text-primary-500 font-bold mr-2">•</span>
-                                    <span>The description field can be used to add details about the file contents</span>
+                                    <span>The description field can be used to add details about the artifact contents</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="text-primary-500 font-bold mr-2">•</span>
-                                    <span>Text files are stored in Firestore for optimal performance</span>
+                                    <span>Text artifacts are stored in Firestore for optimal performance</span>
                                 </li>
                                 <li className="flex items-start">
                                     <span className="text-primary-500 font-bold mr-2">•</span>
-                                    <span>Binary files (images, PDFs, etc.) are stored in secure Cloud Storage</span>
+                                    <span>Binary artifacts (images, PDFs, etc.) are stored in secure Cloud Storage</span>
                                 </li>
                             </ul>
                         </div>
@@ -84,7 +84,7 @@ export default function UploadPage() {
                 {/* Extra information */}
                 <div className="mt-8 text-center">
                     <p className="text-sm text-gray-500">
-                        Need to upload multiple files? <Link href="/home" className="text-primary-500 hover:text-primary-600">Sign in</Link> for batch uploads and file management.
+                        Need to upload multiple artifacts? <Link href="/home" className="text-primary-500 hover:text-primary-600">Sign in</Link> for batch uploads and artifact management.
                     </p>
                 </div>
             </div>

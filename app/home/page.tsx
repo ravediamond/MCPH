@@ -208,8 +208,8 @@ export default function HomePage() {
             <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-center">
                 <Card className="max-w-md w-full p-8 text-center">
                     <FaLock className="text-primary-500 text-3xl mx-auto mb-4" />
-                    <h1 className="text-2xl font-medium mb-2">My Files</h1>
-                    <p className="text-gray-600 mb-6">Sign in to access your files</p>
+                    <h1 className="text-2xl font-medium mb-2">My Artifacts</h1>
+                    <p className="text-gray-600 mb-6">Sign in to access your artifacts</p>
                     <button
                         onClick={signInWithGoogle}
                         className="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded transition-colors"
@@ -247,12 +247,12 @@ export default function HomePage() {
                 )}
                 {/* Header with search */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-                    <h1 className="text-2xl font-medium text-gray-800 mb-2 md:mb-0">My Files</h1>
+                    <h1 className="text-2xl font-medium text-gray-800 mb-2 md:mb-0">My Artifacts</h1>
                     <div className="flex items-center w-full md:w-auto">
                         <div className="relative mr-2 flex-grow">
                             <input
                                 type="text"
-                                placeholder="Search files..."
+                                placeholder="Search artifacts..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="py-2 px-4 pl-9 border border-gray-200 rounded w-full"
@@ -300,14 +300,14 @@ export default function HomePage() {
                         <Card className="p-8 text-center">
                             <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
                             <p className="text-gray-500">
-                                {searchQuery ? 'No matching files found' : 'No files uploaded yet'}
+                                {searchQuery ? 'No matching artifacts found' : 'No artifacts uploaded yet'}
                             </p>
                             {!searchQuery && (
                                 <Link
                                     href="/upload"
                                     className="inline-flex items-center mt-4 text-primary-500"
                                 >
-                                    <FaUpload className="mr-1" /> Upload your first file
+                                    <FaUpload className="mr-1" /> Upload your first artifact
                                 </Link>
                             )}
                         </Card>
@@ -398,7 +398,7 @@ export default function HomePage() {
                 {/* Simple file stats */}
                 {filteredFiles.length > 0 && (
                     <div className="mt-4 text-sm text-gray-500 flex justify-between">
-                        <span>Total: {filteredFiles.length} files</span>
+                        <span>Total: {filteredFiles.length} artifacts</span>
                         <span>{formatFileSize(filteredFiles.reduce((sum, file) => sum + file.size, 0))}</span>
                     </div>
                 )}
