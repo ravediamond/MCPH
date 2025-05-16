@@ -32,9 +32,9 @@ const TEXT_FILE_EXTENSIONS = [
     '.text'
 ];
 
-// Available file types that users can select
+// Available artifact types that users can select
 const FILE_TYPES = [
-    { value: 'file', label: 'Generic File' },
+    { value: 'artifact', label: 'Generic Artifact' },
     { value: 'data', label: 'Data' },
     { value: 'image', label: 'Image' },
     { value: 'markdown', label: 'Markdown' },
@@ -43,20 +43,20 @@ const FILE_TYPES = [
 ];
 
 // Type definition update to include title, description and fileType
-type UploadedFile = {
+type UploadedArtifact = {
     id: string;
     fileName: string;
     title: string;
     description?: string;
     contentType: string;
-    fileType: string; // Added fileType field
+    fileType: string; // Artifact type
     size: number;
     downloadUrl: string;
     uploadedAt: string;
 };
 
 interface FileUploadProps {
-    onUploadSuccess?: (data: UploadedFile) => void;
+    onUploadSuccess?: (data: UploadedArtifact) => void;
     onUploadError?: (error: Error | string) => void;
 }
 
@@ -73,11 +73,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
     const [selectedTtlDays, setSelectedTtlDays] = useState<number>(DATA_TTL.DEFAULT_DAYS); // Added state for TTL
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
+    const [uploadedFile, setUploadedFile] = useState<UploadedArtifact | null>(null);
     const [urlCopied, setUrlCopied] = useState(false);
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
-    const [fileType, setFileType] = useState<string>('file'); // Default file type
+    const [fileType, setFileType] = useState<string>('artifact'); // Default artifact type
     // Metadata state
     const [metadataList, setMetadataList] = useState<{ key: string; value: string }[]>([]);
     // Sharing state
@@ -116,14 +116,14 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         const selectedFile = acceptedFiles[0];
 
         if (selectedFile.size > MAX_FILE_SIZE) {
-            toast.error(`File is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`);
+            toast.error(`Artifact is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`);
             return;
         }
 
         setFile(selectedFile);
         setUploadedFile(null);
 
-        // Automatically detect file type based on content type or extension
+        // Automatically detect artifact type based on content type or extension
         if (selectedFile.type.includes('image')) {
             setFileType('image');
         } else if (selectedFile.type.includes('json') || selectedFile.name.endsWith('.json')) {
@@ -136,7 +136,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         } else if (selectedFile.name.endsWith('.diagram') || selectedFile.name.endsWith('.drawio')) {
             setFileType('diagram');
         } else {
-            setFileType('file');
+            setFileType('artifact');
         }
     }, []);
 
@@ -153,17 +153,17 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
         setMetadataList(prev => prev.filter((_, i) => i !== index));
     };
 
-    // Handle file upload using the appropriate endpoint based on file type
+    // Handle artifact upload using the appropriate endpoint based on artifact type
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!file) {
-            toast.error('Please select a file to upload.');
+            toast.error('Please select an artifact to upload.');
             return;
         }
 
         if (!title.trim()) {
-            toast.error('Please enter a title for your file.');
+            toast.error('Please enter a title for your artifact.');
             return;
         }
 
@@ -191,9 +191,9 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 }
             }
 
-            // Select endpoint based on file type
+            // Select endpoint based on artifact type
             if (shouldUseFirestore(file)) {
-                // For text files, use the text-content endpoint
+                // For text artifacts, use the text-content endpoint
                 const content = await file.text();
 
                 // Upload to text content endpoint
@@ -205,7 +205,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                         'x-ttl-days': selectedTtlDays.toString(), // Pass selected TTL
                         'x-title': title, // Add title header
                         'x-description': description, // Add description header
-                        'x-file-type': fileType, // Add file type header
+                        'x-file-type': fileType, // Add artifact type header
                         'x-shared': isShared ? 'true' : 'false', // New: sharing status
                         ...(password && isShared ? { 'x-password': password } : {}), // New: password if set
                         ...(user && { 'x-user-id': user.uid }), // Add user ID if logged in
@@ -214,13 +214,13 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     body: content,
                 });
             } else {
-                // For other files, use the direct-upload endpoint
+                // For other artifacts, use the direct-upload endpoint
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('ttlDays', selectedTtlDays.toString()); // Pass selected TTL
                 formData.append('title', title); // Add title
                 formData.append('description', description); // Add description
-                formData.append('fileType', fileType); // Add file type
+                formData.append('fileType', fileType); // Add artifact type
                 formData.append('isShared', isShared ? 'true' : 'false'); // New: sharing status
                 if (password && isShared) {
                     formData.append('password', password);
@@ -269,7 +269,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                 title: title,
                 description: description,
                 contentType: file.type || 'application/octet-stream',
-                fileType: fileType, // Add file type
+                fileType: fileType, // Add artifact type
                 size: file.size,
                 downloadUrl: artifactUrl,
                 uploadedAt: new Date().toISOString()
@@ -284,7 +284,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
             setTitle('');
             setDescription('');
 
-            toast.success('File uploaded successfully!');
+            toast.success('Artifact uploaded successfully!');
 
             // Call the onUploadSuccess callback if provided
             if (onUploadSuccess) {
@@ -294,7 +294,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                     title: title,
                     description: description,
                     contentType: file.type || 'application/octet-stream',
-                    fileType: fileType, // Add file type
+                    fileType: fileType, // Add artifact type
                     size: file.size,
                     downloadUrl: artifactUrl,
                     uploadedAt: new Date().toISOString()
@@ -404,25 +404,25 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     href={uploadedFile.downloadUrl}
                                     className="inline-block px-4 py-2 bg-primary-500 hover:bg-primary-600 text-center text-white rounded-md shadow transition-colors"
                                 >
-                                    Download File
+                                    Download Artifact
                                 </a>
                                 <button
                                     onClick={() => setUploadedFile(null)}
                                     className="inline-block px-4 py-2 bg-gray-200 hover:bg-gray-300 text-center text-gray-800 rounded-md shadow transition-colors"
                                 >
-                                    Upload Another File
+                                    Upload Another Artifact
                                 </button>
                             </div>
                         </div>
 
                         <p className="text-sm text-gray-500 text-center mt-4">
-                            Share this link to allow others to download the file.
+                            Share this link to allow others to download the artifact.
                         </p>
                     </div>
                 </div>
             ) : (
                 <form ref={formRef} onSubmit={handleUpload} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Upload a File</h2>
+                    <h2 className="text-xl font-semibold mb-4 text-gray-800">Upload an Artifact</h2>
 
                     <div {...getRootProps({
                         className: `border-2 border-dashed ${isDragActive ? 'border-primary-400 bg-beige-100' : 'border-gray-300'} rounded-lg p-8 text-center cursor-pointer hover:bg-beige-50 transition-colors mb-4`
@@ -433,11 +433,11 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             <FaUpload className="mx-auto text-gray-400 text-3xl" />
 
                             {isDragActive ? (
-                                <p className="text-primary-500">Drop the file here...</p>
+                                <p className="text-primary-500">Drop the artifact here...</p>
                             ) : (
                                 <>
-                                    <p className="text-gray-600">Drag & drop a file here, or click to select</p>
-                                    <p className="text-xs text-gray-500">Maximum file size: 50MB</p>
+                                    <p className="text-gray-600">Drag & drop an artifact here, or click to select</p>
+                                    <p className="text-xs text-gray-500">Maximum artifact size: 50MB</p>
                                 </>
                             )}
                         </div>
@@ -451,7 +451,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 <p className="text-sm text-gray-500">
                                     {formatBytes(file.size)} • {file.type || 'application/octet-stream'}
                                     {shouldUseFirestore(file) &&
-                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Text file</span>
+                                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Text artifact</span>
                                     }
                                 </p>
                             </div>
@@ -459,7 +459,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 type="button"
                                 className="ml-auto text-gray-400 hover:text-red-500"
                                 onClick={() => setFile(null)}
-                                aria-label="Remove file"
+                                aria-label="Remove artifact"
                             >
                                 <FaTimes />
                             </button>
@@ -468,10 +468,10 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
 
                     {file && (
                         <>
-                            {/* File Type Selector - Added Here */}
+                            {/* Artifact Type Selector - Added Here */}
                             <div className="mb-4">
                                 <label htmlFor="fileTypeSelect" className="block text-sm font-medium text-gray-700 mb-1">
-                                    File Type:
+                                    Artifact Type:
                                 </label>
                                 <select
                                     id="fileTypeSelect"
@@ -510,7 +510,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     ))}
                                 </select>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    The file will be automatically deleted after this period.
+                                    The artifact will be automatically deleted after this period.
                                 </p>
                             </div>
 
@@ -524,7 +524,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Enter a title for your file"
+                                    placeholder="Enter a title for your artifact"
                                     className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                     required
                                     disabled={isUploading}
@@ -539,7 +539,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     id="fileDescription"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Enter a description for your file"
+                                    placeholder="Enter a description for your artifact"
                                     className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                                     rows={3}
                                     disabled={isUploading}
@@ -604,7 +604,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                         className="mr-2"
                                     />
                                     <label htmlFor="isShared" className="text-sm text-gray-700">
-                                        Make this file shared (anyone with the link can download)
+                                        Make this artifact shared (anyone with the link can download)
                                     </label>
                                 </div>
                                 <div className="mt-2">
@@ -617,7 +617,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                         className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        If set, users must enter this password to download the file.
+                                        If set, users must enter this password to download the artifact.
                                     </p>
                                 </div>
                             </div>
@@ -650,12 +650,12 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                 Uploading...
                             </>
                         ) : (
-                            'Upload File'
+                            'Upload Artifact'
                         )}
                     </button>
 
                     <p className="text-xs text-gray-500 text-center mt-4">
-                        By uploading a file, you agree to our Terms of Service and Privacy Policy.
+                        By uploading an artifact, you agree to our Terms of Service and Privacy Policy.
                     </p>
                 </form>
             )}

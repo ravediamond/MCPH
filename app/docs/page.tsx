@@ -45,17 +45,17 @@ export default function DocsPage() {
                             {/* Upload */}
                             <div className="mb-6">
                                 <div className="flex justify-between items-center mb-2">
-                                    <h3 className="font-medium text-gray-800">Upload File</h3>
+                                    <h3 className="font-medium text-gray-800">Upload Artifact</h3>
                                     <code className="text-xs bg-gray-100 px-2 py-1 rounded text-primary-600">POST /api/uploads</code>
                                 </div>
                                 <p className="text-gray-600 text-sm mb-3">
-                                    Upload a file and receive a file ID and download URL.
+                                    Upload an artifact and receive an artifact ID and download URL.
                                 </p>
                                 <div className="bg-gray-50 p-3 rounded text-sm mb-3">
                                     <p className="font-medium mb-1">Request:</p>
                                     <p className="text-gray-600 mb-1">Content-Type: <code>multipart/form-data</code></p>
                                     <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                                        <li><code>file</code> - The file to upload (required)</li>
+                                        <li><code>artifact</code> - The artifact to upload (required)</li>
                                         <li><code>ttl</code> - Time-to-live in hours (optional)</li>
                                     </ul>
                                 </div>
@@ -63,9 +63,9 @@ export default function DocsPage() {
                                 <div className="bg-gray-50 p-3 rounded text-sm">
                                     <p className="font-medium mb-1">Response:</p>
                                     <pre className="text-xs text-gray-600 overflow-x-auto">{`{
-  "id": "string",         // Unique file ID
-  "fileName": "string",   // Original filename
-  "downloadUrl": "string" // URL to download the file
+  "id": "string",         // Unique artifact ID
+  "fileName": "string",   // Original artifact filename
+  "downloadUrl": "string" // URL to download the artifact
 }`}</pre>
                                 </div>
                             </div>
@@ -73,17 +73,17 @@ export default function DocsPage() {
                             {/* Download */}
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <h3 className="font-medium text-gray-800">Download File</h3>
+                                    <h3 className="font-medium text-gray-800">Download Artifact</h3>
                                     <code className="text-xs bg-gray-100 px-2 py-1 rounded text-primary-600">GET /api/uploads/{'{id}'}</code>
                                 </div>
                                 <p className="text-gray-600 text-sm mb-3">
-                                    Download a file by its ID or get file metadata.
+                                    Download an artifact by its ID or get artifact metadata.
                                 </p>
                                 <div className="bg-gray-50 p-3 rounded text-sm">
                                     <p className="font-medium mb-1">Parameters:</p>
                                     <ul className="list-disc pl-5 text-gray-600">
-                                        <li><code>id</code> - File ID in URL path (required)</li>
-                                        <li><code>info=true</code> - Get metadata instead of file (optional)</li>
+                                        <li><code>id</code> - Artifact ID in URL path (required)</li>
+                                        <li><code>info=true</code> - Get metadata instead of artifact (optional)</li>
                                     </ul>
                                 </div>
                             </div>

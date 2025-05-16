@@ -9,10 +9,10 @@ export default function Home() {
             <section className="py-12 px-4">
                 <div className="max-w-4xl mx-auto text-center">
                     <h1 className="text-3xl font-bold mb-3 text-gray-800">
-                        Secure, Simple File Sharing
+                        Secure, Simple Artifact Sharing
                     </h1>
                     <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                        Upload and share files that automatically expire. No account required.
+                        Upload and share artifacts that automatically expire. No account required.
                     </p>
 
                     {/* Upload Button */}
@@ -69,7 +69,7 @@ export default function Home() {
                     <div className="flex flex-wrap justify-center mb-6">
                         <div className="flex items-center mx-4 mb-4">
                             <span className="bg-primary-100 text-primary-500 rounded-full h-8 w-8 flex items-center justify-center mr-2">1</span>
-                            <span className="text-gray-700">Upload your file</span>
+                            <span className="text-gray-700">Upload your artifact</span>
                         </div>
                         <div className="flex items-center mx-4 mb-4">
                             <span className="bg-primary-100 text-primary-500 rounded-full h-8 w-8 flex items-center justify-center mr-2">2</span>
@@ -77,7 +77,7 @@ export default function Home() {
                         </div>
                         <div className="flex items-center mx-4 mb-4">
                             <span className="bg-primary-100 text-primary-500 rounded-full h-8 w-8 flex items-center justify-center mr-2">3</span>
-                            <span className="text-gray-700">Files auto-expire after set time</span>
+                            <span className="text-gray-700">Artifacts auto-expire after set time</span>
                         </div>
                     </div>
 
@@ -90,7 +90,7 @@ export default function Home() {
             <section className="py-4 px-4 border-t border-gray-200 text-center">
                 <div className="max-w-4xl mx-auto">
                     <p className="text-gray-500 text-xs">
-                        Files stored securely. Automatically purged after expiration. No registration required.
+                        Artifacts stored securely. Automatically purged after expiration. No registration required.
                     </p>
                 </div>
             </section>

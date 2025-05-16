@@ -69,20 +69,20 @@ A file sharing platform built with Next.js, deployed on Vercel, using Google Clo
 
 ## Features
 
-- File upload/download
+- Artifact upload/download
 - Server-sent events (SSE) for real-time notifications
-- Signed URLs for secure file sharing
-- API routes for file operations
-- Automatic cleanup of expired files
+- Signed URLs for secure artifact sharing
+- API routes for artifact operations
+- Automatic cleanup of expired artifacts
 
 ## API Endpoints
 
-- `POST /api/uploads`: Upload a file
-- `GET /api/uploads/:id`: Download a file
-- `DELETE /api/uploads/:id`: Delete a file
-- `GET /api/uploads/:id/signed-url`: Generate a signed URL for a file
+- `POST /api/uploads`: Upload an artifact
+- `GET /api/uploads/:id`: Download an artifact
+- `DELETE /api/uploads/:id`: Delete an artifact
+- `GET /api/uploads/:id/signed-url`: Generate a signed URL for an artifact
 - `GET /api/sse`: Server-sent events endpoint
-- `POST /api/maintenance/cleanup`: Cleanup expired files (requires auth)
+- `POST /api/maintenance/cleanup`: Cleanup expired artifacts (requires auth)
 
 ## Environment Variables
 
