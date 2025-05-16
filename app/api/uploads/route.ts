@@ -26,6 +26,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
+        // Enforce 50MB file size limit
+        if (file.size > 50 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File is too large. Maximum size is 50MB.' }, { status: 400 });
+        }
+
         // Get TTL if provided
         const ttl = formData.get('ttl');
         const ttlHours = ttl ? parseInt(ttl.toString(), 10) : undefined;

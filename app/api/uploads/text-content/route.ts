@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
         // Convert content to Buffer for storage in GCP
         const buffer = Buffer.from(content);
 
+        // Enforce 50MB file size limit
+        if (buffer.length > 50 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File is too large. Maximum size is 50MB.' }, { status: 400 });
+        }
+
         // Store the text content in GCP Storage bucket
         const fileData = await uploadFile(buffer, fileName, contentType, ttlDays, title, description ?? undefined, fileType);
 

@@ -7,8 +7,8 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import { DATA_TTL } from '../app/config/constants'; // Import DATA_TTL
 
-// Maximum file size in bytes (500MB)
-const MAX_FILE_SIZE = 500 * 1024 * 1024;
+// Maximum file size in bytes (50MB)
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 // API base URL is now relative since we're using Next.js API routes on Vercel
 const API_BASE_URL = '';
@@ -437,7 +437,7 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                             ) : (
                                 <>
                                     <p className="text-gray-600">Drag & drop a file here, or click to select</p>
-                                    <p className="text-xs text-gray-500">Maximum file size: 500MB</p>
+                                    <p className="text-xs text-gray-500">Maximum file size: 50MB</p>
                                 </>
                             )}
                         </div>

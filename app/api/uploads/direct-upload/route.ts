@@ -16,6 +16,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
+        // Enforce 50MB file size limit
+        if (file.size > 50 * 1024 * 1024) {
+            return NextResponse.json({ error: 'File is too large. Maximum size is 50MB.' }, { status: 400 });
+        }
+
         // Get additional form fields
         const ttlDaysParam = formData.get('ttlDays') as string | null;
         const ttlDays = ttlDaysParam ? parseInt(ttlDaysParam, 10) : DATA_TTL.DEFAULT_DAYS;
