@@ -53,10 +53,28 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Convert file to buffer
-        const buffer = Buffer.from(await file.arrayBuffer());
+        // Get fileType if provided
+        const fileType = formData.get('fileType')?.toString();
 
-        // Upload file
+        // Decide upload method based on fileType
+        if (fileType === 'file') {
+            // Use presigned URL flow for generic/binary files
+            const { generateUploadUrl } = await import('@/services/storageService');
+            const { url, fileId, gcsPath } = await generateUploadUrl(
+                file.name,
+                file.type,
+                ttlHours
+            );
+            return NextResponse.json({
+                uploadUrl: url,
+                fileId,
+                gcsPath,
+                message: 'Upload your file using this URL with a PUT request.'
+            }, { status: 201 });
+        }
+
+        // Otherwise, do a normal upload (text, image, etc.)
+        const buffer = Buffer.from(await file.arrayBuffer());
         const fileData = await uploadFile(
             buffer,
             file.name,
@@ -64,7 +82,7 @@ export async function POST(req: NextRequest) {
             ttlHours,
             undefined, // title
             undefined, // description
-            undefined, // fileType
+            fileType, // pass fileType
             metadata // pass metadata
         );
 

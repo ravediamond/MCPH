@@ -25,6 +25,16 @@ const SearchParams = z.object({
 // Zod schemas for tool arguments
 const ListArtifactsParams = z.object({})
 const GetArtifactParams = z.object({ id: z.string(), expiresInSeconds: z.number().int().min(1).max(86400).optional() })
+const UploadArtifactParams = z.object({
+    fileName: z.string(),
+    contentType: z.string(),
+    data: z.string().optional(), // base64-encoded if present
+    ttlDays: z.number().int().min(1).max(365).optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    fileType: z.string().optional(),
+    metadata: z.record(z.string(), z.string()).optional(),
+})
 
 /**
  * Handles incoming SSE connection requests.
@@ -196,7 +206,25 @@ export async function POST(req: NextRequest) {
                                     properties: { query: { type: 'string' } },
                                     required: ['query']
                                 }
-                            }
+                            },
+                            {
+                                name: 'artifacts/upload',
+                                description: 'Upload a new artifact. For binary files, returns a presigned upload URL. For text, uploads directly.',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        fileName: { type: 'string' },
+                                        contentType: { type: 'string' },
+                                        data: { type: 'string', description: 'Base64-encoded file content (for text files)' },
+                                        ttlDays: { type: 'integer', minimum: 1, maximum: 365 },
+                                        title: { type: 'string' },
+                                        description: { type: 'string' },
+                                        fileType: { type: 'string' },
+                                        metadata: { type: 'object', additionalProperties: { type: 'string' } }
+                                    },
+                                    required: ['fileName', 'contentType']
+                                }
+                            },
                         ]
                     }
                 })
@@ -273,8 +301,8 @@ export async function POST(req: NextRequest) {
                         } else {
                             let contentText = ''
                             let contentType = meta.contentType || ''
-                            // If file is generic (binary), return a download link
-                            if (contentType.startsWith('application/') || contentType === 'binary/octet-stream') {
+                            // Use fileType to determine if presigned URL is needed
+                            if (meta.fileType === 'file') { // 'file' means generic/binary
                                 // Clamp expiresInSeconds to [1, 86400], default 300
                                 let expiresInSeconds = 300
                                 if (typeof parsed.data.expiresInSeconds === 'number') {
@@ -400,6 +428,69 @@ export async function POST(req: NextRequest) {
                             jsonrpc: '2.0',
                             id: rpc.id,
                             error: { code: -32000, message: 'Failed to search artifacts', data: String(err) }
+                        })
+                    }
+                    break
+                }
+                if (rpc.params?.name === 'artifacts/upload') {
+                    const parsed = UploadArtifactParams.safeParse(rpc.params.arguments)
+                    if (!parsed.success) {
+                        console.warn('[SSE] Invalid params for artifacts/upload', parsed.error.issues)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: {
+                                code: -32602,
+                                message: 'Invalid params',
+                                data: parsed.error.issues
+                            }
+                        })
+                        break
+                    }
+                    try {
+                        const { fileName, contentType, data, ttlDays, title, description, fileType, metadata } = parsed.data
+                        if (contentType.startsWith('application/') || contentType === 'binary/octet-stream') {
+                            // Binary: return presigned upload URL
+                            const { generateUploadUrl } = await import('@/services/storageService')
+                            const { url, fileId, gcsPath } = await generateUploadUrl(fileName, contentType, ttlDays)
+                            send({
+                                jsonrpc: '2.0',
+                                id: rpc.id,
+                                result: {
+                                    uploadUrl: url,
+                                    fileId,
+                                    gcsPath,
+                                    message: 'Upload your file using this URL with a PUT request.'
+                                }
+                            })
+                        } else {
+                            // Text: upload directly
+                            if (!data) {
+                                send({
+                                    jsonrpc: '2.0',
+                                    id: rpc.id,
+                                    error: { code: -32602, message: 'Missing data for text upload' }
+                                })
+                                break
+                            }
+                            const { uploadFile } = await import('@/services/storageService')
+                            const buffer = Buffer.from(data, 'base64')
+                            const fileMeta = await uploadFile(buffer, fileName, contentType, ttlDays, title, description, fileType, metadata)
+                            send({
+                                jsonrpc: '2.0',
+                                id: rpc.id,
+                                result: {
+                                    artifact: fileMeta,
+                                    message: 'Text artifact uploaded successfully.'
+                                }
+                            })
+                        }
+                    } catch (err) {
+                        console.error('[SSE] Failed to upload artifact', err)
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: { code: -32000, message: 'Failed to upload artifact', data: String(err) }
                         })
                     }
                     break

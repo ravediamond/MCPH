@@ -51,6 +51,7 @@ interface FileMetadata {
     metadata?: Record<string, string>;
     isShared?: boolean;
     password?: string;
+    fileType?: string; // Optional: type of artifact (generic, data, image, etc.)
 }
 
 export default function ArtifactPage() {
