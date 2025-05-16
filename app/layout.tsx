@@ -56,8 +56,20 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
+    // Dynamically set canonical URL based on current path
+    // This works for static export and SSR
+    const canonical =
+        typeof window !== 'undefined'
+            ? `https://mcph.io${window.location.pathname}`
+            : undefined;
+
     return (
         <html lang="en" className={`${inter.variable} ${jetBrainsMono.variable} dark`}>
+            <head>
+                {canonical && (
+                    <link rel="canonical" href={canonical} />
+                )}
+            </head>
             <body className="antialiased text-gray-200 bg-gray-900 min-h-screen">
                 <Toaster
                     position="top-center"
