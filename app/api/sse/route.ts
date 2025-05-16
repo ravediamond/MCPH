@@ -24,7 +24,7 @@ const SearchParams = z.object({
 
 // Zod schemas for tool arguments
 const ListArtifactsParams = z.object({})
-const GetArtifactParams = z.object({ id: z.string() })
+const GetArtifactParams = z.object({ id: z.string(), expiresInSeconds: z.number().int().min(1).max(86400).optional() })
 
 /**
  * Handles incoming SSE connection requests.
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
                                 description: 'Get the raw artifact data for a specific artifact by id',
                                 inputSchema: {
                                     type: 'object',
-                                    properties: { id: { type: 'string' } },
+                                    properties: { id: { type: 'string' }, expiresInSeconds: { type: 'integer', minimum: 1, maximum: 86400 } },
                                     required: ['id']
                                 }
                             },
@@ -275,8 +275,13 @@ export async function POST(req: NextRequest) {
                             let contentType = meta.contentType || ''
                             // If file is generic (binary), return a download link
                             if (contentType.startsWith('application/') || contentType === 'binary/octet-stream') {
-                                const url = await getSignedDownloadUrl(meta.id, meta.fileName)
-                                contentText = `Download link: ${url}`
+                                // Clamp expiresInSeconds to [1, 86400], default 300
+                                let expiresInSeconds = 300
+                                if (typeof parsed.data.expiresInSeconds === 'number') {
+                                    expiresInSeconds = Math.max(1, Math.min(86400, parsed.data.expiresInSeconds))
+                                }
+                                const url = await getSignedDownloadUrl(meta.id, meta.fileName, expiresInSeconds)
+                                contentText = `Download link (valid for ${expiresInSeconds} seconds): ${url}`
                             } else {
                                 // Otherwise, return the file content as text (if possible)
                                 try {
