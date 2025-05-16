@@ -114,12 +114,17 @@ export default function HomePage() {
         }
     };
 
-    // Filter files based on search query
+    // Filter files based on search query and exclude expired files
     const filteredFiles = React.useMemo(() => {
-        if (!searchQuery) return files;
-
+        const now = new Date();
+        // Only include files that are not expired
+        const notExpired = files.filter(file => {
+            if (!file.expiresAt) return true;
+            return new Date(file.expiresAt) > now;
+        });
+        if (!searchQuery) return notExpired;
         const query = searchQuery.toLowerCase();
-        return files.filter(file =>
+        return notExpired.filter(file =>
             file.fileName.toLowerCase().includes(query) ||
             (file.title && file.title.toLowerCase().includes(query))
         );
