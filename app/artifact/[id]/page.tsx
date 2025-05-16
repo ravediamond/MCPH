@@ -51,6 +51,7 @@ interface FileMetadata {
     metadata?: Record<string, string>;
     isShared?: boolean;
     password?: string;
+    fileType?: string; // Optional: type of artifact (generic, data, image, etc.)
 }
 
 export default function ArtifactPage() {
@@ -66,16 +67,9 @@ export default function ArtifactPage() {
     const [timeRemaining, setTimeRemaining] = useState<string>('');
     const [showPreview, setShowPreview] = useState(false);
     const [isMermaidDiagram, setIsMermaidDiagram] = useState(false);
-    const [accessStats, setAccessStats] = useState<{
-        today: number;
-        week: number;
-        month: number;
-    }>({
-        today: 0,
-        week: 0,
-        month: 0
-    });
+    const [accessStats, setAccessStats] = useState({ today: 0, week: 0, month: 0 });
 
+    // Memoized helpers
     const isTextFile = useCallback((contentType: string) => {
         return (
             contentType.includes('text') ||
@@ -88,18 +82,9 @@ export default function ArtifactPage() {
             contentType.includes('xml')
         );
     }, []);
-
-    const isImageFile = useCallback((contentType: string) => {
-        return contentType.includes('image');
-    }, []);
-
-    const isPdfFile = useCallback((contentType: string) => {
-        return contentType.includes('pdf');
-    }, []);
-
-    // Check if content is a Mermaid diagram
+    const isImageFile = useCallback((contentType: string) => contentType.includes('image'), []);
+    const isPdfFile = useCallback((contentType: string) => contentType.includes('pdf'), []);
     const checkIfMermaidDiagram = useCallback((content: string): boolean => {
-        // Common Mermaid diagram starters
         const mermaidPatterns = [
             /^\s*graph\s+(TB|TD|BT|RL|LR)/,
             /^\s*sequenceDiagram/,
@@ -111,47 +96,79 @@ export default function ArtifactPage() {
             /^\s*flowchart/,
             /^\s*journey/
         ];
-
         return mermaidPatterns.some(pattern => pattern.test(content.trim()));
     }, []);
 
-    const fetchFileContent = async () => {
-        if (!fileId) return;
-
-        setContentLoading(true);
-        try {
-            // Use the text-content endpoint for text files
-            const response = await fetch(`/api/uploads/text-content/${fileId}`);
-            if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error('Text content not available for this file');
-                } else {
-                    throw new Error('Failed to load file content');
-                }
-            }
-
-            const content = await response.text();
-            setFileContent(content);
-
-            // Check if the content is a Mermaid diagram
-            const isMermaid = checkIfMermaidDiagram(content);
-            setIsMermaidDiagram(isMermaid);
-
-            // Update file info description to indicate it's a Mermaid diagram if detected
-            if (isMermaid && fileInfo) {
-                setFileInfo(prev => prev ? {
-                    ...prev,
-                    description: (prev.description || '') +
-                        (prev.description ? ' • ' : '') + 'Contains Mermaid diagram'
-                } : null);
-            }
-        } catch (err: any) {
-            console.error('Error loading file content:', err);
+    // Fetch file metadata only when fileId changes
+    useEffect(() => {
+        let timer: NodeJS.Timeout | undefined;
+        async function fetchFileMetadata() {
+            setLoading(true);
+            setError(null);
+            setFileInfo(null);
             setFileContent(null);
-        } finally {
-            setContentLoading(false);
+            setIsMermaidDiagram(false);
+            try {
+                const response = await fetch(`/api/files/${fileId}`);
+                if (!response.ok) {
+                    throw new Error(
+                        response.status === 404
+                            ? 'File not found or has expired'
+                            : 'Failed to fetch file information'
+                    );
+                }
+                const data = await response.json();
+                data.viewCount = (data.viewCount || 0) + 1;
+                setFileInfo(data);
+                if (data.expiresAt) {
+                    updateTimeRemaining(data.expiresAt);
+                    timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
+                }
+                if (!data.accessHistory) {
+                    generateMockAccessStats(data.downloadCount || 0);
+                } else {
+                    calculateAccessStats(data.accessHistory);
+                }
+            } catch (err: any) {
+                setError(err.message || 'An error occurred');
+            } finally {
+                setLoading(false);
+            }
         }
-    };
+        if (fileId) fetchFileMetadata();
+        return () => { if (timer) clearInterval(timer); };
+    }, [fileId]);
+
+    // Fetch file content only when fileInfo is set and is a text/mermaid file
+    useEffect(() => {
+        if (!fileInfo) return;
+        const fileName = fileInfo.fileName.toLowerCase();
+        if (
+            isTextFile(fileInfo.contentType) ||
+            fileName.endsWith('.mmd') ||
+            fileName.endsWith('.mermaid')
+        ) {
+            setContentLoading(true);
+            fetch(`/api/uploads/text-content/${fileInfo.id}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Text content not available for this file');
+                    return res.text();
+                })
+                .then(content => {
+                    setFileContent(content);
+                    const isMermaid = checkIfMermaidDiagram(content);
+                    setIsMermaidDiagram(isMermaid);
+                    if (isMermaid) {
+                        setFileInfo(prev => prev ? {
+                            ...prev,
+                            description: (prev.description || '') + (prev.description ? ' • ' : '') + 'Contains Mermaid diagram'
+                        } : null);
+                    }
+                })
+                .catch(() => setFileContent(null))
+                .finally(() => setContentLoading(false));
+        }
+    }, [fileInfo, isTextFile, checkIfMermaidDiagram]);
 
     // In a real app, this would come from server analytics
     const generateMockAccessStats = (downloadCount: number) => {
@@ -189,57 +206,6 @@ export default function ArtifactPage() {
             });
         }
     };
-
-    useEffect(() => {
-        async function fetchFileMetadata() {
-            try {
-                const response = await fetch(`/api/files/${fileId}`);
-                if (!response.ok) {
-                    throw new Error(
-                        response.status === 404
-                            ? 'File not found or has expired'
-                            : 'Failed to fetch file information'
-                    );
-                }
-
-                const data = await response.json();
-
-                // Track view for stats - in a real app this would be a separate API call
-                data.viewCount = (data.viewCount || 0) + 1;
-
-                setFileInfo(data);
-
-                if (data.expiresAt) {
-                    updateTimeRemaining(data.expiresAt);
-                    const timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
-                    return () => clearInterval(timer);
-                }
-
-                // Generate some mock access stats if none exist
-                if (!data.accessHistory) {
-                    generateMockAccessStats(data.downloadCount || 0);
-                } else {
-                    calculateAccessStats(data.accessHistory);
-                }
-
-                // Load file content if it's a text-based file
-                if (isTextFile(data.contentType) ||
-                    data.fileName.toLowerCase().endsWith('.mmd') ||
-                    data.fileName.toLowerCase().endsWith('.mermaid')) {
-                    fetchFileContent();
-                }
-            } catch (err: any) {
-                console.error('Error fetching file metadata:', err);
-                setError(err.message || 'An error occurred');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (fileId) {
-            fetchFileMetadata();
-        }
-    }, [fileId, isTextFile, fetchFileContent, generateMockAccessStats]);
 
     const calculateAccessStats = (history: { date: string; count: number }[]) => {
         const now = new Date();

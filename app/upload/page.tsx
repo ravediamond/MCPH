@@ -39,6 +39,18 @@ export default function UploadPage() {
                                     console.error('Upload error:', error);
                                 }}
                             />
+                            {/* File type information */}
+                            <div className="mt-8">
+                                <h2 className="text-lg font-semibold text-gray-800 mb-2">About File Types</h2>
+                                <ul className="list-disc pl-5 text-gray-700 text-sm space-y-2">
+                                    <li><b>Data (CSV, TSV):</b> Tabular data files, visualized as tables or charts.</li>
+                                    <li><b>Markdown:</b> .md files, rendered as formatted text with headings, lists, and code blocks.</li>
+                                    <li><b>JSON:</b> .json files, shown as formatted code or parsed data.</li>
+                                    <li><b>Diagram (Mermaid):</b> .mmd or .mermaid files, rendered as diagrams using Mermaid syntax.</li>
+                                    <li><b>Image:</b> Common image formats (PNG, JPG, GIF, SVG), displayed as images.</li>
+                                    <li><b>Generic File:</b> Any binary file that cannot be streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not previewed and must be downloaded to view.</li>
+                                </ul>
+                            </div>
                         </div>
 
                         <div className="bg-beige-100 p-4 rounded-lg">
