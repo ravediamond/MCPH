@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadFile } from '@/services/storageService';
-import { saveFileMetadata, logEvent, incrementMetric } from '@/services/firebaseService';
+import { saveFileMetadata, logEvent, incrementMetric, getUserStorageUsage } from '@/services/firebaseService';
 import { DATA_TTL } from '@/app/config/constants';
 
 /**
@@ -36,6 +36,14 @@ export async function POST(req: NextRequest) {
                 { error: 'Title is required' },
                 { status: 400 }
             );
+        }
+
+        // Enforce per-user storage limit (500MB)
+        if (userId) {
+            const storage = await getUserStorageUsage(userId);
+            if (storage.remaining < file.size) {
+                return NextResponse.json({ error: 'Storage quota exceeded. You have ' + (storage.remaining / 1024 / 1024).toFixed(2) + ' MB remaining.' }, { status: 403 });
+            }
         }
 
         // Convert File to Buffer for server-side processing

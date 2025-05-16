@@ -4,7 +4,8 @@ import { uploadFile } from '@/services/storageService';
 import {
     logEvent,
     incrementMetric,
-    saveFileMetadata
+    saveFileMetadata,
+    getUserStorageUsage
 } from '@/services/firebaseService';
 import { DATA_TTL } from '@/app/config/constants';
 
@@ -62,6 +63,14 @@ export async function POST(req: NextRequest) {
         // Enforce 50MB file size limit
         if (buffer.length > 50 * 1024 * 1024) {
             return NextResponse.json({ error: 'File is too large. Maximum size is 50MB.' }, { status: 400 });
+        }
+
+        // Enforce per-user storage limit (500MB)
+        if (userId) {
+            const storage = await getUserStorageUsage(userId);
+            if (storage.remaining < buffer.length) {
+                return NextResponse.json({ error: 'Storage quota exceeded. You have ' + (storage.remaining / 1024 / 1024).toFixed(2) + ' MB remaining.' }, { status: 403 });
+            }
         }
 
         // Store the text content in GCP Storage bucket

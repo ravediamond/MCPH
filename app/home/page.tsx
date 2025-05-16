@@ -29,6 +29,7 @@ export default function HomePage() {
     const [actionSuccess, setActionSuccess] = useState<string | null>(null);
     const [userQuota, setUserQuota] = useState<{ count: number; remaining: number } | null>(null);
     const [quotaLoading, setQuotaLoading] = useState(false);
+    const [userStorage, setUserStorage] = useState<{ used: number; limit: number; remaining: number } | null>(null);
 
     useEffect(() => {
         if (user) {
@@ -75,11 +76,18 @@ export default function HomePage() {
             setQuotaLoading(true);
             fetch(`/api/user/${user.uid}/quota`)
                 .then(res => res.json())
-                .then(data => setUserQuota(data.usage || null))
-                .catch(() => setUserQuota(null))
+                .then(data => {
+                    setUserQuota(data.usage || null);
+                    setUserStorage(data.storage || null);
+                })
+                .catch(() => {
+                    setUserQuota(null);
+                    setUserStorage(null);
+                })
                 .finally(() => setQuotaLoading(false));
         } else {
             setUserQuota(null);
+            setUserStorage(null);
         }
     }, [user]);
 
@@ -223,6 +231,12 @@ export default function HomePage() {
                             </div>
                         ) : (
                             <div className="text-gray-500 text-sm">No quota information found.</div>
+                        )}
+                        {userStorage && (
+                            <div className="text-sm text-gray-700 mt-1">
+                                Storage used: <span className="font-semibold">{formatFileSize(userStorage.used)}</span> / <span className="font-semibold">{formatFileSize(userStorage.limit)}</span>
+                                <span className="ml-2">({((userStorage.used / userStorage.limit) * 100).toFixed(1)}% used, {formatFileSize(userStorage.remaining)} left)</span>
+                            </div>
                         )}
                     </div>
                 )}

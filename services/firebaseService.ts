@@ -534,3 +534,22 @@ export async function getUserToolUsage(userId: string): Promise<{ count: number,
     const count = doc.exists ? (doc.data()?.count || 0) : 0;
     return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
 }
+
+/**
+ * Get total storage used by a user (sum of all file sizes in bytes)
+ */
+export async function getUserStorageUsage(userId: string): Promise<{ used: number, limit: number, remaining: number }> {
+    const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
+    try {
+        const files = await getUserFiles(userId);
+        const used = files.reduce((sum, file) => sum + (file.size || 0), 0);
+        return {
+            used,
+            limit: STORAGE_LIMIT,
+            remaining: Math.max(0, STORAGE_LIMIT - used)
+        };
+    } catch (error) {
+        console.error(`Error calculating storage usage for user ${userId}:`, error);
+        return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
+    }
+}
