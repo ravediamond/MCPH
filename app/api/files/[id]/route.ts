@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFileMetadata } from '@/services/firebaseService';
+import { getFileMetadata, deleteFileMetadata } from '@/services/firebaseService';
+import { deleteFile } from '@/services/storageService';
 
 // Helper to get client IP
 function getClientIp(req: NextRequest): string {
@@ -52,5 +53,24 @@ export async function GET(
             { error: 'Failed to retrieve file information', message: error.message },
             { status: 500 }
         );
+    }
+}
+
+/**
+ * DELETE handler for deleting file metadata by ID
+ */
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const fileId = params.id;
+        const deleted = await deleteFile(fileId);
+        if (!deleted) {
+            return NextResponse.json({ error: 'File not found or could not be deleted' }, { status: 404 });
+        }
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message || 'Failed to delete file' }, { status: 500 });
     }
 }

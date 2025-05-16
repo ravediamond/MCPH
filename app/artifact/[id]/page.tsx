@@ -75,6 +75,8 @@ export default function ArtifactPage() {
     const [resetExpirySuccess, setResetExpirySuccess] = useState<string | null>(null);
     const [expiryUnit, setExpiryUnit] = useState<'days' | 'hours'>('days');
     const [expiryAmount, setExpiryAmount] = useState<number>(1);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     // Memoized helpers
     const isTextFile = useCallback((contentType: string) => {
@@ -348,6 +350,21 @@ export default function ArtifactPage() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
+        setDeleteLoading(true);
+        setDeleteError(null);
+        try {
+            const response = await fetch(`/api/files/${fileId}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Failed to delete file');
+            window.location.href = '/';
+        } catch (err: any) {
+            setDeleteError(err.message || 'Failed to delete file');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
     // Get file type icon
     const getFileIcon = () => {
         if (!fileInfo) return <FaFile className="text-gray-500" />;
@@ -600,6 +617,15 @@ export default function ArtifactPage() {
                             >
                                 <FaClock className="mr-1" /> Reset Expiry
                             </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleteLoading}
+                                className="flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 border border-red-700 font-semibold shadow transition-colors"
+                                title="Delete File"
+                            >
+                                {deleteLoading ? 'Deleting...' : (<><FaFile className="mr-1" /> Delete</>)}
+                            </button>
+                            {deleteError && <div className="text-red-600 mt-2 text-sm">{deleteError}</div>}
                         </div>
                         {/* Reset Expiry Modal/Inline */}
                         {showResetExpiry && (
