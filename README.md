@@ -2,96 +2,81 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://img.shields.io/npm/v/mcp-hub.svg)](https://www.npmjs.com/package/mcp-hub)
 
-# MCPHub: Model Context Protocol (MCP) Remote Artifact Server
+# MCPHub: Model Context Protocol (MCP) Server
 
-**Website:** [https://mcph.io](https://mcph.io)
-**MCP SSE Endpoint:** `https://mcph.io/sse`
+MCPHub is a public remote artifact server for the Model Context Protocol (MCP). It supports real-time artifact management and sharing via the MCP protocol over Server-Sent Events (SSE).
 
-## What is MCP?
+## Quick Start
 
-The **Model Context Protocol (MCP)** is a standardized way for AI models, agents, and tools to maintain, share, and reference context across interactions. MCP enables:
+- **SSE Endpoint:** `https://mcph.io/api/sse`
+- **Web UI:** [mcph.io](https://mcph.io)
+- **Artifact Page:** `https://mcph.io/artifact/[id]`
 
-- Persistent, portable context for AI models
-- Secure sharing of context and artifacts between users, agents, and tools
-- Improved coherence and utility in AI-powered workflows
-
-## About MCPHub
-
-MCPHub is a public, remote MCP server for storing and sharing artifacts (files, data, diagrams, etc.) using the MCP protocol. It implements the official MCP specification, including:
-
-- **SSE (Server-Sent Events) support** for real-time context streaming
-- Secure artifact upload, download, and sharing
-- Expiry and access control for all artifacts
-
-### Key Features
-
-- **Remote MCP server**: Connect from any MCP-compatible client (e.g., Claude Desktop, Cursor, Windsurf)
-- **SSE endpoint**: Real-time context and artifact streaming
-- **OAuth-ready**: Secure authentication for future integrations
-- **Web UI**: Upload, manage, and share artifacts at [mcph.io](https://mcph.io)
-
-## How to Connect (with `mcp-remote`)
-
-You can connect your local MCP client to MCPHub using the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) package:
+### Connect with mcp-remote
 
 ```sh
-npx mcp-remote https://mcph.io/sse
+npx mcp-remote https://mcph.io/api/sse
 ```
 
-Or add to your MCP client config (e.g., Cursor, Claude Desktop):
+Or configure your client:
 
 ```json
 {
   "mcpServers": {
     "mcphub": {
       "command": "npx",
-      "args": ["mcp-remote", "https://mcph.io/sse"]
+      "args": ["mcp-remote", "https://mcph.io/api/sse"]
     }
   }
 }
 ```
 
-- Supports custom headers and OAuth for secure access
-- Choose transport: `--transport sse-only` for SSE, or default for HTTP+SSE fallback
+### Authentication
 
-## Available Tools
+Pass your API key as a Bearer token in the `Authorization` header if required.
 
-MCPHub exposes the following tools via MCP:
+## Available MCP Tools (via SSE)
 
-- **artifacts/upload**: Upload a new artifact
-- **artifacts/get_metadata**: Get metadata for an artifact
-- **artifacts/download**: Download an artifact
-- **artifacts/search**: Search for artifacts
-- **artifacts/delete**: Delete an artifact (if authorized)
+- **artifacts/list**: List all available artifacts.
+  - Output: `{ artifacts: [ { id, fileName, ... }, ... ], content: [ { type: 'text', text: 'IDs: ...' } ] }`
+- **artifacts/get**: Get the raw artifact data for a specific artifact by id.
+  - Output: `{ artifact: { ...meta }, content: [ { type: 'text', text: '...' } ] }` (binary files return a download link)
+- **artifacts/get_metadata**: Get all metadata fields as text for a specific artifact by id.
+  - Output: `{ artifact: { ...meta }, content: [ { type: 'text', text: 'key: value\n...' } ] }`
+- **artifacts/search**: Search for artifacts by query string in fileName or description.
+  - Output: `{ artifacts: [ ... ], content: [ { type: 'text', text: 'IDs: ...' } ] }`
+- **artifacts/upload**: Upload a new artifact. For binary files, returns a presigned upload URL. For text, uploads directly.
+  - Output: `{ uploadUrl, fileId, gcsPath, message }` (binary) or `{ artifact, message }` (text)
+- **artifacts/share**: Make an artifact shareable (public link) and optionally set/remove a password.
+  - Output: `{ id, isShared, password, shareUrl, message }`
 
-## API Documentation (Simple)
+## How the SSE Endpoint Works
 
-- **SSE Endpoint:** `https://mcph.io/sse` (MCP protocol)
-- **Web Upload:** `https://mcph.io/upload`
-- **Artifact Page:** `https://mcph.io/artifact/[id]`
-- **REST API:** (for advanced users)
-  - `POST /api/uploads` – Upload artifact
-  - `GET /api/uploads/:id` – Download artifact
-  - `DELETE /api/uploads/:id` – Delete artifact
-  - `GET /api/sse` – SSE endpoint for MCP
+- Connect via SSE: `npx mcp-remote https://mcph.io/api/sse`
+- On connect, you receive an `endpoint` event with your session URL. All JSON-RPC requests must include your `sessionId` as a query parameter.
+- Send JSON-RPC requests to the endpoint. Example for `artifacts/list`:
 
-## Example Usage
-
-**Upload an artifact via Web UI:**
-
-1. Go to [https://mcph.io/upload](https://mcph.io/upload)
-2. Select your artifact, set expiry, and upload
-3. Share the generated link or use in your MCP client
-
-**Connect from an MCP client:**
-
-```sh
-npx mcp-remote https://mcph.io/api/sse
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "artifacts/list",
+    "arguments": {}
+  }
+}
 ```
 
-**Search for artifacts:**
+The response will be streamed as an SSE `message` event with the result.
 
-- Use the web UI or the `artifacts/search` tool via MCP
+## REST API (advanced)
+
+> For most users, use the SSE endpoint above. REST endpoints are for advanced/manual use only.
+
+- `POST /api/uploads` – Upload artifact
+- `GET /api/uploads/:id` – Download artifact
+- `DELETE /api/uploads/:id` – Delete artifact
 
 ## Learn More
 
