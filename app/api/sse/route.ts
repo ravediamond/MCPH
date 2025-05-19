@@ -38,6 +38,13 @@ const UploadArtifactParams = z.object({
     metadata: z.record(z.string(), z.string()).optional(),
 })
 
+// Add Zod schema for share tool
+const ShareArtifactParams = z.object({
+    id: z.string(),
+    isShared: z.boolean().optional(),
+    password: z.string().optional()
+})
+
 /**
  * Handles incoming SSE connection requests.
  */
@@ -244,6 +251,19 @@ export async function POST(req: NextRequest) {
                                         metadata: { type: 'object', additionalProperties: { type: 'string' } }
                                     },
                                     required: ['fileName', 'contentType']
+                                }
+                            },
+                            {
+                                name: 'artifacts/share',
+                                description: 'Make an artifact shareable (public link) and optionally set/remove a password. Returns the shareable link and sharing status.',
+                                inputSchema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        isShared: { type: 'boolean' },
+                                        password: { type: 'string' }
+                                    },
+                                    required: ['id']
                                 }
                             },
                         ]
@@ -553,6 +573,50 @@ export async function POST(req: NextRequest) {
                             jsonrpc: '2.0',
                             id: rpc.id,
                             error: { code: -32000, message: 'Failed to upload artifact', data: String(err) }
+                        })
+                    }
+                    break
+                }
+                if (rpc.params?.name === 'artifacts/share') {
+                    const parsed = ShareArtifactParams.safeParse(rpc.params.arguments)
+                    if (!parsed.success) {
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: {
+                                code: -32602,
+                                message: 'Invalid params',
+                                data: parsed.error.issues
+                            }
+                        })
+                        break
+                    }
+                    try {
+                        const { id, isShared, password } = parsed.data
+                        const db = getFirestore()
+                        const fileRef = db.collection(FILES_COLLECTION).doc(id)
+                        const update: any = {}
+                        if (typeof isShared === 'boolean') update.isShared = isShared
+                        if (typeof password === 'string') update.password = password
+                        await fileRef.update(update)
+                        // Return the shareable link and status
+                        const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://mcph.io'}/artifact/${id}`
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            result: {
+                                id,
+                                isShared: update.isShared,
+                                password: update.password ? true : false,
+                                shareUrl,
+                                message: `Artifact ${id} is now ${update.isShared ? 'shared' : 'private'}. Shareable link: ${shareUrl}`
+                            }
+                        })
+                    } catch (err) {
+                        send({
+                            jsonrpc: '2.0',
+                            id: rpc.id,
+                            error: { code: -32000, message: 'Failed to update sharing status', data: String(err) }
                         })
                     }
                     break
