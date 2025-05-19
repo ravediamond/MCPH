@@ -127,10 +127,13 @@ export default function HomePage() {
             if (!file.expiresAt) return true;
             return new Date(file.expiresAt) > now;
         });
-        // Only filter if searchResults is null and searchQuery is empty
-        if (searchResults !== null || searchQuery) return notExpired;
+        // If search bar is empty, show all notExpired files
+        if (!searchQuery.trim()) return notExpired;
+        // If searchResults is not null, show searchResults
+        if (searchResults !== null) return searchResults;
+        // Default fallback
         return notExpired;
-    }, [files, searchResults]);
+    }, [files, searchResults, searchQuery]);
 
     // Format file size
     const formatFileSize = (bytes: number): string => {
@@ -208,21 +211,23 @@ export default function HomePage() {
                 if (!res.ok) throw new Error('Search failed');
                 const data = await res.json();
                 // Map Firestore API results to FileMetadataExtended[]
-                const results = (data.results || []).map((doc: any) => {
-                    const fields = doc.fields || {};
-                    return {
-                        id: doc.name?.split('/')?.pop() || '',
-                        fileName: fields.fileName?.stringValue || '',
-                        title: fields.title?.stringValue || '',
-                        description: fields.description?.stringValue || '',
-                        contentType: fields.contentType?.stringValue || '',
-                        size: fields.size?.integerValue ? parseInt(fields.size.integerValue) : 0,
-                        uploadedAt: fields.uploadedAt?.timestampValue || '',
-                        expiresAt: fields.expiresAt?.timestampValue || '',
-                        downloadCount: fields.downloadCount?.integerValue ? parseInt(fields.downloadCount.integerValue) : 0,
-                        metadata: fields.metadata?.mapValue?.fields ? Object.fromEntries(Object.entries(fields.metadata.mapValue.fields).map(([k, v]: any) => [k, v.stringValue])) : undefined,
-                    };
-                });
+                const results = (data.results || [])
+                    .map((doc: any) => {
+                        const fields = doc.fields || {};
+                        return {
+                            id: doc.name?.split('/')?.pop() || doc.id || '',
+                            fileName: fields.fileName?.stringValue || doc.fileName || '',
+                            title: fields.title?.stringValue || doc.title || '',
+                            description: fields.description?.stringValue || doc.description || '',
+                            contentType: fields.contentType?.stringValue || doc.contentType || '',
+                            size: fields.size?.integerValue ? parseInt(fields.size.integerValue) : doc.size || 0,
+                            uploadedAt: fields.uploadedAt?.timestampValue || doc.uploadedAt || '',
+                            expiresAt: fields.expiresAt?.timestampValue || doc.expiresAt || '',
+                            downloadCount: fields.downloadCount?.integerValue ? parseInt(fields.downloadCount.integerValue) : doc.downloadCount || 0,
+                            metadata: fields.metadata?.mapValue?.fields ? Object.fromEntries(Object.entries(fields.metadata.mapValue.fields).map(([k, v]: any) => [k, v.stringValue])) : doc.metadata || undefined,
+                        };
+                    })
+                    .filter((file: any) => file.id && file.fileName); // Filter out empty/invalid artifacts
                 setSearchResults(results);
             } catch (err: any) {
                 setSearchError(err.message || 'Search failed');

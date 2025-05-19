@@ -44,7 +44,8 @@ export async function GET(
             size: metadata.size,
             uploadedAt: metadata.uploadedAt instanceof Date ? metadata.uploadedAt.toISOString() : metadata.uploadedAt,
             expiresAt: metadata.expiresAt instanceof Date ? metadata.expiresAt.toISOString() : metadata.expiresAt,
-            downloadCount: metadata.downloadCount
+            downloadCount: metadata.downloadCount,
+            metadata: metadata.metadata || {} // <-- include metadata
         });
 
     } catch (error: any) {

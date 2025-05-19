@@ -632,17 +632,16 @@ export default function FileUpload({ onUploadSuccess, onUploadError }: FileUploa
                                     style={{ width: `${uploadProgress}%` }}
                                 ></div>
                             </div>
-                            <p className="text-xs text-right text-gray-500">{Math.round(uploadProgress)}%</p>
                         </div>
                     )}
 
                     <button
                         type="submit"
                         disabled={!file || isUploading || !title.trim()}
-                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center ${!file || isUploading || !title.trim()
-                            ? 'bg-gray-300 cursor-not-allowed text-gray-500'
-                            : 'bg-primary-500 hover:bg-primary-600 text-primary-900'
-                            } transition-colors`}
+                        className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
+                            ? 'bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white border-blue-700'}
+                        `}
                     >
                         {isUploading ? (
                             <>

@@ -26,14 +26,24 @@ export async function POST(req: NextRequest) {
         const db = getFirestore();
 
         // Perform vector search using Firestore Admin SDK
-        // Requires Firestore Admin SDK v7.10.0+ and vector search enabled on your project
         const filesRef = db.collection('files');
-        // findNearest is the new vector search API
-        // See: https://cloud.google.com/nodejs/docs/reference/firestore/latest/CollectionReference#findNearest
+        // 1. Vector search
         const vectorQuery = filesRef.findNearest('embedding', embedding, { limit: topK, distanceMeasure: 'DOT_PRODUCT' });
-        const snapshot = await vectorQuery.get();
-        const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+        const vectorSnapshot = await vectorQuery.get();
+        const vectorResults = vectorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // 2. Classical search (searchText prefix, case-insensitive)
+        const textQuery = query.toLowerCase();
+        const classicalSnapshot = await filesRef
+            .where('searchText', '>=', textQuery)
+            .where('searchText', '<=', textQuery + '\uf8ff')
+            .limit(topK)
+            .get();
+        const classicalResults = classicalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Merge and deduplicate by id
+        const allResultsMap = new Map();
+        for (const a of vectorResults) allResultsMap.set(a.id, a);
+        for (const a of classicalResults) allResultsMap.set(a.id, a);
+        const results = Array.from(allResultsMap.values());
         return NextResponse.json({ results, debug: { embeddingShape: Array.isArray(embedding) ? embedding.length : typeof embedding } });
     } catch (error: any) {
         console.error('[DEBUG] Search API error:', error);

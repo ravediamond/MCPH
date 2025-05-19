@@ -424,7 +424,7 @@ export async function POST(req: NextRequest) {
                         break
                     }
                     try {
-                        // --- VECTOR SEARCH LOGIC (Admin SDK) ---
+                        // --- HYBRID SEARCH LOGIC (Vector + Classical) ---
                         const { getEmbedding } = await import('@/lib/vertexAiEmbedding');
                         const embedding = await getEmbedding(parsed.data.query);
                         let topK = 5;
@@ -438,9 +438,23 @@ export async function POST(req: NextRequest) {
                         const { getFirestore } = await import('firebase-admin/firestore');
                         const db = getFirestore();
                         const filesRef = db.collection('files');
+                        // 1. Vector search
                         const vectorQuery = filesRef.findNearest('embedding', embedding, { limit: topK, distanceMeasure: 'DOT_PRODUCT' });
-                        const snapshot = await vectorQuery.get();
-                        const artifacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        const vectorSnapshot = await vectorQuery.get();
+                        const vectorArtifacts = vectorSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        // 2. Classical search (searchText prefix, case-insensitive)
+                        const textQuery = parsed.data.query.toLowerCase();
+                        const classicalSnapshot = await filesRef
+                            .where('searchText', '>=', textQuery)
+                            .where('searchText', '<=', textQuery + '\uf8ff')
+                            .limit(topK)
+                            .get();
+                        const classicalArtifacts = classicalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        // Merge and deduplicate by id
+                        const allArtifactsMap = new Map();
+                        for (const a of vectorArtifacts) allArtifactsMap.set(a.id, a);
+                        for (const a of classicalArtifacts) allArtifactsMap.set(a.id, a);
+                        const artifacts = Array.from(allArtifactsMap.values());
                         send({
                             jsonrpc: '2.0',
                             id: rpc.id,
@@ -448,12 +462,12 @@ export async function POST(req: NextRequest) {
                                 artifacts,
                                 content: [{
                                     type: 'text',
-                                    text: `IDs: ${(artifacts as { id: string }[]).map(a => a.id).join(', ')}`
+                                    text: `IDs: ${artifacts.map(a => a.id).join(', ')}`
                                 }]
                             }
                         });
                     } catch (err) {
-                        console.error('[SSE] Failed to search artifacts (vector)', err)
+                        console.error('[SSE] Failed to search artifacts (hybrid)', err)
                         send({
                             jsonrpc: '2.0',
                             id: rpc.id,

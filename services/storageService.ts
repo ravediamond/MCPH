@@ -171,7 +171,14 @@ export async function uploadFile(
         // Calculate expiration time using DATA_TTL
         const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(uploadedAt, ttlDays);
 
-        const fileData: FileMetadata = {
+        // --- Generate searchText field ---
+        const metaString = metadata ? Object.entries(metadata).map(([k, v]) => `${k} ${v}`).join(' ') : '';
+        const searchText = [title, fileName, description, metaString]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+        const fileData: FileMetadata & { searchText?: string } = {
             id: fileId,
             fileName,
             title: title || fileName, // Use filename as title if not provided
@@ -190,6 +197,7 @@ export async function uploadFile(
                 compressionRatio: compressionMetadata.compressionRatio
             }),
             ...(metadata && { metadata }),
+            searchText,
         };
 
         // Store metadata in Firestore

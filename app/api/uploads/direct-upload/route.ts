@@ -50,8 +50,31 @@ export async function POST(req: NextRequest) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
+        // Parse metadata if provided (expects JSON string or array of key-value pairs)
+        let metadata: Record<string, string> | undefined = undefined;
+        const metadataRaw = formData.get('metadata');
+        if (metadataRaw) {
+            try {
+                const parsed = JSON.parse(metadataRaw.toString());
+                if (Array.isArray(parsed)) {
+                    // Convert array of {key, value} to object
+                    metadata = {};
+                    parsed.forEach((item: any) => {
+                        if (item.key && typeof item.value === 'string') {
+                            metadata![item.key] = item.value;
+                        }
+                    });
+                } else if (typeof parsed === 'object' && parsed !== null) {
+                    metadata = parsed;
+                }
+            } catch (e) {
+                // Ignore invalid metadata
+                console.warn('Invalid metadata provided, ignoring:', metadataRaw);
+            }
+        }
+
         // Upload the file to storage
-        const fileData = await uploadFile(buffer, file.name, file.type, ttlDays, title, description, fileType);
+        const fileData = await uploadFile(buffer, file.name, file.type, ttlDays, title, description, fileType, metadata);
 
         // Add userId to the fileData if available
         if (userId) {
