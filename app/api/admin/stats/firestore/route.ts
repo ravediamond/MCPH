@@ -3,8 +3,6 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { admin } from "../../../../../lib/firebaseAdmin"; // Assuming you have this
 
-const db = getFirestore();
-
 export async function GET(request: Request) {
   try {
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
@@ -24,8 +22,8 @@ export async function GET(request: Request) {
       );
     }
 
-    // Example: Counting documents in a 'fileMetadata' collection
-    // Replace 'fileMetadata' with your actual collection name for file metadata
+    // Ensure getFirestore() is called after admin import
+    const db = getFirestore();
     const collectionRef = db.collection("fileMetadata");
     const snapshot = await collectionRef.count().get();
     const totalDocs = snapshot.data().count;
