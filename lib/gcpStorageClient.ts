@@ -47,16 +47,16 @@ try {
   // Production environment (e.g., Vercel deployment)
   if (process.env.VERCEL_ENV === "production") {
     console.log(
-      "Production environment detected. Attempting to initialize GCS client using GCP_SERVICE_ACCOUNT.",
+      "Production environment detected. Attempting to initialize GCS client using GOOGLE_APPLICATION_CREDENTIALS.",
     );
-    const credentialsString = process.env.GCP_SERVICE_ACCOUNT;
+    const credentialsString = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
     if (!credentialsString) {
       console.error(
-        "GCP_SERVICE_ACCOUNT environment variable is not set for production.",
+        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
       );
       throw new Error(
-        "GCP_SERVICE_ACCOUNT environment variable is not set for production.",
+        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
       );
     }
 
@@ -73,7 +73,7 @@ try {
     );
     if (!prodStorage) {
       throw new Error(
-        "Failed to initialize Google Cloud Storage for production from GCP_SERVICE_ACCOUNT.",
+        "Failed to initialize Google Cloud Storage for production from GOOGLE_APPLICATION_CREDENTIALS.",
       );
     }
     storage = prodStorage;
