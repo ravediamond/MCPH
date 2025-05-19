@@ -173,16 +173,22 @@ if [ -f "firestore.indexes.json" ]; then
         echo "Firebase CLI found. Attempting to deploy indexes..."
         # Ensure Firebase project is set (firebase use might be needed interactively if not already set)
         # We will try to pass the project ID directly to the deploy command.
-        if firebase deploy --only firestore:indexes --project "${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" --non-interactive --debug; then
+        DEPLOY_OUTPUT=$(firebase deploy --only firestore:indexes --project "${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" --non-interactive --debug 2>&1)
+        DEPLOY_EXIT_CODE=$?
+        if [ $DEPLOY_EXIT_CODE -eq 0 ]; then
             echo "Firestore indexes deployment initiated successfully using Firebase CLI."
             echo "Note: Index creation can take some time. Check the Firebase console for status."
         else
-            echo "Error deploying Firestore indexes using Firebase CLI."
-            echo "Please ensure you are logged into Firebase CLI ('firebase login') and have selected your project ('firebase use ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}')."
-            echo "You can try deploying manually: firebase deploy --only firestore:indexes --project ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
-            echo "Alternatively, try updating gcloud components ('gcloud components update') and using gcloud:"
-            echo "  gcloud beta firestore indexes replace firestore.indexes.json --project=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
-            echo "or create the index via the Firebase console."
+            if echo "$DEPLOY_OUTPUT" | grep -q 'HTTP Error: 409, index already exists'; then
+                echo "Some indexes already exist (409 conflict). This is not a fatal error. Skipping those indexes."
+            else
+                echo "Error deploying Firestore indexes using Firebase CLI."
+                echo "Please ensure you are logged into Firebase CLI ('firebase login') and have selected your project ('firebase use ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}')."
+                echo "You can try deploying manually: firebase deploy --only firestore:indexes --project ${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
+                echo "Alternatively, try updating gcloud components ('gcloud components update') and using gcloud:"
+                echo "  gcloud beta firestore indexes replace firestore.indexes.json --project=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"
+                echo "or create the index via the Firebase console."
+            fi
         fi
     fi
 else
@@ -198,6 +204,25 @@ gcloud firestore indexes composite create \
   --field-config field-path="createdAt",order="DESCENDING"
 echo "Composite index for apiKeys created (if not already present)."
 
+echo "--- Creating vector index for files.embedding ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="files" \
+  --query-scope=COLLECTION \
+  --field-config=vector-config='{"dimension":"768","flat": "{}"}',field-path=embedding
+
+# 6. Initialize artifacts collection with a placeholder document including embedding
+# Example embedding: 1536 zeros (adjust size to match your embedding model)
+echo "--- Initializing 'artifacts' collection with embedding field ---"
+ARTIFACTS_EMBEDDING=$(python3 -c 'import json; print(json.dumps({"arrayValue": {"values": [{"doubleValue": 0.0} for _ in range(1536)]}}))')
+ARTIFACTS_DATA='{
+    "id": {"stringValue": "placeholder"},
+    "description": {"stringValue": "A sample artifact for vector search"},
+    "metadata": {"mapValue": {"fields": {"type": {"stringValue": "example"}, "author": {"stringValue": "system"}}}},
+    "embedding": '"${ARTIFACTS_EMBEDDING}"'
+}'
+create_document "artifacts" "placeholder" "${ARTIFACTS_DATA}"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
@@ -206,6 +231,7 @@ echo "Your Firestore database should now have these collections initialized:"
 echo "- files: For storing file metadata"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
+echo "- artifacts: For storing artifacts with embeddings for vector search"
 echo ""
 echo "These collections align with how your application is using Firestore in your functions code."
 

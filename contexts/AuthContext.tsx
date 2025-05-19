@@ -1,9 +1,20 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged, ParsedToken } from 'firebase/auth';
-import { auth, googleProvider, signInWithPopup, signOut as firebaseSignOut } from '../lib/firebaseClient';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { User, onAuthStateChanged, ParsedToken } from "firebase/auth";
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+} from "../lib/firebaseClient";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 interface AuthContextType {
   user: User | null;
@@ -16,14 +27,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false); // Add isAdmin state
   const [loading, setLoading] = useState(true);
   const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => { // Make async
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      // Make async
       setUser(currentUser);
       if (currentUser) {
         try {
@@ -32,10 +46,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Only redirect to /home if on root or login page
           if (
             router &&
-            typeof window !== 'undefined' &&
-            (window.location.pathname === '/' || window.location.pathname === '/login')
+            typeof window !== "undefined" &&
+            (window.location.pathname === "/" ||
+              window.location.pathname === "/login")
           ) {
-            router.push('/home');
+            router.push("/home");
           }
         } catch (error) {
           console.error("Error getting ID token result: ", error);
@@ -86,7 +101,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, signInWithGoogle, signOut, getIdToken }}>
+    <AuthContext.Provider
+      value={{ user, loading, isAdmin, signInWithGoogle, signOut, getIdToken }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -95,7 +112,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
