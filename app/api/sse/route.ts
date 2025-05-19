@@ -13,6 +13,7 @@ import {
   incrementUserToolUsage,
 } from "@/services/firebaseService";
 import type { ApiKeyRecord } from "@/services/firebaseService";
+import { admin } from "@/lib/firebaseAdmin";
 
 // export const runtime = 'edge'
 export const dynamic = "force-dynamic";
@@ -538,10 +539,6 @@ export async function POST(req: NextRequest) {
             if (!Number.isFinite(topK) || isNaN(topK)) topK = 5;
             if (isNaN(topK) || topK < 1) topK = 5;
             if (topK > 1000) topK = 1000;
-            const { initializeFirebaseAdmin } = await import(
-              "@/lib/firebaseAdmin"
-            );
-            initializeFirebaseAdmin();
             const { getFirestore } = await import("firebase-admin/firestore");
             const db = getFirestore();
             const filesRef = db.collection("files");
@@ -674,8 +671,8 @@ export async function POST(req: NextRequest) {
                 );
                 const metaString = metadata
                   ? Object.entries(metadata)
-                      .map(([k, v]) => `${k}: ${v}`)
-                      .join(" ")
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(" ")
                   : "";
                 const concatText = [title, description, metaString]
                   .filter(Boolean)

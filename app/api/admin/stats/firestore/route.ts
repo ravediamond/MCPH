@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { initializeFirebaseAdmin } from "../../../../../lib/firebaseAdmin"; // Assuming you have this
+import { admin } from "../../../../../lib/firebaseAdmin"; // Assuming you have this
 
-// Initialize Firebase Admin SDK
-initializeFirebaseAdmin();
 const db = getFirestore();
 
 export async function GET(request: Request) {

@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
-import { initializeFirebaseAdmin } from "../../../../../lib/firebaseAdmin";
+import { admin } from "../../../../../lib/firebaseAdmin";
 import { Storage } from "@google-cloud/storage";
 
-// Initialize Firebase Admin SDK
-initializeFirebaseAdmin();
 // Initialize Google Cloud Storage client
 const storage = new Storage();
 // Ensure your GCS bucket name is set as an environment variable

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEmbedding } from "@/lib/vertexAiEmbedding";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { admin } from "@/lib/firebaseAdmin";
 import { getFirestore } from "firebase-admin/firestore";
 
 const project = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
     const embedding = await getEmbedding(query);
 
     // Initialize Firebase Admin SDK and Firestore
-    initializeFirebaseAdmin();
     const db = getFirestore();
 
     // Perform vector search using Firestore Admin SDK
