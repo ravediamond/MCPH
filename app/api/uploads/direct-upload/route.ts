@@ -58,11 +58,27 @@ export async function POST(req: NextRequest) {
             fileData.userId = userId;
         }
 
-        // Store the metadata in Firestore with userId if available
+        // --- VECTOR EMBEDDING GENERATION ---
+        // Prepare text for embedding: concatenate title, description, and metadata
+        let embedding: number[] | undefined = undefined;
+        try {
+            const metadataObj = fileData.metadata || {};
+            const metaString = Object.entries(metadataObj).map(([k, v]) => `${k}: ${v}`).join(' ');
+            const concatText = [title, description, metaString].filter(Boolean).join(' ');
+            if (concatText.trim().length > 0) {
+                const { getEmbedding } = await import('@/lib/vertexAiEmbedding');
+                embedding = await getEmbedding(concatText);
+            }
+        } catch (e) {
+            console.error('Failed to generate embedding:', e);
+        }
+
+        // Store the metadata in Firestore with userId and embedding if available
         await saveFileMetadata({
             ...fileData,
             uploadedAt: new Date(fileData.uploadedAt),
             expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
+            ...(embedding ? { embedding } : {}),
         });
 
         // Generate URLs

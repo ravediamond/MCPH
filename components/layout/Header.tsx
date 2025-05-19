@@ -48,8 +48,7 @@ export default function Header() {
                     {/* Logo - always go to root path */}
                     <div className="flex-shrink-0">
                         <Link href="/" className="flex items-center gap-2 px-2 py-1">
-                            <Image src="/icon.png" alt="Logo" width={64} height={64} />
-                            <span className="text-gray-900 font-bold text-3xl ml-2">MCPH</span>
+                            <Image src="/icon.png" alt="Logo" width={180} height={180} />
                         </Link>
                     </div>
 

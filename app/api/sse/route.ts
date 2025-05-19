@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
                                 artifacts,
                                 content: [{
                                     type: 'text',
-                                    text: `IDs: ${artifacts.map(a => a.id).join(', ')}`
+                                    text: `IDs: ${(artifacts as { id: string }[]).map(a => a.id).join(', ')}`
                                 }]
                             }
                         })
@@ -424,15 +424,23 @@ export async function POST(req: NextRequest) {
                         break
                     }
                     try {
-                        const db = getFirestore()
-                        const queryStr = parsed.data.query.toLowerCase()
-                        const snapshot = await db.collection(FILES_COLLECTION).orderBy('uploadedAt', 'desc').limit(100).get()
-                        const artifacts = snapshot.docs
-                            .map(doc => ({ id: doc.id, ...(doc.data() as { fileName?: string; description?: string }) }))
-                            .filter(a =>
-                                (a.fileName?.toLowerCase().includes(queryStr)) ||
-                                (a.description?.toLowerCase().includes(queryStr))
-                            )
+                        // --- VECTOR SEARCH LOGIC (Admin SDK) ---
+                        const { getEmbedding } = await import('@/lib/vertexAiEmbedding');
+                        const embedding = await getEmbedding(parsed.data.query);
+                        let topK = 5;
+                        // Optionally allow topK in params in the future
+                        topK = parseInt(topK as any, 10);
+                        if (!Number.isFinite(topK) || isNaN(topK)) topK = 5;
+                        if (isNaN(topK) || topK < 1) topK = 5;
+                        if (topK > 1000) topK = 1000;
+                        const { initializeFirebaseAdmin } = await import('@/lib/firebaseAdmin');
+                        initializeFirebaseAdmin();
+                        const { getFirestore } = await import('firebase-admin/firestore');
+                        const db = getFirestore();
+                        const filesRef = db.collection('files');
+                        const vectorQuery = filesRef.findNearest('embedding', embedding, { limit: topK, distanceMeasure: 'DOT_PRODUCT' });
+                        const snapshot = await vectorQuery.get();
+                        const artifacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         send({
                             jsonrpc: '2.0',
                             id: rpc.id,
@@ -440,12 +448,12 @@ export async function POST(req: NextRequest) {
                                 artifacts,
                                 content: [{
                                     type: 'text',
-                                    text: `IDs: ${artifacts.map(a => a.id).join(', ')}`
+                                    text: `IDs: ${(artifacts as { id: string }[]).map(a => a.id).join(', ')}`
                                 }]
                             }
-                        })
+                        });
                     } catch (err) {
-                        console.error('[SSE] Failed to search artifacts', err)
+                        console.error('[SSE] Failed to search artifacts (vector)', err)
                         send({
                             jsonrpc: '2.0',
                             id: rpc.id,
@@ -497,7 +505,25 @@ export async function POST(req: NextRequest) {
                             }
                             const { uploadFile } = await import('@/services/storageService')
                             const buffer = Buffer.from(data, 'base64')
+                            // --- EMBEDDING GENERATION ---
+                            let embedding: number[] | undefined = undefined;
+                            try {
+                                const { getEmbedding } = await import('@/lib/vertexAiEmbedding');
+                                const metaString = metadata ? Object.entries(metadata).map(([k, v]) => `${k}: ${v}`).join(' ') : '';
+                                const concatText = [title, description, metaString].filter(Boolean).join(' ');
+                                if (concatText.trim().length > 0) {
+                                    embedding = await getEmbedding(concatText);
+                                }
+                            } catch (e) {
+                                console.error('Failed to generate embedding:', e);
+                            }
                             const fileMeta = await uploadFile(buffer, fileName, contentType, ttlDays, title, description, fileType, metadata)
+                            // Store embedding in Firestore if present
+                            if (embedding && fileMeta.id) {
+                                const { getFirestore } = await import('firebase-admin/firestore');
+                                const db = getFirestore();
+                                await db.collection('files').doc(fileMeta.id).update({ embedding });
+                            }
                             send({
                                 jsonrpc: '2.0',
                                 id: rpc.id,

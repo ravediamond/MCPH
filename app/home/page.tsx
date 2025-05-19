@@ -31,6 +31,11 @@ export default function HomePage() {
     const [quotaLoading, setQuotaLoading] = useState(false);
     const [userStorage, setUserStorage] = useState<{ used: number; limit: number; remaining: number } | null>(null);
 
+    // --- Embedding-based search state ---
+    const [searchResults, setSearchResults] = useState<FileMetadataExtended[] | null>(null);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState<string | null>(null);
+
     useEffect(() => {
         if (user) {
             const fetchFiles = async () => {
@@ -122,13 +127,10 @@ export default function HomePage() {
             if (!file.expiresAt) return true;
             return new Date(file.expiresAt) > now;
         });
-        if (!searchQuery) return notExpired;
-        const query = searchQuery.toLowerCase();
-        return notExpired.filter(file =>
-            file.fileName.toLowerCase().includes(query) ||
-            (file.title && file.title.toLowerCase().includes(query))
-        );
-    }, [files, searchQuery]);
+        // Only filter if searchResults is null and searchQuery is empty
+        if (searchResults !== null || searchQuery) return notExpired;
+        return notExpired;
+    }, [files, searchResults]);
 
     // Format file size
     const formatFileSize = (bytes: number): string => {
@@ -192,6 +194,45 @@ export default function HomePage() {
             });
     };
 
+    // Handler for search input (only search on Enter)
+    const handleSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            setSearchLoading(true);
+            setSearchError(null);
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: searchQuery })
+                });
+                if (!res.ok) throw new Error('Search failed');
+                const data = await res.json();
+                // Map Firestore API results to FileMetadataExtended[]
+                const results = (data.results || []).map((doc: any) => {
+                    const fields = doc.fields || {};
+                    return {
+                        id: doc.name?.split('/')?.pop() || '',
+                        fileName: fields.fileName?.stringValue || '',
+                        title: fields.title?.stringValue || '',
+                        description: fields.description?.stringValue || '',
+                        contentType: fields.contentType?.stringValue || '',
+                        size: fields.size?.integerValue ? parseInt(fields.size.integerValue) : 0,
+                        uploadedAt: fields.uploadedAt?.timestampValue || '',
+                        expiresAt: fields.expiresAt?.timestampValue || '',
+                        downloadCount: fields.downloadCount?.integerValue ? parseInt(fields.downloadCount.integerValue) : 0,
+                        metadata: fields.metadata?.mapValue?.fields ? Object.fromEntries(Object.entries(fields.metadata.mapValue.fields).map(([k, v]: any) => [k, v.stringValue])) : undefined,
+                    };
+                });
+                setSearchResults(results);
+            } catch (err: any) {
+                setSearchError(err.message || 'Search failed');
+                setSearchResults([]);
+            } finally {
+                setSearchLoading(false);
+            }
+        }
+    };
+
     if (authLoading) {
         return (
             <div className="min-h-screen bg-gray-50 p-4 flex justify-center">
@@ -246,31 +287,20 @@ export default function HomePage() {
                     </div>
                 )}
                 {/* Header with search */}
-                <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-                    <h1 className="text-2xl font-medium text-gray-800 mb-2 md:mb-0">My Artifacts</h1>
-                    <div className="flex items-center w-full md:w-auto">
-                        <div className="relative mr-2 flex-grow">
+                <div className="flex flex-col items-center justify-center mb-8 mt-4">
+                    <h1 className="text-2xl font-medium text-gray-800 mb-4">My Artifacts</h1>
+                    <div className="w-full flex justify-center">
+                        <div className="relative w-full max-w-xl">
                             <input
                                 type="text"
                                 placeholder="Search artifacts..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="py-2 px-4 pl-9 border border-gray-200 rounded w-full"
+                                onKeyDown={handleSearchKeyDown}
+                                className="py-3 px-4 pl-10 border border-gray-200 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-200"
                             />
-                            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+                            <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
                         </div>
-                        <Link
-                            href="/upload"
-                            className="bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 transition-colors flex items-center mr-2"
-                        >
-                            <FaUpload className="mr-1" /> Upload
-                        </Link>
-                        <Link
-                            href="/admin/api-keys"
-                            className="bg-gray-100 text-gray-800 py-2 px-4 rounded hover:bg-gray-200 transition-colors flex items-center"
-                        >
-                            <FaKey className="mr-1" /> API Keys
-                        </Link>
                     </div>
                 </div>
 
@@ -289,109 +319,165 @@ export default function HomePage() {
 
                 {/* File Grid */}
                 <div>
-                    {loading ? (
+                    {searchLoading ? (
                         <div className="p-8 text-center">
                             <div className="animate-pulse flex flex-col items-center">
                                 <div className="h-8 w-8 bg-gray-200 rounded-full mb-4"></div>
                                 <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                                <div className="mt-2 text-gray-500">Searching...</div>
                             </div>
                         </div>
-                    ) : filteredFiles.length === 0 ? (
-                        <Card className="p-8 text-center">
-                            <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
-                            <p className="text-gray-500">
-                                {searchQuery ? 'No matching artifacts found' : 'No artifacts uploaded yet'}
-                            </p>
-                            {!searchQuery && (
-                                <Link
-                                    href="/upload"
-                                    className="inline-flex items-center mt-4 text-primary-500"
-                                >
-                                    <FaUpload className="mr-1" /> Upload your first artifact
-                                </Link>
-                            )}
-                        </Card>
+                    ) : searchResults !== null ? (
+                        searchResults.length === 0 ? (
+                            <Card className="p-8 text-center">
+                                <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
+                                <p className="text-gray-500">No matching artifacts found</p>
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                {searchResults.map((file) => (
+                                    <Card
+                                        key={file.id}
+                                        hoverable
+                                        className="transition-all overflow-hidden"
+                                    >
+                                        {/* ...existing file card rendering... */}
+                                        <div className="p-3">
+                                            <div className="flex items-start space-x-3">
+                                                <div className="mt-0.5">{getFileIcon(file)}</div>
+                                                <div className="flex-grow min-w-0">
+                                                    <Link href={`/artifact/${file.id}`} className="block">
+                                                        <h3 className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate" title={file.fileName}>
+                                                            {file.title || file.fileName}
+                                                        </h3>
+                                                    </Link>
+                                                    <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                                        <div className="truncate mr-2">{formatFileSize(file.size)}</div>
+                                                        <div className="flex items-center whitespace-nowrap">
+                                                            <FaDownload className="mr-1" size={10} /> {file.downloadCount || 0}
+                                                        </div>
+                                                    </div>
+                                                    {renderMetadata(file.metadata)}
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end mt-2 space-x-1">
+                                                <button onClick={() => copyShareLink(file.id)} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700" title="Copy link">
+                                                    <FaShareAlt size={12} />
+                                                </button>
+                                                <Link href={`/artifact/${file.id}`} className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700" title="View details">
+                                                    <FaEye size={12} />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                            {filteredFiles.map((file) => (
-                                <Card
-                                    key={file.id}
-                                    hoverable
-                                    className="transition-all overflow-hidden"
-                                >
-                                    <div className="p-3">
-                                        <div className="flex items-start space-x-3">
-                                            {/* File Type Icon */}
-                                            <div className="mt-0.5">
-                                                {getFileIcon(file)}
+                        loading ? (
+                            <div className="p-8 text-center">
+                                <div className="animate-pulse flex flex-col items-center">
+                                    <div className="h-8 w-8 bg-gray-200 rounded-full mb-4"></div>
+                                    <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                                </div>
+                            </div>
+                        ) : filteredFiles.length === 0 ? (
+                            <Card className="p-8 text-center">
+                                <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
+                                <p className="text-gray-500">
+                                    {searchQuery ? 'No matching artifacts found' : 'No artifacts uploaded yet'}
+                                </p>
+                                {!searchQuery && (
+                                    <Link
+                                        href="/upload"
+                                        className="inline-flex items-center mt-4 text-primary-500"
+                                    >
+                                        <FaUpload className="mr-1" /> Upload your first artifact
+                                    </Link>
+                                )}
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                {filteredFiles.map((file) => (
+                                    <Card
+                                        key={file.id}
+                                        hoverable
+                                        className="transition-all overflow-hidden"
+                                    >
+                                        <div className="p-3">
+                                            <div className="flex items-start space-x-3">
+                                                {/* File Type Icon */}
+                                                <div className="mt-0.5">
+                                                    {getFileIcon(file)}
+                                                </div>
+
+                                                {/* File Info */}
+                                                <div className="flex-grow min-w-0">
+                                                    <Link
+                                                        href={`/artifact/${file.id}`}
+                                                        className="block"
+                                                    >
+                                                        <h3
+                                                            className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                                                            title={file.fileName}
+                                                        >
+                                                            {file.title || file.fileName}
+                                                        </h3>
+                                                    </Link>
+
+                                                    <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                                        <div className="truncate mr-2">{formatFileSize(file.size)}</div>
+                                                        <div className="flex items-center whitespace-nowrap">
+                                                            <FaDownload className="mr-1" size={10} /> {file.downloadCount || 0}
+                                                        </div>
+                                                    </div>
+                                                    {/* Metadata display */}
+                                                    {renderMetadata(file.metadata)}
+                                                </div>
+
+                                                {/* Expiry Indicator - Small Circle */}
+                                                {file.isExpiringSoon && (
+                                                    <div
+                                                        className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                                                        title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? 's' : ''}`}
+                                                    ></div>
+                                                )}
                                             </div>
 
-                                            {/* File Info */}
-                                            <div className="flex-grow min-w-0">
+                                            {/* Action Buttons - Smaller and more compact */}
+                                            <div className="flex justify-end mt-2 space-x-1">
+                                                <button
+                                                    onClick={() => copyShareLink(file.id)}
+                                                    className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                                                    title="Copy link"
+                                                >
+                                                    <FaShareAlt size={12} />
+                                                </button>
+
                                                 <Link
                                                     href={`/artifact/${file.id}`}
-                                                    className="block"
+                                                    className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                                                    title="View details"
                                                 >
-                                                    <h3
-                                                        className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
-                                                        title={file.fileName}
-                                                    >
-                                                        {file.title || file.fileName}
-                                                    </h3>
+                                                    <FaEye size={12} />
                                                 </Link>
 
-                                                <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                                                    <div className="truncate mr-2">{formatFileSize(file.size)}</div>
-                                                    <div className="flex items-center whitespace-nowrap">
-                                                        <FaDownload className="mr-1" size={10} /> {file.downloadCount || 0}
-                                                    </div>
-                                                </div>
-                                                {/* Metadata display */}
-                                                {renderMetadata(file.metadata)}
+                                                <button
+                                                    onClick={() => {
+                                                        setFileToDelete(file.id);
+                                                        setDeleteModalVisible(true);
+                                                    }}
+                                                    className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                                                    title="Delete"
+                                                >
+                                                    <FaTrash size={12} />
+                                                </button>
                                             </div>
-
-                                            {/* Expiry Indicator - Small Circle */}
-                                            {file.isExpiringSoon && (
-                                                <div
-                                                    className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
-                                                    title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? 's' : ''}`}
-                                                ></div>
-                                            )}
                                         </div>
-
-                                        {/* Action Buttons - Smaller and more compact */}
-                                        <div className="flex justify-end mt-2 space-x-1">
-                                            <button
-                                                onClick={() => copyShareLink(file.id)}
-                                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                                                title="Copy link"
-                                            >
-                                                <FaShareAlt size={12} />
-                                            </button>
-
-                                            <Link
-                                                href={`/artifact/${file.id}`}
-                                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                                                title="View details"
-                                            >
-                                                <FaEye size={12} />
-                                            </Link>
-
-                                            <button
-                                                onClick={() => {
-                                                    setFileToDelete(file.id);
-                                                    setDeleteModalVisible(true);
-                                                }}
-                                                className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
-                                                title="Delete"
-                                            >
-                                                <FaTrash size={12} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )
                     )}
                 </div>
 
