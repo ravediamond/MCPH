@@ -1,3 +1,7 @@
+[![Build Status](https://github.com/yourusername/MCPHub/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/MCPHub/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/mcp-hub.svg)](https://www.npmjs.com/package/mcp-hub)
+
 # MCPHub: Model Context Protocol (MCP) Remote Artifact Server
 
 **Website:** [https://mcph.io](https://mcph.io)
@@ -75,7 +79,7 @@ MCPHub exposes the following tools via MCP:
 
 **Connect from an MCP client:**
 ```sh
-npx mcp-remote https://mcph.io/sse
+npx mcp-remote https://mcph.io/api/sse
 ```
 
 **Search for artifacts:**
