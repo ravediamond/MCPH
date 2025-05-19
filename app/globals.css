@@ -1,35 +1,35 @@
 @import "tailwindcss/index.css";
 
 :root {
-    --background-beige: #f5f3ef;
-    --text-primary: #202123;
-    --text-secondary: #5d5e61;
-    --accent-coral: #e57a56;
-    --border-color: #e5e5e5;
-    --card-bg: #ffffff;
-    --hover-bg: rgba(0, 0, 0, 0.05);
+  --background-beige: #f5f3ef;
+  --text-primary: #202123;
+  --text-secondary: #5d5e61;
+  --accent-coral: #e57a56;
+  --border-color: #e5e5e5;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(0, 0, 0, 0.05);
 }
 
 body {
-    background-color: var(--background-beige);
-    color: var(--text-primary);
+  background-color: var(--background-beige);
+  color: var(--text-primary);
 }
 
 /* Custom scrollbar for light theme */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+  background: #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #d1d1d1;
-    border-radius: 4px;
+  background: #d1d1d1;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #b1b1b1;
+  background: #b1b1b1;
 }

@@ -1,39 +1,39 @@
 {
-    "version": 2,
-    "buildCommand": "npm run build",
-    "devCommand": "npm run dev",
-    "outputDirectory": ".next",
-    "headers": [
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "outputDirectory": ".next",
+  "headers": [
+    {
+      "source": "/api/sse",
+      "headers": [
         {
-            "source": "/api/sse",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "no-cache, no-store, must-revalidate"
-                },
-                {
-                    "key": "Connection",
-                    "value": "keep-alive"
-                }
-            ]
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         },
         {
-            "source": "/api/uploads/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "no-cache, no-store, must-revalidate"
-                }
-            ]
+          "key": "Connection",
+          "value": "keep-alive"
         }
-    ],
-    "github": {
-        "silent": true
+      ]
     },
-    "crons": [
+    {
+      "source": "/api/uploads/(.*)",
+      "headers": [
         {
-            "path": "/api/cron/delete-expired-files",
-            "schedule": "0 0 * * *"
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
-    ]
+      ]
+    }
+  ],
+  "github": {
+    "silent": true
+  },
+  "crons": [
+    {
+      "path": "/api/cron/delete-expired-files",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

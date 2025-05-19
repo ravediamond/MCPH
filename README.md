@@ -10,6 +10,7 @@
 ## What is MCP?
 
 The **Model Context Protocol (MCP)** is a standardized way for AI models, agents, and tools to maintain, share, and reference context across interactions. MCP enables:
+
 - Persistent, portable context for AI models
 - Secure sharing of context and artifacts between users, agents, and tools
 - Improved coherence and utility in AI-powered workflows
@@ -17,11 +18,13 @@ The **Model Context Protocol (MCP)** is a standardized way for AI models, agents
 ## About MCPHub
 
 MCPHub is a public, remote MCP server for storing and sharing artifacts (files, data, diagrams, etc.) using the MCP protocol. It implements the official MCP specification, including:
+
 - **SSE (Server-Sent Events) support** for real-time context streaming
 - Secure artifact upload, download, and sharing
 - Expiry and access control for all artifacts
 
 ### Key Features
+
 - **Remote MCP server**: Connect from any MCP-compatible client (e.g., Claude Desktop, Cursor, Windsurf)
 - **SSE endpoint**: Real-time context and artifact streaming
 - **OAuth-ready**: Secure authentication for future integrations
@@ -36,6 +39,7 @@ npx mcp-remote https://mcph.io/sse
 ```
 
 Or add to your MCP client config (e.g., Cursor, Claude Desktop):
+
 ```json
 {
   "mcpServers": {
@@ -53,6 +57,7 @@ Or add to your MCP client config (e.g., Cursor, Claude Desktop):
 ## Available Tools
 
 MCPHub exposes the following tools via MCP:
+
 - **artifacts/upload**: Upload a new artifact
 - **artifacts/get_metadata**: Get metadata for an artifact
 - **artifacts/download**: Download an artifact
@@ -73,19 +78,23 @@ MCPHub exposes the following tools via MCP:
 ## Example Usage
 
 **Upload an artifact via Web UI:**
+
 1. Go to [https://mcph.io/upload](https://mcph.io/upload)
 2. Select your artifact, set expiry, and upload
 3. Share the generated link or use in your MCP client
 
 **Connect from an MCP client:**
+
 ```sh
 npx mcp-remote https://mcph.io/api/sse
 ```
 
 **Search for artifacts:**
+
 - Use the web UI or the `artifacts/search` tool via MCP
 
 ## Learn More
+
 - [MCP Protocol Overview](https://github.com/cloudflare/agents/tree/main/examples/mcp)
 - [mcp-remote npm package](https://www.npmjs.com/package/mcp-remote)
 - [mcph.io](https://mcph.io)

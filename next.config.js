@@ -1,22 +1,22 @@
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['mcph.io', 'www.mcph.io'],
+    domains: ["mcph.io", "www.mcph.io"],
     // We don't need unoptimized with Vercel
-    // unoptimized: true, 
+    // unoptimized: true,
   },
   // We don't need output: 'export' with Vercel
-  // output: 'export', 
+  // output: 'export',
 
   // We don't need a distDir with Vercel
-  // distDir: 'out', 
+  // distDir: 'out',
 
   // Vercel handles API routes, so no need for trailing slashes
-  // trailingSlash: true, 
+  // trailingSlash: true,
 
   // Configure webpack for Node.js core modules in browser
   webpack: (config, { isServer }) => {
@@ -24,13 +24,13 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        stream: require.resolve('stream-browserify'),
-        buffer: require.resolve('buffer/'),
-        http: require.resolve('http-browserify'),
-        net: require.resolve('net-browserify'),
-        https: require.resolve('https-browserify'),
-        crypto: require.resolve('crypto-browserify'),
-        tls: require.resolve('tls-browserify'),
+        stream: require.resolve("stream-browserify"),
+        buffer: require.resolve("buffer/"),
+        http: require.resolve("http-browserify"),
+        net: require.resolve("net-browserify"),
+        https: require.resolve("https-browserify"),
+        crypto: require.resolve("crypto-browserify"),
+        tls: require.resolve("tls-browserify"),
       };
     }
 
