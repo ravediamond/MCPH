@@ -35,15 +35,15 @@ echo "Using Firebase Project ID: $NEXT_PUBLIC_FIREBASE_PROJECT_ID"
 ACCESS_TOKEN=""
 
 # Attempt to get access token
-if [ -n "$GCP_SERVICE_ACCOUNT" ]; then
-    echo "Using GCP_SERVICE_ACCOUNT environment variable for authentication..."
+if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+    echo "Using GOOGLE_APPLICATION_CREDENTIALS environment variable for authentication..."
     # Write the JSON key to a temporary file
     TEMP_CRED_FILE="temp_gcp_creds.json"
-    echo "$GCP_SERVICE_ACCOUNT" > "$TEMP_CRED_FILE"
+    echo "$GOOGLE_APPLICATION_CREDENTIALS" > "$TEMP_CRED_FILE"
     
     # Check if the temp file was created successfully and is not empty
     if [ ! -s "$TEMP_CRED_FILE" ]; then
-        echo "Error: Failed to write GCP_SERVICE_ACCOUNT to temporary file or variable is empty."
+        echo "Error: Failed to write GOOGLE_APPLICATION_CREDENTIALS to temporary file or variable is empty."
         rm -f "$TEMP_CRED_FILE" # Clean up empty/failed temp file
         # Fall-through to try ADC without service account file
     else
@@ -57,9 +57,9 @@ if [ -n "$GCP_SERVICE_ACCOUNT" ]; then
         rm "$TEMP_CRED_FILE"
         
         if [ -n "$ACCESS_TOKEN" ]; then
-            echo "Access token obtained using GCP_SERVICE_ACCOUNT."
+            echo "Access token obtained using GOOGLE_APPLICATION_CREDENTIALS."
         else
-            echo "Warning: Failed to obtain access token using GCP_SERVICE_ACCOUNT. Trying other methods..."
+            echo "Warning: Failed to obtain access token using GOOGLE_APPLICATION_CREDENTIALS. Trying other methods..."
         fi
     fi
 fi
@@ -76,7 +76,7 @@ fi
 if [ -z "$ACCESS_TOKEN" ]; then
     echo "Error: Failed to get access token."
     echo "Please ensure gcloud is configured correctly (e.g., run 'gcloud auth application-default login')"
-    echo "or provide a valid GCP_SERVICE_ACCOUNT in .env.local."
+    echo "or provide a valid GOOGLE_APPLICATION_CREDENTIALS in .env.local."
     exit 1
 fi
 

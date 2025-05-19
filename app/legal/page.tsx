@@ -30,11 +30,10 @@ export default function LegalHubPage() {
           <div className="flex flex-wrap border-b border-gray-200">
             <button
               onClick={() => setActiveTab("privacy")}
-              className={`px-6 py-4 text-lg font-medium focus:outline-none ${
-                activeTab === "privacy"
+              className={`px-6 py-4 text-lg font-medium focus:outline-none ${activeTab === "privacy"
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex items-center">
                 <FaShieldAlt className="mr-2" />
@@ -44,11 +43,10 @@ export default function LegalHubPage() {
 
             <button
               onClick={() => setActiveTab("terms")}
-              className={`px-6 py-4 text-lg font-medium focus:outline-none ${
-                activeTab === "terms"
+              className={`px-6 py-4 text-lg font-medium focus:outline-none ${activeTab === "terms"
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex items-center">
                 <FaFileContract className="mr-2" />
@@ -58,11 +56,10 @@ export default function LegalHubPage() {
 
             <button
               onClick={() => setActiveTab("about")}
-              className={`px-6 py-4 text-lg font-medium focus:outline-none ${
-                activeTab === "about"
+              className={`px-6 py-4 text-lg font-medium focus:outline-none ${activeTab === "about"
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               <div className="flex items-center">
                 <FaInfoCircle className="mr-2" />
@@ -220,22 +217,10 @@ export default function LegalHubPage() {
 
           <div className="flex flex-col space-y-2">
             <a
-              href="mailto:privacy@mcph.io"
+              href="mailto:contact@mcph.io"
               className="text-blue-600 hover:text-blue-800"
             >
-              privacy@mcph.io
-            </a>
-            <a
-              href="mailto:legal@mcph.io"
-              className="text-blue-600 hover:text-blue-800"
-            >
-              legal@mcph.io
-            </a>
-            <a
-              href="mailto:support@mcph.io"
-              className="text-blue-600 hover:text-blue-800"
-            >
-              support@mcph.io
+              contact@mcph.io
             </a>
           </div>
         </div>

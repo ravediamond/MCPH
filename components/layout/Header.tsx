@@ -82,7 +82,7 @@ export default function Header() {
               href="/docs"
               className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/docs") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
             >
-              API Docs
+              Documentation
             </Link>
             {/* Auth Buttons Desktop */}
             {user ? (
