@@ -11,7 +11,10 @@ if (!admin.apps.length) {
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_ADMIN_SDK_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          privateKey: process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY?.replace(
+            /\\n/g,
+            "\n",
+          ),
         }),
       });
       console.log("[FirebaseAdmin] Initialized with environment variables.");
@@ -44,7 +47,9 @@ if (!admin.apps.length) {
     }
   } catch (error: any) {
     if (error.code === "app/duplicate-app") {
-      console.warn("[FirebaseAdmin] Already initialized (duplicate app error).");
+      console.warn(
+        "[FirebaseAdmin] Already initialized (duplicate app error).",
+      );
     } else {
       console.error("[FirebaseAdmin] Initialization error:", error);
     }

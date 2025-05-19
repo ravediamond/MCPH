@@ -11,7 +11,7 @@ async function setAdminClaimForUser(uid: string) {
     await admin.auth().setCustomUserClaims(uid, { admin: true });
     console.log(`Successfully set admin claim for user: ${uid}`);
     console.log(
-      "The user may need to sign out and sign back in, or their ID token refreshed, for the changes to take effect immediately on the client-side."
+      "The user may need to sign out and sign back in, or their ID token refreshed, for the changes to take effect immediately on the client-side.",
     );
     process.exit(0);
   } catch (error) {
