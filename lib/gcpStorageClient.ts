@@ -1,57 +1,17 @@
 import { Storage, StorageOptions } from "@google-cloud/storage";
 
-// Helper function to create Storage instance from credentials string
-const createStorageFromCredentials = (
-  credentialsString: string,
-  projectId?: string,
-): Storage | null => {
-  try {
-    const credentials = JSON.parse(credentialsString);
-    // More robust check for client_email and private_key
-    if (
-      typeof credentials.client_email !== "string" ||
-      credentials.client_email.trim() === "" ||
-      typeof credentials.private_key !== "string" ||
-      credentials.private_key.trim() === ""
-    ) {
-      console.error(
-        "Service account credentials from string are missing, empty, or not strings for client_email or private_key.",
-      );
-      // Log the problematic parts for debugging, carefully redacting private_key if necessary in real logs
-      console.error(
-        `Detected types: client_email (${typeof credentials.client_email}), private_key (${typeof credentials.private_key}). Ensure these are non-empty strings.`,
-      );
-      return null;
-    }
-    // Use projectId from argument if provided, otherwise it will be inferred from credentials or ADC
-    const options: StorageOptions = { credentials };
-    if (projectId) {
-      options.projectId = projectId;
-    }
-    return new Storage(options);
-  } catch (e: any) {
-    console.error(
-      "Error parsing service account credentials string:",
-      e.message,
-    );
-    return null;
-  }
-};
-
 // Initialize Google Cloud Storage client
 let storage: Storage;
 
 try {
   const projectIdFromEnv = process.env.GCP_PROJECT_ID;
 
-  // Production environment (e.g., Vercel deployment)
   if (process.env.VERCEL_ENV === "production") {
     console.log(
-      "Production environment detected. Attempting to initialize GCS client using GOOGLE_APPLICATION_CREDENTIALS.",
+      "Production environment detected. Initializing GCS client using keyFilename from GOOGLE_APPLICATION_CREDENTIALS.",
     );
-    const credentialsString = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-    if (!credentialsString) {
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (!keyFilename) {
       console.error(
         "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
       );
@@ -59,24 +19,11 @@ try {
         "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
       );
     }
-
-    // GCP_PROJECT_ID is recommended for clarity, but Storage client might infer from credentials
-    if (!projectIdFromEnv) {
-      console.warn(
-        "GCP_PROJECT_ID environment variable is not explicitly set for production. Project ID will be inferred from credentials if possible.",
-      );
+    const storageOptions: StorageOptions = { keyFilename };
+    if (projectIdFromEnv) {
+      storageOptions.projectId = projectIdFromEnv;
     }
-
-    const prodStorage = createStorageFromCredentials(
-      credentialsString,
-      projectIdFromEnv,
-    );
-    if (!prodStorage) {
-      throw new Error(
-        "Failed to initialize Google Cloud Storage for production from GOOGLE_APPLICATION_CREDENTIALS.",
-      );
-    }
-    storage = prodStorage;
+    storage = new Storage(storageOptions);
     console.log(
       `Initialized Google Cloud Storage client for production. Project ID: ${storage.projectId || "inferred"}.`,
     );
