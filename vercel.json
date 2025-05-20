@@ -31,7 +31,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Headers",
-          "value": "Authorization, Content-Type"
+          "value": "X-Authorization, Content-Type"
         }
       ]
     }

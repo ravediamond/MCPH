@@ -2,17 +2,19 @@ import { findUserByApiKey } from "@/services/firebaseService";
 import { NextRequest } from "next/server";
 
 /**
- * Checks for an API key in the X-API-Key header, validates it, and returns the user record if valid, otherwise throws.
+ * Checks for an API key in the X-Authorization header (Bearer <key>), validates it, and returns the user record if valid, otherwise throws.
  */
 export async function requireApiKeyAuth(req: NextRequest) {
-  const apiKeyHeader = req.headers.get("x-api-key");
+  const authHeader = req.headers.get("x-authorization");
   console.log(
-    `[requireApiKeyAuth] Using header: x-api-key | Value:`,
-    apiKeyHeader,
+    `[requireApiKeyAuth] Using header: x-authorization | Value:`,
+    authHeader,
   );
 
-  if (!apiKeyHeader || !apiKeyHeader.trim()) {
-    console.log("[requireApiKeyAuth] Missing X-API-Key header");
+  if (!authHeader || !authHeader.trim() || !authHeader.startsWith("Bearer ")) {
+    console.log(
+      "[requireApiKeyAuth] Missing or invalid X-Authorization header",
+    );
     throw new Response(
       JSON.stringify({ error: "Missing or invalid API key" }),
       {
@@ -21,7 +23,7 @@ export async function requireApiKeyAuth(req: NextRequest) {
       },
     );
   }
-  const apiKey = apiKeyHeader.trim();
+  const apiKey = authHeader.replace("Bearer ", "").trim();
   console.log("[requireApiKeyAuth] Extracted API key:", apiKey);
   const apiKeyRecord = await findUserByApiKey(apiKey);
   if (!apiKeyRecord) {
