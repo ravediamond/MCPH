@@ -15,10 +15,15 @@ export async function requireApiKeyAuth(req: NextRequest) {
   let usedHeader = "";
   if (req.headers.get("authorization")) usedHeader = "authorization";
   else if (req.headers.get("Authorization")) usedHeader = "Authorization";
-  else if (req.headers.get("x-vercel-sc-authorization")) usedHeader = "x-vercel-sc-authorization";
-  else if (req.headers.get("x-vercel-sc-headers")) usedHeader = "x-vercel-sc-headers";
+  else if (req.headers.get("x-vercel-sc-authorization"))
+    usedHeader = "x-vercel-sc-authorization";
+  else if (req.headers.get("x-vercel-sc-headers"))
+    usedHeader = "x-vercel-sc-headers";
 
-  console.log(`[requireApiKeyAuth] Using header: ${usedHeader} | Value:`, authHeader);
+  console.log(
+    `[requireApiKeyAuth] Using header: ${usedHeader} | Value:`,
+    authHeader,
+  );
 
   if (!authHeader) {
     console.log("[requireApiKeyAuth] Missing Authorization header");
@@ -34,14 +39,20 @@ export async function requireApiKeyAuth(req: NextRequest) {
   if (usedHeader === "x-vercel-sc-headers" && authHeader.startsWith("{")) {
     try {
       const parsed = JSON.parse(authHeader);
-      authHeader = parsed["authorization"] || parsed["Authorization"] || authHeader;
-      console.log("[requireApiKeyAuth] Extracted Authorization from x-vercel-sc-headers:", authHeader);
+      authHeader =
+        parsed["authorization"] || parsed["Authorization"] || authHeader;
+      console.log(
+        "[requireApiKeyAuth] Extracted Authorization from x-vercel-sc-headers:",
+        authHeader,
+      );
     } catch (e) {
       // Not JSON, ignore
     }
   }
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("[requireApiKeyAuth] Invalid or missing Authorization header format");
+    console.log(
+      "[requireApiKeyAuth] Invalid or missing Authorization header format",
+    );
     throw new Response(
       JSON.stringify({ error: "Missing or invalid API key" }),
       {
@@ -60,6 +71,9 @@ export async function requireApiKeyAuth(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  console.log("[requireApiKeyAuth] API key valid for user:", apiKeyRecord.userId);
+  console.log(
+    "[requireApiKeyAuth] API key valid for user:",
+    apiKeyRecord.userId,
+  );
   return apiKeyRecord;
 }
