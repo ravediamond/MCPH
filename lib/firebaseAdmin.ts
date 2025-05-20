@@ -12,7 +12,16 @@ function setupServiceAccountForVercel() {
       process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH;
     if (jsonContent && jsonContent.trim().startsWith("{")) {
       const tmpPath = path.join(os.tmpdir(), "service-account.json");
-      fs.writeFileSync(tmpPath, jsonContent, { encoding: "utf8" });
+      let shouldWrite = true;
+      if (fs.existsSync(tmpPath)) {
+        const existing = fs.readFileSync(tmpPath, "utf8");
+        if (existing === jsonContent) {
+          shouldWrite = false;
+        }
+      }
+      if (shouldWrite) {
+        fs.writeFileSync(tmpPath, jsonContent, { encoding: "utf8" });
+      }
       process.env.GOOGLE_APPLICATION_CREDENTIALS = tmpPath;
       process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH = tmpPath;
     }
