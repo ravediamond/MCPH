@@ -76,8 +76,8 @@ export default function HomePage() {
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
+                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              )
               : 0;
 
             return {
@@ -276,10 +276,10 @@ export default function HomePage() {
                 : doc.downloadCount || 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
+                  Object.entries(fields.metadata.mapValue.fields).map(
+                    ([k, v]: any) => [k, v.stringValue],
+                  ),
+                )
                 : doc.metadata || undefined,
             };
           })
@@ -373,10 +373,10 @@ export default function HomePage() {
             {/* Create API Key Button */}
             <div className="mt-4">
               <Link
-                href="/admin/api-keys"
+                href="/api-keys"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium shadow border border-blue-700"
               >
-                <FaKey className="mr-2" /> Create API Key
+                <FaKey className="mr-2" /> Manage API Keys
               </Link>
             </div>
           </div>
