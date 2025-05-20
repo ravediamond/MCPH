@@ -29,6 +29,9 @@ export async function requireApiKeyAuth(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  console.log("[requireApiKeyAuth] API key valid for user:", apiKeyRecord.userId);
+  console.log(
+    "[requireApiKeyAuth] API key valid for user:",
+    apiKeyRecord.userId,
+  );
   return apiKeyRecord;
 }
