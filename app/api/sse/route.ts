@@ -64,7 +64,7 @@ export async function OPTIONS(req: NextRequest) {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,Authorization",
+      "Access-Control-Allow-Headers": "Content-Type,X-Authorization",
       "Access-Control-Max-Age": "86400",
     },
   });
@@ -687,8 +687,8 @@ export async function POST(req: NextRequest) {
                 );
                 const metaString = metadata
                   ? Object.entries(metadata)
-                      .map(([k, v]) => `${k}: ${v}`)
-                      .join(" ")
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(" ")
                   : "";
                 const concatText = [title, description, metaString]
                   .filter(Boolean)
