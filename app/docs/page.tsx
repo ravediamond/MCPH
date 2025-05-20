@@ -102,7 +102,9 @@ export default function DocsPage() {
         "mcp-remote",
         "https://mcph.io/api/sse",
         "--header",
-        "Authorization: Bearer $\{AUTH_TOKEN}\""
+        "Authorization: Bearer $\{AUTH_TOKEN}\"",
+        "--transport",
+        "sse-only"
       ]
     }
   },

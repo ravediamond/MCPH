@@ -56,6 +56,21 @@ const ShareArtifactParams = z.object({
 });
 
 /**
+ * Handles CORS preflight requests.
+ */
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type,Authorization,X-API-Key",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
+}
+
+/**
  * Handles incoming SSE connection requests.
  */
 export async function GET(req: NextRequest) {
@@ -109,6 +124,7 @@ export async function GET(req: NextRequest) {
         "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
         Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   } catch (err) {
@@ -799,7 +815,10 @@ export async function POST(req: NextRequest) {
     // ACK the POST so client can reuse the session
     return new Response(null, {
       status: 200,
-      headers: { "mcp-session-id": sessionId },
+      headers: {
+        "mcp-session-id": sessionId,
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   } catch (err) {
     console.error("Error in /sse POST route:", err);

@@ -373,10 +373,10 @@ export default function HomePage() {
             {/* Create API Key Button */}
             <div className="mt-4">
               <Link
-                href="/admin/api-keys"
+                href="/api-keys"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium shadow border border-blue-700"
               >
-                <FaKey className="mr-2" /> Create API Key
+                <FaKey className="mr-2" /> Manage API Keys
               </Link>
             </div>
           </div>
