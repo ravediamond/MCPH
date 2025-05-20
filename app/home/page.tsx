@@ -76,8 +76,8 @@ export default function HomePage() {
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-              )
+                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+                )
               : 0;
 
             return {
@@ -276,10 +276,10 @@ export default function HomePage() {
                 : doc.downloadCount || 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                  Object.entries(fields.metadata.mapValue.fields).map(
-                    ([k, v]: any) => [k, v.stringValue],
-                  ),
-                )
+                    Object.entries(fields.metadata.mapValue.fields).map(
+                      ([k, v]: any) => [k, v.stringValue],
+                    ),
+                  )
                 : doc.metadata || undefined,
             };
           })

@@ -7,7 +7,9 @@ import os from "os";
 // Utility to handle service account credentials for Vercel
 function setupServiceAccountForVercel() {
   if (process.env.VERCEL_ENV) {
-    const jsonContent = process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH;
+    const jsonContent =
+      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+      process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH;
     if (jsonContent && jsonContent.trim().startsWith("{")) {
       const tmpPath = path.join(os.tmpdir(), "service-account.json");
       fs.writeFileSync(tmpPath, jsonContent, { encoding: "utf8" });
