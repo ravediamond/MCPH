@@ -11,10 +11,9 @@ export async function requireApiKeyAuth(req: NextRequest) {
     console.log(`  ${key}: ${value}`);
   }
 
-  const authHeader =
-    req.headers.get("authorization") || req.headers.get("Authorization");
+  const authHeader = req.headers.get("x-authorization");
   console.log(
-    `[requireApiKeyAuth] Using header: authorization | Value:`,
+    `[requireApiKeyAuth] Using header: x-authorization | Value:`,
     authHeader,
   );
 
