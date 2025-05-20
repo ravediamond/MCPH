@@ -6,10 +6,15 @@ import { NextRequest } from "next/server";
  */
 export async function requireApiKeyAuth(req: NextRequest) {
   const authHeader = req.headers.get("x-authorization");
-  console.log(`[requireApiKeyAuth] Using header: x-authorization | Value:`, authHeader);
+  console.log(
+    `[requireApiKeyAuth] Using header: x-authorization | Value:`,
+    authHeader,
+  );
 
   if (!authHeader || !authHeader.trim() || !authHeader.startsWith("Bearer ")) {
-    console.log("[requireApiKeyAuth] Missing or invalid X-Authorization header");
+    console.log(
+      "[requireApiKeyAuth] Missing or invalid X-Authorization header",
+    );
     throw new Response(
       JSON.stringify({ error: "Missing or invalid API key" }),
       {
@@ -28,6 +33,9 @@ export async function requireApiKeyAuth(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  console.log("[requireApiKeyAuth] API key valid for user:", apiKeyRecord.userId);
+  console.log(
+    "[requireApiKeyAuth] API key valid for user:",
+    apiKeyRecord.userId,
+  );
   return apiKeyRecord;
 }
