@@ -11,8 +11,12 @@ export async function requireApiKeyAuth(req: NextRequest) {
     console.log(`  ${key}: ${value}`);
   }
 
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-  console.log(`[requireApiKeyAuth] Using header: authorization | Value:`, authHeader);
+  const authHeader =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+  console.log(
+    `[requireApiKeyAuth] Using header: authorization | Value:`,
+    authHeader,
+  );
 
   if (!authHeader || !authHeader.trim() || !authHeader.startsWith("Bearer ")) {
     console.log("[requireApiKeyAuth] Missing or invalid Authorization header");
@@ -34,6 +38,9 @@ export async function requireApiKeyAuth(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  console.log("[requireApiKeyAuth] API key valid for user:", apiKeyRecord.userId);
+  console.log(
+    "[requireApiKeyAuth] API key valid for user:",
+    apiKeyRecord.userId,
+  );
   return apiKeyRecord;
 }
