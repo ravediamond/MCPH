@@ -101,15 +101,15 @@ export async function generateUploadUrl(
     ) {
       throw new Error(
         "Failed to generate upload URL due to a signing error. " +
-        "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
-        "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
-        'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
+          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
+          "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
+          'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
       );
     }
     // Fallback for other errors
     throw new Error(
       "Failed to generate upload URL. Original error: " +
-      (error.message || "Unknown error"),
+        (error.message || "Unknown error"),
     );
   }
 }
@@ -195,8 +195,8 @@ export async function uploadFile(
     // --- Generate searchText field ---
     const metaString = metadata
       ? Object.entries(metadata)
-        .map(([k, v]) => `${k} ${v}`)
-        .join(" ")
+          .map(([k, v]) => `${k} ${v}`)
+          .join(" ")
       : "";
     const searchText = [title, fileName, description, metaString]
       .filter(Boolean)
