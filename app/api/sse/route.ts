@@ -687,8 +687,8 @@ export async function POST(req: NextRequest) {
                 );
                 const metaString = metadata
                   ? Object.entries(metadata)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join(" ")
+                      .map(([k, v]) => `${k}: ${v}`)
+                      .join(" ")
                   : "";
                 const concatText = [title, description, metaString]
                   .filter(Boolean)
