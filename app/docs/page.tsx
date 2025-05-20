@@ -99,6 +99,7 @@ export default function DocsPage() {
     "MCPH": {
       "command": "npx",
       "args": [
+        "-y",
         "mcp-remote",
         "https://mcph.io/api/sse",
         "--header",
