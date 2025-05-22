@@ -537,21 +537,17 @@ export async function findUserByApiKey(
   apiKey: string,
 ): Promise<ApiKeyRecord | null> {
   const hashedKey = hashApiKey(apiKey);
-  console.log("[findUserByApiKey] API key:", apiKey);
-  console.log("[findUserByApiKey] Hashed key:", hashedKey);
   const snapshot = await db
     .collection(API_KEYS_COLLECTION)
     .where("hashedKey", "==", hashedKey)
     .limit(1)
     .get();
   if (snapshot.empty) {
-    console.log("[findUserByApiKey] No matching API key found in Firestore");
     return null;
   }
   const record = fromFirestoreData(snapshot.docs[0].data()) as ApiKeyRecord;
   // Optionally update lastUsedAt
   await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
-  console.log("[findUserByApiKey] Found API key record:", record);
   return record;
 }
 
