@@ -14,14 +14,14 @@ MCPHub is a public remote artifact server for the Model Context Protocol (MCP). 
 
 ## Quick Start
 
-- **SSE Endpoint:** `https://mcph.io/api/sse`
+- **SSE Endpoint:** `https://mcp.mcph.io/`
 - **Web UI:** [mcph.io](https://mcph.io)
 - **Artifact Page:** `https://mcph.io/artifact/[id]`
 
 ### Connect with mcp-remote
 
 ```sh
-npx mcp-remote https://mcph.io/api/sse
+npx mcp-remote https://mcp.mcph.io/
 ```
 
 Or configure your client:
@@ -31,7 +31,7 @@ Or configure your client:
   "mcpServers": {
     "mcphub": {
       "command": "npx",
-      "args": ["mcp-remote", "https://mcph.io/api/sse"]
+      "args": ["mcp-remote", "https://mcp.mcph.io/"]
     }
   }
 }
@@ -58,7 +58,7 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 
 ## How the SSE Endpoint Works
 
-- Connect via SSE: `npx mcp-remote https://mcph.io/api/sse`
+- Connect via SSE: `npx mcp-remote https://mcp.mcph.io/`
 - On connect, you receive an `endpoint` event with your session URL. All JSON-RPC requests must include your `sessionId` as a query parameter.
 - Send JSON-RPC requests to the endpoint. Example for `artifacts/list`:
 

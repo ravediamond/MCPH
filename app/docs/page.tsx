@@ -39,7 +39,7 @@ export default function DocsPage() {
           </p>
           <ul className="list-disc pl-5 text-gray-600 space-y-1">
             <li>
-              <b>SSE endpoint:</b> <code>https://mcph.io/api/sse</code>
+              <b>SSE endpoint:</b> <code>https://mcp.mcph.io/</code>
             </li>
             <li>
               <b>Web UI:</b>{" "}
@@ -79,7 +79,7 @@ export default function DocsPage() {
             <li>
               <b>Connect to MCPH:</b>
               <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npx mcp-remote https://mcph.io/api/sse
+                npx mcp-remote https://mcp.mcph.io/
               </pre>
               This will connect your local client to the MCPH SSE endpoint.
             </li>
@@ -101,7 +101,7 @@ export default function DocsPage() {
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcph.io/api/sse",
+        "https://mcp.mcph.io/",
         "--header",
         "Authorization: Bearer $\{AUTH_TOKEN}\"",
         "--transport",
@@ -254,7 +254,7 @@ Output (text):
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via SSE:</b> Use{" "}
-              <code>npx mcp-remote https://mcph.io/api/sse</code> or configure
+              <code>npx mcp-remote https://mcp.mcph.io/</code> or configure
               your client to use the endpoint.
             </li>
             <li>
@@ -366,7 +366,7 @@ Output (text):
               href="#sse"
               className="block text-primary-500 hover:text-primary-600 py-1"
             >
-              SSE Endpoint: mcph.io/api/sse
+              SSE Endpoint: mcp.mcph.io/
             </a>
           </nav>
         </div>
