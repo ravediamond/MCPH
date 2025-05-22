@@ -142,7 +142,7 @@ export interface FileMetadata {
   metadata?: Record<string, string>;
   isShared?: boolean; // New: whether the file is shared (default false)
   password?: string; // New: optional hashed password for download
-  fileType?: string; // Optional: type of artifact (generic, data, image, etc.)
+  fileType?: string; // Optional: type of crate (generic, data, image, etc.)
 }
 
 /**

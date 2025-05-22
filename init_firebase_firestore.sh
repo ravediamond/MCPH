@@ -211,17 +211,17 @@ gcloud firestore indexes composite create \
   --query-scope=COLLECTION \
   --field-config=vector-config='{"dimension":"768","flat": "{}"}',field-path=embedding
 
-# 6. Initialize artifacts collection with a placeholder document including embedding
+# 6. Initialize crates collection with a placeholder document including embedding
 # Example embedding: 1536 zeros (adjust size to match your embedding model)
-echo "--- Initializing 'artifacts' collection with embedding field ---"
+echo "--- Initializing 'crates' collection with embedding field ---"
 ARTIFACTS_EMBEDDING=$(python3 -c 'import json; print(json.dumps({"arrayValue": {"values": [{"doubleValue": 0.0} for _ in range(1536)]}}))')
 ARTIFACTS_DATA='{
     "id": {"stringValue": "placeholder"},
-    "description": {"stringValue": "A sample artifact for vector search"},
+    "description": {"stringValue": "A sample crate for vector search"},
     "metadata": {"mapValue": {"fields": {"type": {"stringValue": "example"}, "author": {"stringValue": "system"}}}},
     "embedding": '"${ARTIFACTS_EMBEDDING}"'
 }'
-create_document "artifacts" "placeholder" "${ARTIFACTS_DATA}"
+create_document "crates" "placeholder" "${ARTIFACTS_DATA}"
 
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
@@ -231,7 +231,7 @@ echo "Your Firestore database should now have these collections initialized:"
 echo "- files: For storing file metadata"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
-echo "- artifacts: For storing artifacts with embeddings for vector search"
+echo "- crates: For storing crates with embeddings for vector search"
 echo ""
 echo "These collections align with how your application is using Firestore in your functions code."
 

@@ -76,8 +76,8 @@ export default function HomePage() {
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
+                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              )
               : 0;
 
             return {
@@ -225,7 +225,7 @@ export default function HomePage() {
 
   // Copy sharing link
   const copyShareLink = (fileId: string) => {
-    const link = `${window.location.origin}/artifact/${fileId}`;
+    const link = `${window.location.origin}/crate/${fileId}`;
     navigator.clipboard
       .writeText(link)
       .then(() => {
@@ -276,14 +276,14 @@ export default function HomePage() {
                 : doc.downloadCount || 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
+                  Object.entries(fields.metadata.mapValue.fields).map(
+                    ([k, v]: any) => [k, v.stringValue],
+                  ),
+                )
                 : doc.metadata || undefined,
             };
           })
-          .filter((file: any) => file.id && file.fileName); // Filter out empty/invalid artifacts
+          .filter((file: any) => file.id && file.fileName); // Filter out empty/invalid crates
         setSearchResults(results);
       } catch (err: any) {
         setSearchError(err.message || "Search failed");
@@ -310,8 +310,8 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-center">
         <Card className="max-w-md w-full p-8 text-center">
           <FaLock className="text-primary-500 text-3xl mx-auto mb-4" />
-          <h1 className="text-2xl font-medium mb-2">My Artifacts</h1>
-          <p className="text-gray-600 mb-6">Sign in to access your artifacts</p>
+          <h1 className="text-2xl font-medium mb-2">My crates</h1>
+          <p className="text-gray-600 mb-6">Sign in to access your crates</p>
           <button
             onClick={signInWithGoogle}
             className="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded transition-colors"
@@ -384,13 +384,13 @@ export default function HomePage() {
         {/* Header with search */}
         <div className="flex flex-col items-center justify-center mb-8 mt-4">
           <h1 className="text-2xl font-medium text-gray-800 mb-4">
-            My Artifacts
+            My crates
           </h1>
           <div className="w-full flex justify-center">
             <div className="relative w-full max-w-xl">
               <input
                 type="text"
-                placeholder="Search artifacts..."
+                placeholder="Search crates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearchKeyDown}
@@ -428,7 +428,7 @@ export default function HomePage() {
             searchResults.length === 0 ? (
               <Card className="p-8 text-center">
                 <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
-                <p className="text-gray-500">No matching artifacts found</p>
+                <p className="text-gray-500">No matching crates found</p>
               </Card>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -443,7 +443,7 @@ export default function HomePage() {
                       <div className="flex items-start space-x-3">
                         <div className="mt-0.5">{getFileIcon(file)}</div>
                         <div className="flex-grow min-w-0">
-                          <Link href={`/artifact/${file.id}`} className="block">
+                          <Link href={`/crate/${file.id}`} className="block">
                             <h3
                               className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
                               title={file.fileName}
@@ -472,7 +472,7 @@ export default function HomePage() {
                           <FaShareAlt size={12} />
                         </button>
                         <Link
-                          href={`/artifact/${file.id}`}
+                          href={`/crate/${file.id}`}
                           className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="View details"
                         >
@@ -496,15 +496,15 @@ export default function HomePage() {
               <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
               <p className="text-gray-500">
                 {searchQuery
-                  ? "No matching artifacts found"
-                  : "No artifacts uploaded yet"}
+                  ? "No matching crates found"
+                  : "No crates uploaded yet"}
               </p>
               {!searchQuery && (
                 <Link
                   href="/upload"
                   className="inline-flex items-center mt-4 text-primary-500"
                 >
-                  <FaUpload className="mr-1" /> Upload your first artifact
+                  <FaUpload className="mr-1" /> Upload your first crate
                 </Link>
               )}
             </Card>
@@ -523,7 +523,7 @@ export default function HomePage() {
 
                       {/* File Info */}
                       <div className="flex-grow min-w-0">
-                        <Link href={`/artifact/${file.id}`} className="block">
+                        <Link href={`/crate/${file.id}`} className="block">
                           <h3
                             className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
                             title={file.fileName}
@@ -565,7 +565,7 @@ export default function HomePage() {
                       </button>
 
                       <Link
-                        href={`/artifact/${file.id}`}
+                        href={`/crate/${file.id}`}
                         className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                         title="View details"
                       >
@@ -593,7 +593,7 @@ export default function HomePage() {
         {/* Simple file stats */}
         {filteredFiles.length > 0 && (
           <div className="mt-4 text-sm text-gray-500 flex justify-between">
-            <span>Total: {filteredFiles.length} artifacts</span>
+            <span>Total: {filteredFiles.length} crates</span>
             <span>
               {formatFileSize(
                 filteredFiles.reduce((sum, file) => sum + file.size, 0),
