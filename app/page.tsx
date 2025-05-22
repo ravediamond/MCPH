@@ -64,8 +64,8 @@ export default function Home() {
                 Secure & Private
               </h3>
               <p className="text-gray-600 text-sm">
-                crates are encrypted, never tracked, and automatically
-                deleted after expiration.
+                crates are encrypted, never tracked, and automatically deleted
+                after expiration.
               </p>
             </div>
 
@@ -119,8 +119,8 @@ export default function Home() {
       <section className="py-4 px-4 border-t border-gray-200 text-center">
         <div className="max-w-4xl mx-auto">
           <p className="text-gray-500 text-xs">
-            AI-first crate storage and sharing. Secure, ephemeral, and
-            designed for seamless AI integration.
+            AI-first crate storage and sharing. Secure, ephemeral, and designed
+            for seamless AI integration.
           </p>
         </div>
       </section>

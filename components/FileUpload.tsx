@@ -80,9 +80,7 @@ export default function FileUpload({
   ); // Added state for TTL
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFile, setUploadedFile] = useState<UploadedCrate | null>(
-    null,
-  );
+  const [uploadedFile, setUploadedFile] = useState<UploadedCrate | null>(null);
   const [urlCopied, setUrlCopied] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -688,8 +686,7 @@ export default function FileUpload({
                     className="mr-2"
                   />
                   <label htmlFor="isShared" className="text-sm text-gray-700">
-                    Make this crate shared (anyone with the link can
-                    download)
+                    Make this crate shared (anyone with the link can download)
                   </label>
                 </div>
                 <div className="mt-2">
@@ -724,10 +721,11 @@ export default function FileUpload({
           <button
             type="submit"
             disabled={!file || isUploading || !title.trim()}
-            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
-              ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
-              : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
-              }
+            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${
+              !file || isUploading || !title.trim()
+                ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
+                : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
+            }
                         `}
           >
             {isUploading ? (
@@ -741,8 +739,8 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            By uploading an crate, you agree to our Terms of Service and
-            Privacy Policy.
+            By uploading an crate, you agree to our Terms of Service and Privacy
+            Policy.
           </p>
         </form>
       )}

@@ -12,8 +12,8 @@ export default function DocsPage() {
             MCPH: Model Context Protocol (MCP) Usage and Docs
           </h1>
           <p className="text-gray-600">
-            Public remote crate server and tools for the Model Context
-            Protocol (MCP).
+            Public remote crate server and tools for the Model Context Protocol
+            (MCP).
           </p>
         </div>
 
@@ -24,8 +24,8 @@ export default function DocsPage() {
           <p className="text-gray-600 mb-3">
             <b>Model Context Protocol (MCP)</b> is a standard for AI models,
             agents, and tools to maintain, share, and reference context and
-            crates across interactions. MCP enables persistent, portable
-            context and secure sharing of files and data.
+            crates across interactions. MCP enables persistent, portable context
+            and secure sharing of files and data.
           </p>
         </div>
 
@@ -182,9 +182,7 @@ export default function DocsPage() {
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                crates/search
-              </div>
+              <div className="font-semibold text-gray-800">crates/search</div>
               <div className="text-gray-600">
                 Search for crates by query string in fileName or description.
               </div>
@@ -197,12 +195,10 @@ export default function DocsPage() {
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                crates/upload
-              </div>
+              <div className="font-semibold text-gray-800">crates/upload</div>
               <div className="text-gray-600">
-                Upload a new crate. For binary files, returns a presigned
-                upload URL. For text, uploads directly.
+                Upload a new crate. For binary files, returns a presigned upload
+                URL. For text, uploads directly.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output (binary):
@@ -218,8 +214,8 @@ Output (text):
             <div>
               <div className="font-semibold text-gray-800">crates/share</div>
               <div className="text-gray-600">
-                Make an crate shareable (public link) and optionally
-                set/remove a password.
+                Make an crate shareable (public link) and optionally set/remove
+                a password.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
@@ -254,8 +250,8 @@ Output (text):
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via SSE:</b> Use{" "}
-              <code>npx mcp-remote https://mcp.mcph.io/</code> or configure
-              your client to use the endpoint.
+              <code>npx mcp-remote https://mcp.mcph.io/</code> or configure your
+              client to use the endpoint.
             </li>
             <li>
               <b>Authentication:</b> Pass your API key as a Bearer token in the{" "}

@@ -25,8 +25,8 @@ export default function UploadPage() {
             Upload an Crate
           </h1>
           <p className="text-gray-600">
-            Share crates securely with automatic expiration. Maximum crate
-            size is 500MB.
+            Share crates securely with automatic expiration. Maximum crate size
+            is 500MB.
           </p>
         </div>
 
@@ -49,20 +49,20 @@ export default function UploadPage() {
                 </h2>
                 <ul className="list-disc pl-5 text-gray-700 text-sm space-y-2">
                   <li>
-                    <b>Data (CSV, TSV):</b> Tabular crate files, visualized
-                    as tables or charts.
+                    <b>Data (CSV, TSV):</b> Tabular crate files, visualized as
+                    tables or charts.
                   </li>
                   <li>
-                    <b>Markdown:</b> .md crates, rendered as formatted text
-                    with headings, lists, and code blocks.
+                    <b>Markdown:</b> .md crates, rendered as formatted text with
+                    headings, lists, and code blocks.
                   </li>
                   <li>
-                    <b>JSON:</b> .json crates, shown as formatted code or
-                    parsed data.
+                    <b>JSON:</b> .json crates, shown as formatted code or parsed
+                    data.
                   </li>
                   <li>
-                    <b>Diagram (Mermaid):</b> .mmd or .mermaid crates,
-                    rendered as diagrams using Mermaid syntax.
+                    <b>Diagram (Mermaid):</b> .mmd or .mermaid crates, rendered
+                    as diagrams using Mermaid syntax.
                   </li>
                   <li>
                     <b>Image:</b> Common image formats (PNG, JPG, GIF, SVG),
@@ -102,8 +102,7 @@ export default function UploadPage() {
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
                   <span>
-                    Text crates are stored in Firestore for optimal
-                    performance
+                    Text crates are stored in Firestore for optimal performance
                   </span>
                 </li>
                 <li className="flex items-start">
