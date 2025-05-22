@@ -127,36 +127,7 @@ create_document() {
     echo ""
 }
 
-# 1. Initialize files collection with a placeholder document
-echo "--- Initializing 'files' collection ---"
-FILES_DATA='{
-    "id": {"stringValue": "placeholder"},
-    "originalName": {"stringValue": "placeholder.txt"},
-    "mimeType": {"stringValue": "text/plain"},
-    "size": {"integerValue": "0"},
-    "uploadedAt": {"timestampValue": "2025-05-10T00:00:00Z"},
-    "expiresAt": {"timestampValue": "2025-05-11T00:00:00Z"},
-    "downloadCount": {"integerValue": "0"}
-}'
-create_document "files" "placeholder" "${FILES_DATA}"
-
-# 2. Initialize metrics collection with counters document
-echo "--- Initializing 'metrics' collection ---"
-METRICS_DATA='{
-    "uploads": {"integerValue": "0"},
-    "downloads": {"integerValue": "0"},
-    "lastUpdated": {"timestampValue": "2025-05-10T00:00:00Z"}
-}'
-create_document "metrics" "counters" "${METRICS_DATA}"
-
-# 3. Initialize events collection with a placeholder
-echo "--- Initializing 'events' collection ---"
-EVENTS_DATA='{
-    "type": {"stringValue": "initialization"},
-    "timestamp": {"timestampValue": "2025-05-10T00:00:00Z"},
-    "message": {"stringValue": "Firestore collections initialized"}
-}'
-create_document "events" "initialization" "${EVENTS_DATA}"
+# The placeholder initialization sections are removed as they're not needed
 
 # 4. Deploy Firestore indexes
 echo "--- Deploying Firestore indexes ---"
