@@ -127,36 +127,7 @@ create_document() {
     echo ""
 }
 
-# 1. Initialize files collection with a placeholder document
-echo "--- Initializing 'files' collection ---"
-FILES_DATA='{
-    "id": {"stringValue": "placeholder"},
-    "originalName": {"stringValue": "placeholder.txt"},
-    "mimeType": {"stringValue": "text/plain"},
-    "size": {"integerValue": "0"},
-    "uploadedAt": {"timestampValue": "2025-05-10T00:00:00Z"},
-    "expiresAt": {"timestampValue": "2025-05-11T00:00:00Z"},
-    "downloadCount": {"integerValue": "0"}
-}'
-create_document "files" "placeholder" "${FILES_DATA}"
-
-# 2. Initialize metrics collection with counters document
-echo "--- Initializing 'metrics' collection ---"
-METRICS_DATA='{
-    "uploads": {"integerValue": "0"},
-    "downloads": {"integerValue": "0"},
-    "lastUpdated": {"timestampValue": "2025-05-10T00:00:00Z"}
-}'
-create_document "metrics" "counters" "${METRICS_DATA}"
-
-# 3. Initialize events collection with a placeholder
-echo "--- Initializing 'events' collection ---"
-EVENTS_DATA='{
-    "type": {"stringValue": "initialization"},
-    "timestamp": {"timestampValue": "2025-05-10T00:00:00Z"},
-    "message": {"stringValue": "Firestore collections initialized"}
-}'
-create_document "events" "initialization" "${EVENTS_DATA}"
+# The placeholder initialization sections are removed as they're not needed
 
 # 4. Deploy Firestore indexes
 echo "--- Deploying Firestore indexes ---"
@@ -211,17 +182,17 @@ gcloud firestore indexes composite create \
   --query-scope=COLLECTION \
   --field-config=vector-config='{"dimension":"768","flat": "{}"}',field-path=embedding
 
-# 6. Initialize artifacts collection with a placeholder document including embedding
+# 6. Initialize crates collection with a placeholder document including embedding
 # Example embedding: 1536 zeros (adjust size to match your embedding model)
-echo "--- Initializing 'artifacts' collection with embedding field ---"
+echo "--- Initializing 'crates' collection with embedding field ---"
 ARTIFACTS_EMBEDDING=$(python3 -c 'import json; print(json.dumps({"arrayValue": {"values": [{"doubleValue": 0.0} for _ in range(1536)]}}))')
 ARTIFACTS_DATA='{
     "id": {"stringValue": "placeholder"},
-    "description": {"stringValue": "A sample artifact for vector search"},
+    "description": {"stringValue": "A sample crate for vector search"},
     "metadata": {"mapValue": {"fields": {"type": {"stringValue": "example"}, "author": {"stringValue": "system"}}}},
     "embedding": '"${ARTIFACTS_EMBEDDING}"'
 }'
-create_document "artifacts" "placeholder" "${ARTIFACTS_DATA}"
+create_document "crates" "placeholder" "${ARTIFACTS_DATA}"
 
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
@@ -231,7 +202,7 @@ echo "Your Firestore database should now have these collections initialized:"
 echo "- files: For storing file metadata"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
-echo "- artifacts: For storing artifacts with embeddings for vector search"
+echo "- crates: For storing crates with embeddings for vector search"
 echo ""
 echo "These collections align with how your application is using Firestore in your functions code."
 

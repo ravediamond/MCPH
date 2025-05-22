@@ -12,8 +12,8 @@ export default function DocsPage() {
             MCPH: Model Context Protocol (MCP) Usage and Docs
           </h1>
           <p className="text-gray-600">
-            Public remote artifact server and tools for the Model Context
-            Protocol (MCP).
+            Public remote crate server and tools for the Model Context Protocol
+            (MCP).
           </p>
         </div>
 
@@ -24,22 +24,22 @@ export default function DocsPage() {
           <p className="text-gray-600 mb-3">
             <b>Model Context Protocol (MCP)</b> is a standard for AI models,
             agents, and tools to maintain, share, and reference context and
-            artifacts across interactions. MCP enables persistent, portable
-            context and secure sharing of files and data.
+            crates across interactions. MCP enables persistent, portable context
+            and secure sharing of files and data.
           </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">About MCPH</h2>
           <p className="text-gray-600 mb-3">
-            MCPH is a public remote MCP server for storing and sharing artifacts
+            MCPH is a public remote MCP server for storing and sharing crates
             (files, data, diagrams, etc.) using the MCP protocol. It supports
-            real-time streaming via SSE (Server-Sent Events) and secure artifact
+            real-time streaming via SSE (Server-Sent Events) and secure crate
             management.
           </p>
           <ul className="list-disc pl-5 text-gray-600 space-y-1">
             <li>
-              <b>SSE endpoint:</b> <code>https://mcph.io/api/sse</code>
+              <b>SSE endpoint:</b> <code>https://mcp.mcph.io/</code>
             </li>
             <li>
               <b>Web UI:</b>{" "}
@@ -51,7 +51,7 @@ export default function DocsPage() {
               </a>
             </li>
             <li>
-              <b>Artifact page:</b> <code>https://mcph.io/artifact/[id]</code>
+              <b>Crate page:</b> <code>https://mcph.io/crate/[id]</code>
             </li>
           </ul>
         </div>
@@ -79,7 +79,7 @@ export default function DocsPage() {
             <li>
               <b>Connect to MCPH:</b>
               <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npx mcp-remote https://mcph.io/api/sse
+                npx mcp-remote https://mcp.mcph.io/
               </pre>
               This will connect your local client to the MCPH SSE endpoint.
             </li>
@@ -101,7 +101,7 @@ export default function DocsPage() {
       "args": [
         "-y",
         "mcp-remote",
-        "https://mcph.io/api/sse",
+        "https://mcp.mcph.io/",
         "--header",
         "Authorization: Bearer $\{AUTH_TOKEN}\"",
         "--transport",
@@ -140,27 +140,27 @@ export default function DocsPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <div className="font-semibold text-gray-800">artifacts/list</div>
+              <div className="font-semibold text-gray-800">crates/list</div>
               <div className="text-gray-600">
-                List all available artifacts you have access to.
+                List all available crates you have access to.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
 {
-  artifacts: [ { id, fileName, ... }, ... ],
+  crates: [ { id, fileName, ... }, ... ],
   content: [ { type: 'text', text: 'IDs: ...' } ]
 }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">artifacts/get</div>
+              <div className="font-semibold text-gray-800">crates/get</div>
               <div className="text-gray-600">
-                Get the raw artifact data for a specific artifact by id.
+                Get the raw crate data for a specific crate by id.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
 {
-  artifact: { ...meta },
+  crate: { ...meta },
   content: [ { type: 'text', text: '...' } ]
 }
 // For binary files, returns a temporary download link; for text, returns the content directly.`}</code>
@@ -168,41 +168,37 @@ export default function DocsPage() {
             </div>
             <div>
               <div className="font-semibold text-gray-800">
-                artifacts/get_metadata
+                crates/get_metadata
               </div>
               <div className="text-gray-600">
-                Get all metadata fields as text for a specific artifact by id.
+                Get all metadata fields as text for a specific crate by id.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
 {
-  artifact: { ...meta },
+  crate: { ...meta },
   content: [ { type: 'text', text: 'key: value\n...' } ]
 }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                artifacts/search
-              </div>
+              <div className="font-semibold text-gray-800">crates/search</div>
               <div className="text-gray-600">
-                Search for artifacts by query string in fileName or description.
+                Search for crates by query string in fileName or description.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
 {
-  artifacts: [ ... ],
+  crates: [ ... ],
   content: [ { type: 'text', text: 'IDs: ...' } ]
 }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                artifacts/upload
-              </div>
+              <div className="font-semibold text-gray-800">crates/upload</div>
               <div className="text-gray-600">
-                Upload a new artifact. For binary files, returns a presigned
-                upload URL. For text, uploads directly.
+                Upload a new crate. For binary files, returns a presigned upload
+                URL. For text, uploads directly.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output (binary):
@@ -211,15 +207,15 @@ export default function DocsPage() {
 }
 Output (text):
 {
-  artifact, message
+  crate, message
 }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">artifacts/share</div>
+              <div className="font-semibold text-gray-800">crates/share</div>
               <div className="text-gray-600">
-                Make an artifact shareable (public link) and optionally
-                set/remove a password.
+                Make an crate shareable (public link) and optionally set/remove
+                a password.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Output:
@@ -233,10 +229,10 @@ Output (text):
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">
-            How to Remove an MCP (Delete Artifacts)
+            How to Remove an MCP (Delete crates)
           </h2>
           <p className="text-gray-600 mb-3">
-            Use the <b>artifacts/delete</b> tool via MCP, or the REST API{" "}
+            Use the <b>crates/delete</b> tool via MCP, or the REST API{" "}
             <code>DELETE /api/uploads/:id</code> if you are authorized.
           </p>
         </div>
@@ -254,8 +250,8 @@ Output (text):
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via SSE:</b> Use{" "}
-              <code>npx mcp-remote https://mcph.io/api/sse</code> or configure
-              your client to use the endpoint.
+              <code>npx mcp-remote https://mcp.mcph.io/</code> or configure your
+              client to use the endpoint.
             </li>
             <li>
               <b>Authentication:</b> Pass your API key as a Bearer token in the{" "}
@@ -268,14 +264,14 @@ Output (text):
             </li>
             <li>
               <b>Calling Tools:</b> Send JSON-RPC requests to the endpoint.
-              Example for <code>artifacts/list</code>:
+              Example for <code>crates/list</code>:
               <pre className="text-xs bg-gray-100 p-2 rounded text-blue-700 whitespace-pre-wrap">{`
 {
   "jsonrpc": "2.0",
   "id": 1,
   "method": "tools/call",
   "params": {
-    "name": "artifacts/list",
+    "name": "crates/list",
     "arguments": {}
   }
 }
@@ -366,7 +362,7 @@ Output (text):
               href="#sse"
               className="block text-primary-500 hover:text-primary-600 py-1"
             >
-              SSE Endpoint: mcph.io/api/sse
+              SSE Endpoint: mcp.mcph.io/
             </a>
           </nav>
         </div>

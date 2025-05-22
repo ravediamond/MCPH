@@ -78,10 +78,10 @@ interface FileMetadata {
   metadata?: Record<string, string>;
   isShared?: boolean;
   password?: string;
-  fileType?: string; // Optional: type of artifact (generic, data, image, etc.)
+  fileType?: string; // Optional: type of crate (generic, data, image, etc.)
 }
 
-export default function ArtifactPage() {
+export default function CratePage() {
   const params = useParams();
   const fileId = params?.id as string;
 
@@ -346,7 +346,7 @@ export default function ArtifactPage() {
 
   const handleCopyLink = () => {
     navigator.clipboard
-      .writeText(`${window.location.origin}/artifact/${fileId}`)
+      .writeText(`${window.location.origin}/crate/${fileId}`)
       .then(() => {
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);

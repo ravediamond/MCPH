@@ -22,11 +22,11 @@ export default function UploadPage() {
           </Link>
 
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Upload an Artifact
+            Upload an Crate
           </h1>
           <p className="text-gray-600">
-            Share artifacts securely with automatic expiration. Maximum artifact
-            size is 500MB.
+            Share crates securely with automatic expiration. Maximum crate size
+            is 500MB.
           </p>
         </div>
 
@@ -42,34 +42,34 @@ export default function UploadPage() {
                   console.error("Upload error:", error);
                 }}
               />
-              {/* Artifact type information */}
+              {/* Crate type information */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                  About Artifact Types
+                  About Crate Types
                 </h2>
                 <ul className="list-disc pl-5 text-gray-700 text-sm space-y-2">
                   <li>
-                    <b>Data (CSV, TSV):</b> Tabular artifact files, visualized
-                    as tables or charts.
+                    <b>Data (CSV, TSV):</b> Tabular crate files, visualized as
+                    tables or charts.
                   </li>
                   <li>
-                    <b>Markdown:</b> .md artifacts, rendered as formatted text
-                    with headings, lists, and code blocks.
+                    <b>Markdown:</b> .md crates, rendered as formatted text with
+                    headings, lists, and code blocks.
                   </li>
                   <li>
-                    <b>JSON:</b> .json artifacts, shown as formatted code or
-                    parsed data.
+                    <b>JSON:</b> .json crates, shown as formatted code or parsed
+                    data.
                   </li>
                   <li>
-                    <b>Diagram (Mermaid):</b> .mmd or .mermaid artifacts,
-                    rendered as diagrams using Mermaid syntax.
+                    <b>Diagram (Mermaid):</b> .mmd or .mermaid crates, rendered
+                    as diagrams using Mermaid syntax.
                   </li>
                   <li>
                     <b>Image:</b> Common image formats (PNG, JPG, GIF, SVG),
                     displayed as images.
                   </li>
                   <li>
-                    <b>Generic Artifact:</b> Any binary artifact that cannot be
+                    <b>Generic Crate:</b> Any binary crate that cannot be
                     streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not
                     previewed and must be downloaded to view.
                   </li>
@@ -89,27 +89,26 @@ export default function UploadPage() {
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
                   <span>
-                    Add a clear title to help identify your artifact later
+                    Add a clear title to help identify your crate later
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
                   <span>
                     The description field can be used to add details about the
-                    artifact contents
+                    crate contents
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
                   <span>
-                    Text artifacts are stored in Firestore for optimal
-                    performance
+                    Text crates are stored in Firestore for optimal performance
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
                   <span>
-                    Binary artifacts (images, PDFs, etc.) are stored in secure
+                    Binary crates (images, PDFs, etc.) are stored in secure
                     Cloud Storage
                   </span>
                 </li>
@@ -121,14 +120,14 @@ export default function UploadPage() {
         {/* Extra information */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
-            Need to upload multiple artifacts?{" "}
+            Need to upload multiple crates?{" "}
             <Link
               href="/home"
               className="text-primary-500 hover:text-primary-600"
             >
               Sign in
             </Link>{" "}
-            for batch uploads and artifact management.
+            for batch uploads and crate management.
           </p>
         </div>
       </div>
