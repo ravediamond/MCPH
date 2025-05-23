@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react"; // Added useEffect
 import { useDropzone } from "react-dropzone";
 import {
   FaUpload,
@@ -67,7 +67,7 @@ export default function FileUpload({
   onUploadError,
 }: FileUploadProps) {
   // Get current user from auth context
-  const { user } = useAuth();
+  const { user } = useAuth(); // user object contains uid and getIdToken
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
@@ -92,6 +92,51 @@ export default function FileUpload({
   // Sharing state
   const [isShared, setIsShared] = useState<boolean>(false); // New: sharing toggle
   const [password, setPassword] = useState<string>(""); // New: optional password
+
+  // Parent Crate State
+  const [userCrates, setUserCrates] = useState<ClientFileMetadata[]>([]);
+  const [selectedParentId, setSelectedParentId] = useState<string>("");
+  const [isFetchingCrates, setIsFetchingCrates] = useState<boolean>(false);
+
+  // Local FileMetadata type for client-side use
+  interface ClientFileMetadata {
+    id: string;
+    fileName: string;
+    title: string;
+    // Add other fields if needed for display or logic, e.g., fileType to filter
+  }
+
+  // Fetch user's crates for parent selection
+  useEffect(() => {
+    if (user?.uid) {
+      const fetchUserCrates = async () => {
+        setIsFetchingCrates(true);
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch(`/api/user/${user.uid}/files`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch user crates");
+          }
+          const crates: ClientFileMetadata[] = await response.json();
+          // For now, list all. Later, one might filter out non-folder types or the current file if editing.
+          setUserCrates(crates);
+        } catch (error) {
+          console.error("Error fetching user crates:", error);
+          toast.error("Could not load your crates for parent selection.");
+          setUserCrates([]); // Clear crates on error
+        } finally {
+          setIsFetchingCrates(false);
+        }
+      };
+      fetchUserCrates();
+    } else {
+      setUserCrates([]); // Clear if user logs out or is not available
+    }
+  }, [user]); // Re-run if user changes
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -246,6 +291,7 @@ export default function FileUpload({
             ...(password && isShared ? { "x-password": password } : {}), // New: password if set
             ...(user && { "x-user-id": user.uid }), // Add user ID if logged in
             ...(authToken && { Authorization: `Bearer ${authToken}` }),
+            ...(selectedParentId && { "x-parent-id": selectedParentId }), // Add parentId header
           },
           body: content,
         });
@@ -265,6 +311,10 @@ export default function FileUpload({
         // Add user ID if logged in
         if (user) {
           formData.append("userId", user.uid);
+        }
+        // Add parentId if selected
+        if (selectedParentId) {
+          formData.append("parentId", selectedParentId);
         }
         // Add metadata as JSON string if any
         if (metadataList.length > 0) {
@@ -622,6 +672,41 @@ export default function FileUpload({
                   rows={3}
                   disabled={isUploading}
                 />
+              </div>
+
+              {/* Parent Crate Selector */}
+              <div className="mb-4">
+                <label
+                  htmlFor="parentCrateSelect"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Parent Crate (optional)
+                </label>
+                {isFetchingCrates ? (
+                  <p className="text-sm text-gray-500">Loading crates...</p>
+                ) : userCrates.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    No crates available to set as parent.
+                  </p>
+                ) : (
+                  <select
+                    id="parentCrateSelect"
+                    value={selectedParentId}
+                    onChange={(e) => setSelectedParentId(e.target.value)}
+                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    disabled={isUploading || isFetchingCrates}
+                  >
+                    <option value="">-- Select Parent Crate --</option>
+                    {userCrates.map((crate) => (
+                      <option key={crate.id} value={crate.id}>
+                        {crate.title || crate.fileName}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Select an existing crate to make this upload a child of it.
+                </p>
               </div>
 
               {/* Metadata Key-Value Pairs */}

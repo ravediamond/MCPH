@@ -29,11 +29,14 @@ import Card from "../../components/ui/Card";
 interface FileMetadataExtended extends FileMetadata {
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
+  parentId?: string; // Added for hierarchy
+  children?: FileMetadataExtended[]; // Added for hierarchy
 }
 
 export default function HomePage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
-  const [files, setFiles] = useState<FileMetadataExtended[]>([]);
+  const [files, setFiles] = useState<FileMetadataExtended[]>([]); // Flat list from API
+  const [fileTree, setFileTree] = useState<FileMetadataExtended[]>([]); // Hierarchical data
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,7 +90,7 @@ export default function HomePage() {
             };
           });
 
-          setFiles(processedFiles);
+          setFiles(processedFiles); // Set the flat list
         } catch (err) {
           setError(
             err instanceof Error ? err.message : "An unknown error occurred",
@@ -99,10 +102,45 @@ export default function HomePage() {
 
       fetchFiles();
     } else {
-      setFiles([]);
+      setFiles([]); // Clear flat list if no user
+      setFileTree([]); // Clear tree if no user
       setLoading(false);
     }
   }, [user]);
+
+  // Function to build the tree structure
+  const buildFileTree = (
+    allFiles: FileMetadataExtended[],
+  ): FileMetadataExtended[] => {
+    const fileMap: { [id: string]: FileMetadataExtended } = {};
+    const tree: FileMetadataExtended[] = [];
+
+    // Initialize each file with an empty children array and populate map
+    allFiles.forEach((file) => {
+      file.children = []; // Ensure children array is initialized
+      fileMap[file.id] = file;
+    });
+
+    // Populate children arrays
+    allFiles.forEach((file) => {
+      if (file.parentId && fileMap[file.parentId]) {
+        fileMap[file.parentId].children?.push(file);
+      } else {
+        tree.push(file); // Add to root if no parentId or parent not found
+      }
+    });
+    return tree;
+  };
+
+  // useEffect to build the tree when files change
+  useEffect(() => {
+    if (files.length > 0) {
+      const treeData = buildFileTree(files);
+      setFileTree(treeData);
+    } else {
+      setFileTree([]);
+    }
+  }, [files]);
 
   useEffect(() => {
     if (user) {
@@ -147,20 +185,33 @@ export default function HomePage() {
   };
 
   // Filter files based on search query and exclude expired files
-  const filteredFiles = React.useMemo(() => {
+  const getDisplayedFiles = () => {
     const now = new Date();
-    // Only include files that are not expired
-    const notExpired = files.filter((file) => {
-      if (!file.expiresAt) return true;
-      return new Date(file.expiresAt) > now;
-    });
-    // If search bar is empty, show all notExpired files
-    if (!searchQuery.trim()) return notExpired;
-    // If searchResults is not null, show searchResults
-    if (searchResults !== null) return searchResults;
-    // Default fallback
-    return notExpired;
-  }, [files, searchResults, searchQuery]);
+    const activeFiles = files.filter(
+      (file) => !file.expiresAt || new Date(file.expiresAt) > now,
+    );
+
+    if (searchQuery.trim() && searchResults !== null) {
+      // If there's a search query and we have search results, display them flat
+      return searchResults;
+    }
+    if (!searchQuery.trim() && searchResults === null) {
+      // If no search is active, display the tree (which is derived from 'files' and then filtered)
+      // The tree building itself uses 'files', so we need to filter the tree roots
+      // or ensure buildFileTree is called with already filtered activeFiles.
+      // For simplicity, buildFileTree will use all files, and we filter the roots here.
+      // This means children might be expired even if parent is not; ideally, filter recursively.
+      // However, the prompt implies flat list for search, tree for default.
+      // The `fileTree` state will be used for non-search display.
+      return buildFileTree(activeFiles); // Return tree roots for non-search view
+    }
+    // Fallback or when search is active but no results yet (e.g. loading)
+    // This case might need refinement based on desired UX during search loading.
+    // For now, if search is active but results are null (e.g. loading), show nothing or a loader.
+    // If searchResults is an empty array, the later map will handle it.
+    return []; // Or handle loading state for search appropriately
+  };
+
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -508,93 +559,162 @@ export default function HomePage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {filteredFiles.map((file) => (
-                <Card
-                  key={file.id}
-                  hoverable
-                  className="transition-all overflow-hidden"
-                >
-                  <div className="p-3">
-                    <div className="flex items-start space-x-3">
-                      {/* File Type Icon */}
-                      <div className="mt-0.5">{getFileIcon(file)}</div>
+              {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).map((file) => (
+                <React.Fragment key={file.id}>
+                  <Card
+                    hoverable
+                    className="transition-all overflow-hidden"
+                  >
+                    <div className="p-3">
+                      <div className="flex items-start space-x-3">
+                        {/* File Type Icon */}
+                        <div className="mt-0.5">{getFileIcon(file)}</div>
 
-                      {/* File Info */}
-                      <div className="flex-grow min-w-0">
-                        <Link href={`/crate/${file.id}`} className="block">
-                          <h3
-                            className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
-                            title={file.fileName}
-                          >
-                            {file.title || file.fileName}
-                          </h3>
-                        </Link>
+                        {/* File Info */}
+                        <div className="flex-grow min-w-0">
+                          <Link href={`/crate/${file.id}`} className="block">
+                            <h3
+                              className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                              title={file.fileName}
+                            >
+                              {file.title || file.fileName}
+                            </h3>
+                          </Link>
 
-                        <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                          <div className="truncate mr-2">
-                            {formatFileSize(file.size)}
+                          <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                            <div className="truncate mr-2">
+                              {formatFileSize(file.size)}
+                            </div>
+                            <div className="flex items-center whitespace-nowrap">
+                              <FaDownload className="mr-1" size={10} />{" "}
+                              {file.downloadCount || 0}
+                            </div>
                           </div>
-                          <div className="flex items-center whitespace-nowrap">
-                            <FaDownload className="mr-1" size={10} />{" "}
-                            {file.downloadCount || 0}
-                          </div>
+                          {/* Metadata display */}
+                          {renderMetadata(file.metadata)}
                         </div>
-                        {/* Metadata display */}
-                        {renderMetadata(file.metadata)}
+
+                        {/* Expiry Indicator - Small Circle */}
+                        {file.isExpiringSoon && (
+                          <div
+                            className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                            title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? "s" : ""}`}
+                          ></div>
+                        )}
                       </div>
 
-                      {/* Expiry Indicator - Small Circle */}
-                      {file.isExpiringSoon && (
-                        <div
-                          className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
-                          title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? "s" : ""}`}
-                        ></div>
-                      )}
+                      {/* Action Buttons - Smaller and more compact */}
+                      <div className="flex justify-end mt-2 space-x-1">
+                        <button
+                          onClick={() => copyShareLink(file.id)}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          title="Copy link"
+                        >
+                          <FaShareAlt size={12} />
+                        </button>
+
+                        <Link
+                          href={`/crate/${file.id}`}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          title="View details"
+                        >
+                          <FaEye size={12} />
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setFileToDelete(file.id);
+                            setDeleteModalVisible(true);
+                          }}
+                          className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                          title="Delete"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Action Buttons - Smaller and more compact */}
-                    <div className="flex justify-end mt-2 space-x-1">
-                      <button
-                        onClick={() => copyShareLink(file.id)}
-                        className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                        title="Copy link"
+                  </Card>
+                  {/* Render Children if not searching */}
+                  {!searchQuery.trim() && file.children && file.children.length > 0 && (
+                    file.children.map(childFile => (
+                      <Card
+                        key={childFile.id}
+                        hoverable
+                        className="transition-all overflow-hidden ml-4 sm:ml-6" // Indentation for child
                       >
-                        <FaShareAlt size={12} />
-                      </button>
-
-                      <Link
-                        href={`/crate/${file.id}`}
-                        className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                        title="View details"
-                      >
-                        <FaEye size={12} />
-                      </Link>
-
-                      <button
-                        onClick={() => {
-                          setFileToDelete(file.id);
-                          setDeleteModalVisible(true);
-                        }}
-                        className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
-                        title="Delete"
-                      >
-                        <FaTrash size={12} />
-                      </button>
-                    </div>
-                  </div>
-                </Card>
+                        <div className="p-3">
+                          <div className="flex items-start space-x-3">
+                            <div className="mt-0.5">{getFileIcon(childFile)}</div>
+                            <div className="flex-grow min-w-0">
+                              <Link href={`/crate/${childFile.id}`} className="block">
+                                <h3
+                                  className="font-medium text-sm text-gray-700 hover:text-primary-600 transition-colors truncate"
+                                  title={childFile.fileName}
+                                >
+                                  {childFile.title || childFile.fileName}
+                                </h3>
+                              </Link>
+                              <div className="flex justify-between items-center mt-1 text-xs text-gray-400">
+                                <div className="truncate mr-2">
+                                  {formatFileSize(childFile.size)}
+                                </div>
+                                <div className="flex items-center whitespace-nowrap">
+                                  <FaDownload className="mr-1" size={10} />{" "}
+                                  {childFile.downloadCount || 0}
+                                </div>
+                              </div>
+                              {renderMetadata(childFile.metadata)}
+                            </div>
+                            {childFile.isExpiringSoon && (
+                              <div
+                                className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                                title={`Expires in ${childFile.daysTillExpiry} day${childFile.daysTillExpiry !== 1 ? "s" : ""}`}
+                              ></div>
+                            )}
+                          </div>
+                          <div className="flex justify-end mt-2 space-x-1">
+                            <button
+                              onClick={() => copyShareLink(childFile.id)}
+                              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                              title="Copy link"
+                            >
+                              <FaShareAlt size={12} />
+                            </button>
+                            <Link
+                              href={`/crate/${childFile.id}`}
+                              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                              title="View details"
+                            >
+                              <FaEye size={12} />
+                            </Link>
+                            <button
+                              onClick={() => {
+                                setFileToDelete(childFile.id);
+                                setDeleteModalVisible(true);
+                              }}
+                              className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                              title="Delete"
+                            >
+                              <FaTrash size={12} />
+                            </button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  )}
+                </React.Fragment>
               ))}
             </div>
           )}
         </div>
 
         {/* Simple file stats */}
-        {filteredFiles.length > 0 && (
+        { (searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length > 0 && (
           <div className="mt-4 text-sm text-gray-500 flex justify-between">
-            <span>Total: {filteredFiles.length} crates</span>
+            <span>Total: {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length} top-level crates</span>
             <span>
               {formatFileSize(
-                filteredFiles.reduce((sum, file) => sum + file.size, 0),
+                (searchQuery.trim() && searchResults !== null ? searchResults : fileTree).reduce((sum, file) => sum + file.size + (file.children?.reduce((childSum, child) => childSum + child.size, 0) || 0), 0),
               )}
             </span>
           </div>

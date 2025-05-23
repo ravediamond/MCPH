@@ -26,6 +26,34 @@ function setupServiceAccountForVercel() {
   }
 }
 
+/**
+ * Get child file metadata for a specific parent ID from Firestore
+ */
+export async function getChildFiles(parentId: string): Promise<FileMetadata[]> {
+  try {
+    const querySnapshot = await db
+      .collection(FILES_COLLECTION)
+      .where("parentId", "==", parentId)
+      .orderBy("uploadedAt", "desc")
+      .get();
+
+    if (querySnapshot.empty) {
+      return [];
+    }
+
+    // Convert to array of data, converting Firestore timestamps to Date objects
+    return querySnapshot.docs.map(
+      (doc) => fromFirestoreData(doc.data()) as FileMetadata,
+    );
+  } catch (error) {
+    console.error(
+      `Error getting child files for parent ${parentId} from Firestore:`,
+      error,
+    );
+    return []; // Return empty array on error
+  }
+}
+
 setupServiceAccountForVercel();
 
 import {
@@ -143,6 +171,7 @@ export interface FileMetadata {
   isShared?: boolean; // New: whether the file is shared (default false)
   password?: string; // New: optional hashed password for download
   fileType?: string; // Optional: type of crate (generic, data, image, etc.)
+  parentId?: string; // Optional: ID of the parent folder or entity
 }
 
 /**

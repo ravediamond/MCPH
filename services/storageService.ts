@@ -127,6 +127,7 @@ export async function uploadFile(
   description?: string,
   fileType?: string, // Added fileType parameter
   metadata?: Record<string, string>,
+  parentId?: string, // Added parentId parameter
 ): Promise<FileMetadata> {
   try {
     // Generate a unique ID for the file
@@ -223,14 +224,18 @@ export async function uploadFile(
       }),
       ...(metadata && { metadata }),
       searchText,
+      ...(parentId && { parentId }), // Include parentId if provided
     };
 
     // Store metadata in Firestore
+    // The parentId from fileData will be correctly passed to saveFileMetadata
+    // because of the spread operator and because saveFileMetadata now expects it (implicitly via FileMetadata type).
+    // The FileMetadata type in firebaseService.ts was updated in a previous step.
     await saveFileMetadata({
-      ...fileData,
+      ...fileData, // parentId is included here if present in fileData
       uploadedAt: new Date(uploadedAt),
       expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
-    } as any);
+    } as any); // Type assertion to 'any' is present, but FileMetadata in firebaseService includes parentId
 
     return fileData;
   } catch (error) {
