@@ -28,6 +28,7 @@ import {
   FaExternalLinkAlt,
   FaDatabase,
   FaLock,
+  FaTasks, // Added for To-Do List
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -213,12 +214,12 @@ export default function CratePage() {
             setFileInfo((prev) =>
               prev
                 ? {
-                    ...prev,
-                    description:
-                      (prev.description || "") +
-                      (prev.description ? " • " : "") +
-                      "Contains Mermaid diagram",
-                  }
+                  ...prev,
+                  description:
+                    (prev.description || "") +
+                    (prev.description ? " • " : "") +
+                    "Contains Mermaid diagram",
+                }
                 : null,
             );
           }
@@ -430,7 +431,11 @@ export default function CratePage() {
 
     const contentType = fileInfo.contentType.toLowerCase();
     const fileName = fileInfo.fileName.toLowerCase();
+    const fileType = fileInfo.fileType;
 
+    if (fileType === "todolist") { // Added for To-Do List
+      return <FaTasks className="text-indigo-500" />;
+    }
     if (
       isMermaidDiagram ||
       fileName.endsWith(".mmd") ||
@@ -503,6 +508,35 @@ export default function CratePage() {
     );
   };
 
+  const renderTodoList = (markdownContent: string) => {
+    const lines = markdownContent.split('\n');
+    return (
+      <ul className="list-none p-0 m-0">
+        {lines.map((line, index) => {
+          const taskMatch = line.match(/^- \[( |x|X)\] (.*)/);
+          if (taskMatch) {
+            const isChecked = taskMatch[1] !== ' ';
+            const taskText = taskMatch[2];
+            return (
+              <li key={index} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  readOnly
+                  className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className={`text-sm ${isChecked ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                  {taskText}
+                </span>
+              </li>
+            );
+          }
+          return null; // Or render as plain text if not a task item
+        })}
+      </ul>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
@@ -558,19 +592,19 @@ export default function CratePage() {
 
   const daysUntilExpiry = expiryDate
     ? Math.max(
-        0,
-        Math.ceil(
-          (expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24),
-        ),
-      )
+      0,
+      Math.ceil(
+        (expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24),
+      ),
+    )
     : null;
 
   // Prepare usage chart data from access history
   const usageChartData = fileInfo.accessHistory
     ? fileInfo.accessHistory.map((entry) => ({
-        label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
-        value: entry.count,
-      }))
+      label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
+      value: entry.count,
+    }))
     : [];
 
   return (
@@ -703,14 +737,14 @@ export default function CratePage() {
               {(isTextFile(fileInfo.contentType) ||
                 isMermaidDiagram ||
                 isImageFile(fileInfo.contentType)) && (
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
-                >
-                  <FaEye className="mr-1" />{" "}
-                  {showPreview ? "Hide Preview" : "View Content"}
-                </button>
-              )}
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
+                  >
+                    <FaEye className="mr-1" />{" "}
+                    {showPreview ? "Hide Preview" : "View Content"}
+                  </button>
+                )}
               <button
                 onClick={() => setShowResetExpiry(true)}
                 className="flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 border border-blue-700 font-semibold shadow transition-colors"
@@ -944,8 +978,16 @@ export default function CratePage() {
                 </div>
               )}
 
+              {/* To-Do List Preview */}
+              {fileInfo.fileType === "todolist" && fileContent && !contentLoading && (
+                <div className="bg-gray-50 rounded border p-4 max-h-96 overflow-auto">
+                  {renderTodoList(fileContent)}
+                </div>
+              )}
+
               {/* Text Content Preview */}
               {isTextFile(fileInfo.contentType) &&
+                fileInfo.fileType !== "todolist" && // Don't render todolist twice
                 fileContent &&
                 !contentLoading &&
                 !isMermaidDiagram && (

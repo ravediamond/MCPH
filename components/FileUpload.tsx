@@ -32,7 +32,7 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text"];
+const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text", ".todolist"]; // Added .todolist
 
 // Available crate types that users can select
 const FILE_TYPES = [
@@ -40,6 +40,7 @@ const FILE_TYPES = [
   { value: "data", label: "Data" },
   { value: "image", label: "Image" },
   { value: "markdown", label: "Markdown" },
+  { value: "todolist", label: "To-Do List" }, // Added To-Do List
   { value: "diagram", label: "Diagram" },
   { value: "json", label: "JSON" },
 ];
@@ -146,7 +147,11 @@ export default function FileUpload({
       selectedFile.name.endsWith(".md") ||
       selectedFile.name.endsWith(".markdown")
     ) {
+      // If it's a .md file, keep it as markdown unless user changes it.
+      // We won't automatically assume .md is a todolist here, user can select it.
       setFileType("markdown");
+    } else if (selectedFile.name.endsWith(".todolist")) { // Added for .todolist extension
+      setFileType("todolist");
     } else if (
       selectedFile.type.includes("csv") ||
       selectedFile.type.includes("excel") ||
@@ -721,11 +726,10 @@ export default function FileUpload({
           <button
             type="submit"
             disabled={!file || isUploading || !title.trim()}
-            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${
-              !file || isUploading || !title.trim()
+            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
                 ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
                 : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
-            }
+              }
                         `}
           >
             {isUploading ? (
