@@ -157,21 +157,27 @@ export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 export interface FileMetadata {
   id: string;
   fileName: string;
-  title: string; // Added title field (mandatory)
-  description?: string; // Added description field (optional)
+  title?: string; // Optional title
+  description?: string; // Optional description
   contentType: string;
   size: number;
-  gcsPath: string;
-  uploadedAt: Date; // Note: In Firestore we store as Date objects
-  expiresAt?: Date; // In Firestore we store as Date objects
+  userId: string;
+  uploadPath: string; // Full path in Firebase Storage
+  uploadedAt: string; // ISO string
+  expiresAt?: string | null; // Optional ISO string for expiry
   downloadCount: number;
-  ipAddress?: string;
-  userId?: string;
-  metadata?: Record<string, string>;
-  isShared?: boolean; // New: whether the file is shared (default false)
-  password?: string; // New: optional hashed password for download
-  fileType?: string; // Optional: type of crate (generic, data, image, etc.)
-  parentId?: string; // Optional: ID of the parent folder or entity
+  isPublic: boolean;
+  accessKey?: string; // For password-protected files
+  // parentId?: string; // Removed: No longer supporting direct parent-child crate relationships
+  metadata?: Record<string, string>; // For custom metadata like author, version, etc.
+  embedding?: number[]; // For semantic search
+  tags?: string[]; // For keyword-based filtering
+  version?: string; // Version of the crate
+  notes?: string; // User notes for the crate
+  status?: "active" | "archived" | "deleted"; // Status of the crate
+  lastAccessedAt?: string; // ISO string for last access time
+  checksum?: string; // MD5 or SHA256 checksum
+  previewUrl?: string; // URL for a preview image or snippet
 }
 
 /**
@@ -215,24 +221,22 @@ const fromFirestoreData = (data: any): any => {
  * Save file metadata to Firestore.
  */
 export async function saveFileMetadata(
-  fileData: FileMetadata,
-  // ttlSeconds parameter is no longer used, ttl is handled by expiresAt in fileData
-  // _ttlSeconds: number
-): Promise<boolean> {
-  try {
-    // Convert the data for Firestore
-    const dataToSave = toFirestoreData({
-      ...fileData,
-    });
+  fileData: Omit<FileMetadata, "id" | "uploadedAt" | "downloadCount">
+    & Partial<Pick<FileMetadata, "id" | "uploadedAt" | "downloadCount">>
+): Promise<FileMetadata> {
+  const db = getFirestoreInstance();
+  const docId = fileData.id || uuidv4(); // Use provided ID or generate a new one
 
-    // Add to Firestore
-    await db.collection(FILES_COLLECTION).doc(fileData.id).set(dataToSave);
+  const dataToSave: FileMetadata = {
+    ...fileData,
+    id: docId,
+    uploadedAt: fileData.uploadedAt || new Date().toISOString(),
+    downloadCount: fileData.downloadCount || 0,
+    // parentId: fileData.parentId || undefined, // Removed
+  };
 
-    return true;
-  } catch (error) {
-    console.error("Error saving file metadata to Firestore:", error);
-    return false;
-  }
+  await db.collection("files").doc(docId).set(dataToSave);
+  return dataToSave;
 }
 
 /**

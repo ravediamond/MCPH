@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FileMetadata } from "../../services/firebaseService";
+import { FileMetadata } from "../../services/firebaseService"; // Assuming FileMetadata does not have parentId
 import { useAuth } from "../../contexts/AuthContext";
 import Link from "next/link";
 import {
@@ -23,20 +23,31 @@ import {
   FaFileCode,
   FaProjectDiagram,
   FaKey,
+  FaFolderPlus, // Icon for Create Group
+  FaFolder, // Icon for Group
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
 
+// Simplified FileMetadataExtended for this page
 interface FileMetadataExtended extends FileMetadata {
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
-  parentId?: string; // Added for hierarchy
-  children?: FileMetadataExtended[]; // Added for hierarchy
+  // parentId and children removed
+}
+
+// Interface for Groups (new concept)
+interface CrateGroup {
+  id: string;
+  name: string;
+  userId: string;
+  crateIds: string[];
+  createdAt: string;
 }
 
 export default function HomePage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
-  const [files, setFiles] = useState<FileMetadataExtended[]>([]); // Flat list from API
-  const [fileTree, setFileTree] = useState<FileMetadataExtended[]>([]); // Hierarchical data
+  const [files, setFiles] = useState<FileMetadataExtended[]>([]); // Flat list of all crates
+  // fileTree state and buildFileTree function removed
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -61,43 +72,57 @@ export default function HomePage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // useEffect to clear search results when query is empty
+  // --- Grouping State ---
+  const [groups, setGroups] = useState<CrateGroup[]>([]);
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [selectedFilesForGrouping, setSelectedFilesForGrouping] = useState<string[]>([]);
+  const [showAddToGroupModal, setShowAddToGroupModal] = useState(false);
+  const [selectedGroupForAdding, setSelectedGroupForAdding] = useState<string | null>(null);
+
+
   useEffect(() => {
     if (searchQuery.trim() === "" && searchResults !== null) {
       setSearchResults(null);
     }
-  }, [searchQuery, searchResults]); // Added searchResults to dependency array
+  }, [searchQuery, searchResults]);
 
   useEffect(() => {
     if (user) {
-      const fetchFiles = async () => {
+      const fetchFilesAndGroups = async () => {
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(`/api/user/${user.uid}/files`);
-          if (!response.ok) {
+          // Fetch files
+          const filesResponse = await fetch(`/api/user/${user.uid}/files`);
+          if (!filesResponse.ok) {
             throw new Error("Failed to fetch files");
           }
-          const data = await response.json();
-
-          // Process files to add expiry metadata
-          const processedFiles = data.map((file: FileMetadataExtended) => {
+          const filesData = await filesResponse.json();
+          const processedFiles = filesData.map((file: FileMetadata) => { // Use FileMetadata directly
             const expiryDate = file.expiresAt ? new Date(file.expiresAt) : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-              )
+                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+                )
               : 0;
-
             return {
               ...file,
               isExpiringSoon: daysDiff <= 3 && daysDiff > 0,
               daysTillExpiry: daysDiff,
             };
           });
+          setFiles(processedFiles);
 
-          setFiles(processedFiles); // Set the flat list
+          // TODO: Fetch groups - Placeholder for now
+          // const groupsResponse = await fetch(`/api/user/${user.uid}/groups`);
+          // if (!groupsResponse.ok) {
+          //   throw new Error("Failed to fetch groups");
+          // }
+          // const groupsData = await groupsResponse.json();
+          // setGroups(groupsData);
+
         } catch (err) {
           setError(
             err instanceof Error ? err.message : "An unknown error occurred",
@@ -106,48 +131,15 @@ export default function HomePage() {
           setLoading(false);
         }
       };
-
-      fetchFiles();
+      fetchFilesAndGroups();
     } else {
-      setFiles([]); // Clear flat list if no user
-      setFileTree([]); // Clear tree if no user
+      setFiles([]);
+      setGroups([]); // Clear groups if no user
       setLoading(false);
     }
   }, [user]);
 
-  // Function to build the tree structure
-  const buildFileTree = (
-    allFiles: FileMetadataExtended[],
-  ): FileMetadataExtended[] => {
-    const fileMap: { [id: string]: FileMetadataExtended } = {};
-    const tree: FileMetadataExtended[] = [];
-
-    // Initialize each file with an empty children array and populate map
-    allFiles.forEach((file) => {
-      file.children = []; // Ensure children array is initialized
-      fileMap[file.id] = file;
-    });
-
-    // Populate children arrays
-    allFiles.forEach((file) => {
-      if (file.parentId && fileMap[file.parentId]) {
-        fileMap[file.parentId].children?.push(file);
-      } else {
-        tree.push(file); // Add to root if no parentId or parent not found
-      }
-    });
-    return tree;
-  };
-
-  // useEffect to build the tree when files change
-  useEffect(() => {
-    if (files.length > 0) {
-      const treeData = buildFileTree(files);
-      setFileTree(treeData);
-    } else {
-      setFileTree([]);
-    }
-  }, [files]);
+  // useEffect to build the tree when files change - REMOVED
 
   useEffect(() => {
     if (user) {
@@ -175,11 +167,7 @@ export default function HomePage() {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete file");
-      }
-
+      if (!response.ok) throw new Error("Failed to delete file");
       setFiles(files.filter((file) => file.id !== fileId));
       setActionSuccess("File deleted");
       setTimeout(() => setActionSuccess(null), 3000);
@@ -191,34 +179,69 @@ export default function HomePage() {
     }
   };
 
-  // Filter files based on search query and exclude expired files
-  const getDisplayedFiles = () => {
+  // Simplified getDisplayedFiles - always returns a flat list
+  const getDisplayedFiles = (): FileMetadataExtended[] => {
     const now = new Date();
+    // Filter out expired files from the main files list
     const activeFiles = files.filter(
       (file) => !file.expiresAt || new Date(file.expiresAt) > now,
     );
 
     if (searchQuery.trim() && searchResults !== null) {
-      // If there's a search query and we have search results, display them flat
-      return searchResults;
+      return searchResults; // Already filtered by search API, assuming it handles expiry
     }
-    if (!searchQuery.trim() && searchResults === null) {
-      // If no search is active, display the tree (which is derived from 'files' and then filtered)
-      // The tree building itself uses 'files', so we need to filter the tree roots
-      // or ensure buildFileTree is called with already filtered activeFiles.
-      // For simplicity, buildFileTree will use all files, and we filter the roots here.
-      // This means children might be expired even if parent is not; ideally, filter recursively.
-      // However, the prompt implies flat list for search, tree for default.
-      // The `fileTree` state will be used for non-search display.
-      return buildFileTree(activeFiles); // Return tree roots for non-search view
+    return activeFiles; // Default to all active, non-expired files if not searching
+  };
+  
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim() || !user) return;
+    try {
+      // TODO: Implement API call to POST /api/groups
+      console.log("Creating group:", newGroupName, "for user:", user.uid);
+      // const response = await fetch('/api/groups', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ name: newGroupName, userId: user.uid }),
+      // });
+      // if (!response.ok) throw new Error('Failed to create group');
+      // const newGroup = await response.json();
+      // setGroups([...groups, newGroup]);
+      setNewGroupName("");
+      setShowCreateGroupModal(false);
+      setActionSuccess(`Group "${newGroupName}" created (simulated)`);
+      setTimeout(() => setActionSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create group");
     }
-    // Fallback or when search is active but no results yet (e.g. loading)
-    // This case might need refinement based on desired UX during search loading.
-    // For now, if search is active but results are null (e.g. loading), show nothing or a loader.
-    // If searchResults is an empty array, the later map will handle it.
-    return []; // Or handle loading state for search appropriately
   };
 
+  const handleToggleFileSelectionForGrouping = (fileId: string) => {
+    setSelectedFilesForGrouping(prev =>
+      prev.includes(fileId) ? prev.filter(id => id !== fileId) : [...prev, fileId]
+    );
+  };
+
+  const handleAddFilesToGroup = async () => {
+    if (!selectedGroupForAdding || selectedFilesForGrouping.length === 0 || !user) return;
+    try {
+      // TODO: Implement API call to POST /api/groups/{groupId}/crates
+      console.log("Adding files", selectedFilesForGrouping, "to group", selectedGroupForAdding);
+      // const response = await fetch(`/api/groups/${selectedGroupForAdding}/crates`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ crateIds: selectedFilesForGrouping }),
+      // });
+      // if (!response.ok) throw new Error('Failed to add files to group');
+      // // Optionally refetch groups or update group's crateIds locally
+      setSelectedFilesForGrouping([]);
+      setSelectedGroupForAdding(null);
+      setShowAddToGroupModal(false);
+      setActionSuccess(`Files added to group (simulated)`);
+      setTimeout(() => setActionSuccess(null), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add files to group");
+    }
+  };
 
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -381,6 +404,8 @@ export default function HomePage() {
     );
   }
 
+  const displayedItems = getDisplayedFiles(); // This is now always a flat list
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto">
@@ -439,10 +464,10 @@ export default function HomePage() {
             </div>
           </div>
         )}
-        {/* Header with search */}
+        {/* Header with search and Create Group button */}
         <div className="flex flex-col items-center justify-center mb-8 mt-4">
           <h1 className="text-2xl font-medium text-gray-800 mb-4">My crates</h1>
-          <div className="w-full flex justify-center">
+          <div className="w-full flex flex-col sm:flex-row justify-center items-center gap-4">
             <div className="relative w-full max-w-xl">
               <input
                 type="text"
@@ -454,7 +479,21 @@ export default function HomePage() {
               />
               <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
             </div>
+            <button
+              onClick={() => setShowCreateGroupModal(true)}
+              className="bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg shadow-sm flex items-center transition-colors"
+            >
+              <FaFolderPlus className="mr-2" /> Create Group
+            </button>
           </div>
+           {selectedFilesForGrouping.length > 0 && (
+            <button
+              onClick={() => setShowAddToGroupModal(true)}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm flex items-center transition-colors"
+            >
+              Add {selectedFilesForGrouping.length} files to Group...
+            </button>
+          )}
         </div>
 
         {/* Messages */}
@@ -470,17 +509,38 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* File Grid */}
+        {/* TODO: Display Groups Section */}
+        {groups.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-3">My Groups</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {groups.map(group => (
+                <Card key={group.id} className="p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center text-primary-600 mb-2">
+                      <FaFolder size={20} className="mr-2"/>
+                      <h3 className="font-semibold text-lg truncate" title={group.name}>{group.name}</h3>
+                    </div>
+                    <p className="text-sm text-gray-500">{group.crateIds.length} crate(s)</p>
+                  </div>
+                  {/* TODO: Add actions like view group, delete group, add files to this group */}
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <h2 className="text-xl font-semibold text-gray-700 mb-3 mt-6">All Crates</h2>
+        {/* File Grid - now always renders a flat list from displayedItems */}
         <div>
           {searchLoading ? (
             <div className="p-8 text-center">
               <div className="animate-pulse flex flex-col items-center">
                 <div className="h-8 w-8 bg-gray-200 rounded-full mb-4"></div>
                 <div className="h-4 w-32 bg-gray-200 rounded"></div>
-                <div className="mt-2 text-gray-500">Searching...</div>
               </div>
             </div>
-          ) : searchResults !== null ? (
+          ) : searchResults !== null ? ( // Displaying search results
             searchResults.length === 0 ? (
               <Card className="p-8 text-center">
                 <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
@@ -492,14 +552,15 @@ export default function HomePage() {
                   <Card
                     key={file.id}
                     hoverable
-                    className="transition-all overflow-hidden"
+                    className={`transition-all overflow-hidden ${selectedFilesForGrouping.includes(file.id) ? 'ring-2 ring-blue-500' : ''}`}
+                    onClick={() => handleToggleFileSelectionForGrouping(file.id)}
                   >
-                    {/* ...existing file card rendering... */}
+                    {/* ... existing file card rendering ... */}
                     <div className="p-3">
                       <div className="flex items-start space-x-3">
                         <div className="mt-0.5">{getFileIcon(file)}</div>
                         <div className="flex-grow min-w-0">
-                          <Link href={`/crate/${file.id}`} className="block">
+                          <Link href={`/crate/${file.id}`} className="block" onClick={(e) => e.stopPropagation()}>
                             <h3
                               className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
                               title={file.fileName}
@@ -518,118 +579,32 @@ export default function HomePage() {
                           </div>
                           {renderMetadata(file.metadata)}
                         </div>
-                      </div>
-                      <div className="flex justify-end mt-2 space-x-1">
-                        <button
-                          onClick={() => copyShareLink(file.id)}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                          title="Copy link"
-                        >
-                          <FaShareAlt size={12} />
-                        </button>
-                        <Link
-                          href={`/crate/${file.id}`}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                          title="View details"
-                        >
-                          <FaEye size={12} />
-                        </Link>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )
-          ) : loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-pulse flex flex-col items-center">
-                <div className="h-8 w-8 bg-gray-200 rounded-full mb-4"></div>
-                <div className="h-4 w-32 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          ) : fileTree.length === 0 ? (
-            <Card className="p-8 text-center">
-              <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
-              <p className="text-gray-500">
-                {searchQuery
-                  ? "No matching crates found"
-                  : "No crates uploaded yet"}
-              </p>
-              {!searchQuery && (
-                <Link
-                  href="/upload"
-                  className="inline-flex items-center mt-4 text-primary-500"
-                >
-                  <FaUpload className="mr-1" /> Upload your first crate
-                </Link>
-              )}
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).map((file) => (
-                <React.Fragment key={file.id}>
-                  <Card
-                    hoverable
-                    className="transition-all overflow-hidden"
-                  >
-                    <div className="p-3">
-                      <div className="flex items-start space-x-3">
-                        {/* File Type Icon */}
-                        <div className="mt-0.5">{getFileIcon(file)}</div>
-
-                        {/* File Info */}
-                        <div className="flex-grow min-w-0">
-                          <Link href={`/crate/${file.id}`} className="block">
-                            <h3
-                              className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
-                              title={file.fileName}
-                            >
-                              {file.title || file.fileName}
-                            </h3>
-                          </Link>
-
-                          <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                            <div className="truncate mr-2">
-                              {formatFileSize(file.size)}
-                            </div>
-                            <div className="flex items-center whitespace-nowrap">
-                              <FaDownload className="mr-1" size={10} />{" "}
-                              {file.downloadCount || 0}
-                            </div>
-                          </div>
-                          {/* Metadata display */}
-                          {renderMetadata(file.metadata)}
-                        </div>
-
-                        {/* Expiry Indicator - Small Circle */}
-                        {file.isExpiringSoon && (
+                         {file.isExpiringSoon && (
                           <div
                             className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
                             title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? "s" : ""}`}
                           ></div>
                         )}
                       </div>
-
-                      {/* Action Buttons - Smaller and more compact */}
                       <div className="flex justify-end mt-2 space-x-1">
                         <button
-                          onClick={() => copyShareLink(file.id)}
+                          onClick={(e) => { e.stopPropagation(); copyShareLink(file.id); }}
                           className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="Copy link"
                         >
                           <FaShareAlt size={12} />
                         </button>
-
                         <Link
                           href={`/crate/${file.id}`}
+                          onClick={(e) => e.stopPropagation()}
                           className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="View details"
                         >
                           <FaEye size={12} />
                         </Link>
-
-                        <button
-                          onClick={() => {
+                         <button
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setFileToDelete(file.id);
                             setDeleteModalVisible(true);
                           }}
@@ -641,94 +616,119 @@ export default function HomePage() {
                       </div>
                     </div>
                   </Card>
-                  {/* Render Children if not searching */}
-                  {!searchQuery.trim() && file.children && file.children.length > 0 && (
-                    file.children.map(childFile => (
-                      <Card
-                        key={childFile.id}
-                        hoverable
-                        className="transition-all overflow-hidden ml-4 sm:ml-6" // Indentation for child
-                      >
-                        <div className="p-3">
-                          <div className="flex items-start space-x-3">
-                            <div className="mt-0.5">{getFileIcon(childFile)}</div>
-                            <div className="flex-grow min-w-0">
-                              <Link href={`/crate/${childFile.id}`} className="block">
-                                <h3
-                                  className="font-medium text-sm text-gray-700 hover:text-primary-600 transition-colors truncate"
-                                  title={childFile.fileName}
-                                >
-                                  {childFile.title || childFile.fileName}
-                                </h3>
-                              </Link>
-                              <div className="flex justify-between items-center mt-1 text-xs text-gray-400">
-                                <div className="truncate mr-2">
-                                  {formatFileSize(childFile.size)}
-                                </div>
-                                <div className="flex items-center whitespace-nowrap">
-                                  <FaDownload className="mr-1" size={10} />{" "}
-                                  {childFile.downloadCount || 0}
-                                </div>
-                              </div>
-                              {renderMetadata(childFile.metadata)}
-                            </div>
-                            {childFile.isExpiringSoon && (
-                              <div
-                                className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
-                                title={`Expires in ${childFile.daysTillExpiry} day${childFile.daysTillExpiry !== 1 ? "s" : ""}`}
-                              ></div>
-                            )}
+                ))}
+              </div>
+            )
+          ) : loading ? ( // Displaying loading state for initial file fetch
+            <div className="p-8 text-center">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="h-8 w-8 bg-gray-200 rounded-full mb-4"></div>
+                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ) : displayedItems.length === 0 ? ( // No files and not searching
+            <Card className="p-8 text-center">
+              <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
+              <p className="text-gray-500">
+                No crates uploaded yet
+              </p>
+              <Link
+                href="/upload"
+                className="inline-flex items-center mt-4 text-primary-500"
+              >
+                <FaUpload className="mr-1" /> Upload your first crate
+              </Link>
+            </Card>
+          ) : ( // Displaying all active files (non-search view)
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {displayedItems.map((file) => (
+                // Removed React.Fragment and child rendering logic
+                <Card
+                  key={file.id}
+                  hoverable
+                  className={`transition-all overflow-hidden ${selectedFilesForGrouping.includes(file.id) ? 'ring-2 ring-blue-500' : ''}`}
+                  onClick={() => handleToggleFileSelectionForGrouping(file.id)}
+                >
+                  <div className="p-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="mt-0.5">{getFileIcon(file)}</div>
+                      <div className="flex-grow min-w-0">
+                        <Link href={`/crate/${file.id}`} className="block" onClick={(e) => e.stopPropagation()}>
+                          <h3
+                            className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                            title={file.fileName}
+                          >
+                            {file.title || file.fileName}
+                          </h3>
+                        </Link>
+                        <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                          <div className="truncate mr-2">
+                            {formatFileSize(file.size)}
                           </div>
-                          <div className="flex justify-end mt-2 space-x-1">
-                            <button
-                              onClick={() => copyShareLink(childFile.id)}
-                              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                              title="Copy link"
-                            >
-                              <FaShareAlt size={12} />
-                            </button>
-                            <Link
-                              href={`/crate/${childFile.id}`}
-                              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                              title="View details"
-                            >
-                              <FaEye size={12} />
-                            </Link>
-                            <button
-                              onClick={() => {
-                                setFileToDelete(childFile.id);
-                                setDeleteModalVisible(true);
-                              }}
-                              className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
-                              title="Delete"
-                            >
-                              <FaTrash size={12} />
-                            </button>
+                          <div className="flex items-center whitespace-nowrap">
+                            <FaDownload className="mr-1" size={10} />{" "}
+                            {file.downloadCount || 0}
                           </div>
                         </div>
-                      </Card>
-                    ))
-                  )}
-                </React.Fragment>
+                        {renderMetadata(file.metadata)}
+                      </div>
+                      {file.isExpiringSoon && (
+                        <div
+                          className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                          title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? "s" : ""}`}
+                        ></div>
+                      )}
+                    </div>
+                    <div className="flex justify-end mt-2 space-x-1">
+                       <button
+                          onClick={(e) => { e.stopPropagation(); copyShareLink(file.id);}}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          title="Copy link"
+                        >
+                          <FaShareAlt size={12} />
+                        </button>
+                        <Link
+                          href={`/crate/${file.id}`}
+                           onClick={(e) => e.stopPropagation()}
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          title="View details"
+                        >
+                          <FaEye size={12} />
+                        </Link>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFileToDelete(file.id);
+                            setDeleteModalVisible(true);
+                          }}
+                          className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                          title="Delete"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                    </div>
+                  </div>
+                </Card>
               ))}
             </div>
           )}
         </div>
 
-        {/* Simple file stats */}
-        {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length > 0 && (
+        {/* Simple file stats - adjusted to use displayedItems */}
+        { displayedItems.length > 0 && (
           <div className="mt-4 text-sm text-gray-500 flex justify-between">
-            <span>Total: {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length} top-level crates</span>
+            {/* Ensure displayedItems is used here if it's the definitive list for the view */}
+            <span>Total: {displayedItems.length} crates</span>
             <span>
               {formatFileSize(
-                (searchQuery.trim() && searchResults !== null ? searchResults : fileTree).reduce((sum, file) => sum + file.size + (file.children?.reduce((childSum, child) => childSum + child.size, 0) || 0), 0),
+                displayedItems.reduce((sum, file) => sum + file.size, 0), // Removed child sum
               )}
             </span>
           </div>
         )}
       </div>
 
-      {/* Delete Modal */}
+      {/* Delete Modal (existing) */}
       {deleteModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
           <Card className="max-w-sm w-full p-6">
@@ -754,6 +754,75 @@ export default function HomePage() {
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
                 Delete
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Create Group Modal */}
+      {showCreateGroupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-md w-full p-6">
+            <h3 className="font-medium text-lg mb-4">Create New Group</h3>
+            <input
+              type="text"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              placeholder="Group Name"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            />
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {setShowCreateGroupModal(false); setNewGroupName("");}}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateGroup}
+                disabled={!newGroupName.trim()}
+                className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-300"
+              >
+                Create
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
+      
+      {/* Add to Group Modal */}
+      {showAddToGroupModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"></div>
+          <Card className="max-w-md w-full p-6">
+            <h3 className="font-medium text-lg mb-4">Add {selectedFilesForGrouping.length} file(s) to Group</h3>
+            {groups.length === 0 ? (
+              <p className="text-gray-600 mb-4">No groups available. Please create a group first.</p>
+            ) : (
+              <select
+                value={selectedGroupForAdding || ""}
+                onChange={(e) => setSelectedGroupForAdding(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded mb-4"
+              ></select>
+                <option value="" disabled>Select a group</option>
+                {groups.map(group => (
+                  <option key={group.id} value={group.id}>{group.name}</option>
+                ))}
+              </select>
+            )}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {setShowAddToGroupModal(false); setSelectedGroupForAdding(null);}}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddFilesToGroup}
+                disabled={!selectedGroupForAdding || selectedFilesForGrouping.length === 0 || groups.length === 0}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300"
+              >
+                Add to Group
               </button>
             </div>
           </Card>

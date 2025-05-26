@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getFileMetadata,
   deleteFileMetadata,
-  getChildFiles, // <-- Import getChildFiles
 } from "@/services/firebaseService";
 import { deleteFile } from "@/services/storageService";
 
@@ -40,11 +39,7 @@ export async function GET(
     // Log metadata request
     console.log(`File metadata requested: ${fileId} by: ${getClientIp(req)}`);
 
-    // Fetch child files
-    const children = await getChildFiles(fileId);
-
-    // Return file metadata including parentId and children
-    // Spreading metadata will include parentId if it exists, as FileMetadata type includes it
+    // Return file metadata
     return NextResponse.json({
       ...metadata, // Spread all properties of metadata
       uploadedAt: // Ensure dates are ISO strings
@@ -55,7 +50,6 @@ export async function GET(
         metadata.expiresAt instanceof Date
           ? metadata.expiresAt.toISOString()
           : metadata.expiresAt,
-      children, // Add children array
     });
   } catch (error: any) {
     console.error("Error retrieving file metadata:", error);

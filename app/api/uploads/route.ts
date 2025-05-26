@@ -67,9 +67,6 @@ export async function POST(req: NextRequest) {
     // Get fileType if provided
     const fileType = formData.get("fileType")?.toString();
 
-    // Get parentId if provided
-    const parentId = formData.get("parentId")?.toString() || undefined;
-
     // Decide upload method based on fileType
     if (fileType === "file") {
       // Use presigned URL flow for generic/binary files
@@ -101,7 +98,6 @@ export async function POST(req: NextRequest) {
       undefined, // description
       fileType, // pass fileType
       metadata, // pass metadata
-      parentId, // pass parentId
     );
 
     // Generate download page URL

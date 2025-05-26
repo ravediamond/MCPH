@@ -127,7 +127,6 @@ export async function uploadFile(
   description?: string,
   fileType?: string, // Added fileType parameter
   metadata?: Record<string, string>,
-  parentId?: string, // Added parentId parameter
 ): Promise<FileMetadata> {
   try {
     // Generate a unique ID for the file
@@ -224,7 +223,6 @@ export async function uploadFile(
       }),
       ...(metadata && { metadata }),
       searchText,
-      ...(parentId && { parentId }), // Include parentId if provided
     };
 
     // Store metadata in Firestore

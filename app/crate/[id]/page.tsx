@@ -165,7 +165,7 @@ export default function CratePage() {
               : "Failed to fetch file information",
           );
         }
-        const data = await response.json();
+        const data = await response.json(); // Data no longer contains parentId or children
         data.viewCount = (data.viewCount || 0) + 1;
         setFileInfo(data);
         if (data.expiresAt) {
@@ -576,7 +576,7 @@ export default function CratePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Breadcrumb navigation */}
+        {/* Breadcrumb navigation - Simplified */}
         <div className="mb-3 flex items-center text-sm">
           <Link
             href="/"
@@ -584,6 +584,7 @@ export default function CratePage() {
           >
             Home
           </Link>
+          {/* Removed parent breadcrumbs */}
           <span className="mx-2 text-gray-400">/</span>
           <span className="text-gray-700">File Details</span>
         </div>
