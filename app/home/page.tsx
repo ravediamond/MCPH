@@ -61,6 +61,13 @@ export default function HomePage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  // useEffect to clear search results when query is empty
+  useEffect(() => {
+    if (searchQuery.trim() === "" && searchResults !== null) {
+      setSearchResults(null);
+    }
+  }, [searchQuery, searchResults]); // Added searchResults to dependency array
+
   useEffect(() => {
     if (user) {
       const fetchFiles = async () => {
@@ -79,8 +86,8 @@ export default function HomePage() {
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
+                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              )
               : 0;
 
             return {
@@ -327,10 +334,10 @@ export default function HomePage() {
                 : doc.downloadCount || 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
+                  Object.entries(fields.metadata.mapValue.fields).map(
+                    ([k, v]: any) => [k, v.stringValue],
+                  ),
+                )
                 : doc.metadata || undefined,
             };
           })
@@ -540,7 +547,7 @@ export default function HomePage() {
                 <div className="h-4 w-32 bg-gray-200 rounded"></div>
               </div>
             </div>
-          ) : filteredFiles.length === 0 ? (
+          ) : fileTree.length === 0 ? (
             <Card className="p-8 text-center">
               <FaFileAlt className="text-gray-300 text-4xl mx-auto mb-2" />
               <p className="text-gray-500">
@@ -709,7 +716,7 @@ export default function HomePage() {
         </div>
 
         {/* Simple file stats */}
-        { (searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length > 0 && (
+        {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length > 0 && (
           <div className="mt-4 text-sm text-gray-500 flex justify-between">
             <span>Total: {(searchQuery.trim() && searchResults !== null ? searchResults : fileTree).length} top-level crates</span>
             <span>
