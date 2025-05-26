@@ -38,13 +38,11 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
+import { Crate } from "../app/types/crate";
 
 // --- Firebase Admin SDK Initialization ---
 let firebaseApp: App;
 let db: Firestore;
-
-// Flag to track if settings have been applied
-let settingsApplied = false;
 
 if (!getApps().length) {
   try {
@@ -55,8 +53,6 @@ if (!getApps().length) {
       "This will use GOOGLE_APPLICATION_CREDENTIALS environment variable if set, or other ADC mechanisms.",
     );
 
-    // Initialize Firebase Admin SDK without explicit credentials.
-    // It will automatically use Application Default Credentials (ADC).
     firebaseApp = initializeApp({
       // No 'credential' property is provided, so ADC will be used.
     });
@@ -64,6 +60,22 @@ if (!getApps().length) {
     console.log(
       "Firebase Admin SDK initialized successfully using Application Default Credentials.",
     );
+
+    // Initialize Firestore for the first time
+    db = getFirestore(firebaseApp);
+    console.log("Firestore instance obtained for the first time.");
+
+    // Apply settings immediately and only once during initial setup
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+      console.log("Firestore settings applied successfully (initial setup).");
+    } catch (settingsError: any) {
+      // This warning is a safeguard. Ideally, this path shouldn't be hit if it's the true first init.
+      console.warn(
+        `Firestore settings could not be applied during initial setup. This might be okay if already set by a concurrent initialization. Error: ${settingsError.message}`
+      );
+    }
+
   } catch (error: any) {
     console.error(
       "Error initializing Firebase Admin SDK with Application Default Credentials:",
@@ -89,41 +101,25 @@ if (!getApps().length) {
       detailedError += `An unexpected error occurred: ${error.message}. `;
     }
     console.error(detailedError);
-    throw new Error(detailedError);
+    throw new Error(detailedError); // Propagate error if init fails
   }
 } else {
   firebaseApp = getApp(); // Use the already initialized app
-  console.log("Firebase Admin SDK already initialized. Using existing app.");
-}
-
-// Initialize Firestore
-db = getFirestore(firebaseApp);
-
-// Apply settings only once to avoid the "Firestore has already been initialized" error
-if (!settingsApplied) {
-  try {
-    // Enable Firestore timestamp snapshots
-    db.settings({ ignoreUndefinedProperties: true });
-    settingsApplied = true;
-    console.log("Firestore settings applied successfully.");
-  } catch (error) {
-    // If settings have already been applied, this is not a critical error
-    console.warn(
-      "Could not apply Firestore settings, they may have already been configured:",
-      error,
-    );
-  }
+  db = getFirestore(firebaseApp); // Get the existing Firestore instance
+  console.log("Firebase Admin SDK and Firestore instance already initialized. Using existing.");
+  // Settings are assumed to have been applied during the initial setup in the block above.
 }
 
 // --- End Firebase Admin SDK Initialization ---
 
 // Collection names for Firestore
 const FILES_COLLECTION = "files";
+const CRATES_COLLECTION = "crates"; // New collection for crates
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 
 // Export collection names for use in other modules
-export { FILES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
+export { FILES_COLLECTION, CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 
 // File metadata type
 export interface FileMetadata {
@@ -654,5 +650,133 @@ export async function getUserStorageUsage(
   } catch (error) {
     console.error(`Error calculating storage usage for user ${userId}:`, error);
     return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
+  }
+}
+
+/**
+ * Save crate metadata to Firestore.
+ */
+export async function saveCrateMetadata(
+  crateData: Crate
+): Promise<boolean> {
+  try {
+    // Convert the data for Firestore
+    const dataToSave = toFirestoreData({
+      ...crateData,
+    });
+
+    // Add to Firestore
+    await db.collection(CRATES_COLLECTION).doc(crateData.id).set(dataToSave);
+
+    return true;
+  } catch (error) {
+    console.error("Error saving crate metadata to Firestore:", error);
+    return false;
+  }
+}
+
+/**
+ * Get crate metadata from Firestore
+ */
+export async function getCrateMetadata(
+  crateId: string
+): Promise<Crate | null> {
+  try {
+    const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      return null;
+    }
+
+    const data = doc.data();
+
+    // Convert Firestore timestamps back to Date objects
+    return fromFirestoreData(data) as Crate;
+  } catch (error) {
+    console.error("Error getting crate metadata from Firestore:", error);
+    return null;
+  }
+}
+
+/**
+ * Increment download count for a crate in Firestore
+ */
+export async function incrementCrateDownloadCount(crateId: string): Promise<number> {
+  try {
+    const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      console.warn(
+        `Crate metadata not found for ID: ${crateId} when incrementing download count.`,
+      );
+      return 0;
+    }
+
+    // Use FieldValue.increment() for atomic increment operation
+    await docRef.update({
+      downloadCount: FieldValue.increment(1),
+    });
+
+    // Also update general metrics
+    await incrementMetric("downloads");
+
+    // Get the updated document to return the new count
+    const updatedDoc = await docRef.get();
+    const downloadCount = updatedDoc.data()?.downloadCount || 0;
+
+    return downloadCount;
+  } catch (error) {
+    console.error("Error incrementing crate download count in Firestore:", error);
+
+    // Attempt to get current count if update failed
+    try {
+      const doc = await db.collection(CRATES_COLLECTION).doc(crateId).get();
+      return doc.data()?.downloadCount || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+}
+
+/**
+ * Delete crate metadata from Firestore
+ */
+export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
+  try {
+    await db.collection(CRATES_COLLECTION).doc(crateId).delete();
+    return true;
+  } catch (error) {
+    console.error("Error deleting crate metadata from Firestore:", error);
+    return false;
+  }
+}
+
+/**
+ * Get crates for a specific user from Firestore
+ */
+export async function getUserCrates(userId: string): Promise<Crate[]> {
+  try {
+    const querySnapshot = await db
+      .collection(CRATES_COLLECTION)
+      .where("ownerId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    if (querySnapshot.empty) {
+      return [];
+    }
+
+    // Convert to array of data, converting Firestore timestamps to Date objects
+    return querySnapshot.docs.map(
+      (doc) => fromFirestoreData(doc.data()) as Crate,
+    );
+  } catch (error) {
+    console.error(
+      `Error getting crates for user ${userId} from Firestore:`,
+      error,
+    );
+    return []; // Return empty array on error
   }
 }

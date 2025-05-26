@@ -25,15 +25,34 @@ import {
   FaKey,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
+import { Crate } from "../types/crate";
 
-interface FileMetadataExtended extends FileMetadata {
+// Add FileMetadataExtended type
+type FileMetadataExtended = FileMetadata & {
+  id: string;
+  fileName: string;
+  title?: string;
+  description?: string;
+  contentType: string;
+  size: number;
+  uploadedAt?: Date;
+  expiresAt?: Date;
+  downloadCount?: number;
+  metadata?: Record<string, string>;
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
+};
+
+interface CrateExtended extends Crate {
+  isExpiringSoon?: boolean;
+  daysTillExpiry?: number;
+  expiresAt?: string; // Add expiresAt as optional
+  fileName?: string; // Added to fix property access error
 }
 
 export default function HomePage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
-  const [files, setFiles] = useState<FileMetadataExtended[]>([]);
+  const [files, setFiles] = useState<CrateExtended[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,30 +83,35 @@ export default function HomePage() {
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(`/api/user/${user.uid}/files`);
+          const response = await fetch(`/api/user/${user.uid}/crates`);
           if (!response.ok) {
-            throw new Error("Failed to fetch files");
+            throw new Error("Failed to fetch crates");
           }
           const data = await response.json();
 
-          // Process files to add expiry metadata
-          const processedFiles = data.map((file: FileMetadataExtended) => {
-            const expiryDate = file.expiresAt ? new Date(file.expiresAt) : null;
+          // Process crates to add expiry metadata
+          const processedCrates = data.map((crate: Crate) => {
+            const expiryDate =
+              crate.createdAt && crate.ttlDays
+                ? new Date(
+                  new Date(crate.createdAt).getTime() +
+                  crate.ttlDays * 24 * 60 * 60 * 1000,
+                )
+                : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
+                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              )
               : 0;
-
             return {
-              ...file,
+              ...crate,
               isExpiringSoon: daysDiff <= 3 && daysDiff > 0,
               daysTillExpiry: daysDiff,
             };
           });
 
-          setFiles(processedFiles);
+          setFiles(processedCrates);
         } catch (err) {
           setError(
             err instanceof Error ? err.message : "An unknown error occurred",
@@ -252,38 +276,31 @@ export default function HomePage() {
         });
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
-        // Map Firestore API results to FileMetadataExtended[]
-        const results = (data.results || [])
-          .map((doc: any) => {
-            const fields = doc.fields || {};
-            return {
-              id: doc.name?.split("/")?.pop() || doc.id || "",
-              fileName: fields.fileName?.stringValue || doc.fileName || "",
-              title: fields.title?.stringValue || doc.title || "",
-              description:
-                fields.description?.stringValue || doc.description || "",
-              contentType:
-                fields.contentType?.stringValue || doc.contentType || "",
-              size: fields.size?.integerValue
-                ? parseInt(fields.size.integerValue)
-                : doc.size || 0,
-              uploadedAt:
-                fields.uploadedAt?.timestampValue || doc.uploadedAt || "",
-              expiresAt:
-                fields.expiresAt?.timestampValue || doc.expiresAt || "",
-              downloadCount: fields.downloadCount?.integerValue
-                ? parseInt(fields.downloadCount.integerValue)
-                : doc.downloadCount || 0,
-              metadata: fields.metadata?.mapValue?.fields
-                ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
-                : doc.metadata || undefined,
-            };
-          })
-          .filter((file: any) => file.id && file.fileName); // Filter out empty/invalid crates
+
+        // Map Firestore search results to our application format
+        const results = (data.results || []).map((doc: any) => {
+          // We only need to handle the Firestore API response format
+          const fields = doc.fields || {};
+          return {
+            id: doc.name?.split("/")?.pop() || "",
+            fileName: fields.fileName?.stringValue || "",
+            title: fields.title?.stringValue || "",
+            description: fields.description?.stringValue || "",
+            contentType: fields.contentType?.stringValue || "",
+            size: fields.size?.integerValue ? parseInt(fields.size.integerValue) : 0,
+            uploadedAt: fields.uploadedAt?.timestampValue || "",
+            expiresAt: fields.expiresAt?.timestampValue || "",
+            downloadCount: fields.downloadCount?.integerValue ? parseInt(fields.downloadCount.integerValue) : 0,
+            metadata: fields.metadata?.mapValue?.fields
+              ? Object.fromEntries(
+                Object.entries(fields.metadata.mapValue.fields).map(
+                  ([k, v]: any) => [k, v.stringValue]
+                )
+              )
+              : undefined,
+          };
+        }).filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
+
         setSearchResults(results);
       } catch (err: any) {
         setSearchError(err.message || "Search failed");
@@ -293,6 +310,25 @@ export default function HomePage() {
       }
     }
   };
+
+  // Utility to map CrateExtended to FileMetadataExtended
+  function crateToFileMetadata(crate: CrateExtended): FileMetadataExtended {
+    return {
+      id: crate.id,
+      fileName: crate.title || crate.id, // fallback to id if title is missing
+      title: crate.title,
+      description: crate.description,
+      contentType: crate.mimeType,
+      size: crate.size,
+      gcsPath: crate.gcsPath || "", // Added to match FileMetadata
+      uploadedAt: crate.createdAt ? new Date(crate.createdAt) : new Date(),
+      expiresAt: crate.expiresAt ? new Date(crate.expiresAt) : undefined,
+      downloadCount: crate.downloadCount,
+      metadata: crate.metadata,
+      isExpiringSoon: crate.isExpiringSoon,
+      daysTillExpiry: crate.daysTillExpiry,
+    };
+  }
 
   if (authLoading) {
     return (
@@ -439,7 +475,13 @@ export default function HomePage() {
                     {/* ...existing file card rendering... */}
                     <div className="p-3">
                       <div className="flex items-start space-x-3">
-                        <div className="mt-0.5">{getFileIcon(file)}</div>
+                        <div className="mt-0.5">{
+                          getFileIcon(
+                            'contentType' in file
+                              ? (file as FileMetadataExtended)
+                              : crateToFileMetadata(file as CrateExtended)
+                          )
+                        }</div>
                         <div className="flex-grow min-w-0">
                           <Link href={`/crate/${file.id}`} className="block">
                             <h3
@@ -517,7 +559,13 @@ export default function HomePage() {
                   <div className="p-3">
                     <div className="flex items-start space-x-3">
                       {/* File Type Icon */}
-                      <div className="mt-0.5">{getFileIcon(file)}</div>
+                      <div className="mt-0.5">{
+                        getFileIcon(
+                          'contentType' in file
+                            ? (file as FileMetadataExtended)
+                            : crateToFileMetadata(file as CrateExtended)
+                        )
+                      }</div>
 
                       {/* File Info */}
                       <div className="flex-grow min-w-0">

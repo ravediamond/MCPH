@@ -10,10 +10,12 @@ import {
   FaTimes,
   FaCopy,
   FaExternalLinkAlt,
+  FaTags,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
-import { DATA_TTL } from "../app/config/constants"; // Import DATA_TTL
+import { DATA_TTL } from "../app/config/constants";
+import { CrateCategory, CrateSharing } from "../app/types/crate";
 
 // Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -32,30 +34,71 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text", ".todolist"]; // Added .todolist
+const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text", ".todolist"];
 
-// Available crate types that users can select
-const FILE_TYPES = [
-  { value: "crate", label: "Generic Crate" },
-  { value: "data", label: "Data" },
-  { value: "image", label: "Image" },
-  { value: "markdown", label: "Markdown" },
-  { value: "todolist", label: "To-Do List" }, // Added To-Do List
-  { value: "diagram", label: "Diagram" },
-  { value: "json", label: "JSON" },
+// Available crate categories that users can select
+const CRATE_CATEGORIES = [
+  { value: CrateCategory.BINARY, label: "Generic File" },
+  { value: CrateCategory.DATA, label: "Data" },
+  { value: CrateCategory.IMAGE, label: "Image" },
+  { value: CrateCategory.MARKDOWN, label: "Markdown" },
+  { value: CrateCategory.TODOLIST, label: "To-Do List" },
+  { value: CrateCategory.DIAGRAM, label: "Diagram" },
+  { value: CrateCategory.CODE, label: "Code" },
+  { value: CrateCategory.JSON, label: "JSON" },
 ];
 
-// Type definition update to include title, description and fileType
+// Mapping of MIME types to crate categories
+const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
+  "image/png": CrateCategory.IMAGE,
+  "image/jpeg": CrateCategory.IMAGE,
+  "image/gif": CrateCategory.IMAGE,
+  "image/webp": CrateCategory.IMAGE,
+  "image/svg+xml": CrateCategory.IMAGE,
+  "text/markdown": CrateCategory.MARKDOWN,
+  "text/x-markdown": CrateCategory.MARKDOWN,
+  "application/json": CrateCategory.JSON, // Changed from CrateCategory.DATA
+  "text/csv": CrateCategory.DATA,
+  "text/plain": CrateCategory.CODE,
+  "application/javascript": CrateCategory.CODE,
+  "text/javascript": CrateCategory.CODE,
+  "text/html": CrateCategory.CODE,
+  "text/css": CrateCategory.CODE,
+};
+
+// Mapping of file extensions to crate categories
+const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
+  ".png": CrateCategory.IMAGE,
+  ".jpg": CrateCategory.IMAGE,
+  ".jpeg": CrateCategory.IMAGE,
+  ".gif": CrateCategory.IMAGE,
+  ".webp": CrateCategory.IMAGE,
+  ".svg": CrateCategory.IMAGE,
+  ".md": CrateCategory.MARKDOWN,
+  ".markdown": CrateCategory.MARKDOWN,
+  ".json": CrateCategory.JSON, // Changed from CrateCategory.DATA
+  ".csv": CrateCategory.DATA,
+  ".js": CrateCategory.CODE,
+  ".ts": CrateCategory.CODE,
+  ".html": CrateCategory.CODE,
+  ".css": CrateCategory.CODE,
+  ".todolist": CrateCategory.TODOLIST,
+  ".mmd": CrateCategory.DIAGRAM,
+  ".diagram": CrateCategory.DIAGRAM,
+};
+
+// Type definition update to include new Crate fields
 type UploadedCrate = {
   id: string;
   fileName: string;
   title: string;
   description?: string;
   contentType: string;
-  fileType: string; // Crate type
+  category: CrateCategory;
   size: number;
   downloadUrl: string;
   uploadedAt: string;
+  tags?: string[];
 };
 
 interface FileUploadProps {
@@ -85,7 +128,7 @@ export default function FileUpload({
   const [urlCopied, setUrlCopied] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [fileType, setFileType] = useState<string>("crate"); // Default crate type
+  const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
   // Metadata state
   const [metadataList, setMetadataList] = useState<
     { key: string; value: string }[]
@@ -133,41 +176,29 @@ export default function FileUpload({
     }
 
     setFile(selectedFile);
-    setUploadedFile(null);
+    setUploadedFile(null); // Reset previous upload state
+
+    // Automatically use the filename as the title (without extension)
+    const fileNameWithoutExtension = selectedFile.name.replace(/\\.[^/.]+$/, "");
+    setTitle(fileNameWithoutExtension);
 
     // Automatically detect crate type based on content type or extension
-    if (selectedFile.type.includes("image")) {
-      setFileType("image");
-    } else if (
-      selectedFile.type.includes("json") ||
-      selectedFile.name.endsWith(".json")
-    ) {
-      setFileType("json");
-    } else if (
-      selectedFile.name.endsWith(".md") ||
-      selectedFile.name.endsWith(".markdown")
-    ) {
-      // If it's a .md file, keep it as markdown unless user changes it.
-      // We won't automatically assume .md is a todolist here, user can select it.
-      setFileType("markdown");
-    } else if (selectedFile.name.endsWith(".todolist")) { // Added for .todolist extension
-      setFileType("todolist");
-    } else if (
-      selectedFile.type.includes("csv") ||
-      selectedFile.type.includes("excel") ||
-      selectedFile.name.endsWith(".csv") ||
-      selectedFile.name.endsWith(".xlsx")
-    ) {
-      setFileType("data");
-    } else if (
-      selectedFile.name.endsWith(".diagram") ||
-      selectedFile.name.endsWith(".drawio")
-    ) {
-      setFileType("diagram");
+    let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
+
+    // First check MIME type
+    if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
+      detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
     } else {
-      setFileType("crate");
+      // Then check file extension
+      const fileExtension = selectedFile.name.match(/\\.[^/.]+$/)?.[0].toLowerCase();
+      if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
+        detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
+      }
     }
-  }, []);
+
+    // Set the detected file type
+    setFileType(detectedCategory);
+  }, []); // Keep dependencies minimal, assuming MIME_TYPE_TO_CATEGORY and EXTENSION_TO_CATEGORY are stable
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -232,61 +263,33 @@ export default function FileUpload({
         }
       }
 
-      // Select endpoint based on crate type
-      if (shouldUseFirestore(file)) {
-        // For text crates, use the text-content endpoint
-        const content = await file.text();
-
-        // Upload to text content endpoint
-        uploadResponse = await fetch("/api/uploads/text-content", {
-          method: "POST",
-          headers: {
-            "Content-Type": file.type || "text/plain",
-            "x-filename": file.name,
-            "x-ttl-days": selectedTtlDays.toString(), // Pass selected TTL
-            "x-title": title, // Add title header
-            "x-description": description, // Add description header
-            "x-file-type": fileType, // Add crate type header
-            "x-shared": isShared ? "true" : "false", // New: sharing status
-            ...(password && isShared ? { "x-password": password } : {}), // New: password if set
-            ...(user && { "x-user-id": user.uid }), // Add user ID if logged in
-            ...(authToken && { Authorization: `Bearer ${authToken}` }),
-          },
-          body: content,
-        });
-      } else {
-        // For other crates, use the direct-upload endpoint
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("ttlDays", selectedTtlDays.toString()); // Pass selected TTL
-        formData.append("title", title); // Add title
-        formData.append("description", description); // Add description
-        formData.append("fileType", fileType); // Add crate type
-        formData.append("isShared", isShared ? "true" : "false"); // New: sharing status
-        if (password && isShared) {
-          formData.append("password", password);
-        }
-
-        // Add user ID if logged in
-        if (user) {
-          formData.append("userId", user.uid);
-        }
-        // Add metadata as JSON string if any
-        if (metadataList.length > 0) {
-          formData.append(
-            "metadata",
-            JSON.stringify(metadataList.filter((m) => m.key)),
-          );
-        }
-
-        uploadResponse = await fetch("/api/uploads/direct-upload", {
-          method: "POST",
-          headers: {
-            ...(authToken && { Authorization: `Bearer ${authToken}` }),
-          },
-          body: formData,
-        });
+      // Always use direct-upload endpoint for all file types
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("ttlDays", selectedTtlDays.toString());
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("fileType", fileType);
+      formData.append("isShared", isShared ? "true" : "false");
+      if (password && isShared) {
+        formData.append("password", password);
       }
+      if (user) {
+        formData.append("userId", user.uid);
+      }
+      if (metadataList.length > 0) {
+        formData.append(
+          "metadata",
+          JSON.stringify(metadataList.filter((m) => m.key)),
+        );
+      }
+      uploadResponse = await fetch("/api/uploads/direct-upload", {
+        method: "POST",
+        headers: {
+          ...(authToken && { Authorization: `Bearer ${authToken}` }),
+        },
+        body: formData,
+      });
 
       if (!uploadResponse.ok) {
         let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
@@ -313,7 +316,7 @@ export default function FileUpload({
         title: title,
         description: description,
         contentType: file.type || "application/octet-stream",
-        fileType: fileType, // Add crate type
+        category: fileType, // No longer need 'as CrateCategory'
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
@@ -338,7 +341,7 @@ export default function FileUpload({
           title: title,
           description: description,
           contentType: file.type || "application/octet-stream",
-          fileType: fileType, // Add crate type
+          category: fileType, // No longer need 'as CrateCategory'
           size: file.size,
           downloadUrl: crateUrl,
           uploadedAt: new Date().toISOString(),
@@ -404,7 +407,7 @@ export default function FileUpload({
                 <p className="text-sm text-gray-500">
                   {formatBytes(uploadedFile.size)} • {uploadedFile.contentType}
                   <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                    Type: {uploadedFile.fileType}
+                    Type: {uploadedFile.category}
                   </span>
                   <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
                     Stored in GCS Bucket
@@ -550,11 +553,11 @@ export default function FileUpload({
                 <select
                   id="fileTypeSelect"
                   value={fileType}
-                  onChange={(e) => setFileType(e.target.value)}
+                  onChange={(e) => setFileType(e.target.value as CrateCategory)}
                   className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   disabled={isUploading}
                 >
-                  {FILE_TYPES.map((type) => (
+                  {CRATE_CATEGORIES.map((type) => (
                     <option key={type.value} value={type.value}>
                       {type.label}
                     </option>
@@ -608,6 +611,8 @@ export default function FileUpload({
                   className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   required
                   disabled={isUploading}
+                  autoComplete="off"
+                  name="crate-title"
                 />
               </div>
 
@@ -727,8 +732,8 @@ export default function FileUpload({
             type="submit"
             disabled={!file || isUploading || !title.trim()}
             className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
-                ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
-                : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
+              ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
+              : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
               }
                         `}
           >

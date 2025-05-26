@@ -6,6 +6,9 @@ import {
   deleteFileMetadata,
   incrementDownloadCount,
   logEvent,
+  saveCrateMetadata,
+  getCrateMetadata,
+  incrementCrateDownloadCount,
 } from "./firebaseService";
 import { DATA_TTL } from "../app/config/constants";
 import {
@@ -13,6 +16,7 @@ import {
   compressBuffer,
   decompressBuffer,
 } from "../lib/compressionUtils";
+import { Crate, CrateCategory, CrateSharing } from "../app/types/crate";
 
 // File metadata type definition
 export interface FileMetadata {
@@ -101,15 +105,15 @@ export async function generateUploadUrl(
     ) {
       throw new Error(
         "Failed to generate upload URL due to a signing error. " +
-          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
-          "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
-          'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
+        "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
+        "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
+        'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
       );
     }
     // Fallback for other errors
     throw new Error(
       "Failed to generate upload URL. Original error: " +
-        (error.message || "Unknown error"),
+      (error.message || "Unknown error"),
     );
   }
 }
@@ -195,8 +199,8 @@ export async function uploadFile(
     // --- Generate searchText field ---
     const metaString = metadata
       ? Object.entries(metadata)
-          .map(([k, v]) => `${k} ${v}`)
-          .join(" ")
+        .map(([k, v]) => `${k} ${v}`)
+        .join(" ")
       : "";
     const searchText = [title, fileName, description, metaString]
       .filter(Boolean)
@@ -236,6 +240,121 @@ export async function uploadFile(
   } catch (error) {
     console.error("Error uploading file to GCS:", error);
     throw new Error("Failed to upload file");
+  }
+}
+
+/**
+ * Upload a file as a Crate with the unified metadata schema
+ */
+export async function uploadCrate(
+  fileBuffer: Buffer,
+  fileName: string,
+  contentType: string,
+  crateData: Partial<Crate>
+): Promise<Crate> {
+  try {
+    // Generate a unique ID for the crate
+    const crateId = crateData.id || uuidv4();
+
+    // Generate GCS path for the crate
+    const gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
+
+    // Create a GCS file object
+    const file = bucket.file(gcsPath);
+
+    // Check if the file should be compressed based on content type and filename
+    const shouldUseCompression = shouldCompress(contentType, fileName);
+    let bufferToSave = fileBuffer;
+    let compressionMetadata = null;
+
+    // Apply compression if appropriate
+    if (shouldUseCompression) {
+      console.log(`Compressing crate: ${fileName} (${contentType})`);
+      try {
+        const result = await compressBuffer(fileBuffer);
+        bufferToSave = result.compressedBuffer;
+        compressionMetadata = result.compressionMetadata;
+        console.log(
+          `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
+        );
+      } catch (compressionError) {
+        console.error(
+          "Error during compression, using original buffer:",
+          compressionError,
+        );
+      }
+    }
+
+    // Upload the file with metadata
+    await file.save(bufferToSave, {
+      metadata: {
+        contentType,
+        metadata: {
+          crateId,
+          originalName: fileName,
+          title: crateData.title || fileName,
+          ...(crateData.description && { description: crateData.description }),
+          ...(crateData.category && { category: crateData.category }),
+          ...(compressionMetadata && {
+            compressed: "true",
+            compressionMethod: compressionMetadata.compressionMethod,
+            originalSize: compressionMetadata.originalSize.toString(),
+            compressionRatio: compressionMetadata.compressionRatio.toFixed(2),
+          }),
+        },
+      },
+      resumable: false,
+    });
+
+    // Create the searchField for hybrid search
+    const metaString = crateData.metadata
+      ? Object.entries(crateData.metadata)
+        .map(([k, v]) => `${k} ${v}`)
+        .join(" ")
+      : "";
+
+    const tagsString = crateData.tags ? crateData.tags.join(" ") : "";
+    const searchField = [
+      crateData.title || fileName,
+      crateData.description || "",
+      tagsString,
+      metaString
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    // Create default sharing config if not provided
+    const sharing: CrateSharing = crateData.shared || {
+      public: false
+    };
+
+    // Create the complete crate metadata
+    const completeCrate: Crate = {
+      id: crateId,
+      title: crateData.title || fileName,
+      description: crateData.description,
+      ownerId: crateData.ownerId || "anonymous",
+      createdAt: new Date(),
+      ttlDays: crateData.ttlDays || DATA_TTL.DEFAULT_DAYS,
+      mimeType: contentType,
+      category: crateData.category || getDefaultCategoryForFile(fileName, contentType),
+      gcsPath: gcsPath,
+      shared: sharing,
+      tags: crateData.tags,
+      searchField,
+      size: bufferToSave.length,
+      downloadCount: 0,
+      metadata: crateData.metadata
+    };
+
+    // Store metadata in Firestore
+    await saveCrateMetadata(completeCrate);
+
+    // Log the upload event
+    await logEvent("crate_upload", crateId);
+
+    return completeCrate;
+  } catch (error) {
+    console.error("Error uploading crate to GCS:", error);
+    throw new Error("Failed to upload crate");
   }
 }
 
@@ -423,7 +542,7 @@ export async function getFileStream(fileId: string): Promise<{
 
     // Check if file is compressed - if so, we need to handle differently
     if (metadata.compressed) {
-      // For compressed files, download the full content first, decompress it,
+      // For compressed files, download the full content first, decompression it,
       // and then create a stream from the decompressed buffer
       const { buffer } = await getFileContent(fileId);
 
@@ -455,3 +574,126 @@ export async function getFileStream(fileId: string): Promise<{
     throw new Error("Failed to stream file");
   }
 }
+
+/**
+ * Get a crate's content as a buffer, with automatic decompression if needed
+ */
+export async function getCrateContent(crateId: string): Promise<{
+  buffer: Buffer;
+  crate: Crate;
+}> {
+  try {
+    // Get crate metadata from Firestore
+    const crate = await getCrateMetadata(crateId);
+    if (!crate) {
+      throw new Error("Crate not found");
+    }
+
+    // Get the file
+    const file = bucket.file(crate.gcsPath);
+
+    // Check if file exists
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new Error("Crate not found in storage");
+    }
+
+    // Download the file content
+    const [content] = await file.download();
+
+    // Check if file is compressed and needs decompression
+    const fileMetadata = await file.getMetadata();
+    const compressed = fileMetadata[0]?.metadata?.compressed === "true";
+
+    if (compressed) {
+      try {
+        console.log(`Decompressing crate: ${crate.id}`);
+        const decompressedContent = await decompressBuffer(content);
+
+        // Increment download count
+        await incrementCrateDownloadCount(crateId);
+
+        return { buffer: decompressedContent, crate };
+      } catch (decompressionError) {
+        console.error("Error during decompression:", decompressionError);
+        // Fall back to returning the compressed content
+        return { buffer: content, crate };
+      }
+    }
+
+    // Increment download count
+    await incrementCrateDownloadCount(crateId);
+
+    return { buffer: content, crate };
+  } catch (error) {
+    console.error("Error getting crate content:", error);
+    throw new Error("Failed to get crate content");
+  }
+}
+
+/**
+ * Get the default category for a file based on its extension and MIME type
+ */
+function getDefaultCategoryForFile(fileName: string, mimeType: string): CrateCategory {
+  // First check MIME type
+  if (mimeType && MIME_TYPE_TO_CATEGORY[mimeType]) {
+    return MIME_TYPE_TO_CATEGORY[mimeType];
+  }
+
+  // Then check file extension
+  const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+  if (extension && EXTENSION_TO_CATEGORY[extension]) {
+    return EXTENSION_TO_CATEGORY[extension];
+  }
+
+  // Default to binary if we can't determine the category
+  return CrateCategory.BINARY;
+}
+
+// Define MIME type to category mappings
+const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
+  "image/png": CrateCategory.IMAGE,
+  "image/jpeg": CrateCategory.IMAGE,
+  "image/gif": CrateCategory.IMAGE,
+  "image/webp": CrateCategory.IMAGE,
+  "image/svg+xml": CrateCategory.IMAGE,
+  "text/markdown": CrateCategory.MARKDOWN,
+  "text/x-markdown": CrateCategory.MARKDOWN,
+  "application/json": CrateCategory.JSON, // Changed from CrateCategory.DATA
+  "text/csv": CrateCategory.DATA,
+  "text/plain": CrateCategory.CODE, // Default text to code
+  "application/javascript": CrateCategory.CODE,
+  "text/javascript": CrateCategory.CODE,
+  "text/html": CrateCategory.CODE,
+  "text/css": CrateCategory.CODE,
+  // Add more specific code types if needed, e.g.:
+  // "application/x-python": CrateCategory.CODE,
+  // "application/xml": CrateCategory.CODE,
+};
+
+// Define file extension to category mappings
+const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
+  ".png": CrateCategory.IMAGE,
+  ".jpg": CrateCategory.IMAGE,
+  ".jpeg": CrateCategory.IMAGE,
+  ".gif": CrateCategory.IMAGE,
+  ".webp": CrateCategory.IMAGE,
+  ".svg": CrateCategory.IMAGE,
+  ".md": CrateCategory.MARKDOWN,
+  ".markdown": CrateCategory.MARKDOWN,
+  ".json": CrateCategory.JSON, // Changed from CrateCategory.DATA
+  ".csv": CrateCategory.DATA,
+  ".js": CrateCategory.CODE,
+  ".ts": CrateCategory.CODE,
+  ".html": CrateCategory.CODE,
+  ".css": CrateCategory.CODE,
+  ".py": CrateCategory.CODE,
+  ".java": CrateCategory.CODE,
+  ".xml": CrateCategory.CODE,
+  ".txt": CrateCategory.CODE, // Default .txt to code
+  ".log": CrateCategory.CODE, // Default .log to code
+  ".todolist": CrateCategory.TODOLIST,
+  ".mmd": CrateCategory.DIAGRAM,
+  ".diagram": CrateCategory.DIAGRAM,
+  // Add more extensions as needed
+};

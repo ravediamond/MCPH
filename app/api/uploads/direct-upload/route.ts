@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadFile } from "@/services/storageService";
-import {
-  saveFileMetadata,
-  logEvent,
-  incrementMetric,
-  getUserStorageUsage,
-} from "@/services/firebaseService";
+import { uploadCrate } from "@/services/storageService";
+import { saveCrateMetadata, logEvent, incrementMetric, getUserStorageUsage } from "@/services/firebaseService";
 import { DATA_TTL } from "@/app/config/constants";
+import { CrateCategory } from "@/app/types/crate";
 
 /**
  * API route to handle direct file uploads
@@ -88,28 +84,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Upload the file to storage
-    const fileData = await uploadFile(
+    // Upload the file to storage as a crate
+    const crateData = await uploadCrate(
       buffer,
       file.name,
       file.type,
-      ttlDays,
-      title,
-      description,
-      fileType,
-      metadata,
+      {
+        title,
+        description,
+        category: fileType as CrateCategory,
+        ownerId: userId || "anonymous",
+        ttlDays,
+        metadata,
+      }
     );
 
-    // Add userId to the fileData if available
-    if (userId) {
-      fileData.userId = userId;
-    }
-
     // --- VECTOR EMBEDDING GENERATION ---
-    // Prepare text for embedding: concatenate title, description, and metadata
     let embedding: number[] | undefined = undefined;
     try {
-      const metadataObj = fileData.metadata || {};
+      const metadataObj = crateData.metadata || {};
       const metaString = Object.entries(metadataObj)
         .map(([k, v]) => `${k}: ${v}`)
         .join(" ");
@@ -124,46 +117,41 @@ export async function POST(req: NextRequest) {
       console.error("Failed to generate embedding:", e);
     }
 
-    // Store the metadata in Firestore with userId and embedding if available
-    await saveFileMetadata({
-      ...fileData,
-      uploadedAt: new Date(fileData.uploadedAt),
-      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
+    // Store the crate metadata in Firestore, including embedding if available
+    await saveCrateMetadata({
+      ...crateData,
       ...(embedding ? { embedding } : {}),
     });
 
     // Generate URLs
-    const apiUrl = new URL(`/api/files/${fileData.id}`, req.url).toString();
-    const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
+    const apiUrl = new URL(`/api/crates/${crateData.id}`, req.url).toString();
+    const downloadUrl = new URL(`/crate/${crateData.id}`, req.url).toString();
 
     // Log the upload event
     await logEvent(
-      "file_upload",
-      fileData.id,
+      "crate_upload",
+      crateData.id,
       undefined,
       userId ? { userId } : undefined,
     );
-    await incrementMetric("file_uploads");
+    await incrementMetric("crate_uploads");
 
     // Return the upload result with compression info if available
     return NextResponse.json({
       success: true,
-      fileId: fileData.id,
-      fileName: fileData.fileName,
-      title: fileData.title,
-      description: fileData.description,
-      contentType: fileData.contentType,
-      fileType: fileData.fileType, // Include fileType in the response
-      size: fileData.size,
+      fileId: crateData.id,
+      fileName: crateData.title,
+      title: crateData.title,
+      description: crateData.description,
+      contentType: crateData.mimeType,
+      category: crateData.category,
+      size: crateData.size,
       apiUrl,
       downloadUrl,
-      uploadedAt: new Date(fileData.uploadedAt).toISOString(),
-      expiresAt: fileData.expiresAt
-        ? new Date(fileData.expiresAt).toISOString()
-        : undefined,
-      // Include compression information if available
-      compressed: fileData.compressed,
-      compressionRatio: fileData.compressionRatio,
+      uploadedAt: crateData.createdAt instanceof Date ? crateData.createdAt.toISOString() : crateData.createdAt,
+      expiresAt: crateData.ttlDays ? new Date(new Date(crateData.createdAt).getTime() + crateData.ttlDays * 24 * 60 * 60 * 1000).toISOString() : undefined,
+      compressed: crateData.compressed,
+      compressionRatio: crateData.compressionRatio,
     });
   } catch (error: any) {
     console.error("Error handling direct upload:", error);
