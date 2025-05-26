@@ -70,8 +70,8 @@ if (!BUCKET_NAME) {
 console.log(`Using GCS Bucket: ${BUCKET_NAME}`);
 
 // Base folder for uploaded files
-const UPLOADS_FOLDER = "uploads/";
+const CRATES_FOLDER = "crates/";
 
 // Get the bucket
 export const bucket = storage.bucket(BUCKET_NAME);
-export const uploadsFolder = UPLOADS_FOLDER;
+export const cratesFolder = CRATES_FOLDER;

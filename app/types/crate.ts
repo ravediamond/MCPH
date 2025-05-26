@@ -43,6 +43,7 @@ export interface Crate {
     searchField?: string;      // title + tags + description (for hybrid search)
     size: number;              // File size in bytes
     downloadCount: number;     // Number of times the crate was downloaded
+    fileName: string;          // Original filename of the uploaded file
 
     // Optional metadata
     metadata?: Record<string, string>;  // Key-value user metadata

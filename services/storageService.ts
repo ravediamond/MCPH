@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { bucket, uploadsFolder } from "../lib/gcpStorageClient";
+import { bucket, cratesFolder } from "../lib/gcpStorageClient";
 import {
   saveCrateMetadata,
   getCrateMetadata,
@@ -50,7 +50,7 @@ export async function generateUploadUrl(
     const fileId = uuidv4();
 
     // Generate GCS path
-    const gcsPath = `${uploadsFolder}${fileId}/${encodeURIComponent(fileName)}`;
+    const gcsPath = `${cratesFolder}${fileId}/${encodeURIComponent(fileName)}`;
 
     // Create a GCS file object
     const file = bucket.file(gcsPath);
@@ -134,7 +134,7 @@ export async function uploadFile(
     const fileId = uuidv4();
 
     // Generate GCS path
-    const gcsPath = `${uploadsFolder}${fileId}/${encodeURIComponent(fileName)}`;
+    const gcsPath = `${cratesFolder}${fileId}/${encodeURIComponent(fileName)}`;
 
     // Create a GCS file object
     const file = bucket.file(gcsPath);
@@ -339,7 +339,12 @@ export async function uploadCrate(
       searchField,
       size: bufferToSave.length,
       downloadCount: 0,
-      metadata: crateData.metadata
+      metadata: crateData.metadata,
+      fileName: fileName, // Add the fileName field
+      ...(compressionMetadata && {
+        compressed: true,
+        compressionRatio: compressionMetadata.compressionRatio,
+      })
     };
 
     // Store metadata in Firestore
