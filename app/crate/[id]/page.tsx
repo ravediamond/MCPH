@@ -36,6 +36,7 @@ import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
 import { Crate, CrateCategory } from "../../types/crate";
+import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
 
 // Dynamic imports for markdown and code rendering
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -77,6 +78,7 @@ interface CrateResponse extends Partial<Crate> {
 export default function CratePage() {
   const params = useParams();
   const crateId = params?.id as string;
+  const { getIdToken } = useAuth(); // Get the getIdToken function from AuthContext
 
   const [crateInfo, setCrateInfo] = useState<CrateResponse | null>(null);
   const [crateContent, setCrateContent] = useState<string | null>(null);
@@ -116,7 +118,16 @@ export default function CratePage() {
       setPasswordRequired(false);
 
       try {
-        const response = await fetch(`/api/crates/${crateId}`);
+        // Get the auth token
+        const idToken = await getIdToken();
+
+        // Include the auth token in the request headers
+        const headers: HeadersInit = {};
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+
+        const response = await fetch(`/api/crates/${crateId}`, { headers });
 
         if (response.status === 401) {
           // Password protected crate
@@ -194,11 +205,21 @@ export default function CratePage() {
 
   // Function to fetch crate content with password if needed
   const fetchCrateContent = async (password?: string): Promise<string> => {
+    // Get the auth token
+    const idToken = await getIdToken();
+
+    // Include the auth token in the request headers
+    const headers: HeadersInit = {
+      "Content-Type": "application/json"
+    };
+
+    if (idToken) {
+      headers['Authorization'] = `Bearer ${idToken}`;
+    }
+
     const response = await fetch(`/api/crates/${crateId}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify({ password })
     });
 

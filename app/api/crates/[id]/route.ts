@@ -50,12 +50,22 @@ export async function GET(
             }
         }
 
+        // Debug logs
+        console.log("[DEBUG] userId:", userId);
+        console.log("[DEBUG] crate.ownerId:", crate.ownerId);
+        console.log("[DEBUG] crate.shared:", crate.shared);
+
         // Check if user has access to this crate
         const isOwner = crate.ownerId === userId;
         const isPublic = crate.shared.public;
         const isSharedWithUser = crate.shared.sharedWith?.includes(userId);
 
+        console.log("[DEBUG] isOwner:", isOwner);
+        console.log("[DEBUG] isPublic:", isPublic);
+        console.log("[DEBUG] isSharedWithUser:", isSharedWithUser);
+
         if (!isOwner && !isPublic && !isSharedWithUser) {
+            console.warn("[DEBUG] Access denied for userId:", userId);
             return NextResponse.json(
                 { error: "You don't have permission to access this crate" },
                 { status: 403 }
