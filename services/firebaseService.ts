@@ -113,33 +113,12 @@ if (!getApps().length) {
 // --- End Firebase Admin SDK Initialization ---
 
 // Collection names for Firestore
-const FILES_COLLECTION = "files";
-const CRATES_COLLECTION = "crates"; // New collection for crates
+const CRATES_COLLECTION = "crates"; // Collection for crates
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 
 // Export collection names for use in other modules
-export { FILES_COLLECTION, CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
-
-// File metadata type
-export interface FileMetadata {
-  id: string;
-  fileName: string;
-  title: string; // Added title field (mandatory)
-  description?: string; // Added description field (optional)
-  contentType: string;
-  size: number;
-  gcsPath: string;
-  uploadedAt: Date; // Note: In Firestore we store as Date objects
-  expiresAt?: Date; // In Firestore we store as Date objects
-  downloadCount: number;
-  ipAddress?: string;
-  userId?: string;
-  metadata?: Record<string, string>;
-  isShared?: boolean; // New: whether the file is shared (default false)
-  password?: string; // New: optional hashed password for download
-  fileType?: string; // Optional: type of crate (generic, data, image, etc.)
-}
+export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 
 /**
  * Convert Firebase timestamp to Date and vice versa
@@ -177,108 +156,6 @@ const fromFirestoreData = (data: any): any => {
 
   return result;
 };
-
-/**
- * Save file metadata to Firestore.
- */
-export async function saveFileMetadata(
-  fileData: FileMetadata,
-  // ttlSeconds parameter is no longer used, ttl is handled by expiresAt in fileData
-  // _ttlSeconds: number
-): Promise<boolean> {
-  try {
-    // Convert the data for Firestore
-    const dataToSave = toFirestoreData({
-      ...fileData,
-    });
-
-    // Add to Firestore
-    await db.collection(FILES_COLLECTION).doc(fileData.id).set(dataToSave);
-
-    return true;
-  } catch (error) {
-    console.error("Error saving file metadata to Firestore:", error);
-    return false;
-  }
-}
-
-/**
- * Get file metadata from Firestore
- */
-export async function getFileMetadata(
-  fileId: string,
-): Promise<FileMetadata | null> {
-  try {
-    const docRef = db.collection(FILES_COLLECTION).doc(fileId);
-    const doc = await docRef.get();
-
-    if (!doc.exists) {
-      return null;
-    }
-
-    const data = doc.data();
-
-    // Convert Firestore timestamps back to Date objects
-    return fromFirestoreData(data) as FileMetadata;
-  } catch (error) {
-    console.error("Error getting file metadata from Firestore:", error);
-    return null;
-  }
-}
-
-/**
- * Increment download count for a file in Firestore
- */
-export async function incrementDownloadCount(fileId: string): Promise<number> {
-  try {
-    const docRef = db.collection(FILES_COLLECTION).doc(fileId);
-    const doc = await docRef.get();
-
-    if (!doc.exists) {
-      console.warn(
-        `File metadata not found for ID: ${fileId} when incrementing download count.`,
-      );
-      return 0;
-    }
-
-    // Use FieldValue.increment() for atomic increment operation
-    await docRef.update({
-      downloadCount: FieldValue.increment(1),
-    });
-
-    // Also update general metrics
-    await incrementMetric("downloads");
-
-    // Get the updated document to return the new count
-    const updatedDoc = await docRef.get();
-    const downloadCount = updatedDoc.data()?.downloadCount || 0;
-
-    return downloadCount;
-  } catch (error) {
-    console.error("Error incrementing download count in Firestore:", error);
-
-    // Attempt to get current count if update failed
-    try {
-      const doc = await db.collection(FILES_COLLECTION).doc(fileId).get();
-      return doc.data()?.downloadCount || 0;
-    } catch (e) {
-      return 0;
-    }
-  }
-}
-
-/**
- * Delete file metadata from Firestore
- */
-export async function deleteFileMetadata(fileId: string): Promise<boolean> {
-  try {
-    await db.collection(FILES_COLLECTION).doc(fileId).delete();
-    return true;
-  } catch (error) {
-    console.error("Error deleting file metadata from Firestore:", error);
-    return false;
-  }
-}
 
 /**
  * Increment a general metric counter
@@ -440,34 +317,6 @@ export async function getEvents(
   } catch (error) {
     console.error("Error getting events from Firestore:", error);
     return [];
-  }
-}
-
-/**
- * Get file metadata for a specific user from Firestore
- */
-export async function getUserFiles(userId: string): Promise<FileMetadata[]> {
-  try {
-    const querySnapshot = await db
-      .collection(FILES_COLLECTION)
-      .where("userId", "==", userId)
-      .orderBy("uploadedAt", "desc")
-      .get();
-
-    if (querySnapshot.empty) {
-      return [];
-    }
-
-    // Convert to array of data, converting Firestore timestamps to Date objects
-    return querySnapshot.docs.map(
-      (doc) => fromFirestoreData(doc.data()) as FileMetadata,
-    );
-  } catch (error) {
-    console.error(
-      `Error getting files for user ${userId} from Firestore:`,
-      error,
-    );
-    return []; // Return empty array on error
   }
 }
 
@@ -633,15 +482,15 @@ export async function getUserToolUsage(
 }
 
 /**
- * Get total storage used by a user (sum of all file sizes in bytes)
+ * Get total storage used by a user (sum of all crate sizes in bytes)
  */
 export async function getUserStorageUsage(
   userId: string,
 ): Promise<{ used: number; limit: number; remaining: number }> {
   const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
   try {
-    const files = await getUserFiles(userId);
-    const used = files.reduce((sum, file) => sum + (file.size || 0), 0);
+    const crates = await getUserCrates(userId);
+    const used = crates.reduce((sum, crate) => sum + (crate.size || 0), 0);
     return {
       used,
       limit: STORAGE_LIMIT,
@@ -778,5 +627,46 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
       error,
     );
     return []; // Return empty array on error
+  }
+}
+
+/**
+ * Increment download count for a file in Firestore
+ */
+export async function incrementDownloadCount(fileId: string): Promise<number> {
+  try {
+    const docRef = db.collection('files').doc(fileId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      console.warn(
+        `File metadata not found for ID: ${fileId} when incrementing download count.`,
+      );
+      return 0;
+    }
+
+    // Use FieldValue.increment() for atomic increment operation
+    await docRef.update({
+      downloadCount: FieldValue.increment(1),
+    });
+
+    // Also update general metrics
+    await incrementMetric("downloads");
+
+    // Get the updated document to return the new count
+    const updatedDoc = await docRef.get();
+    const downloadCount = updatedDoc.data()?.downloadCount || 0;
+
+    return downloadCount;
+  } catch (error) {
+    console.error("Error incrementing file download count in Firestore:", error);
+
+    // Attempt to get current count if update failed
+    try {
+      const doc = await db.collection('files').doc(fileId).get();
+      return doc.data()?.downloadCount || 0;
+    } catch (e) {
+      return 0;
+    }
   }
 }

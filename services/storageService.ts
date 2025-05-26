@@ -1,14 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket, uploadsFolder } from "../lib/gcpStorageClient";
 import {
-  saveFileMetadata,
-  getFileMetadata,
-  deleteFileMetadata,
-  incrementDownloadCount,
-  logEvent,
   saveCrateMetadata,
   getCrateMetadata,
+  deleteCrateMetadata,
   incrementCrateDownloadCount,
+  logEvent,
 } from "./firebaseService";
 import { DATA_TTL } from "../app/config/constants";
 import {
@@ -90,7 +87,7 @@ export async function generateUploadUrl(
     };
 
     // Store metadata in Firestore
-    await saveFileMetadata({
+    await saveCrateMetadata({
       ...fileData,
       uploadedAt: new Date(uploadedAt),
       expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
@@ -230,7 +227,7 @@ export async function uploadFile(
     };
 
     // Store metadata in Firestore
-    await saveFileMetadata({
+    await saveCrateMetadata({
       ...fileData,
       uploadedAt: new Date(uploadedAt),
       expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
@@ -368,12 +365,12 @@ export async function getSignedDownloadUrl(
 ): Promise<string> {
   try {
     // Get file metadata from Firestore
-    const metadata = await getFileMetadata(fileId);
+    const metadata = await getCrateMetadata(fileId);
     if (!metadata) {
       throw new Error("File not found");
     }
 
-    const actualFileName = fileName || metadata.fileName;
+    const actualFileName = fileName || metadata.title;
     const gcsPath = metadata.gcsPath;
 
     // Get the file
@@ -395,7 +392,7 @@ export async function getSignedDownloadUrl(
     });
 
     // Increment download count in Firestore
-    await incrementDownloadCount(fileId);
+    await incrementCrateDownloadCount(fileId);
 
     // Log the download event
     await logEvent("file_download", fileId);
@@ -413,7 +410,7 @@ export async function getSignedDownloadUrl(
 export async function fileExists(fileId: string): Promise<boolean> {
   try {
     // Get file metadata from Firestore
-    const metadata = await getFileMetadata(fileId);
+    const metadata = await getCrateMetadata(fileId);
     if (!metadata) {
       return false;
     }
@@ -436,7 +433,7 @@ export async function fileExists(fileId: string): Promise<boolean> {
 export async function deleteFile(fileId: string): Promise<boolean> {
   try {
     // Get file metadata from Firestore
-    const metadata = await getFileMetadata(fileId);
+    const metadata = await getCrateMetadata(fileId);
     if (!metadata) {
       return false;
     }
@@ -448,7 +445,7 @@ export async function deleteFile(fileId: string): Promise<boolean> {
     const [exists] = await file.exists();
     if (!exists) {
       // Metadata exists but file doesn't, clean up metadata
-      await deleteFileMetadata(fileId);
+      await deleteCrateMetadata(fileId);
       return true;
     }
 
@@ -456,7 +453,7 @@ export async function deleteFile(fileId: string): Promise<boolean> {
     await file.delete();
 
     // Delete metadata
-    await deleteFileMetadata(fileId);
+    await deleteCrateMetadata(fileId);
 
     // Log the deletion event
     await logEvent("file_delete", fileId);
@@ -477,7 +474,7 @@ export async function getFileContent(fileId: string): Promise<{
 }> {
   try {
     // Get file metadata from Firestore
-    const metadata = (await getFileMetadata(fileId)) as unknown as FileMetadata;
+    const metadata = (await getCrateMetadata(fileId)) as unknown as FileMetadata;
     if (!metadata) {
       throw new Error("File not found");
     }
@@ -506,7 +503,7 @@ export async function getFileContent(fileId: string): Promise<{
         );
 
         // Increment download count
-        await incrementDownloadCount(fileId);
+        await incrementCrateDownloadCount(fileId);
 
         return { buffer: decompressedContent, metadata };
       } catch (decompressionError) {
@@ -517,7 +514,7 @@ export async function getFileContent(fileId: string): Promise<{
     }
 
     // Increment download count
-    await incrementDownloadCount(fileId);
+    await incrementCrateDownloadCount(fileId);
 
     return { buffer: content, metadata };
   } catch (error) {
@@ -535,7 +532,7 @@ export async function getFileStream(fileId: string): Promise<{
 }> {
   try {
     // Get file metadata from Firestore
-    const metadata = (await getFileMetadata(fileId)) as unknown as FileMetadata;
+    const metadata = (await getCrateMetadata(fileId)) as unknown as FileMetadata;
     if (!metadata) {
       throw new Error("File not found");
     }
@@ -566,7 +563,7 @@ export async function getFileStream(fileId: string): Promise<{
     const stream = file.createReadStream();
 
     // Increment download count
-    await incrementDownloadCount(fileId);
+    await incrementCrateDownloadCount(fileId);
 
     return { stream, metadata };
   } catch (error) {

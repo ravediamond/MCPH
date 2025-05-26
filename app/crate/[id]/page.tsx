@@ -78,7 +78,7 @@ interface CrateResponse extends Partial<Crate> {
 export default function CratePage() {
   const params = useParams();
   const crateId = params?.id as string;
-  const { getIdToken } = useAuth(); // Get the getIdToken function from AuthContext
+  const { getIdToken, loading: authLoading, user, signInWithGoogle } = useAuth(); // Get authentication loading state and user
 
   const [crateInfo, setCrateInfo] = useState<CrateResponse | null>(null);
   const [crateContent, setCrateContent] = useState<string | null>(null);
@@ -107,9 +107,10 @@ export default function CratePage() {
   const [passwordRequired, setPasswordRequired] = useState<boolean>(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  // Fetch crate metadata only when crateId changes
+  // Fetch crate metadata only when crateId changes or when auth state changes
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
+
     async function fetchCrateMetadata() {
       setLoading(true);
       setError(null);
@@ -136,11 +137,16 @@ export default function CratePage() {
           return;
         }
 
+        if (response.status === 403) {
+          // Access denied - handle forbidden errors specifically
+          throw new Error("You don't have permission to access this crate. Please sign in or request access from the owner.");
+        }
+
         if (!response.ok) {
           throw new Error(
             response.status === 404
               ? "Crate not found or has expired"
-              : "Failed to fetch crate information",
+              : "Failed to fetch crate information"
           );
         }
 
@@ -163,11 +169,16 @@ export default function CratePage() {
         setLoading(false);
       }
     }
-    if (crateId) fetchCrateMetadata();
+
+    // Only fetch crate data if authentication is not still loading
+    if (crateId && !authLoading) {
+      fetchCrateMetadata();
+    }
+
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [crateId]);
+  }, [crateId, authLoading, user]);
 
   // Fetch crate content based on category
   useEffect(() => {
@@ -719,6 +730,20 @@ export default function CratePage() {
           <p className="text-gray-600 mb-5 text-sm">
             {error || "Unable to retrieve crate information"}
           </p>
+
+          {error?.includes("permission") && (
+            <div className="mb-4">
+              <button
+                onClick={() => signInWithGoogle()}
+                className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+              >
+                Sign in to access your crate
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                If you created this crate, signing in will give you access.
+              </p>
+            </div>
+          )}
 
           <div className="flex justify-center space-x-4 mt-2">
             <Link

@@ -39,6 +39,7 @@ export async function GET(
         let userId = "anonymous";
         let isAuthenticated = false;
 
+
         if (authHeader && authHeader.startsWith("Bearer ")) {
             const token = authHeader.substring(7);
             try {
@@ -46,26 +47,19 @@ export async function GET(
                 userId = decodedToken.uid;
                 isAuthenticated = true;
             } catch (error) {
-                console.warn("Invalid authentication token");
+                console.warn(`[DEBUG] Invalid authentication token:`, error);
             }
+        } else {
+            console.log(`[DEBUG] No valid Bearer token found. Using anonymous access.`);
         }
-
-        // Debug logs
-        console.log("[DEBUG] userId:", userId);
-        console.log("[DEBUG] crate.ownerId:", crate.ownerId);
-        console.log("[DEBUG] crate.shared:", crate.shared);
 
         // Check if user has access to this crate
         const isOwner = crate.ownerId === userId;
         const isPublic = crate.shared.public;
-        const isSharedWithUser = crate.shared.sharedWith?.includes(userId);
+        const isSharedWithUser = Array.isArray(crate.shared.sharedWith) && crate.shared.sharedWith.includes(userId);
 
-        console.log("[DEBUG] isOwner:", isOwner);
-        console.log("[DEBUG] isPublic:", isPublic);
-        console.log("[DEBUG] isSharedWithUser:", isSharedWithUser);
 
         if (!isOwner && !isPublic && !isSharedWithUser) {
-            console.warn("[DEBUG] Access denied for userId:", userId);
             return NextResponse.json(
                 { error: "You don't have permission to access this crate" },
                 { status: 403 }
@@ -110,6 +104,7 @@ export async function POST(
 ) {
     try {
         const { id } = await params;
+
         const body = await req.json();
         const { password } = body;
 
@@ -138,20 +133,23 @@ export async function POST(
         const authHeader = req.headers.get("authorization");
         let userId = "anonymous";
 
+
         if (authHeader && authHeader.startsWith("Bearer ")) {
             const token = authHeader.substring(7);
             try {
                 const decodedToken = await auth.verifyIdToken(token);
                 userId = decodedToken.uid;
             } catch (error) {
-                console.warn("Invalid authentication token");
+                console.warn(`[DEBUG] Invalid authentication token:`, error);
             }
+        } else {
+            console.log(`[DEBUG] No valid Bearer token found. Using anonymous access.`);
         }
 
         // Check access permissions
         const isOwner = crate.ownerId === userId;
         const isPublic = crate.shared.public;
-        const isSharedWithUser = crate.shared.sharedWith?.includes(userId);
+        const isSharedWithUser = Array.isArray(crate.shared.sharedWith) && crate.shared.sharedWith.includes(userId);
 
         // Check password if required and not the owner
         if (!isOwner && crate.shared.passwordProtected) {

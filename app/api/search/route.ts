@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     topK = Number.isFinite(topK) ? parseInt(topK, 10) : 5;
     if (isNaN(topK) || topK < 1) topK = 5;
     if (topK > 1000) topK = 1000;
-    console.debug("[DEBUG] topK value for vector search:", topK);
 
     // Generate embedding for the query
     const embedding = await getEmbedding(query);
