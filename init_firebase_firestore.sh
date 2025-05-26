@@ -182,10 +182,10 @@ gcloud firestore indexes composite create \
   --field-config field-path="createdAt",order="DESCENDING"
 echo "Composite index for crates created (if not already present)."
 
-echo "--- Creating vector index for files.embedding ---"
+echo "--- Creating vector index for crates.embedding ---"
 gcloud firestore indexes composite create \
   --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="files" \
+  --collection-group="crates" \
   --query-scope=COLLECTION \
   --field-config=vector-config='{"dimension":"768","flat": "{}"}',field-path=embedding
 
@@ -194,10 +194,10 @@ echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
 echo ""
 echo "Your Firestore database should now have these collections initialized:"
-echo "- files: For storing file metadata"
+echo "- crates: For storing crates with embeddings for vector search"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
-echo "- crates: For storing crates with embeddings for vector search"
+echo "- apiKeys: For API key management"
 echo ""
 echo "These collections align with how your application is using Firestore in your functions code."
 
