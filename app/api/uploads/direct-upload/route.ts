@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
 import { saveCrateMetadata, logEvent, incrementMetric, getUserStorageUsage } from "@/services/firebaseService";
 import { DATA_TTL } from "@/app/config/constants";
-import { CrateCategory } from "@/app/types/crate";
+import { CrateCategory, CrateSharing } from "@/app/types/crate";
+import crypto from "crypto"; // Import crypto module
 
 /**
  * API route to handle direct file uploads
@@ -35,6 +36,29 @@ export async function POST(req: NextRequest) {
     const userId = formData.get("userId") as string;
     const fileTypeParam = formData.get("fileType") as string | null;
     const fileType = fileTypeParam || undefined; // Convert null to undefined
+
+    // New: Read sharing options from formData
+    const isSharedStr = formData.get("isShared") as string | null;
+    const passwordStr = formData.get("password") as string | null;
+
+    const isPublic = isSharedStr === "true";
+    let passwordHash: string | undefined = undefined;
+    let passwordSalt: string | undefined = undefined;
+
+    if (isPublic && passwordStr && passwordStr.length > 0) {
+      passwordSalt = crypto.randomBytes(16).toString("hex");
+      passwordHash = crypto
+        .pbkdf2Sync(passwordStr, passwordSalt, 1000, 64, "sha512")
+        .toString("hex");
+    }
+
+    const sharingOptions: CrateSharing = {
+      public: isPublic,
+      passwordProtected: !!passwordHash, // True if passwordHash is set
+      passwordHash: passwordHash,
+      passwordSalt: passwordSalt,
+      // sharedWith is not handled by this form, so it remains undefined or handled by defaults in uploadCrate
+    };
 
     // Validate that title is provided
     if (!title || !title.trim()) {
@@ -96,6 +120,7 @@ export async function POST(req: NextRequest) {
         ownerId: userId || "anonymous",
         ttlDays,
         metadata,
+        shared: sharingOptions, // Pass the constructed sharingOptions
       }
     );
 
