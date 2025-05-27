@@ -25,8 +25,8 @@ export interface FileMetadata {
   size: number;
   fileType?: string; // Added fileType field (optional)
   gcsPath: string;
-  uploadedAt: number; // Timestamp (milliseconds)
-  expiresAt?: number; // Timestamp (milliseconds)
+  uploadedAt: Date; // Changed from number to Date
+  expiresAt?: Date; // Changed from number to Date
   downloadCount: number;
   ipAddress?: string;
   userId?: string;
@@ -67,11 +67,12 @@ export async function generateUploadUrl(
     });
 
     // Calculate expiration time if provided
-    const uploadedAt = Date.now();
+    const uploadedAtDate = new Date(); // Changed from Date.now() to new Date()
     const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(
-      uploadedAt,
+      uploadedAtDate.getTime(), // Pass timestamp number
       ttlDays,
     );
+    const expiresAtDate = expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined; // Convert to Date or undefined
 
     // Prepare file metadata
     const fileData: FileMetadata = {
@@ -81,16 +82,17 @@ export async function generateUploadUrl(
       contentType,
       size: 0, // Will be updated when file is uploaded
       gcsPath,
-      uploadedAt, // Store as number (timestamp)
-      expiresAt: expiresAtTimestamp, // Store as number (timestamp)
+      uploadedAt: uploadedAtDate, // Store as Date
+      expiresAt: expiresAtDate, // Store as Date or undefined
       downloadCount: 0,
     };
 
     // Store metadata in Firestore
     await saveCrateMetadata({
-      ...fileData,
-      uploadedAt: new Date(uploadedAt),
-      expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
+      ...fileData, // fileData now has Date objects
+      // Ensure Date objects are passed; new Date(Date object) is fine.
+      uploadedAt: new Date(fileData.uploadedAt),
+      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
     } as any);
 
     return { url, fileId, gcsPath };
@@ -185,13 +187,14 @@ export async function uploadFile(
     });
 
     // Prepare file metadata
-    const uploadedAt = Date.now();
+    const uploadedAtDate = new Date(); // Changed from Date.now() to new Date()
 
     // Calculate expiration time using DATA_TTL
     const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(
-      uploadedAt,
+      uploadedAtDate.getTime(), // Pass timestamp number
       ttlDays,
     );
+    const expiresAtDate = expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined; // Convert to Date or undefined
 
     // --- Generate searchText field ---
     const metaString = metadata
@@ -213,8 +216,8 @@ export async function uploadFile(
       size: bufferToSave.length,
       fileType: fileType || "file", // Use provided fileType or default to 'file'
       gcsPath,
-      uploadedAt, // Store as number (timestamp)
-      expiresAt: expiresAtTimestamp, // Store as number (timestamp)
+      uploadedAt: uploadedAtDate, // Store as Date
+      expiresAt: expiresAtDate, // Store as Date or undefined
       downloadCount: 0,
       ...(compressionMetadata && {
         compressed: true,
@@ -228,9 +231,10 @@ export async function uploadFile(
 
     // Store metadata in Firestore
     await saveCrateMetadata({
-      ...fileData,
-      uploadedAt: new Date(uploadedAt),
-      expiresAt: expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined,
+      ...fileData, // fileData now has Date objects
+      // Ensure Date objects are passed; new Date(Date object) is fine.
+      uploadedAt: new Date(fileData.uploadedAt),
+      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
     } as any);
 
     return fileData;

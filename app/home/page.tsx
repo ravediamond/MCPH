@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FileMetadata } from "../../services/firebaseService";
+import { FileMetadata } from "../../services/storageService";
 import { useAuth } from "../../contexts/AuthContext";
 import Link from "next/link";
 import {
@@ -25,10 +25,10 @@ import {
   FaKey,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
-import { Crate } from "../types/crate";
+import { Crate, CrateSharing } from "../types/crate"; // Import CrateSharing
 
 // Add FileMetadataExtended type
-type FileMetadataExtended = FileMetadata & {
+type FileMetadataExtended = Omit<FileMetadata, 'uploadedAt' | 'expiresAt'> & {
   id: string;
   fileName: string;
   title?: string;
@@ -41,13 +41,16 @@ type FileMetadataExtended = FileMetadata & {
   metadata?: Record<string, string>;
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
+  shared?: CrateSharing; // Add shared property
+  gcsPath?: string; // ensure gcsPath is part of the type, as it's used in crateToFileMetadata
 };
 
 interface CrateExtended extends Crate {
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
   expiresAt?: string; // Add expiresAt as optional
-  fileName?: string; // Added to fix property access error
+  fileName: string; // Changed from optional to mandatory to match Crate interface
+  shared: CrateSharing; // Ensure shared is part of the type
 }
 
 export default function HomePage() {
@@ -327,6 +330,7 @@ export default function HomePage() {
       metadata: crate.metadata,
       isExpiringSoon: crate.isExpiringSoon,
       daysTillExpiry: crate.daysTillExpiry,
+      shared: crate.shared, // Map shared property
     };
   }
 
@@ -500,6 +504,14 @@ export default function HomePage() {
                               {file.downloadCount || 0}
                             </div>
                           </div>
+                          {/* Shared status indicator */}
+                          <div className="mt-1 text-xs">
+                            {file.shared?.public ? (
+                              <span className="text-green-600 font-medium">Shared</span>
+                            ) : (
+                              <span className="text-gray-500">Private</span>
+                            )}
+                          </div>
                           {renderMetadata(file.metadata)}
                         </div>
                       </div>
@@ -586,6 +598,14 @@ export default function HomePage() {
                             <FaDownload className="mr-1" size={10} />{" "}
                             {file.downloadCount || 0}
                           </div>
+                        </div>
+                        {/* Shared status indicator */}
+                        <div className="mt-1 text-xs">
+                          {file.shared?.public ? (
+                            <span className="text-green-600 font-medium">Shared</span>
+                          ) : (
+                            <span className="text-gray-500">Private</span>
+                          )}
                         </div>
                         {/* Metadata display */}
                         {renderMetadata(file.metadata)}
