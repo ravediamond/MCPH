@@ -368,6 +368,7 @@ export default function CratePage() {
 
   const handleDownload = () => {
     if (!crateInfo) return;
+    // Ensure the URL points to the correct API endpoint for downloading crates
     window.location.href = `/api/crates/${crateId}/download`;
   };
 
