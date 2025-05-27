@@ -307,8 +307,8 @@ export default function FileUpload({
 
       uploadedFileData = await uploadResponse.json();
 
-      // Use /crate/[id] as the link instead of /download/[id]
-      const crateUrl = `/crate/${uploadedFileData.fileId}`;
+      // Use the full URL for the download link
+      const crateUrl = `${window.location.origin}/crate/${uploadedFileData.fileId}`;
 
       setUploadedFile({
         id: uploadedFileData.fileId,
@@ -367,6 +367,7 @@ export default function FileUpload({
   const handleCopyUrl = () => {
     if (!uploadedFile) return;
 
+    // Ensure the full URL is copied
     navigator.clipboard
       .writeText(uploadedFile.downloadUrl)
       .then(() => {
@@ -461,13 +462,13 @@ export default function FileUpload({
               <div className="mt-4 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <a
                   href={uploadedFile.downloadUrl}
-                  className="inline-block px-4 py-2 bg-primary-500 hover:bg-primary-600 text-center text-white rounded-md shadow transition-colors"
+                  className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-center text-white rounded-md shadow transition-colors" // Changed to blue
                 >
                   Download Crate
                 </a>
                 <button
                   onClick={() => setUploadedFile(null)}
-                  className="inline-block px-4 py-2 bg-gray-200 hover:bg-gray-300 text-center text-gray-800 rounded-md shadow transition-colors"
+                  className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-center text-white rounded-md shadow transition-colors" // Changed to blue
                 >
                   Upload Another Crate
                 </button>
@@ -733,7 +734,7 @@ export default function FileUpload({
             disabled={!file || isUploading || !title.trim()}
             className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
               ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
-              : "bg-blue-600 hover:bg-blue-700 text-white border-blue-700"
+              : "bg-blue-500 hover:bg-blue-600 text-white border-blue-600" // Changed to blue-500 and blue-600
               }
                         `}
           >
