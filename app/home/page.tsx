@@ -28,7 +28,7 @@ import Card from "../../components/ui/Card";
 import { Crate, CrateSharing } from "../types/crate"; // Import CrateSharing
 
 // Add FileMetadataExtended type
-type FileMetadataExtended = Omit<FileMetadata, 'uploadedAt' | 'expiresAt'> & {
+type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
   id: string;
   fileName: string;
   title?: string;
@@ -97,15 +97,15 @@ export default function HomePage() {
             const expiryDate =
               crate.createdAt && crate.ttlDays
                 ? new Date(
-                  new Date(crate.createdAt).getTime() +
-                  crate.ttlDays * 24 * 60 * 60 * 1000,
-                )
+                    new Date(crate.createdAt).getTime() +
+                      crate.ttlDays * 24 * 60 * 60 * 1000,
+                  )
                 : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-              )
+                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+                )
               : 0;
             return {
               ...crate,
@@ -281,28 +281,34 @@ export default function HomePage() {
         const data = await res.json();
 
         // Map Firestore search results to our application format
-        const results = (data.results || []).map((doc: any) => {
-          // We only need to handle the Firestore API response format
-          const fields = doc.fields || {};
-          return {
-            id: doc.name?.split("/")?.pop() || "",
-            fileName: fields.fileName?.stringValue || "",
-            title: fields.title?.stringValue || "",
-            description: fields.description?.stringValue || "",
-            contentType: fields.contentType?.stringValue || "",
-            size: fields.size?.integerValue ? parseInt(fields.size.integerValue) : 0,
-            uploadedAt: fields.uploadedAt?.timestampValue || "",
-            expiresAt: fields.expiresAt?.timestampValue || "",
-            downloadCount: fields.downloadCount?.integerValue ? parseInt(fields.downloadCount.integerValue) : 0,
-            metadata: fields.metadata?.mapValue?.fields
-              ? Object.fromEntries(
-                Object.entries(fields.metadata.mapValue.fields).map(
-                  ([k, v]: any) => [k, v.stringValue]
-                )
-              )
-              : undefined,
-          };
-        }).filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
+        const results = (data.results || [])
+          .map((doc: any) => {
+            // We only need to handle the Firestore API response format
+            const fields = doc.fields || {};
+            return {
+              id: doc.name?.split("/")?.pop() || "",
+              fileName: fields.fileName?.stringValue || "",
+              title: fields.title?.stringValue || "",
+              description: fields.description?.stringValue || "",
+              contentType: fields.contentType?.stringValue || "",
+              size: fields.size?.integerValue
+                ? parseInt(fields.size.integerValue)
+                : 0,
+              uploadedAt: fields.uploadedAt?.timestampValue || "",
+              expiresAt: fields.expiresAt?.timestampValue || "",
+              downloadCount: fields.downloadCount?.integerValue
+                ? parseInt(fields.downloadCount.integerValue)
+                : 0,
+              metadata: fields.metadata?.mapValue?.fields
+                ? Object.fromEntries(
+                    Object.entries(fields.metadata.mapValue.fields).map(
+                      ([k, v]: any) => [k, v.stringValue],
+                    ),
+                  )
+                : undefined,
+            };
+          })
+          .filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
 
         setSearchResults(results);
       } catch (err: any) {
@@ -479,13 +485,13 @@ export default function HomePage() {
                     {/* ...existing file card rendering... */}
                     <div className="p-3">
                       <div className="flex items-start space-x-3">
-                        <div className="mt-0.5">{
-                          getFileIcon(
-                            'contentType' in file
+                        <div className="mt-0.5">
+                          {getFileIcon(
+                            "contentType" in file
                               ? (file as FileMetadataExtended)
-                              : crateToFileMetadata(file as CrateExtended)
-                          )
-                        }</div>
+                              : crateToFileMetadata(file as CrateExtended),
+                          )}
+                        </div>
                         <div className="flex-grow min-w-0">
                           <Link href={`/crate/${file.id}`} className="block">
                             <h3
@@ -507,7 +513,9 @@ export default function HomePage() {
                           {/* Shared status indicator */}
                           <div className="mt-1 text-xs">
                             {file.shared?.public ? (
-                              <span className="text-green-600 font-medium">Shared</span>
+                              <span className="text-green-600 font-medium">
+                                Shared
+                              </span>
                             ) : (
                               <span className="text-gray-500">Private</span>
                             )}
@@ -571,13 +579,13 @@ export default function HomePage() {
                   <div className="p-3">
                     <div className="flex items-start space-x-3">
                       {/* File Type Icon */}
-                      <div className="mt-0.5">{
-                        getFileIcon(
-                          'contentType' in file
+                      <div className="mt-0.5">
+                        {getFileIcon(
+                          "contentType" in file
                             ? (file as FileMetadataExtended)
-                            : crateToFileMetadata(file as CrateExtended)
-                        )
-                      }</div>
+                            : crateToFileMetadata(file as CrateExtended),
+                        )}
+                      </div>
 
                       {/* File Info */}
                       <div className="flex-grow min-w-0">
@@ -602,7 +610,9 @@ export default function HomePage() {
                         {/* Shared status indicator */}
                         <div className="mt-1 text-xs">
                           {file.shared?.public ? (
-                            <span className="text-green-600 font-medium">Shared</span>
+                            <span className="text-green-600 font-medium">
+                              Shared
+                            </span>
                           ) : (
                             <span className="text-gray-500">Private</span>
                           )}

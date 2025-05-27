@@ -72,7 +72,9 @@ export async function generateUploadUrl(
       uploadedAtDate.getTime(), // Pass timestamp number
       ttlDays,
     );
-    const expiresAtDate = expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined; // Convert to Date or undefined
+    const expiresAtDate = expiresAtTimestamp
+      ? new Date(expiresAtTimestamp)
+      : undefined; // Convert to Date or undefined
 
     // Prepare file metadata
     const fileData: FileMetadata = {
@@ -104,15 +106,15 @@ export async function generateUploadUrl(
     ) {
       throw new Error(
         "Failed to generate upload URL due to a signing error. " +
-        "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
-        "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
-        'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
+          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
+          "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
+          'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
       );
     }
     // Fallback for other errors
     throw new Error(
       "Failed to generate upload URL. Original error: " +
-      (error.message || "Unknown error"),
+        (error.message || "Unknown error"),
     );
   }
 }
@@ -194,13 +196,15 @@ export async function uploadFile(
       uploadedAtDate.getTime(), // Pass timestamp number
       ttlDays,
     );
-    const expiresAtDate = expiresAtTimestamp ? new Date(expiresAtTimestamp) : undefined; // Convert to Date or undefined
+    const expiresAtDate = expiresAtTimestamp
+      ? new Date(expiresAtTimestamp)
+      : undefined; // Convert to Date or undefined
 
     // --- Generate searchText field ---
     const metaString = metadata
       ? Object.entries(metadata)
-        .map(([k, v]) => `${k} ${v}`)
-        .join(" ")
+          .map(([k, v]) => `${k} ${v}`)
+          .join(" ")
       : "";
     const searchText = [title, fileName, description, metaString]
       .filter(Boolean)
@@ -251,7 +255,7 @@ export async function uploadCrate(
   fileBuffer: Buffer,
   fileName: string,
   contentType: string,
-  crateData: Partial<Crate>
+  crateData: Partial<Crate>,
 ): Promise<Crate> {
   try {
     // Generate a unique ID for the crate
@@ -310,8 +314,8 @@ export async function uploadCrate(
     // Create the searchField for hybrid search
     const metaString = crateData.metadata
       ? Object.entries(crateData.metadata)
-        .map(([k, v]) => `${k} ${v}`)
-        .join(" ")
+          .map(([k, v]) => `${k} ${v}`)
+          .join(" ")
       : "";
 
     const tagsString = crateData.tags ? crateData.tags.join(" ") : "";
@@ -319,8 +323,11 @@ export async function uploadCrate(
       crateData.title || fileName,
       crateData.description || "",
       tagsString,
-      metaString
-    ].filter(Boolean).join(" ").toLowerCase();
+      metaString,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
     // Create default sharing config if not provided
     const sharing: CrateSharing = crateData.shared || {
@@ -344,7 +351,8 @@ export async function uploadCrate(
       createdAt: new Date(),
       ttlDays: crateData.ttlDays || DATA_TTL.DEFAULT_DAYS,
       mimeType: contentType,
-      category: crateData.category || getDefaultCategoryForFile(fileName, contentType),
+      category:
+        crateData.category || getDefaultCategoryForFile(fileName, contentType),
       gcsPath: gcsPath,
       shared: sharing,
       tags: crateData.tags,
@@ -356,7 +364,7 @@ export async function uploadCrate(
       ...(compressionMetadata && {
         compressed: true,
         compressionRatio: compressionMetadata.compressionRatio,
-      })
+      }),
     };
 
     // Store metadata in Firestore
@@ -491,7 +499,9 @@ export async function getFileContent(fileId: string): Promise<{
 }> {
   try {
     // Get file metadata from Firestore
-    const metadata = (await getCrateMetadata(fileId)) as unknown as FileMetadata;
+    const metadata = (await getCrateMetadata(
+      fileId,
+    )) as unknown as FileMetadata;
     if (!metadata) {
       throw new Error("File not found");
     }
@@ -549,7 +559,9 @@ export async function getFileStream(fileId: string): Promise<{
 }> {
   try {
     // Get file metadata from Firestore
-    const metadata = (await getCrateMetadata(fileId)) as unknown as FileMetadata;
+    const metadata = (await getCrateMetadata(
+      fileId,
+    )) as unknown as FileMetadata;
     if (!metadata) {
       throw new Error("File not found");
     }
@@ -648,14 +660,17 @@ export async function getCrateContent(crateId: string): Promise<{
 /**
  * Get the default category for a file based on its extension and MIME type
  */
-function getDefaultCategoryForFile(fileName: string, mimeType: string): CrateCategory {
+function getDefaultCategoryForFile(
+  fileName: string,
+  mimeType: string,
+): CrateCategory {
   // First check MIME type
   if (mimeType && MIME_TYPE_TO_CATEGORY[mimeType]) {
     return MIME_TYPE_TO_CATEGORY[mimeType];
   }
 
   // Then check file extension
-  const extension = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+  const extension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
   if (extension && EXTENSION_TO_CATEGORY[extension]) {
     return EXTENSION_TO_CATEGORY[extension];
   }

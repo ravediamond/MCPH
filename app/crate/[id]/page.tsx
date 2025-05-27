@@ -78,7 +78,12 @@ interface CrateResponse extends Partial<Crate> {
 export default function CratePage() {
   const params = useParams();
   const crateId = params?.id as string;
-  const { getIdToken, loading: authLoading, user, signInWithGoogle } = useAuth(); // Get authentication loading state and user
+  const {
+    getIdToken,
+    loading: authLoading,
+    user,
+    signInWithGoogle,
+  } = useAuth(); // Get authentication loading state and user
 
   const [crateInfo, setCrateInfo] = useState<CrateResponse | null>(null);
   const [crateContent, setCrateContent] = useState<string | null>(null);
@@ -125,7 +130,7 @@ export default function CratePage() {
         // Include the auth token in the request headers
         const headers: HeadersInit = {};
         if (idToken) {
-          headers['Authorization'] = `Bearer ${idToken}`;
+          headers["Authorization"] = `Bearer ${idToken}`;
         }
 
         const response = await fetch(`/api/crates/${crateId}`, { headers });
@@ -141,14 +146,16 @@ export default function CratePage() {
 
         if (response.status === 403) {
           // Access denied - handle forbidden errors specifically
-          throw new Error("You don't have permission to access this crate. Please sign in or request access from the owner.");
+          throw new Error(
+            "You don't have permission to access this crate. Please sign in or request access from the owner.",
+          );
         }
 
         if (!response.ok) {
           throw new Error(
             response.status === 404
               ? "Crate not found or has expired"
-              : "Failed to fetch crate information"
+              : "Failed to fetch crate information",
           );
         }
 
@@ -203,11 +210,11 @@ export default function CratePage() {
       setContentLoading(true);
       // Use content endpoint with empty password for non-password protected crates
       fetchCrateContent(passwordInput)
-        .then(content => {
+        .then((content) => {
           setCrateContent(content);
           setPasswordRequired(false);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Error fetching crate content:", err);
           setCrateContent(null);
         })
@@ -222,17 +229,17 @@ export default function CratePage() {
 
     // Include the auth token in the request headers
     const headers: HeadersInit = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     };
 
     if (idToken) {
-      headers['Authorization'] = `Bearer ${idToken}`;
+      headers["Authorization"] = `Bearer ${idToken}`;
     }
 
     const response = await fetch(`/api/crates/${crateId}`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ password })
+      body: JSON.stringify({ password }),
     });
 
     if (!response.ok) {
@@ -253,11 +260,11 @@ export default function CratePage() {
     setContentLoading(true);
 
     fetchCrateContent(passwordInput)
-      .then(content => {
+      .then((content) => {
         setCrateContent(content);
         setPasswordRequired(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setPasswordError("Invalid password. Please try again.");
         setCrateContent(null);
       })
@@ -492,10 +499,16 @@ export default function CratePage() {
 
     if (crateInfo.category === CrateCategory.DIAGRAM) {
       return "mermaid";
-    } else if (crateInfo.category === CrateCategory.MARKDOWN ||
-      crateInfo.category === CrateCategory.TODOLIST) {
+    } else if (
+      crateInfo.category === CrateCategory.MARKDOWN ||
+      crateInfo.category === CrateCategory.TODOLIST
+    ) {
       return "markdown";
-    } else if (crateInfo.category === CrateCategory.DATA || crateInfo.category === CrateCategory.JSON) { // Added JSON category
+    } else if (
+      crateInfo.category === CrateCategory.DATA ||
+      crateInfo.category === CrateCategory.JSON
+    ) {
+      // Added JSON category
       // Check if it's JSON or another data format
       return crateInfo.mimeType?.includes("json") ? "json" : "text";
     } else if (crateInfo.category === CrateCategory.CODE) {
@@ -539,8 +552,11 @@ export default function CratePage() {
     if (!tags || tags.length === 0) return null;
     return (
       <div className="flex flex-wrap gap-1 mt-2">
-        {tags.map(tag => (
-          <span key={tag} className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"
+          >
             {tag}
           </span>
         ))}
@@ -550,13 +566,13 @@ export default function CratePage() {
 
   // Render a To-Do list from markdown content
   const renderTodoList = (markdownContent: string) => {
-    const lines = markdownContent.split('\n');
+    const lines = markdownContent.split("\n");
     return (
       <ul className="list-none p-0 m-0">
         {lines.map((line, index) => {
           const taskMatch = line.match(/^- \[( |x|X)\] (.*)/);
           if (taskMatch) {
-            const isChecked = taskMatch[1] !== ' ';
+            const isChecked = taskMatch[1] !== " ";
             const taskText = taskMatch[2];
             return (
               <li key={index} className="flex items-center mb-2">
@@ -566,7 +582,9 @@ export default function CratePage() {
                   readOnly
                   className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <span className={`text-sm ${isChecked ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                <span
+                  className={`text-sm ${isChecked ? "line-through text-gray-500" : "text-gray-800"}`}
+                >
                   {taskText}
                 </span>
               </li>
@@ -603,10 +621,7 @@ export default function CratePage() {
       case CrateCategory.DATA:
         return (
           <div className="text-sm">
-            <SyntaxHighlighter
-              language={getLanguage()}
-              showLineNumbers
-            >
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
               {crateContent}
             </SyntaxHighlighter>
           </div>
@@ -615,10 +630,7 @@ export default function CratePage() {
       case CrateCategory.CODE:
         return (
           <div className="text-sm">
-            <SyntaxHighlighter
-              language={getLanguage()}
-              showLineNumbers
-            >
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
               {crateContent}
             </SyntaxHighlighter>
           </div>
@@ -627,10 +639,7 @@ export default function CratePage() {
       case CrateCategory.JSON: // Added JSON category
         return (
           <div className="text-sm">
-            <SyntaxHighlighter
-              language={getLanguage()}
-              showLineNumbers
-            >
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
               {crateContent}
             </SyntaxHighlighter>
           </div>
@@ -662,7 +671,10 @@ export default function CratePage() {
 
           <form onSubmit={handlePasswordSubmit}>
             <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <input
@@ -769,9 +781,9 @@ export default function CratePage() {
   // Prepare usage chart data from access history
   const usageChartData = crateInfo.accessHistory
     ? crateInfo.accessHistory.map((entry) => ({
-      label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
-      value: entry.count,
-    }))
+        label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
+        value: entry.count,
+      }))
     : [];
 
   return (
@@ -854,9 +866,7 @@ export default function CratePage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm mt-4">
               <div>
                 <div className="text-xs text-gray-500 mb-1">Category</div>
-                <div className="font-medium">
-                  {crateInfo.category}
-                </div>
+                <div className="font-medium">{crateInfo.category}</div>
               </div>
 
               <div>
@@ -873,9 +883,7 @@ export default function CratePage() {
 
               <div>
                 <div className="text-xs text-gray-500 mb-1">Size</div>
-                <div>
-                  {formatBytes(crateInfo.size || 0)}
-                </div>
+                <div>{formatBytes(crateInfo.size || 0)}</div>
               </div>
             </div>
 
@@ -912,14 +920,14 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.DATA ||
                 crateInfo.category === CrateCategory.JSON || // Added JSON category
                 crateInfo.category === CrateCategory.IMAGE) && (
-                  <button
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
-                  >
-                    <FaEye className="mr-1" />{" "}
-                    {showPreview ? "Hide Preview" : "View Content"}
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
+                >
+                  <FaEye className="mr-1" />{" "}
+                  {showPreview ? "Hide Preview" : "View Content"}
+                </button>
+              )}
 
               {/* Only show reset expiry and delete if owner */}
               {crateInfo.isOwner && (

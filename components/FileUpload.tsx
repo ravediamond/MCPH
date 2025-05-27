@@ -34,7 +34,14 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text", ".todolist"];
+const TEXT_FILE_EXTENSIONS = [
+  ".txt",
+  ".md",
+  ".markdown",
+  ".json",
+  ".text",
+  ".todolist",
+];
 
 // Available crate categories that users can select
 const CRATE_CATEGORIES = [
@@ -179,7 +186,10 @@ export default function FileUpload({
     setUploadedFile(null); // Reset previous upload state
 
     // Automatically use the filename as the title (without extension)
-    const fileNameWithoutExtension = selectedFile.name.replace(/\\.[^/.]+$/, "");
+    const fileNameWithoutExtension = selectedFile.name.replace(
+      /\\.[^/.]+$/,
+      "",
+    );
     setTitle(fileNameWithoutExtension);
 
     // Automatically detect crate type based on content type or extension
@@ -190,7 +200,9 @@ export default function FileUpload({
       detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
     } else {
       // Then check file extension
-      const fileExtension = selectedFile.name.match(/\\.[^/.]+$/)?.[0].toLowerCase();
+      const fileExtension = selectedFile.name
+        .match(/\\.[^/.]+$/)?.[0]
+        .toLowerCase();
       if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
         detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
       }
@@ -732,10 +744,11 @@ export default function FileUpload({
           <button
             type="submit"
             disabled={!file || isUploading || !title.trim()}
-            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${!file || isUploading || !title.trim()
-              ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
-              : "bg-blue-500 hover:bg-blue-600 text-white border-blue-600" // Changed to blue-500 and blue-600
-              }
+            className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${
+              !file || isUploading || !title.trim()
+                ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
+                : "bg-blue-500 hover:bg-blue-600 text-white border-blue-600" // Changed to blue-500 and blue-600
+            }
                         `}
           >
             {isUploading ? (

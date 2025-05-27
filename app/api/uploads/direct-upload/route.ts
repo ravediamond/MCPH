@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
-import { saveCrateMetadata, logEvent, incrementMetric, getUserStorageUsage } from "@/services/firebaseService";
+import {
+  saveCrateMetadata,
+  logEvent,
+  incrementMetric,
+  getUserStorageUsage,
+} from "@/services/firebaseService";
 import { DATA_TTL } from "@/app/config/constants";
 import { CrateCategory, CrateSharing } from "@/app/types/crate";
 import crypto from "crypto"; // Import crypto module
@@ -109,20 +114,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Upload the file to storage as a crate
-    const crateData = await uploadCrate(
-      buffer,
-      file.name,
-      file.type,
-      {
-        title,
-        description,
-        category: fileType as CrateCategory,
-        ownerId: userId || "anonymous",
-        ttlDays,
-        metadata,
-        shared: sharingOptions, // Pass the constructed sharingOptions
-      }
-    );
+    const crateData = await uploadCrate(buffer, file.name, file.type, {
+      title,
+      description,
+      category: fileType as CrateCategory,
+      ownerId: userId || "anonymous",
+      ttlDays,
+      metadata,
+      shared: sharingOptions, // Pass the constructed sharingOptions
+    });
 
     // --- VECTOR EMBEDDING GENERATION ---
     let embedding: number[] | undefined = undefined;
@@ -173,8 +173,16 @@ export async function POST(req: NextRequest) {
       size: crateData.size,
       apiUrl,
       downloadUrl,
-      uploadedAt: crateData.createdAt instanceof Date ? crateData.createdAt.toISOString() : crateData.createdAt,
-      expiresAt: crateData.ttlDays ? new Date(new Date(crateData.createdAt).getTime() + crateData.ttlDays * 24 * 60 * 60 * 1000).toISOString() : undefined,
+      uploadedAt:
+        crateData.createdAt instanceof Date
+          ? crateData.createdAt.toISOString()
+          : crateData.createdAt,
+      expiresAt: crateData.ttlDays
+        ? new Date(
+            new Date(crateData.createdAt).getTime() +
+              crateData.ttlDays * 24 * 60 * 60 * 1000,
+          ).toISOString()
+        : undefined,
       compressed: crateData.compressed,
       compressionRatio: crateData.compressionRatio,
     });

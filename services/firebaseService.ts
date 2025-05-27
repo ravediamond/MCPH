@@ -72,10 +72,9 @@ if (!getApps().length) {
     } catch (settingsError: any) {
       // This warning is a safeguard. Ideally, this path shouldn't be hit if it's the true first init.
       console.warn(
-        `Firestore settings could not be applied during initial setup. This might be okay if already set by a concurrent initialization. Error: ${settingsError.message}`
+        `Firestore settings could not be applied during initial setup. This might be okay if already set by a concurrent initialization. Error: ${settingsError.message}`,
       );
     }
-
   } catch (error: any) {
     console.error(
       "Error initializing Firebase Admin SDK with Application Default Credentials:",
@@ -106,7 +105,9 @@ if (!getApps().length) {
 } else {
   firebaseApp = getApp(); // Use the already initialized app
   db = getFirestore(firebaseApp); // Get the existing Firestore instance
-  console.log("Firebase Admin SDK and Firestore instance already initialized. Using existing.");
+  console.log(
+    "Firebase Admin SDK and Firestore instance already initialized. Using existing.",
+  );
   // Settings are assumed to have been applied during the initial setup in the block above.
 }
 
@@ -505,9 +506,7 @@ export async function getUserStorageUsage(
 /**
  * Save crate metadata to Firestore.
  */
-export async function saveCrateMetadata(
-  crateData: Crate
-): Promise<boolean> {
+export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
   try {
     // Convert the data for Firestore
     const dataToSave = toFirestoreData({
@@ -527,9 +526,7 @@ export async function saveCrateMetadata(
 /**
  * Get crate metadata from Firestore
  */
-export async function getCrateMetadata(
-  crateId: string
-): Promise<Crate | null> {
+export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     const doc = await docRef.get();
@@ -551,7 +548,9 @@ export async function getCrateMetadata(
 /**
  * Increment download count for a crate in Firestore
  */
-export async function incrementCrateDownloadCount(crateId: string): Promise<number> {
+export async function incrementCrateDownloadCount(
+  crateId: string,
+): Promise<number> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     const doc = await docRef.get();
@@ -577,7 +576,10 @@ export async function incrementCrateDownloadCount(crateId: string): Promise<numb
 
     return downloadCount;
   } catch (error) {
-    console.error("Error incrementing crate download count in Firestore:", error);
+    console.error(
+      "Error incrementing crate download count in Firestore:",
+      error,
+    );
 
     // Attempt to get current count if update failed
     try {
@@ -635,7 +637,7 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
  */
 export async function incrementDownloadCount(fileId: string): Promise<number> {
   try {
-    const docRef = db.collection('files').doc(fileId);
+    const docRef = db.collection("files").doc(fileId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -659,11 +661,14 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
 
     return downloadCount;
   } catch (error) {
-    console.error("Error incrementing file download count in Firestore:", error);
+    console.error(
+      "Error incrementing file download count in Firestore:",
+      error,
+    );
 
     // Attempt to get current count if update failed
     try {
-      const doc = await db.collection('files').doc(fileId).get();
+      const doc = await db.collection("files").doc(fileId).get();
       return doc.data()?.downloadCount || 0;
     } catch (e) {
       return 0;

@@ -57,8 +57,8 @@ export default function UploadPage() {
                     headings, lists, and code blocks.
                   </li>
                   <li>
-                    <b>To-Do List:</b> .todolist or .md files formatted as a task
-                    list (e.g., "- [ ] Task"). Rendered as an interactive
+                    <b>To-Do List:</b> .todolist or .md files formatted as a
+                    task list (e.g., "- [ ] Task"). Rendered as an interactive
                     checklist.
                   </li>
                   <li>
