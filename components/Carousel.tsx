@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 const useCases = [
   {
@@ -62,12 +63,15 @@ export default function Carousel() {
     <div className="my-12 flex flex-col items-center">
       <div className="relative w-full max-w-2xl">
         <div className="bg-white rounded-2xl shadow-xl p-10 flex flex-col items-center border border-gray-200 min-h-[340px] transition-all duration-500">
-          <img
-            src={useCases[index].image}
-            alt={useCases[index].title}
-            className="w-32 h-32 object-contain rounded-xl mb-6 shadow-md bg-gray-50"
-            style={{ background: "#f9fafb" }}
-          />
+          <div className="w-32 h-32 relative mb-6">
+            <Image
+              src={useCases[index].image}
+              alt={useCases[index].title}
+              fill
+              className="object-contain rounded-xl shadow-md"
+              style={{ background: "#f9fafb" }}
+            />
+          </div>
           <h3 className="text-2xl font-bold text-gray-800 mb-3 text-center">
             {useCases[index].title}
           </h3>
