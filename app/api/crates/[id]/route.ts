@@ -58,6 +58,14 @@ export async function GET(
         const isPublic = crate.shared.public;
         const isSharedWithUser = Array.isArray(crate.shared.sharedWith) && crate.shared.sharedWith.includes(userId);
 
+        // If the crate is public, password-protected, and the user is not the owner,
+        // require a password to view.
+        if (isPublic && crate.shared.passwordProtected && !isOwner) {
+            return NextResponse.json(
+                { error: "Password required to view this crate", passwordRequired: true },
+                { status: 401 }
+            );
+        }
 
         if (!isOwner && !isPublic && !isSharedWithUser) {
             return NextResponse.json(

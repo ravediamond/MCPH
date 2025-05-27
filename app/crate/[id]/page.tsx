@@ -129,9 +129,11 @@ export default function CratePage() {
         }
 
         const response = await fetch(`/api/crates/${crateId}`, { headers });
+        const data = await response.json(); // Always parse JSON first to check for passwordRequired
 
-        if (response.status === 401) {
-          // Password protected crate
+        if (response.status === 401 && data.passwordRequired) {
+          // Password protected crate, and user is not owner
+          setCrateInfo(data); // Set basic info, including isPasswordProtected
           setPasswordRequired(true);
           setLoading(false);
           return;
@@ -150,7 +152,6 @@ export default function CratePage() {
           );
         }
 
-        const data = await response.json();
         setCrateInfo(data);
 
         if (data.expiresAt) {
@@ -682,7 +683,7 @@ export default function CratePage() {
               <button
                 type="submit"
                 disabled={contentLoading}
-                className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600 disabled:opacity-50"
               >
                 {contentLoading ? "Loading..." : "Access Crate"}
               </button>
