@@ -175,34 +175,29 @@ gcloud firestore indexes composite create \
   --field-config field-path="createdAt",order="DESCENDING"
 echo "Composite index for apiKeys created (if not already present)."
 
-echo "--- Creating vector index for files.embedding ---"
+echo "--- Creating composite index for crates (ownerId + createdAt) ---"
+gcloud firestore indexes composite create \
+  --collection-group="crates" \
+  --field-config field-path="ownerId",order="ASCENDING" \
+  --field-config field-path="createdAt",order="DESCENDING"
+echo "Composite index for crates created (if not already present)."
+
+echo "--- Creating vector index for crates.embedding ---"
 gcloud firestore indexes composite create \
   --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="files" \
+  --collection-group="crates" \
   --query-scope=COLLECTION \
   --field-config=vector-config='{"dimension":"768","flat": "{}"}',field-path=embedding
-
-# 6. Initialize crates collection with a placeholder document including embedding
-# Example embedding: 1536 zeros (adjust size to match your embedding model)
-echo "--- Initializing 'crates' collection with embedding field ---"
-ARTIFACTS_EMBEDDING=$(python3 -c 'import json; print(json.dumps({"arrayValue": {"values": [{"doubleValue": 0.0} for _ in range(1536)]}}))')
-ARTIFACTS_DATA='{
-    "id": {"stringValue": "placeholder"},
-    "description": {"stringValue": "A sample crate for vector search"},
-    "metadata": {"mapValue": {"fields": {"type": {"stringValue": "example"}, "author": {"stringValue": "system"}}}},
-    "embedding": '"${ARTIFACTS_EMBEDDING}"'
-}'
-create_document "crates" "placeholder" "${ARTIFACTS_DATA}"
 
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
 echo ""
 echo "Your Firestore database should now have these collections initialized:"
-echo "- files: For storing file metadata"
+echo "- crates: For storing crates with embeddings for vector search"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
-echo "- crates: For storing crates with embeddings for vector search"
+echo "- apiKeys: For API key management"
 echo ""
 echo "These collections align with how your application is using Firestore in your functions code."
 

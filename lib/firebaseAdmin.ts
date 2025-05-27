@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import os from "os";
+import { getAuth } from "firebase-admin/auth";
 
 // Utility to handle service account credentials for Vercel
 function setupServiceAccountForVercel() {
@@ -84,3 +85,4 @@ if (!admin.apps.length) {
 }
 
 export { admin };
+export const auth = getAuth();

@@ -11,7 +11,7 @@ out
 
 # Environment Variables
 .env.local
-*credentials.json
+service-account-credentials*.json
 *creds.json
 
 # Logs

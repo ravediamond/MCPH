@@ -28,11 +28,15 @@ import {
   FaExternalLinkAlt,
   FaDatabase,
   FaLock,
+  FaTasks,
+  FaTable,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
+import { Crate, CrateCategory } from "../../types/crate";
+import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
 
 // Dynamic imports for markdown and code rendering
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -56,51 +60,45 @@ const MermaidDiagram = dynamic(
   },
 );
 
-interface FileMetadata {
+// Interface for the API response (extends Crate with additional view-specific fields)
+interface CrateResponse extends Partial<Crate> {
   id: string;
-  fileName: string;
   title: string;
-  description?: string;
-  contentType: string;
-  size: number;
-  uploadedAt: string | number | Date;
-  expiresAt?: string | number | Date;
-  downloadCount: number;
+  expiresAt: string;
+  isPublic: boolean;
+  isPasswordProtected: boolean;
+  isOwner: boolean;
   viewCount?: number;
-  userId?: string;
-  compressed?: boolean;
-  originalSize?: number;
-  compressionRatio?: number;
   accessHistory?: {
     date: string;
     count: number;
   }[];
-  metadata?: Record<string, string>;
-  isShared?: boolean;
-  password?: string;
-  fileType?: string; // Optional: type of crate (generic, data, image, etc.)
 }
 
 export default function CratePage() {
   const params = useParams();
-  const fileId = params?.id as string;
+  const crateId = params?.id as string;
+  const {
+    getIdToken,
+    loading: authLoading,
+    user,
+    signInWithGoogle,
+  } = useAuth(); // Get authentication loading state and user
 
-  const [fileInfo, setFileInfo] = useState<FileMetadata | null>(null);
-  const [fileContent, setFileContent] = useState<string | null>(null);
+  const [crateInfo, setCrateInfo] = useState<CrateResponse | null>(null);
+  const [crateContent, setCrateContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
-  const [isMermaidDiagram, setIsMermaidDiagram] = useState(false);
   const [accessStats, setAccessStats] = useState({
     today: 0,
     week: 0,
     month: 0,
   });
   const [showResetExpiry, setShowResetExpiry] = useState(false);
-  const [newExpiryDate, setNewExpiryDate] = useState<string>("");
   const [resetExpiryLoading, setResetExpiryLoading] = useState(false);
   const [resetExpiryError, setResetExpiryError] = useState<string | null>(null);
   const [resetExpirySuccess, setResetExpirySuccess] = useState<string | null>(
@@ -110,68 +108,64 @@ export default function CratePage() {
   const [expiryAmount, setExpiryAmount] = useState<number>(1);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [passwordInput, setPasswordInput] = useState<string>("");
+  const [passwordRequired, setPasswordRequired] = useState<boolean>(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  // Memoized helpers
-  const isTextFile = useCallback((contentType: string) => {
-    return (
-      contentType.includes("text") ||
-      contentType.includes("markdown") ||
-      contentType.includes("json") ||
-      contentType.includes("javascript") ||
-      contentType.includes("typescript") ||
-      contentType.includes("css") ||
-      contentType.includes("html") ||
-      contentType.includes("xml")
-    );
-  }, []);
-  const isImageFile = useCallback(
-    (contentType: string) => contentType.includes("image"),
-    [],
-  );
-  const isPdfFile = useCallback(
-    (contentType: string) => contentType.includes("pdf"),
-    [],
-  );
-  const checkIfMermaidDiagram = useCallback((content: string): boolean => {
-    const mermaidPatterns = [
-      /^\s*graph\s+(TB|TD|BT|RL|LR)/,
-      /^\s*sequenceDiagram/,
-      /^\s*classDiagram/,
-      /^\s*stateDiagram/,
-      /^\s*erDiagram/,
-      /^\s*gantt/,
-      /^\s*pie/,
-      /^\s*flowchart/,
-      /^\s*journey/,
-    ];
-    return mermaidPatterns.some((pattern) => pattern.test(content.trim()));
-  }, []);
-
-  // Fetch file metadata only when fileId changes
+  // Fetch crate metadata only when crateId changes or when auth state changes
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
-    async function fetchFileMetadata() {
+
+    async function fetchCrateMetadata() {
       setLoading(true);
       setError(null);
-      setFileInfo(null);
-      setFileContent(null);
-      setIsMermaidDiagram(false);
+      setCrateInfo(null);
+      setCrateContent(null);
+      setPasswordRequired(false);
+
       try {
-        const response = await fetch(`/api/files/${fileId}`);
+        // Get the auth token
+        const idToken = await getIdToken();
+
+        // Include the auth token in the request headers
+        const headers: HeadersInit = {};
+        if (idToken) {
+          headers["Authorization"] = `Bearer ${idToken}`;
+        }
+
+        const response = await fetch(`/api/crates/${crateId}`, { headers });
+        const data = await response.json(); // Always parse JSON first to check for passwordRequired
+
+        if (response.status === 401 && data.passwordRequired) {
+          // Password protected crate, and user is not owner
+          setCrateInfo(data); // Set basic info, including isPasswordProtected
+          setPasswordRequired(true);
+          setLoading(false);
+          return;
+        }
+
+        if (response.status === 403) {
+          // Access denied - handle forbidden errors specifically
+          throw new Error(
+            "You don't have permission to access this crate. Please sign in or request access from the owner.",
+          );
+        }
+
         if (!response.ok) {
           throw new Error(
             response.status === 404
-              ? "File not found or has expired"
-              : "Failed to fetch file information",
+              ? "Crate not found or has expired"
+              : "Failed to fetch crate information",
           );
         }
-        const data = await response.json();
-        data.viewCount = (data.viewCount || 0) + 1;
-        setFileInfo(data);
+
+        setCrateInfo(data);
+
         if (data.expiresAt) {
           updateTimeRemaining(data.expiresAt);
           timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
         }
+
         if (!data.accessHistory) {
           generateMockAccessStats(data.downloadCount || 0);
         } else {
@@ -183,50 +177,99 @@ export default function CratePage() {
         setLoading(false);
       }
     }
-    if (fileId) fetchFileMetadata();
+
+    // Only fetch crate data if authentication is not still loading
+    if (crateId && !authLoading) {
+      fetchCrateMetadata();
+    }
+
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [fileId]);
+  }, [crateId, authLoading, user]);
 
-  // Fetch file content only when fileInfo is set and is a text/mermaid file
+  // Fetch crate content based on category
   useEffect(() => {
-    if (!fileInfo) return;
-    const fileName = fileInfo.fileName.toLowerCase();
-    if (
-      isTextFile(fileInfo.contentType) ||
-      fileName.endsWith(".mmd") ||
-      fileName.endsWith(".mermaid")
-    ) {
+    if (!crateInfo) return;
+
+    const shouldFetchContent = () => {
+      switch (crateInfo.category) {
+        case CrateCategory.MARKDOWN:
+        case CrateCategory.TODOLIST:
+        case CrateCategory.DIAGRAM:
+        case CrateCategory.DATA:
+        case CrateCategory.CODE:
+        case CrateCategory.JSON: // Added JSON category
+          return true;
+        default:
+          return false;
+      }
+    };
+
+    if (shouldFetchContent()) {
       setContentLoading(true);
-      fetch(`/api/uploads/text-content/${fileInfo.id}`)
-        .then((res) => {
-          if (!res.ok)
-            throw new Error("Text content not available for this file");
-          return res.text();
-        })
+      // Use content endpoint with empty password for non-password protected crates
+      fetchCrateContent(passwordInput)
         .then((content) => {
-          setFileContent(content);
-          const isMermaid = checkIfMermaidDiagram(content);
-          setIsMermaidDiagram(isMermaid);
-          if (isMermaid) {
-            setFileInfo((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    description:
-                      (prev.description || "") +
-                      (prev.description ? " • " : "") +
-                      "Contains Mermaid diagram",
-                  }
-                : null,
-            );
-          }
+          setCrateContent(content);
+          setPasswordRequired(false);
         })
-        .catch(() => setFileContent(null))
+        .catch((err) => {
+          console.error("Error fetching crate content:", err);
+          setCrateContent(null);
+        })
         .finally(() => setContentLoading(false));
     }
-  }, [fileInfo, isTextFile, checkIfMermaidDiagram]);
+  }, [crateInfo, passwordInput]);
+
+  // Function to fetch crate content with password if needed
+  const fetchCrateContent = async (password?: string): Promise<string> => {
+    // Get the auth token
+    const idToken = await getIdToken();
+
+    // Include the auth token in the request headers
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
+
+    if (idToken) {
+      headers["Authorization"] = `Bearer ${idToken}`;
+    }
+
+    const response = await fetch(`/api/crates/${crateId}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        setPasswordRequired(true);
+        throw new Error("Password required");
+      }
+      throw new Error("Failed to fetch crate content");
+    }
+
+    return response.text();
+  };
+
+  // Handle password submission
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setContentLoading(true);
+
+    fetchCrateContent(passwordInput)
+      .then((content) => {
+        setCrateContent(content);
+        setPasswordRequired(false);
+      })
+      .catch((err) => {
+        setPasswordError("Invalid password. Please try again.");
+        setCrateContent(null);
+      })
+      .finally(() => setContentLoading(false));
+  };
 
   // In a real app, this would come from server analytics
   const generateMockAccessStats = (downloadCount: number) => {
@@ -256,9 +299,9 @@ export default function CratePage() {
       });
     }
 
-    if (fileInfo) {
-      setFileInfo({
-        ...fileInfo,
+    if (crateInfo) {
+      setCrateInfo({
+        ...crateInfo,
         accessHistory: mockHistory,
       });
     }
@@ -298,7 +341,7 @@ export default function CratePage() {
 
     if (diffMs <= 0) {
       setTimeRemaining("Expired");
-      setError("This file has expired");
+      setError("This crate has expired");
       return;
     }
 
@@ -317,13 +360,6 @@ export default function CratePage() {
     }
   };
 
-  // Compute max expiry date string (29 days from today)
-  const maxExpiryDate = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 29);
-    return d.toISOString().split("T")[0];
-  })();
-
   // Format bytes to readable size
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return "0 B";
@@ -339,14 +375,14 @@ export default function CratePage() {
   };
 
   const handleDownload = () => {
-    if (!fileInfo) return;
-    window.location.href = `/api/uploads/${fileId}`;
-    // Do NOT update downloadCount here; let the backend handle it only on real download
+    if (!crateInfo) return;
+    // Ensure the URL points to the correct API endpoint for downloading crates
+    window.location.href = `/api/crates/${crateId}/download`;
   };
 
   const handleCopyLink = () => {
     navigator.clipboard
-      .writeText(`${window.location.origin}/crate/${fileId}`)
+      .writeText(`${window.location.origin}/crate/${crateId}`)
       .then(() => {
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
@@ -378,7 +414,7 @@ export default function CratePage() {
         return;
       }
       const pickedDate = new Date(Date.now() + durationMs);
-      const response = await fetch(`/api/files/${fileId}/expiry`, {
+      const response = await fetch(`/api/crates/${crateId}/expiry`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ expiresAt: pickedDate.toISOString() }),
@@ -387,11 +423,11 @@ export default function CratePage() {
       setResetExpirySuccess("Expiry updated");
       setShowResetExpiry(false);
       setExpiryAmount(1);
-      // Refresh file info
-      const refreshed = await fetch(`/api/files/${fileId}`);
+      // Refresh crate info
+      const refreshed = await fetch(`/api/crates/${crateId}`);
       if (refreshed.ok) {
         const data = await refreshed.json();
-        setFileInfo(data);
+        setCrateInfo(data);
         if (data.expiresAt) updateTimeRemaining(data.expiresAt);
       }
     } catch (err: any) {
@@ -405,82 +441,90 @@ export default function CratePage() {
   const handleDelete = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this file? This action cannot be undone.",
+        "Are you sure you want to delete this crate? This action cannot be undone.",
       )
     )
       return;
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      const response = await fetch(`/api/files/${fileId}`, {
+      const response = await fetch(`/api/crates/${crateId}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Failed to delete file");
+      if (!response.ok) throw new Error("Failed to delete crate");
       window.location.href = "/";
     } catch (err: any) {
-      setDeleteError(err.message || "Failed to delete file");
+      setDeleteError(err.message || "Failed to delete crate");
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  // Get file type icon
-  const getFileIcon = () => {
-    if (!fileInfo) return <FaFile className="text-gray-500" />;
+  // Get crate type icon based on category
+  const getCrateIcon = () => {
+    if (!crateInfo) return <FaFile className="text-gray-500" />;
 
-    const contentType = fileInfo.contentType.toLowerCase();
-    const fileName = fileInfo.fileName.toLowerCase();
-
-    if (
-      isMermaidDiagram ||
-      fileName.endsWith(".mmd") ||
-      fileName.endsWith(".mermaid")
-    ) {
-      return <FaProjectDiagram className="text-green-500" />;
-    } else if (contentType.includes("image")) {
-      return <FaFileImage className="text-blue-500" />;
-    } else if (contentType.includes("pdf")) {
-      return <FaFilePdf className="text-red-500" />;
-    } else if (contentType.includes("markdown")) {
-      return <FaFileAlt className="text-purple-500" />;
-    } else if (
-      contentType.includes("json") ||
-      contentType.includes("javascript") ||
-      contentType.includes("typescript")
-    ) {
-      return <FaFileCode className="text-yellow-500" />;
-    } else if (contentType.includes("text")) {
-      return <FaFileAlt className="text-gray-500" />;
-    } else {
-      return <FaFile className="text-gray-500" />;
+    switch (crateInfo.category) {
+      case CrateCategory.MARKDOWN:
+        return <FaFileAlt className="text-purple-500" />;
+      case CrateCategory.TODOLIST:
+        return <FaTasks className="text-indigo-500" />;
+      case CrateCategory.DIAGRAM:
+        return <FaProjectDiagram className="text-green-500" />;
+      case CrateCategory.DATA:
+        return <FaTable className="text-blue-500" />;
+      case CrateCategory.CODE:
+        return <FaFileCode className="text-yellow-500" />;
+      case CrateCategory.IMAGE:
+        return <FaFileImage className="text-blue-500" />;
+      case CrateCategory.JSON: // Added JSON category
+        return <FaFileCode className="text-orange-500" />; // Using FaFileCode with a different color for now
+      case CrateCategory.BINARY:
+      default:
+        // Fallback to mime type checking for legacy or unknown types
+        const mimeType = crateInfo.mimeType?.toLowerCase() || "";
+        if (mimeType.includes("image")) {
+          return <FaFileImage className="text-blue-500" />;
+        } else if (mimeType.includes("pdf")) {
+          return <FaFilePdf className="text-red-500" />;
+        } else {
+          return <FaFile className="text-gray-500" />;
+        }
     }
   };
 
   // Get appropriate syntax highlighting language
   const getLanguage = () => {
-    if (!fileInfo) return "text";
+    if (!crateInfo) return "text";
 
-    const contentType = fileInfo.contentType.toLowerCase();
-    const fileName = fileInfo.fileName.toLowerCase();
-
-    if (
-      isMermaidDiagram ||
-      fileName.endsWith(".mmd") ||
-      fileName.endsWith(".mermaid")
-    ) {
+    if (crateInfo.category === CrateCategory.DIAGRAM) {
       return "mermaid";
-    } else if (contentType.includes("markdown") || fileName.endsWith(".md")) {
+    } else if (
+      crateInfo.category === CrateCategory.MARKDOWN ||
+      crateInfo.category === CrateCategory.TODOLIST
+    ) {
       return "markdown";
-    } else if (contentType.includes("json") || fileName.endsWith(".json")) {
-      return "json";
-    } else if (contentType.includes("javascript") || fileName.endsWith(".js")) {
-      return "javascript";
-    } else if (contentType.includes("typescript") || fileName.endsWith(".ts")) {
-      return "typescript";
-    } else if (contentType.includes("html") || fileName.endsWith(".html")) {
-      return "html";
-    } else if (contentType.includes("css") || fileName.endsWith(".css")) {
-      return "css";
+    } else if (
+      crateInfo.category === CrateCategory.DATA ||
+      crateInfo.category === CrateCategory.JSON
+    ) {
+      // Added JSON category
+      // Check if it's JSON or another data format
+      return crateInfo.mimeType?.includes("json") ? "json" : "text";
+    } else if (crateInfo.category === CrateCategory.CODE) {
+      // Try to determine the language from the mime type or file extension
+      const mimeType = crateInfo.mimeType?.toLowerCase() || "";
+      if (mimeType.includes("javascript")) {
+        return "javascript";
+      } else if (mimeType.includes("typescript")) {
+        return "typescript";
+      } else if (mimeType.includes("html")) {
+        return "html";
+      } else if (mimeType.includes("css")) {
+        return "css";
+      } else {
+        return "text";
+      }
     } else {
       return "text";
     }
@@ -503,6 +547,174 @@ export default function CratePage() {
     );
   };
 
+  // Render tags
+  const renderTags = (tags?: string[]) => {
+    if (!tags || tags.length === 0) return null;
+    return (
+      <div className="flex flex-wrap gap-1 mt-2">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  // Render a To-Do list from markdown content
+  const renderTodoList = (markdownContent: string) => {
+    const lines = markdownContent.split("\n");
+    return (
+      <ul className="list-none p-0 m-0">
+        {lines.map((line, index) => {
+          const taskMatch = line.match(/^- \[( |x|X)\] (.*)/);
+          if (taskMatch) {
+            const isChecked = taskMatch[1] !== " ";
+            const taskText = taskMatch[2];
+            return (
+              <li key={index} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  readOnly
+                  className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span
+                  className={`text-sm ${isChecked ? "line-through text-gray-500" : "text-gray-800"}`}
+                >
+                  {taskText}
+                </span>
+              </li>
+            );
+          }
+          return null;
+        })}
+      </ul>
+    );
+  };
+
+  // Category-specific content renderer
+  const renderContent = () => {
+    if (!crateInfo || !crateContent) return null;
+
+    switch (crateInfo.category) {
+      case CrateCategory.MARKDOWN:
+        return (
+          <div className="p-4 prose max-w-none">
+            <ReactMarkdown>{crateContent}</ReactMarkdown>
+          </div>
+        );
+
+      case CrateCategory.TODOLIST:
+        return (
+          <div className="bg-gray-50 rounded border p-4 max-h-96 overflow-auto">
+            {renderTodoList(crateContent)}
+          </div>
+        );
+
+      case CrateCategory.DIAGRAM:
+        return <MermaidDiagram>{crateContent}</MermaidDiagram>;
+
+      case CrateCategory.DATA:
+        return (
+          <div className="text-sm">
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              {crateContent}
+            </SyntaxHighlighter>
+          </div>
+        );
+
+      case CrateCategory.CODE:
+        return (
+          <div className="text-sm">
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              {crateContent}
+            </SyntaxHighlighter>
+          </div>
+        );
+
+      case CrateCategory.JSON: // Added JSON category
+        return (
+          <div className="text-sm">
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              {crateContent}
+            </SyntaxHighlighter>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="p-4 text-gray-600 text-center">
+            This content type doesn't have a preview.
+          </div>
+        );
+    }
+  };
+
+  // Password form for protected crates
+  const renderPasswordForm = () => {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+        <Card className="w-full max-w-md p-6">
+          <div className="flex items-center justify-center mb-4">
+            <FaLock className="text-primary-500 text-3xl" />
+          </div>
+          <h1 className="text-xl font-medium text-center text-gray-800 mb-4">
+            Password Protected Crate
+          </h1>
+          <p className="text-gray-600 mb-4 text-center">
+            This crate requires a password to access.
+          </p>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <div className="mb-4">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
+                required
+              />
+            </div>
+
+            {passwordError && (
+              <div className="mb-4 text-red-600 text-sm">{passwordError}</div>
+            )}
+
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                disabled={contentLoading}
+                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600 disabled:opacity-50"
+              >
+                {contentLoading ? "Loading..." : "Access Crate"}
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-4 text-center">
+            <Link
+              href="/"
+              className="text-primary-500 hover:text-primary-600 text-sm"
+            >
+              Return to Home
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
@@ -517,17 +729,35 @@ export default function CratePage() {
     );
   }
 
-  if (error || !fileInfo) {
+  if (passwordRequired && !crateContent) {
+    return renderPasswordForm();
+  }
+
+  if (error || !crateInfo) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
         <Card className="w-full max-w-sm p-6 text-center">
           <FaExclamationTriangle className="text-yellow-500 text-2xl mx-auto mb-3" />
           <h1 className="text-lg font-medium text-gray-800 mb-2">
-            File Unavailable
+            Crate Unavailable
           </h1>
           <p className="text-gray-600 mb-5 text-sm">
-            {error || "Unable to retrieve file information"}
+            {error || "Unable to retrieve crate information"}
           </p>
+
+          {error?.includes("permission") && (
+            <div className="mb-4">
+              <button
+                onClick={() => signInWithGoogle()}
+                className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
+              >
+                Sign in to access your crate
+              </button>
+              <p className="text-xs text-gray-500 mt-2">
+                If you created this crate, signing in will give you access.
+              </p>
+            </div>
+          )}
 
           <div className="flex justify-center space-x-4 mt-2">
             <Link
@@ -548,26 +778,9 @@ export default function CratePage() {
     );
   }
 
-  // Calculate KPIs
-  const compressionRate =
-    fileInfo.originalSize && fileInfo.originalSize > fileInfo.size
-      ? Math.round((1 - fileInfo.size / fileInfo.originalSize) * 100)
-      : 0;
-
-  const expiryDate = fileInfo.expiresAt ? new Date(fileInfo.expiresAt) : null;
-
-  const daysUntilExpiry = expiryDate
-    ? Math.max(
-        0,
-        Math.ceil(
-          (expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24),
-        ),
-      )
-    : null;
-
   // Prepare usage chart data from access history
-  const usageChartData = fileInfo.accessHistory
-    ? fileInfo.accessHistory.map((entry) => ({
+  const usageChartData = crateInfo.accessHistory
+    ? crateInfo.accessHistory.map((entry) => ({
         label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
         value: entry.count,
       }))
@@ -585,7 +798,7 @@ export default function CratePage() {
             Home
           </Link>
           <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-700">File Details</span>
+          <span className="text-gray-700">Crate Details</span>
         </div>
 
         {/* Main Info Card */}
@@ -593,18 +806,20 @@ export default function CratePage() {
           <Card.Header className="flex justify-between items-center">
             <div className="flex items-center">
               <span className="p-2 bg-gray-50 rounded-full mr-3">
-                {getFileIcon()}
+                {getCrateIcon()}
               </span>
               <div>
                 <h1
                   className="font-medium text-gray-800 mb-0.5"
-                  title={fileInfo.fileName}
+                  title={crateInfo.title}
                 >
-                  {fileInfo.title || fileInfo.fileName}
+                  {crateInfo.title}
                 </h1>
                 <div className="text-xs text-gray-500">
-                  {formatBytes(fileInfo.size)} • Uploaded{" "}
-                  {formatDate(fileInfo.uploadedAt)}
+                  {formatBytes(crateInfo.size || 0)} • {crateInfo.mimeType} •
+                  <span className="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                    {crateInfo.category}
+                  </span>
                 </div>
               </div>
             </div>
@@ -619,59 +834,56 @@ export default function CratePage() {
           <Card.Body>
             {/* Sharing status and password protection */}
             <div className="mb-4 flex items-center gap-3">
-              {fileInfo.isShared ? (
+              {crateInfo.isPublic ? (
                 <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-green-100 text-green-700">
-                  <FaShareAlt className="mr-1" /> Shared (anyone with link)
+                  <FaShareAlt className="mr-1" /> Public (anyone with link)
                 </span>
               ) : (
                 <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-gray-200 text-gray-700">
                   <FaLock className="mr-1" /> Private (only you)
                 </span>
               )}
-              {fileInfo.isShared && fileInfo.password && (
+              {crateInfo.isPasswordProtected && (
                 <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
                   <FaLock className="mr-1" /> Password protected
                 </span>
               )}
             </div>
-            {fileInfo.description && (
+
+            {/* Description */}
+            {crateInfo.description && (
               <div className="text-sm text-gray-700 mb-4 pb-3 border-b border-gray-100">
-                {fileInfo.description}
+                {crateInfo.description}
               </div>
             )}
-            {/* Metadata display */}
-            {renderMetadata(fileInfo.metadata)}
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
+            {/* Tags */}
+            {renderTags(crateInfo.tags)}
+
+            {/* Metadata display */}
+            {renderMetadata(crateInfo.metadata)}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm mt-4">
               <div>
-                <div className="text-xs text-gray-500 mb-1">Filename</div>
-                <div className="truncate" title={fileInfo.fileName}>
-                  {fileInfo.fileName}
-                </div>
+                <div className="text-xs text-gray-500 mb-1">Category</div>
+                <div className="font-medium">{crateInfo.category}</div>
               </div>
 
               <div>
                 <div className="text-xs text-gray-500 mb-1">Downloads</div>
-                <div className="font-medium">{fileInfo.downloadCount}</div>
+                <div className="font-medium">{crateInfo.downloadCount}</div>
               </div>
 
-              {fileInfo.expiresAt && (
+              {crateInfo.expiresAt && (
                 <div>
                   <div className="text-xs text-gray-500 mb-1">Expiration</div>
-                  <div>{formatDate(fileInfo.expiresAt)}</div>
+                  <div>{formatDate(crateInfo.expiresAt)}</div>
                 </div>
               )}
 
               <div>
                 <div className="text-xs text-gray-500 mb-1">Size</div>
-                <div>
-                  {formatBytes(fileInfo.size)}
-                  {compressionRate > 0 && (
-                    <span className="ml-1 text-xs text-green-600">
-                      ({compressionRate}% compressed)
-                    </span>
-                  )}
-                </div>
+                <div>{formatBytes(crateInfo.size || 0)}</div>
               </div>
             </div>
 
@@ -700,9 +912,14 @@ export default function CratePage() {
                 )}
               </button>
 
-              {(isTextFile(fileInfo.contentType) ||
-                isMermaidDiagram ||
-                isImageFile(fileInfo.contentType)) && (
+              {/* Show preview button for supported categories */}
+              {(crateInfo.category === CrateCategory.MARKDOWN ||
+                crateInfo.category === CrateCategory.TODOLIST ||
+                crateInfo.category === CrateCategory.DIAGRAM ||
+                crateInfo.category === CrateCategory.CODE ||
+                crateInfo.category === CrateCategory.DATA ||
+                crateInfo.category === CrateCategory.JSON || // Added JSON category
+                crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
                   className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
@@ -711,31 +928,39 @@ export default function CratePage() {
                   {showPreview ? "Hide Preview" : "View Content"}
                 </button>
               )}
-              <button
-                onClick={() => setShowResetExpiry(true)}
-                className="flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 border border-blue-700 font-semibold shadow transition-colors"
-                title="Reset Expiry"
-              >
-                <FaClock className="mr-1" /> Reset Expiry
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleteLoading}
-                className="flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 border border-red-700 font-semibold shadow transition-colors"
-                title="Delete File"
-              >
-                {deleteLoading ? (
-                  "Deleting..."
-                ) : (
-                  <>
-                    <FaFile className="mr-1" /> Delete
-                  </>
-                )}
-              </button>
+
+              {/* Only show reset expiry and delete if owner */}
+              {crateInfo.isOwner && (
+                <>
+                  <button
+                    onClick={() => setShowResetExpiry(true)}
+                    className="flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 border border-blue-700 font-semibold shadow transition-colors"
+                    title="Reset Expiry"
+                  >
+                    <FaClock className="mr-1" /> Reset Expiry
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleteLoading}
+                    className="flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 border border-red-700 font-semibold shadow transition-colors"
+                    title="Delete Crate"
+                  >
+                    {deleteLoading ? (
+                      "Deleting..."
+                    ) : (
+                      <>
+                        <FaFile className="mr-1" /> Delete
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
               {deleteError && (
                 <div className="text-red-600 mt-2 text-sm">{deleteError}</div>
               )}
             </div>
+
             {/* Reset Expiry Modal/Inline */}
             {showResetExpiry && (
               <div className="mt-4 p-6 border border-gray-200 rounded-lg bg-white shadow-lg max-w-md">
@@ -797,13 +1022,58 @@ export default function CratePage() {
           </Card.Body>
         </Card>
 
-        {/* KPI Stats Row */}
+        {/* Preview Card - Only shown when preview is toggled */}
+        {showPreview && (
+          <Card className="mb-4">
+            <Card.Header className="flex justify-between items-center">
+              <h2 className="font-medium text-gray-700">
+                Crate Preview - {crateInfo.category}
+              </h2>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Close
+              </button>
+            </Card.Header>
+
+            <Card.Body>
+              {contentLoading ? (
+                <div className="h-48 flex items-center justify-center">
+                  <div className="animate-pulse">Loading content...</div>
+                </div>
+              ) : crateInfo.category === CrateCategory.IMAGE ? (
+                <div className="flex items-center justify-center">
+                  <Image
+                    src={`/api/crates/${crateId}/content`}
+                    alt={crateInfo.title}
+                    className="max-w-full max-h-96 object-contain"
+                    width={600}
+                    height={400}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/icon.png";
+                      target.style.height = "80px";
+                      target.style.width = "80px";
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded border overflow-auto max-h-96">
+                  {renderContent()}
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+        )}
+
+        {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* Usage Stats Card */}
           <StatsCard
             title="Usage Statistics"
             icon={<FaChartBar className="text-primary-500" />}
-            tooltip="File access statistics over time"
+            tooltip="Crate access statistics over time"
           >
             <div className="mb-5">
               <StatsCard.Grid columns={3} className="mb-4">
@@ -819,7 +1089,7 @@ export default function CratePage() {
                 />
                 <StatsCard.Stat
                   label="Total views"
-                  value={fileInfo.viewCount || 0}
+                  value={crateInfo.viewCount || 0}
                   icon={<FaEye />}
                 />
               </StatsCard.Grid>
@@ -849,36 +1119,21 @@ export default function CratePage() {
               <StatsCard.Grid columns={2} className="mb-4">
                 <StatsCard.Stat
                   label="Size"
-                  value={formatBytes(fileInfo.size)}
+                  value={formatBytes(crateInfo.size || 0)}
                   icon={<FaFileAlt />}
                 />
                 <StatsCard.Stat
                   label="Downloads"
-                  value={fileInfo.downloadCount}
+                  value={crateInfo.downloadCount || 0}
                   icon={<FaDownload />}
                 />
               </StatsCard.Grid>
-
-              {fileInfo.originalSize &&
-                fileInfo.originalSize > fileInfo.size && (
-                  <div className="mt-3">
-                    <StatsCard.Progress
-                      label="Compression"
-                      value={compressionRate}
-                      max={100}
-                      color="green"
-                    />
-                    <div className="text-xs text-gray-500 mt-2 flex justify-between">
-                      <span>
-                        Original: {formatBytes(fileInfo.originalSize)}
-                      </span>
-                      <span>
-                        Saved:{" "}
-                        {formatBytes(fileInfo.originalSize - fileInfo.size)}
-                      </span>
-                    </div>
-                  </div>
-                )}
+              <StatsCard.Stat
+                label="Category"
+                value={crateInfo.category || "Unknown"}
+                icon={getCrateIcon()}
+                className="mb-2"
+              />
             </div>
           </StatsCard>
 
@@ -889,31 +1144,31 @@ export default function CratePage() {
           >
             <div className="space-y-4">
               <StatsCard.Stat
-                label="Uploaded on"
-                value={formatDate(fileInfo.uploadedAt)}
+                label="Created on"
+                value={formatDate(crateInfo.createdAt || new Date())}
                 icon={<FaCalendarAlt />}
                 className="mb-2"
               />
 
-              {fileInfo.expiresAt && (
+              {crateInfo.expiresAt && (
                 <>
                   <StatsCard.Stat
                     label="Expires on"
-                    value={formatDate(fileInfo.expiresAt)}
+                    value={formatDate(crateInfo.expiresAt)}
                     icon={<FaClock />}
                     className="mb-2"
                   />
 
-                  {daysUntilExpiry !== null && daysUntilExpiry > 0 && (
+                  {crateInfo.ttlDays && (
                     <div className="mt-3">
                       <StatsCard.Progress
                         label="Time Remaining"
-                        value={daysUntilExpiry}
+                        value={Math.min(crateInfo.ttlDays, 30)} // Cap at 30 for display
                         max={30} // Assuming max expiry is 30 days
-                        color={daysUntilExpiry < 3 ? "red" : "primary"}
+                        color={crateInfo.ttlDays < 3 ? "red" : "primary"}
                       />
                       <div className="text-xs text-gray-500 mt-1 flex justify-end">
-                        <span>{daysUntilExpiry} days left</span>
+                        <span>{crateInfo.ttlDays} days total TTL</span>
                       </div>
                     </div>
                   )}
@@ -922,78 +1177,6 @@ export default function CratePage() {
             </div>
           </StatsCard>
         </div>
-
-        {/* Preview Card - Only shown when preview is toggled */}
-        {showPreview && (fileContent || isImageFile(fileInfo.contentType)) && (
-          <Card className="mb-4">
-            <Card.Header className="flex justify-between items-center">
-              <h2 className="font-medium text-gray-700">File Preview</h2>
-              <button
-                onClick={() => setShowPreview(false)}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Close
-              </button>
-            </Card.Header>
-
-            <Card.Body>
-              {/* Mermaid Diagram Preview */}
-              {isMermaidDiagram && fileContent && (
-                <div className="mb-4">
-                  <MermaidDiagram>{fileContent}</MermaidDiagram>
-                </div>
-              )}
-
-              {/* Text Content Preview */}
-              {isTextFile(fileInfo.contentType) &&
-                fileContent &&
-                !contentLoading &&
-                !isMermaidDiagram && (
-                  <div className="bg-gray-50 rounded border overflow-auto max-h-96">
-                    {fileInfo.contentType.includes("markdown") ? (
-                      <div className="p-4 prose max-w-none">
-                        <ReactMarkdown>{fileContent}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <div className="text-sm">
-                        <SyntaxHighlighter
-                          language={getLanguage()}
-                          showLineNumbers
-                        >
-                          {fileContent}
-                        </SyntaxHighlighter>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              {/* Image Preview */}
-              {isImageFile(fileInfo.contentType) && (
-                <div className="flex items-center justify-center">
-                  <Image
-                    src={`/api/uploads/${fileId}`}
-                    alt={fileInfo.fileName}
-                    className="max-w-full max-h-96 object-contain"
-                    width={600}
-                    height={400}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/icon.png";
-                      target.style.height = "80px";
-                      target.style.width = "80px";
-                    }}
-                  />
-                </div>
-              )}
-
-              {contentLoading && (
-                <div className="h-48 flex items-center justify-center">
-                  <div className="animate-pulse">Loading content...</div>
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        )}
 
         {/* Footer Navigation */}
         <div className="flex justify-between items-center text-sm mt-4 px-1">
@@ -1007,7 +1190,7 @@ export default function CratePage() {
             href="/upload"
             className="text-primary-500 hover:text-primary-600 transition-colors flex items-center"
           >
-            <FaUpload className="mr-1 text-xs" /> Upload New File
+            <FaUpload className="mr-1 text-xs" /> Upload New Crate
           </Link>
         </div>
       </div>

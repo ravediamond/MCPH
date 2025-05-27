@@ -57,12 +57,17 @@ export default function UploadPage() {
                     headings, lists, and code blocks.
                   </li>
                   <li>
+                    <b>To-Do List:</b> .todolist or .md files formatted as a
+                    task list (e.g., "- [ ] Task"). Rendered as an interactive
+                    checklist.
+                  </li>
+                  <li>
                     <b>JSON:</b> .json crates, shown as formatted code or parsed
                     data.
                   </li>
                   <li>
-                    <b>Diagram (Mermaid):</b> .mmd or .mermaid crates, rendered
-                    as diagrams using Mermaid syntax.
+                    <b>Diagram (Mermaid):</b> .mmd, .mermaid, or .md files using
+                    Mermaid syntax. Rendered as diagrams.
                   </li>
                   <li>
                     <b>Image:</b> Common image formats (PNG, JPG, GIF, SVG),

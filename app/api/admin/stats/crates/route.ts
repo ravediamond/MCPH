@@ -1,3 +1,4 @@
+// filepath: /Users/ravindu.somawansa@airliquide.com/Workspace/git_repos/perso/MCPHub/app/api/admin/stats/crates/route.ts
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { admin } from "../../../../../lib/firebaseAdmin";
@@ -35,12 +36,12 @@ export async function GET(request: Request) {
       );
     }
 
-    const [files] = await storage.bucket(bucketName).getFiles();
-    const totalFiles = files.length;
+    const [objects] = await storage.bucket(bucketName).getFiles();
+    const totalObjects = objects.length;
 
-    return NextResponse.json({ count: totalFiles });
+    return NextResponse.json({ count: totalObjects });
   } catch (error: any) {
-    console.error("Error fetching file stats:", error);
+    console.error("Error fetching storage stats:", error);
     if (
       error.code === "auth/id-token-expired" ||
       error.code === "auth/argument-error"

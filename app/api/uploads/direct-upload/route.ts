@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadFile } from "@/services/storageService";
+import { uploadCrate } from "@/services/storageService";
 import {
-  saveFileMetadata,
+  saveCrateMetadata,
   logEvent,
   incrementMetric,
   getUserStorageUsage,
 } from "@/services/firebaseService";
 import { DATA_TTL } from "@/app/config/constants";
+import { CrateCategory, CrateSharing } from "@/app/types/crate";
+import crypto from "crypto"; // Import crypto module
 
 /**
  * API route to handle direct file uploads
@@ -39,6 +41,29 @@ export async function POST(req: NextRequest) {
     const userId = formData.get("userId") as string;
     const fileTypeParam = formData.get("fileType") as string | null;
     const fileType = fileTypeParam || undefined; // Convert null to undefined
+
+    // New: Read sharing options from formData
+    const isSharedStr = formData.get("isShared") as string | null;
+    const passwordStr = formData.get("password") as string | null;
+
+    const isPublic = isSharedStr === "true";
+    let passwordHash: string | undefined = undefined;
+    let passwordSalt: string | undefined = undefined;
+
+    if (isPublic && passwordStr && passwordStr.length > 0) {
+      passwordSalt = crypto.randomBytes(16).toString("hex");
+      passwordHash = crypto
+        .pbkdf2Sync(passwordStr, passwordSalt, 1000, 64, "sha512")
+        .toString("hex");
+    }
+
+    const sharingOptions: CrateSharing = {
+      public: isPublic,
+      passwordProtected: !!passwordHash, // True if passwordHash is set
+      passwordHash: passwordHash,
+      passwordSalt: passwordSalt,
+      // sharedWith is not handled by this form, so it remains undefined or handled by defaults in uploadCrate
+    };
 
     // Validate that title is provided
     if (!title || !title.trim()) {
@@ -88,28 +113,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Upload the file to storage
-    const fileData = await uploadFile(
-      buffer,
-      file.name,
-      file.type,
-      ttlDays,
+    // Upload the file to storage as a crate
+    const crateData = await uploadCrate(buffer, file.name, file.type, {
       title,
       description,
-      fileType,
+      category: fileType as CrateCategory,
+      ownerId: userId || "anonymous",
+      ttlDays,
       metadata,
-    );
-
-    // Add userId to the fileData if available
-    if (userId) {
-      fileData.userId = userId;
-    }
+      shared: sharingOptions, // Pass the constructed sharingOptions
+    });
 
     // --- VECTOR EMBEDDING GENERATION ---
-    // Prepare text for embedding: concatenate title, description, and metadata
     let embedding: number[] | undefined = undefined;
     try {
-      const metadataObj = fileData.metadata || {};
+      const metadataObj = crateData.metadata || {};
       const metaString = Object.entries(metadataObj)
         .map(([k, v]) => `${k}: ${v}`)
         .join(" ");
@@ -124,46 +142,49 @@ export async function POST(req: NextRequest) {
       console.error("Failed to generate embedding:", e);
     }
 
-    // Store the metadata in Firestore with userId and embedding if available
-    await saveFileMetadata({
-      ...fileData,
-      uploadedAt: new Date(fileData.uploadedAt),
-      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
+    // Store the crate metadata in Firestore, including embedding if available
+    await saveCrateMetadata({
+      ...crateData,
       ...(embedding ? { embedding } : {}),
     });
 
     // Generate URLs
-    const apiUrl = new URL(`/api/files/${fileData.id}`, req.url).toString();
-    const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
+    const apiUrl = new URL(`/api/crates/${crateData.id}`, req.url).toString();
+    const downloadUrl = new URL(`/crate/${crateData.id}`, req.url).toString();
 
     // Log the upload event
     await logEvent(
-      "file_upload",
-      fileData.id,
+      "crate_upload",
+      crateData.id,
       undefined,
       userId ? { userId } : undefined,
     );
-    await incrementMetric("file_uploads");
+    await incrementMetric("crate_uploads");
 
     // Return the upload result with compression info if available
     return NextResponse.json({
       success: true,
-      fileId: fileData.id,
-      fileName: fileData.fileName,
-      title: fileData.title,
-      description: fileData.description,
-      contentType: fileData.contentType,
-      fileType: fileData.fileType, // Include fileType in the response
-      size: fileData.size,
+      fileId: crateData.id,
+      fileName: crateData.title,
+      title: crateData.title,
+      description: crateData.description,
+      contentType: crateData.mimeType,
+      category: crateData.category,
+      size: crateData.size,
       apiUrl,
       downloadUrl,
-      uploadedAt: new Date(fileData.uploadedAt).toISOString(),
-      expiresAt: fileData.expiresAt
-        ? new Date(fileData.expiresAt).toISOString()
+      uploadedAt:
+        crateData.createdAt instanceof Date
+          ? crateData.createdAt.toISOString()
+          : crateData.createdAt,
+      expiresAt: crateData.ttlDays
+        ? new Date(
+            new Date(crateData.createdAt).getTime() +
+              crateData.ttlDays * 24 * 60 * 60 * 1000,
+          ).toISOString()
         : undefined,
-      // Include compression information if available
-      compressed: fileData.compressed,
-      compressionRatio: fileData.compressionRatio,
+      compressed: crateData.compressed,
+      compressionRatio: crateData.compressionRatio,
     });
   } catch (error: any) {
     console.error("Error handling direct upload:", error);
