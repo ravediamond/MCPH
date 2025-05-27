@@ -21,9 +21,9 @@ function getClientIp(req: NextRequest): string {
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const crateId = params.id;
+    const crateId = await params.then(p => p.id);
 
     try {
         // Fetch crate data (includes metadata check, gets content buffer, and increments download count)

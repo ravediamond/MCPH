@@ -4,11 +4,11 @@ import crypto from "crypto";
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } },
+    { params }: { params: Promise<{ id: string }> },
 ) {
     try {
         const { password } = await req.json();
-        const crateId = params.id;
+        const crateId = (await params).id;
 
         if (!password) {
             return NextResponse.json(

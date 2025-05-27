@@ -3,7 +3,7 @@ import { getUserCrates } from "@/services/firebaseService";
 
 export async function GET(
     req: NextRequest,
-    context: { params: { userId: string } }
+    context: { params: Promise<{ userId: string }> }
 ) {
     try {
         const { userId } = await context.params;
