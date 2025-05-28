@@ -781,9 +781,9 @@ export default function CratePage() {
   // Prepare usage chart data from access history
   const usageChartData = crateInfo.accessHistory
     ? crateInfo.accessHistory.map((entry) => ({
-        label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
-        value: entry.count,
-      }))
+      label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
+      value: entry.count,
+    }))
     : [];
 
   return (
@@ -920,14 +920,14 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.DATA ||
                 crateInfo.category === CrateCategory.JSON || // Added JSON category
                 crateInfo.category === CrateCategory.IMAGE) && (
-                <button
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
-                >
-                  <FaEye className="mr-1" />{" "}
-                  {showPreview ? "Hide Preview" : "View Content"}
-                </button>
-              )}
+                  <button
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
+                  >
+                    <FaEye className="mr-1" />{" "}
+                    {showPreview ? "Hide Preview" : "View Content"}
+                  </button>
+                )}
 
               {/* Only show reset expiry and delete if owner */}
               {crateInfo.isOwner && (
@@ -1044,12 +1044,10 @@ export default function CratePage() {
                 </div>
               ) : crateInfo.category === CrateCategory.IMAGE ? (
                 <div className="flex items-center justify-center">
-                  <Image
+                  <img
                     src={`/api/crates/${crateId}/content`}
                     alt={crateInfo.title}
                     className="max-w-full max-h-96 object-contain"
-                    width={600}
-                    height={400}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = "/icon.png";
