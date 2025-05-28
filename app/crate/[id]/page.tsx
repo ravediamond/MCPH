@@ -1044,12 +1044,10 @@ export default function CratePage() {
                 </div>
               ) : crateInfo.category === CrateCategory.IMAGE ? (
                 <div className="flex items-center justify-center">
-                  <Image
+                  <img
                     src={`/api/crates/${crateId}/content`}
                     alt={crateInfo.title}
                     className="max-w-full max-h-96 object-contain"
-                    width={600}
-                    height={400}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = "/icon.png";
