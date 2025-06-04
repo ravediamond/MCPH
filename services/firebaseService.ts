@@ -5,23 +5,16 @@ import os from "os";
 // Utility to handle service account credentials for Vercel
 function setupServiceAccountForVercel() {
   if (process.env.VERCEL_ENV) {
-    const jsonContent =
-      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-      process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH;
+    const jsonContent = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     if (jsonContent && jsonContent.trim().startsWith("{")) {
-      const tmpPath = path.join(os.tmpdir(), "service-account.json");
-      let shouldWrite = true;
-      if (fs.existsSync(tmpPath)) {
-        const existing = fs.readFileSync(tmpPath, "utf8");
-        if (existing === jsonContent) {
-          shouldWrite = false;
-        }
+      try {
+        // Validate the JSON is parseable
+        JSON.parse(jsonContent);
+        // In Vercel, we'll use the JSON content directly in other modules
+        // No need to write to temp file
+      } catch (error) {
+        console.error("[FirebaseService] Invalid JSON in credentials:", error);
       }
-      if (shouldWrite) {
-        fs.writeFileSync(tmpPath, jsonContent, { encoding: "utf8" });
-      }
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = tmpPath;
-      process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH = tmpPath;
     }
   }
 }
@@ -46,61 +39,88 @@ let db: Firestore;
 
 if (!getApps().length) {
   try {
-    console.log(
-      "Attempting to initialize Firebase Admin SDK using Application Default Credentials (ADC).",
-    );
-    console.log(
-      "This will use GOOGLE_APPLICATION_CREDENTIALS environment variable if set, or other ADC mechanisms.",
-    );
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      console.log(
+        "Initializing Firebase Admin SDK with service account credentials file.",
+      );
 
-    firebaseApp = initializeApp({
-      // No 'credential' property is provided, so ADC will be used.
-    });
+      let serviceAccount: ServiceAccount;
+      const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-    console.log(
-      "Firebase Admin SDK initialized successfully using Application Default Credentials.",
-    );
+      // Check if it's a JSON string or a file path
+      if (
+        process.env.VERCEL_ENV &&
+        process.env.GOOGLE_APPLICATION_CREDENTIALS.trim().startsWith("{")
+      ) {
+        // Parse JSON string for Vercel environment
+        try {
+          serviceAccount = JSON.parse(
+            process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          );
+          console.log(
+            "Using parsed JSON credentials from environment variable",
+          );
+        } catch (error) {
+          console.error("Error parsing credentials JSON:", error);
+          throw new Error("Failed to parse service account credentials JSON.");
+        }
+      } else {
+        // Use file path for local environment
+        // Handle both absolute and relative paths
+        const resolvedPath = credentialsPath.startsWith("/")
+          ? credentialsPath
+          : path.resolve(process.cwd(), credentialsPath);
+
+        console.log(`Using service account file at: ${resolvedPath}`);
+
+        if (!fs.existsSync(resolvedPath)) {
+          console.error(`Service account file not found at: ${resolvedPath}`);
+          throw new Error(`Service account file not found at: ${resolvedPath}`);
+        }
+
+        serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
+      }
+
+      // Initialize with explicit credentials
+      firebaseApp = initializeApp({
+        credential: cert(serviceAccount),
+      });
+
+      console.log(
+        "Firebase Admin SDK initialized successfully with service account credentials.",
+      );
+    } else {
+      console.log(
+        "GOOGLE_APPLICATION_CREDENTIALS not found, falling back to Application Default Credentials (ADC).",
+      );
+
+      firebaseApp = initializeApp({
+        // No 'credential' property is provided, so ADC will be used.
+      });
+
+      console.log(
+        "Firebase Admin SDK initialized with Application Default Credentials.",
+      );
+    }
 
     // Initialize Firestore for the first time
     db = getFirestore(firebaseApp);
-    console.log("Firestore instance obtained for the first time.");
+    console.log("Firestore instance obtained.");
 
     // Apply settings immediately and only once during initial setup
     try {
       db.settings({ ignoreUndefinedProperties: true });
-      console.log("Firestore settings applied successfully (initial setup).");
+      console.log("Firestore settings applied successfully.");
     } catch (settingsError: any) {
-      // This warning is a safeguard. Ideally, this path shouldn't be hit if it's the true first init.
       console.warn(
-        `Firestore settings could not be applied during initial setup. This might be okay if already set by a concurrent initialization. Error: ${settingsError.message}`,
+        `Firestore settings could not be applied. Error: ${settingsError.message}`,
       );
     }
   } catch (error: any) {
-    console.error(
-      "Error initializing Firebase Admin SDK with Application Default Credentials:",
-      error.message,
+    console.error("Error initializing Firebase Admin SDK:", error.message);
+    throw new Error(
+      `Failed to initialize Firebase Admin SDK: ${error.message}`,
     );
-    let detailedError =
-      "Failed to initialize Firebase Admin SDK using Application Default Credentials. ";
-    if (
-      error.message.includes("Could not load the default credentials") ||
-      error.message.includes("Unable to detect a Project Id") ||
-      error.message.includes("getDefaultCredential") ||
-      error.message.includes(
-        "Error getting access token from GOOGLE_APPLICATION_CREDENTIALS",
-      )
-    ) {
-      detailedError +=
-        "Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is correctly set to the path of a valid service account JSON file. ";
-      detailedError +=
-        "The service account must have the necessary Firebase permissions (e.g., Firestore Admin). ";
-      detailedError +=
-        "If running in a Google Cloud environment, ensure the runtime service account has these permissions. ";
-    } else {
-      detailedError += `An unexpected error occurred: ${error.message}. `;
-    }
-    console.error(detailedError);
-    throw new Error(detailedError); // Propagate error if init fails
   }
 } else {
   firebaseApp = getApp(); // Use the already initialized app
@@ -407,7 +427,10 @@ export async function incrementApiKeyToolUsage(
   apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`; // e.g. 202505
+  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`; // e.g. 202505
   const docId = `${apiKeyId}_${yearMonth}`;
   const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
   const res = await docRef.set(
@@ -432,7 +455,10 @@ export async function getApiKeyToolUsage(
   apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
   const docId = `${apiKeyId}_${yearMonth}`;
   const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
   const doc = await docRef.get();
@@ -450,7 +476,10 @@ export async function incrementUserToolUsage(
   userId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
   const docId = `${userId}_${yearMonth}`;
   const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
   await docRef.set(
@@ -474,7 +503,10 @@ export async function getUserToolUsage(
   userId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
   const docId = `${userId}_${yearMonth}`;
   const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
   const doc = await docRef.get();

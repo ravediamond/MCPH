@@ -6,50 +6,64 @@ let storage: Storage;
 try {
   const projectIdFromEnv = process.env.GCP_PROJECT_ID;
 
-  if (process.env.VERCEL_ENV === "production") {
+  if (process.env.VERCEL_ENV) {
     console.log(
-      "Production environment detected. Initializing GCS client using keyFilename from GOOGLE_APPLICATION_CREDENTIALS.",
+      "Vercel environment detected. Initializing GCS client with JSON credentials.",
     );
-    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-    if (!keyFilename) {
+    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (!credentialsJson) {
       console.error(
-        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
+        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for Vercel.",
       );
       throw new Error(
-        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for production.",
+        "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for Vercel.",
       );
     }
-    const storageOptions: StorageOptions = { keyFilename };
-    if (projectIdFromEnv) {
-      storageOptions.projectId = projectIdFromEnv;
+
+    try {
+      // Parse the JSON string and use it directly with credentials
+      const credentials = JSON.parse(credentialsJson);
+      const storageOptions: StorageOptions = { credentials };
+      if (projectIdFromEnv) {
+        storageOptions.projectId = projectIdFromEnv;
+      }
+      storage = new Storage(storageOptions);
+      console.log(
+        `Initialized Google Cloud Storage client for Vercel. Project ID: ${storage.projectId || "inferred"}.`,
+      );
+    } catch (jsonError) {
+      console.error("Error parsing credentials JSON:", jsonError);
+      throw new Error("Failed to parse service account credentials JSON.");
     }
-    storage = new Storage(storageOptions);
-    console.log(
-      `Initialized Google Cloud Storage client for production. Project ID: ${storage.projectId || "inferred"}.`,
-    );
   } else {
     // Development environment (local)
     console.log(
-      "Development environment detected. Initializing GCS client using Application Default Credentials (ADC).",
-    );
-    console.log(
-      'Ensure you have run "gcloud auth application-default login" or set the GOOGLE_APPLICATION_CREDENTIALS environment variable in your shell.',
+      "Local environment detected. Initializing GCS client with credential file path or ADC.",
     );
 
     const storageOptions: StorageOptions = {};
     if (projectIdFromEnv) {
       storageOptions.projectId = projectIdFromEnv;
-      console.log(
-        `Using GCP_PROJECT_ID from env: ${projectIdFromEnv} for ADC.`,
-      );
+      console.log(`Using GCP_PROJECT_ID from env: ${projectIdFromEnv}`);
+    }
+
+    // If a credentials file path is specified, use it
+    const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (keyFilename) {
+      storageOptions.keyFilename = keyFilename;
+      console.log(`Using credentials file: ${keyFilename}`);
     } else {
       console.log(
-        "GCP_PROJECT_ID not set in env for development. ADC will attempt to infer it if necessary.",
+        "No credentials file specified. Using Application Default Credentials (ADC).",
+      );
+      console.log(
+        'Ensure you have run "gcloud auth application-default login".',
       );
     }
-    storage = new Storage(storageOptions); // ADC will be used here
+
+    storage = new Storage(storageOptions);
     console.log(
-      `Initialized Google Cloud Storage client for development using ADC. Project ID: ${storage.projectId || "inferred/pending"}.`,
+      `Initialized Google Cloud Storage client. Project ID: ${storage.projectId || "inferred/pending"}.`,
     );
   }
 } catch (error) {

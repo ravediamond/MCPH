@@ -2,67 +2,54 @@ import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import os from "os";
 import { getAuth } from "firebase-admin/auth";
-
-// Utility to handle service account credentials for Vercel
-function setupServiceAccountForVercel() {
-  if (process.env.VERCEL_ENV) {
-    const jsonContent =
-      process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-      process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH;
-    if (jsonContent && jsonContent.trim().startsWith("{")) {
-      const tmpPath = path.join(os.tmpdir(), "service-account.json");
-      let shouldWrite = true;
-      if (fs.existsSync(tmpPath)) {
-        const existing = fs.readFileSync(tmpPath, "utf8");
-        if (existing === jsonContent) {
-          shouldWrite = false;
-        }
-      }
-      if (shouldWrite) {
-        fs.writeFileSync(tmpPath, jsonContent, { encoding: "utf8" });
-      }
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = tmpPath;
-      process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH = tmpPath;
-    }
-  }
-}
-
-setupServiceAccountForVercel();
 
 // Use admin.apps.length to check initialization
 if (!admin.apps.length) {
   try {
-    if (process.env.VERCEL_ENV && process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_ADMIN_SDK_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY?.replace(
-            /\\n/g,
-            "\n",
-          ),
-        }),
-      });
-      console.log("[FirebaseAdmin] Initialized with environment variables.");
+    if (process.env.VERCEL_ENV) {
+      // In Vercel environment, use JSON content directly from env var
+      const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      if (!credentialsJson) {
+        throw new Error(
+          "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for Vercel.",
+        );
+      }
+
+      try {
+        const serviceAccount = JSON.parse(credentialsJson);
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount),
+        });
+        console.log(
+          "[FirebaseAdmin] Initialized with JSON credentials for Vercel environment.",
+        );
+      } catch (error) {
+        console.error("[FirebaseAdmin] Error parsing credentials JSON:", error);
+        throw new Error("Failed to parse Firebase Admin credentials JSON.");
+      }
     } else {
-      // Fallback to service account file for local development
+      // Local development environment - use service account file path
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const serviceAccountPath =
-        process.env.FIREBASE_ADMIN_SDK_SERVICE_ACCOUNT_PATH ||
+        process.env.GOOGLE_APPLICATION_CREDENTIALS ||
         "./service-account-credentials.json";
-      const resolvedServiceAccountPath = path.resolve(
-        __dirname,
-        "..",
-        serviceAccountPath,
-      );
+
+      // Handle both absolute and relative paths
+      const resolvedServiceAccountPath = serviceAccountPath.startsWith("/")
+        ? serviceAccountPath
+        : path.resolve(__dirname, "..", serviceAccountPath);
+
       if (!fs.existsSync(resolvedServiceAccountPath)) {
         console.error(
           `[FirebaseAdmin] Service account key file not found at: ${resolvedServiceAccountPath}`,
         );
+        throw new Error(
+          `Service account key file not found at: ${resolvedServiceAccountPath}`,
+        );
       }
+
       const serviceAccount = JSON.parse(
         fs.readFileSync(resolvedServiceAccountPath, "utf8"),
       );
@@ -80,6 +67,7 @@ if (!admin.apps.length) {
       );
     } else {
       console.error("[FirebaseAdmin] Initialization error:", error);
+      throw error; // Re-throw to prevent silently continuing with an uninitialized Firebase
     }
   }
 }
