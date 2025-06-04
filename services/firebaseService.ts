@@ -41,7 +41,7 @@ if (!getApps().length) {
   try {
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       console.log(
-        "Initializing Firebase Admin SDK with service account credentials file."
+        "Initializing Firebase Admin SDK with service account credentials file.",
       );
 
       let serviceAccount: ServiceAccount;
@@ -54,8 +54,12 @@ if (!getApps().length) {
       ) {
         // Parse JSON string for Vercel environment
         try {
-          serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-          console.log("Using parsed JSON credentials from environment variable");
+          serviceAccount = JSON.parse(
+            process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          );
+          console.log(
+            "Using parsed JSON credentials from environment variable",
+          );
         } catch (error) {
           console.error("Error parsing credentials JSON:", error);
           throw new Error("Failed to parse service account credentials JSON.");
@@ -83,11 +87,11 @@ if (!getApps().length) {
       });
 
       console.log(
-        "Firebase Admin SDK initialized successfully with service account credentials."
+        "Firebase Admin SDK initialized successfully with service account credentials.",
       );
     } else {
       console.log(
-        "GOOGLE_APPLICATION_CREDENTIALS not found, falling back to Application Default Credentials (ADC)."
+        "GOOGLE_APPLICATION_CREDENTIALS not found, falling back to Application Default Credentials (ADC).",
       );
 
       firebaseApp = initializeApp({
@@ -95,7 +99,7 @@ if (!getApps().length) {
       });
 
       console.log(
-        "Firebase Admin SDK initialized with Application Default Credentials."
+        "Firebase Admin SDK initialized with Application Default Credentials.",
       );
     }
 
@@ -109,18 +113,20 @@ if (!getApps().length) {
       console.log("Firestore settings applied successfully.");
     } catch (settingsError: any) {
       console.warn(
-        `Firestore settings could not be applied. Error: ${settingsError.message}`
+        `Firestore settings could not be applied. Error: ${settingsError.message}`,
       );
     }
   } catch (error: any) {
     console.error("Error initializing Firebase Admin SDK:", error.message);
-    throw new Error(`Failed to initialize Firebase Admin SDK: ${error.message}`);
+    throw new Error(
+      `Failed to initialize Firebase Admin SDK: ${error.message}`,
+    );
   }
 } else {
   firebaseApp = getApp(); // Use the already initialized app
   db = getFirestore(firebaseApp); // Get the existing Firestore instance
   console.log(
-    "Firebase Admin SDK and Firestore instance already initialized. Using existing."
+    "Firebase Admin SDK and Firestore instance already initialized. Using existing.",
   );
   // Settings are assumed to have been applied during the initial setup in the block above.
 }
@@ -177,7 +183,7 @@ const fromFirestoreData = (data: any): any => {
  */
 export async function incrementMetric(
   metric: string,
-  amount: number = 1
+  amount: number = 1,
 ): Promise<number> {
   try {
     const metricRef = db.collection(METRICS_COLLECTION).doc("counters");
@@ -236,7 +242,7 @@ export async function getMetric(metric: string): Promise<number> {
  */
 export async function getDailyMetrics(
   metric: string,
-  days: number = 30
+  days: number = 30,
 ): Promise<Record<string, number>> {
   const result: Record<string, number> = {};
   const today = new Date();
@@ -256,7 +262,7 @@ export async function getDailyMetrics(
           .get()
           .then((doc) => {
             result[dateStr] = doc.exists ? doc.data()?.[metric] || 0 : 0;
-          })
+          }),
       );
     }
 
@@ -265,7 +271,7 @@ export async function getDailyMetrics(
   } catch (error) {
     console.error(
       `Error getting daily metrics for '${metric}' from Firestore:`,
-      error
+      error,
     );
     return {};
   }
@@ -278,7 +284,7 @@ export async function logEvent(
   eventType: string,
   resourceId: string,
   ipAddress?: string,
-  details: Record<string, any> = {}
+  details: Record<string, any> = {},
 ): Promise<void> {
   try {
     const timestamp = new Date();
@@ -309,7 +315,7 @@ export async function logEvent(
  */
 export async function getEvents(
   eventType: string,
-  limit: number = 100
+  limit: number = 100,
 ): Promise<any[]> {
   try {
     const querySnapshot = await db
@@ -355,7 +361,7 @@ function hashApiKey(apiKey: string): string {
 
 export async function createApiKey(
   userId: string,
-  name?: string
+  name?: string,
 ): Promise<{ apiKey: string; record: ApiKeyRecord }> {
   const apiKey = crypto.randomBytes(32).toString("hex");
   const hashedKey = hashApiKey(apiKey);
@@ -378,13 +384,13 @@ export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
     .orderBy("createdAt", "desc")
     .get();
   return snapshot.docs.map(
-    (doc) => fromFirestoreData(doc.data()) as ApiKeyRecord
+    (doc) => fromFirestoreData(doc.data()) as ApiKeyRecord,
   );
 }
 
 export async function deleteApiKey(
   userId: string,
-  keyId: string
+  keyId: string,
 ): Promise<boolean> {
   const docRef = db.collection(API_KEYS_COLLECTION).doc(keyId);
   const doc = await docRef.get();
@@ -394,7 +400,7 @@ export async function deleteApiKey(
 }
 
 export async function findUserByApiKey(
-  apiKey: string
+  apiKey: string,
 ): Promise<ApiKeyRecord | null> {
   const hashedKey = hashApiKey(apiKey);
   const snapshot = await db
@@ -418,12 +424,12 @@ const API_KEY_TOOL_CALL_LIMIT = 1000;
  * Increment the monthly tool usage for an API key. Returns the new count and remaining quota.
  */
 export async function incrementApiKeyToolUsage(
-  apiKeyId: string
+  apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}`; // e.g. 202505
   const docId = `${apiKeyId}_${yearMonth}`;
   const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
@@ -434,7 +440,7 @@ export async function incrementApiKeyToolUsage(
       count: FieldValue.increment(1),
       updatedAt: new Date(),
     },
-    { merge: true }
+    { merge: true },
   );
   // Read the updated count
   const doc = await docRef.get();
@@ -446,12 +452,12 @@ export async function incrementApiKeyToolUsage(
  * Get the current monthly tool usage for an API key.
  */
 export async function getApiKeyToolUsage(
-  apiKeyId: string
+  apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}`;
   const docId = `${apiKeyId}_${yearMonth}`;
   const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
@@ -467,12 +473,12 @@ const USER_TOOL_CALL_LIMIT = 1000;
  * Increment the monthly tool usage for a user. Returns the new count and remaining quota.
  */
 export async function incrementUserToolUsage(
-  userId: string
+  userId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}`;
   const docId = `${userId}_${yearMonth}`;
   const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
@@ -483,7 +489,7 @@ export async function incrementUserToolUsage(
       count: FieldValue.increment(1),
       updatedAt: new Date(),
     },
-    { merge: true }
+    { merge: true },
   );
   const doc = await docRef.get();
   const count = doc.data()?.count || 0;
@@ -494,12 +500,12 @@ export async function incrementUserToolUsage(
  * Get the current monthly tool usage for a user.
  */
 export async function getUserToolUsage(
-  userId: string
+  userId: string,
 ): Promise<{ count: number; remaining: number }> {
   const now = new Date();
   const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}`;
   const docId = `${userId}_${yearMonth}`;
   const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
@@ -512,7 +518,7 @@ export async function getUserToolUsage(
  * Get total storage used by a user (sum of all crate sizes in bytes)
  */
 export async function getUserStorageUsage(
-  userId: string
+  userId: string,
 ): Promise<{ used: number; limit: number; remaining: number }> {
   const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
   try {
@@ -575,7 +581,7 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
  * Increment download count for a crate in Firestore
  */
 export async function incrementCrateDownloadCount(
-  crateId: string
+  crateId: string,
 ): Promise<number> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
@@ -583,7 +589,7 @@ export async function incrementCrateDownloadCount(
 
     if (!doc.exists) {
       console.warn(
-        `Crate metadata not found for ID: ${crateId} when incrementing download count.`
+        `Crate metadata not found for ID: ${crateId} when incrementing download count.`,
       );
       return 0;
     }
@@ -604,7 +610,7 @@ export async function incrementCrateDownloadCount(
   } catch (error) {
     console.error(
       "Error incrementing crate download count in Firestore:",
-      error
+      error,
     );
 
     // Attempt to get current count if update failed
@@ -647,12 +653,12 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
 
     // Convert to array of data, converting Firestore timestamps to Date objects
     return querySnapshot.docs.map(
-      (doc) => fromFirestoreData(doc.data()) as Crate
+      (doc) => fromFirestoreData(doc.data()) as Crate,
     );
   } catch (error) {
     console.error(
       `Error getting crates for user ${userId} from Firestore:`,
-      error
+      error,
     );
     return []; // Return empty array on error
   }
@@ -668,7 +674,7 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
 
     if (!doc.exists) {
       console.warn(
-        `File metadata not found for ID: ${fileId} when incrementing download count.`
+        `File metadata not found for ID: ${fileId} when incrementing download count.`,
       );
       return 0;
     }
@@ -689,7 +695,7 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
   } catch (error) {
     console.error(
       "Error incrementing file download count in Firestore:",
-      error
+      error,
     );
 
     // Attempt to get current count if update failed
