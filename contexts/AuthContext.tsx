@@ -64,7 +64,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       } else {
         setIsAdmin(false);
         // Clear the session cookie when signed out
-        document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        document.cookie =
+          "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       }
       setLoading(false);
     });
@@ -76,18 +77,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (!user) return;
 
     // Set up a timer to refresh the token every 50 minutes (tokens expire after 1 hour)
-    const tokenRefreshInterval = setInterval(async () => {
-      try {
-        if (auth.currentUser) {
-          const newToken = await auth.currentUser.getIdToken(true);
-          // Update the session cookie with the new token
-          document.cookie = `session=${newToken}; path=/; max-age=3600; SameSite=Strict`;
-          console.log("Firebase ID token refreshed");
+    const tokenRefreshInterval = setInterval(
+      async () => {
+        try {
+          if (auth.currentUser) {
+            const newToken = await auth.currentUser.getIdToken(true);
+            // Update the session cookie with the new token
+            document.cookie = `session=${newToken}; path=/; max-age=3600; SameSite=Strict`;
+            console.log("Firebase ID token refreshed");
+          }
+        } catch (error) {
+          console.error("Error refreshing Firebase ID token:", error);
         }
-      } catch (error) {
-        console.error("Error refreshing Firebase ID token:", error);
-      }
-    }, 50 * 60 * 1000); // 50 minutes in milliseconds
+      },
+      50 * 60 * 1000,
+    ); // 50 minutes in milliseconds
 
     return () => clearInterval(tokenRefreshInterval);
   }, [user]);
