@@ -1,23 +1,9 @@
 // filepath: /Users/ravindu.somawansa@airliquide.com/Workspace/git_repos/perso/MCPHub/app/api/admin/stats/crates/route.ts
 import { NextResponse } from "next/server";
-import { getAuth } from "firebase-admin/auth";
-import { admin } from "../../../../../lib/firebaseAdmin";
-import { Storage } from "@google-cloud/storage";
-
-// Initialize Google Cloud Storage client
-const storage = new Storage();
-// Ensure your GCS bucket name is set as an environment variable
-const bucketName = process.env.GCS_BUCKET_NAME;
+import { admin, auth } from "../../../../../lib/firebaseAdmin";
+import { bucket } from "../../../../../lib/gcpStorageClient";
 
 export async function GET(request: Request) {
-  if (!bucketName) {
-    console.error("GCS_BUCKET_NAME environment variable is not set.");
-    return NextResponse.json(
-      { error: "Server configuration error: Bucket name not set." },
-      { status: 500 },
-    );
-  }
-
   try {
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
     if (!idToken) {
@@ -27,7 +13,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const decodedToken = await getAuth().verifyIdToken(idToken);
+    // Use the pre-initialized auth instance from firebaseAdmin
+    const decodedToken = await auth.verifyIdToken(idToken);
     if (!decodedToken.admin) {
       // Check for the admin custom claim
       return NextResponse.json(
@@ -36,8 +23,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const [objects] = await storage.bucket(bucketName).getFiles();
-    const totalObjects = objects.length;
+    // Use the bucket from gcpStorageClient instead of creating a new Storage instance
+    const [files] = await bucket.getFiles();
+    const totalObjects = files.length;
 
     return NextResponse.json({ count: totalObjects });
   } catch (error: any) {
