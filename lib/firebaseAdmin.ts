@@ -34,7 +34,7 @@ setupServiceAccountForVercel();
 // Use admin.apps.length to check initialization
 if (!admin.apps.length) {
   try {
-    if (process.env.VERCEL && process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY) {
+    if (process.env.VERCEL_ENV && process.env.FIREBASE_ADMIN_SDK_PRIVATE_KEY) {
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
