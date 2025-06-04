@@ -179,9 +179,9 @@ export async function POST(req: NextRequest) {
           : crateData.createdAt,
       expiresAt: crateData.ttlDays
         ? new Date(
-          new Date(crateData.createdAt).getTime() +
-          crateData.ttlDays * 24 * 60 * 60 * 1000,
-        ).toISOString()
+            new Date(crateData.createdAt).getTime() +
+              crateData.ttlDays * 24 * 60 * 60 * 1000,
+          ).toISOString()
         : undefined,
       compressed: crateData.compressed,
       compressionRatio: crateData.compressionRatio,

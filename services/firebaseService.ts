@@ -127,9 +127,14 @@ if (!getApps().length) {
     db.settings({
       ignoreUndefinedProperties: true,
     });
-    console.log("Firestore settings applied to existing instance: ignoreUndefinedProperties=true");
+    console.log(
+      "Firestore settings applied to existing instance: ignoreUndefinedProperties=true",
+    );
   } catch (settingsError) {
-    console.warn("Could not apply settings to existing Firestore instance:", settingsError);
+    console.warn(
+      "Could not apply settings to existing Firestore instance:",
+      settingsError,
+    );
   }
 
   console.log(

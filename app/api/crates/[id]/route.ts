@@ -234,17 +234,19 @@ export async function DELETE(
         console.warn(`[DEBUG] Invalid authentication token:`, error);
         return NextResponse.json(
           { error: "Invalid authentication token" },
-          { status: 401 }
+          { status: 401 },
         );
       }
     } else {
       // Try to get authentication from cookies for browser-based requests
       const cookies = req.cookies;
-      const sessionCookie = cookies.get('session');
+      const sessionCookie = cookies.get("session");
 
       if (sessionCookie && sessionCookie.value) {
         try {
-          const decodedClaims = await auth.verifySessionCookie(sessionCookie.value);
+          const decodedClaims = await auth.verifySessionCookie(
+            sessionCookie.value,
+          );
           userId = decodedClaims.uid;
           isAuthenticated = true;
         } catch (error) {
@@ -253,10 +255,12 @@ export async function DELETE(
       }
 
       if (!isAuthenticated) {
-        console.log(`[DEBUG] No valid authentication found. Unauthorized deletion attempt.`);
+        console.log(
+          `[DEBUG] No valid authentication found. Unauthorized deletion attempt.`,
+        );
         return NextResponse.json(
           { error: "Authentication required to delete a crate" },
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -265,7 +269,7 @@ export async function DELETE(
     if (crate.ownerId !== userId) {
       return NextResponse.json(
         { error: "You don't have permission to delete this crate" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -276,7 +280,7 @@ export async function DELETE(
     if (!success) {
       return NextResponse.json(
         { error: "Failed to delete crate" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -288,7 +292,7 @@ export async function DELETE(
     console.error("Error deleting crate:", error);
     return NextResponse.json(
       { error: "Failed to delete crate" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
