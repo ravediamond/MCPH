@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCrateMetadata } from "@/services/firebaseService";
+import { getCrateMetadata, logEvent } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
 
@@ -198,6 +198,100 @@ export async function POST(
     console.error("Error retrieving crate content:", error);
     return NextResponse.json(
       { error: "Failed to retrieve crate content" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * API endpoint to delete a crate by ID
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    // Get crate metadata
+    const crate = await getCrateMetadata(id);
+    if (!crate) {
+      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+    }
+
+    // Check authentication
+    const authHeader = req.headers.get("authorization");
+    let userId = "anonymous";
+    let isAuthenticated = false;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      try {
+        const decodedToken = await auth.verifyIdToken(token);
+        userId = decodedToken.uid;
+        isAuthenticated = true;
+      } catch (error) {
+        console.warn(`[DEBUG] Invalid authentication token:`, error);
+        return NextResponse.json(
+          { error: "Invalid authentication token" },
+          { status: 401 },
+        );
+      }
+    } else {
+      // Try to get authentication from cookies for browser-based requests
+      const cookies = req.cookies;
+      const sessionCookie = cookies.get("session");
+
+      if (sessionCookie && sessionCookie.value) {
+        try {
+          const decodedClaims = await auth.verifySessionCookie(
+            sessionCookie.value,
+          );
+          userId = decodedClaims.uid;
+          isAuthenticated = true;
+        } catch (error) {
+          console.warn(`[DEBUG] Invalid session cookie:`, error);
+        }
+      }
+
+      if (!isAuthenticated) {
+        console.log(
+          `[DEBUG] No valid authentication found. Unauthorized deletion attempt.`,
+        );
+        return NextResponse.json(
+          { error: "Authentication required to delete a crate" },
+          { status: 401 },
+        );
+      }
+    }
+
+    // Only the owner can delete the crate
+    if (crate.ownerId !== userId) {
+      return NextResponse.json(
+        { error: "You don't have permission to delete this crate" },
+        { status: 403 },
+      );
+    }
+
+    // Delete the crate from storage and Firestore
+    const { deleteFile } = await import("@/services/storageService");
+    const success = await deleteFile(id);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Failed to delete crate" },
+        { status: 500 },
+      );
+    }
+
+    // Log the deletion event
+    await logEvent("crate_delete", id, undefined, { userId });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting crate:", error);
+    return NextResponse.json(
+      { error: "Failed to delete crate" },
       { status: 500 },
     );
   }

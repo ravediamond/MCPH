@@ -448,11 +448,34 @@ export default function CratePage() {
     setDeleteLoading(true);
     setDeleteError(null);
     try {
+      // Get the auth token
+      const idToken = await getIdToken();
+
+      // Include the auth token in the request headers
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (idToken) {
+        headers["Authorization"] = `Bearer ${idToken}`;
+      } else {
+        console.warn("No authentication token available for delete operation");
+      }
+
       const response = await fetch(`/api/crates/${crateId}`, {
         method: "DELETE",
+        headers,
       });
-      if (!response.ok) throw new Error("Failed to delete crate");
-      window.location.href = "/";
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || `Failed to delete crate (${response.status})`,
+        );
+      }
+
+      // Redirect to the home page instead of the root
+      window.location.href = "/home";
     } catch (err: any) {
       setDeleteError(err.message || "Failed to delete crate");
     } finally {

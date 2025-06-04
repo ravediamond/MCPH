@@ -107,15 +107,11 @@ if (!getApps().length) {
     db = getFirestore(firebaseApp);
     console.log("Firestore instance obtained.");
 
-    // Apply settings immediately and only once during initial setup
-    try {
-      db.settings({ ignoreUndefinedProperties: true });
-      console.log("Firestore settings applied successfully.");
-    } catch (settingsError: any) {
-      console.warn(
-        `Firestore settings could not be applied. Error: ${settingsError.message}`,
-      );
-    }
+    // Apply settings immediately to handle undefined values
+    db.settings({
+      ignoreUndefinedProperties: true,
+    });
+    console.log("Firestore settings applied: ignoreUndefinedProperties=true");
   } catch (error: any) {
     console.error("Error initializing Firebase Admin SDK:", error.message);
     throw new Error(
@@ -125,10 +121,25 @@ if (!getApps().length) {
 } else {
   firebaseApp = getApp(); // Use the already initialized app
   db = getFirestore(firebaseApp); // Get the existing Firestore instance
+
+  // Ensure settings are applied even if using existing instance
+  try {
+    db.settings({
+      ignoreUndefinedProperties: true,
+    });
+    console.log(
+      "Firestore settings applied to existing instance: ignoreUndefinedProperties=true",
+    );
+  } catch (settingsError) {
+    console.warn(
+      "Could not apply settings to existing Firestore instance:",
+      settingsError,
+    );
+  }
+
   console.log(
     "Firebase Admin SDK and Firestore instance already initialized. Using existing.",
   );
-  // Settings are assumed to have been applied during the initial setup in the block above.
 }
 
 // --- End Firebase Admin SDK Initialization ---
