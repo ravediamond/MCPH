@@ -11,6 +11,7 @@ try {
       "Vercel environment detected. Initializing GCS client with JSON credentials.",
     );
     const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
     if (!credentialsJson) {
       console.error(
         "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set for Vercel.",
@@ -21,24 +22,23 @@ try {
     }
 
     try {
-      // Parse the JSON string and use it directly with credentials
+      // For Vercel: directly parse and use the JSON content as credentials object
       const credentials = JSON.parse(credentialsJson);
-      const storageOptions: StorageOptions = { credentials };
-      if (projectIdFromEnv) {
-        storageOptions.projectId = projectIdFromEnv;
-      }
-      storage = new Storage(storageOptions);
+      storage = new Storage({
+        credentials,
+        projectId: projectIdFromEnv || credentials.project_id,
+      });
       console.log(
-        `Initialized Google Cloud Storage client for Vercel. Project ID: ${storage.projectId || "inferred"}.`,
+        `Initialized Google Cloud Storage client for Vercel with parsed JSON credentials. Project ID: ${storage.projectId || "inferred from credentials"}.`,
       );
     } catch (jsonError) {
       console.error("Error parsing credentials JSON:", jsonError);
       throw new Error("Failed to parse service account credentials JSON.");
     }
   } else {
-    // Development environment (local)
+    // Local development environment
     console.log(
-      "Local environment detected. Initializing GCS client with credential file path or ADC.",
+      "Local environment detected. Initializing GCS client with credential file path.",
     );
 
     const storageOptions: StorageOptions = {};
@@ -47,7 +47,7 @@ try {
       console.log(`Using GCP_PROJECT_ID from env: ${projectIdFromEnv}`);
     }
 
-    // If a credentials file path is specified, use it
+    // Use credentials file path for local development
     const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     if (keyFilename) {
       storageOptions.keyFilename = keyFilename;
@@ -63,7 +63,7 @@ try {
 
     storage = new Storage(storageOptions);
     console.log(
-      `Initialized Google Cloud Storage client. Project ID: ${storage.projectId || "inferred/pending"}.`,
+      `Initialized Google Cloud Storage client for local development. Project ID: ${storage.projectId || "inferred/pending"}.`,
     );
   }
 } catch (error) {
