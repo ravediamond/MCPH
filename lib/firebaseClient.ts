@@ -5,10 +5,8 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// IMPORTANT: Replace with your actual Firebase project configuration
-// It's highly recommended to use environment variables for these values
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -28,6 +26,7 @@ if (!getApps().length) {
 }
 
 const auth = getAuth(app);
+const firestore = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, googleProvider, signInWithPopup, signOut };
+export { auth, firestore, googleProvider, signInWithPopup, signOut };

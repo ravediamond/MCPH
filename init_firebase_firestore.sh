@@ -158,6 +158,13 @@ gcloud firestore indexes composite create \
   --query-scope=COLLECTION \
   --field-config="vector-config={\"dimension\":\"768\",\"flat\":{}}",field-path=embedding
 
+echo "--- Creating composite index for feedback (status + timestamp) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="feedback" \
+  --field-config="field-path=status,order=ASCENDING" \
+  --field-config="field-path=timestamp,order=DESCENDING"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
@@ -167,4 +174,5 @@ echo "- crates: For storing crates with embeddings for vector search"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
 echo "- apiKeys: For API key management"
+echo "- feedback: For storing user feedback submissions"
 echo ""
