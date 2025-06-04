@@ -92,4 +92,4 @@ The response will be streamed as an SSE `message` event with the result.
 
 ---
 
-MCPHub is open for public use. For questions or feedback, visit [mcph.io](https://mcph.io).
+MCPHub is open for public use. For questions or feedback, visit [mcph.io](https://mcph.io) or use the [feedback page](/feedback) in the app.

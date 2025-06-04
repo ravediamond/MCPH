@@ -37,6 +37,12 @@ export default function Footer() {
             >
               Terms
             </Link>
+            <Link
+              href="/feedback"
+              className="text-gray-600 hover:text-primary-500 transition-colors"
+            >
+              Feedback
+            </Link>
           </div>
         </div>
 

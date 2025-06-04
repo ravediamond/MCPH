@@ -39,6 +39,7 @@ import {
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { Crate } from "../app/types/crate";
+import { FeedbackRecord } from "@/app/types/feedback";
 
 // --- Firebase Admin SDK Initialization ---
 let firebaseApp: App;
@@ -117,9 +118,15 @@ if (!getApps().length) {
 const CRATES_COLLECTION = "crates"; // Collection for crates
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
+const FEEDBACK_COLLECTION = "feedback"; // New: store user feedback
 
 // Export collection names for use in other modules
-export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
+export {
+  CRATES_COLLECTION,
+  METRICS_COLLECTION,
+  EVENTS_COLLECTION,
+  FEEDBACK_COLLECTION,
+};
 
 /**
  * Convert Firebase timestamp to Date and vice versa
@@ -673,5 +680,44 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
     } catch (e) {
       return 0;
     }
+  }
+}
+
+// --- Feedback handling ---
+
+/**
+ * Save a feedback entry to Firestore
+ */
+export async function saveFeedback(
+  feedback: FeedbackRecord,
+): Promise<boolean> {
+  try {
+    await db
+      .collection(FEEDBACK_COLLECTION)
+      .doc(feedback.id)
+      .set(toFirestoreData(feedback));
+    return true;
+  } catch (error) {
+    console.error("Error saving feedback to Firestore:", error);
+    return false;
+  }
+}
+
+/**
+ * Retrieve recent feedback entries
+ */
+export async function listFeedback(limit: number = 100): Promise<FeedbackRecord[]> {
+  try {
+    const snapshot = await db
+      .collection(FEEDBACK_COLLECTION)
+      .orderBy("createdAt", "desc")
+      .limit(limit)
+      .get();
+    return snapshot.docs.map((doc) =>
+      fromFirestoreData(doc.data()) as FeedbackRecord,
+    );
+  } catch (error) {
+    console.error("Error loading feedback from Firestore:", error);
+    return [];
   }
 }
