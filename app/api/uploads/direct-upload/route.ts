@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
     const passwordStr = formData.get("password") as string | null;
 
     const isPublic = isSharedStr === "true";
-    let passwordHash: string | undefined = undefined;
-    let passwordSalt: string | undefined = undefined;
+    let passwordHash: string | null = null;
+    let passwordSalt: string | null = null;
 
     if (isPublic && passwordStr && passwordStr.length > 0) {
       passwordSalt = crypto.randomBytes(16).toString("hex");
@@ -59,9 +59,9 @@ export async function POST(req: NextRequest) {
 
     const sharingOptions: CrateSharing = {
       public: isPublic,
-      passwordProtected: !!passwordHash, // True if passwordHash is set
-      passwordHash: passwordHash,
-      passwordSalt: passwordSalt,
+      passwordProtected: Boolean(passwordHash), // True if passwordHash is set
+      passwordHash, // Use null instead of undefined
+      passwordSalt, // Use null instead of undefined
       // sharedWith is not handled by this form, so it remains undefined or handled by defaults in uploadCrate
     };
 
@@ -179,9 +179,9 @@ export async function POST(req: NextRequest) {
           : crateData.createdAt,
       expiresAt: crateData.ttlDays
         ? new Date(
-            new Date(crateData.createdAt).getTime() +
-              crateData.ttlDays * 24 * 60 * 60 * 1000,
-          ).toISOString()
+          new Date(crateData.createdAt).getTime() +
+          crateData.ttlDays * 24 * 60 * 60 * 1000,
+        ).toISOString()
         : undefined,
       compressed: crateData.compressed,
       compressionRatio: crateData.compressionRatio,

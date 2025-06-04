@@ -23,8 +23,8 @@ export interface CrateSharing {
   public: boolean; // Open link ACL
   sharedWith?: string[]; // Explicit UIDs allowed
   passwordProtected?: boolean; // Whether download is password-guarded
-  passwordHash?: string; // New: Store the password hash
-  passwordSalt?: string; // New: Store the salt for the password
+  passwordHash?: string | null; // Hash of the password (null if no password)
+  passwordSalt?: string | null; // Salt for the password (null if no password)
 }
 
 /**
