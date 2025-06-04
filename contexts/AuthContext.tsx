@@ -43,6 +43,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         try {
           const idTokenResult = await currentUser.getIdTokenResult();
           setIsAdmin(!!idTokenResult.claims.admin); // Check for admin claim
+
+          // Store the Firebase ID token in a cookie
+          const idToken = await currentUser.getIdToken();
+          document.cookie = `session=${idToken}; path=/; max-age=3600; SameSite=Strict`;
+
           // Only redirect to /home if on root or login page
           if (
             router &&
@@ -58,11 +63,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       } else {
         setIsAdmin(false);
+        // Clear the session cookie when signed out
+        document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  // Add token refresh function
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up a timer to refresh the token every 50 minutes (tokens expire after 1 hour)
+    const tokenRefreshInterval = setInterval(async () => {
+      try {
+        if (auth.currentUser) {
+          const newToken = await auth.currentUser.getIdToken(true);
+          // Update the session cookie with the new token
+          document.cookie = `session=${newToken}; path=/; max-age=3600; SameSite=Strict`;
+          console.log("Firebase ID token refreshed");
+        }
+      } catch (error) {
+        console.error("Error refreshing Firebase ID token:", error);
+      }
+    }, 50 * 60 * 1000); // 50 minutes in milliseconds
+
+    return () => clearInterval(tokenRefreshInterval);
+  }, [user]);
 
   const signInWithGoogle = async () => {
     setLoading(true);
