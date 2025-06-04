@@ -3,17 +3,19 @@ import { getCrateMetadata } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
 
+// Define the type for params
+type RouteParams = Promise<{ id: string }>;
+
 /**
  * API endpoint to get the content of a crate
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } },
+  { params }: { params: RouteParams },
 ) {
   try {
-    // Await params if it's a Promise
-    const resolvedParams = params instanceof Promise ? await params : params;
-    const { id } = resolvedParams;
+    // Properly await the params
+    const { id } = await params;
 
     console.log(`[Content Route] Accessing content for crate ID: ${id}`);
 
