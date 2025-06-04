@@ -45,6 +45,20 @@ export async function GET(
       );
     }
 
+    // Enhanced logging for debugging auth issues
+    console.log(
+      "[Content Route] Request headers:",
+      Object.fromEntries([...req.headers.entries()]),
+    );
+    console.log(
+      "[Content Route] All cookies:",
+      Object.fromEntries(
+        req.cookies
+          .getAll()
+          .map((c) => [c.name, c.value.substring(0, 5) + "..."]),
+      ),
+    );
+
     // Check authentication
     const authHeader = req.headers.get("authorization");
     console.log(`[Content Route] Auth header present: ${Boolean(authHeader)}`);
@@ -114,25 +128,6 @@ export async function GET(
     console.log(
       `[Content Route] Current user ID: ${userId}, Crate owner ID: ${crate.ownerId}`,
     );
-
-    // For debugging only: temporarily bypass auth for the specific crate ID
-    if (id === "031a5b31-4bcb-47de-bde9-c39a1cbb2297") {
-      console.log(`[Content Route] DEBUG: Bypassing auth for specific crate`);
-
-      // Get crate content
-      const { buffer, crate: updatedCrate } = await getCrateContent(id);
-      console.log(
-        `[Content Route] Content retrieved successfully, size: ${buffer.length} bytes`,
-      );
-
-      // Return the content
-      return new NextResponse(buffer, {
-        headers: {
-          "Content-Type": crate.mimeType,
-          "Content-Disposition": `inline; filename="${encodeURIComponent(crate.title)}"`,
-        },
-      });
-    }
 
     // If the crate is public, password-protected, and the user is not the owner,
     // require a password to view.
