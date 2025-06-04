@@ -73,40 +73,37 @@ export async function GET(
     let userId = "anonymous";
     let isAuthenticated = false;
 
-    // Try token-based auth first
+    // Try token-based auth first from Authorization header
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.substring(7);
       try {
-        console.log(`[Content Route] Verifying token auth`);
+        console.log(`[Content Route] Verifying token auth from header`);
         const decodedToken = await auth.verifyIdToken(token);
         userId = decodedToken.uid;
         isAuthenticated = true;
         console.log(
-          `[Content Route] Token auth successful. User ID: ${userId}`,
+          `[Content Route] Auth header token verification successful. User ID: ${userId}`,
         );
       } catch (error) {
-        console.warn(`[Content Route] Invalid authentication token:`, error);
+        console.warn(
+          `[Content Route] Invalid authentication token in header:`,
+          error,
+        );
       }
-    } else {
-      console.log(
-        `[Content Route] No valid Bearer token found. Checking session auth.`,
-      );
+    }
 
-      // If token auth failed, try session cookie
-      if (sessionCookie && sessionCookie.value) {
-        try {
-          console.log(`[Content Route] Verifying session cookie`);
-          const decodedClaims = await auth.verifySessionCookie(
-            sessionCookie.value,
-          );
-          userId = decodedClaims.uid;
-          isAuthenticated = true;
-          console.log(
-            `[Content Route] Session auth successful. User ID: ${userId}`,
-          );
-        } catch (error) {
-          console.warn(`[Content Route] Invalid session cookie:`, error);
-        }
+    // If header auth failed, try session cookie (this is our primary auth method)
+    if (!isAuthenticated && sessionCookie && sessionCookie.value) {
+      try {
+        console.log(`[Content Route] Verifying session cookie`);
+        const decodedToken = await auth.verifyIdToken(sessionCookie.value);
+        userId = decodedToken.uid;
+        isAuthenticated = true;
+        console.log(
+          `[Content Route] Session cookie auth successful. User ID: ${userId}`,
+        );
+      } catch (error) {
+        console.warn(`[Content Route] Invalid session cookie:`, error);
       }
     }
 
