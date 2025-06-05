@@ -97,15 +97,15 @@ export default function HomePage() {
             const expiryDate =
               crate.createdAt && crate.ttlDays
                 ? new Date(
-                    new Date(crate.createdAt).getTime() +
-                      crate.ttlDays * 24 * 60 * 60 * 1000,
-                  )
+                  new Date(crate.createdAt).getTime() +
+                  crate.ttlDays * 24 * 60 * 60 * 1000,
+                )
                 : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
+                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+              )
               : 0;
             return {
               ...crate,
@@ -301,10 +301,10 @@ export default function HomePage() {
                 : 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
+                  Object.entries(fields.metadata.mapValue.fields).map(
+                    ([k, v]: any) => [k, v.stringValue],
+                  ),
+                )
                 : undefined,
             };
           })
@@ -569,83 +569,175 @@ export default function HomePage() {
               )}
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredFiles.map((file) => (
                 <Card
                   key={file.id}
                   hoverable
-                  className="transition-all overflow-hidden"
+                  className="transition-all overflow-hidden h-full"
                 >
-                  <div className="p-3">
-                    <div className="flex items-start space-x-3">
-                      {/* File Type Icon */}
-                      <div className="mt-0.5">
+                  <div className="p-4">
+                    {/* File Header with Icon and Title */}
+                    <div className="flex items-start mb-3">
+                      <div className="mt-0.5 mr-3">
                         {getFileIcon(
                           "contentType" in file
                             ? (file as FileMetadataExtended)
                             : crateToFileMetadata(file as CrateExtended),
                         )}
                       </div>
-
-                      {/* File Info */}
                       <div className="flex-grow min-w-0">
                         <Link href={`/crate/${file.id}`} className="block">
                           <h3
-                            className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                            className="font-medium text-base text-gray-800 hover:text-primary-600 transition-colors truncate"
                             title={file.fileName}
                           >
                             {file.title || file.fileName}
                           </h3>
                         </Link>
 
-                        <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                          <div className="truncate mr-2">
-                            {formatFileSize(file.size)}
-                          </div>
-                          <div className="flex items-center whitespace-nowrap">
-                            <FaDownload className="mr-1" size={10} />{" "}
-                            {file.downloadCount || 0}
-                          </div>
-                        </div>
-                        {/* Shared status indicator */}
-                        <div className="mt-1 text-xs">
-                          {file.shared?.public ? (
-                            <span className="text-green-600 font-medium">
-                              Shared
-                            </span>
-                          ) : (
-                            <span className="text-gray-500">Private</span>
-                          )}
-                        </div>
-                        {/* Metadata display */}
-                        {renderMetadata(file.metadata)}
+                        {/* File Description - if available */}
+                        {file.description && (
+                          <p className="text-xs text-gray-600 mt-1 line-clamp-2" title={file.description}>
+                            {file.description}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Expiry Indicator - Small Circle */}
+                      {/* Expiry Indicator */}
                       {file.isExpiringSoon && (
                         <div
-                          className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1"
+                          className="h-2 w-2 rounded-full bg-amber-500 flex-shrink-0 mt-1 ml-2"
                           title={`Expires in ${file.daysTillExpiry} day${file.daysTillExpiry !== 1 ? "s" : ""}`}
                         ></div>
                       )}
                     </div>
 
-                    {/* Action Buttons - Smaller and more compact */}
-                    <div className="flex justify-end mt-2 space-x-1">
+                    {/* Divider */}
+                    <hr className="my-2 border-gray-100" />
+
+                    {/* File Details Grid */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {/* Category */}
+                      <div className="text-xs">
+                        <span className="text-gray-500 mr-1">Category:</span>
+                        <span className="font-medium text-gray-700">
+                          {file.category ? file.category.charAt(0).toUpperCase() + file.category.slice(1).toLowerCase() : 'Unknown'}
+                        </span>
+                      </div>
+
+                      {/* Size */}
+                      <div className="text-xs">
+                        <span className="text-gray-500 mr-1">Size:</span>
+                        <span className="font-medium text-gray-700">{formatFileSize(file.size)}</span>
+                      </div>
+
+                      {/* Created Date */}
+                      <div className="text-xs">
+                        <span className="text-gray-500 mr-1">Created:</span>
+                        <span className="font-medium text-gray-700">
+                          {file.createdAt ? formatDate(file.createdAt) : 'Unknown'}
+                        </span>
+                      </div>
+
+                      {/* Downloads */}
+                      <div className="text-xs">
+                        <span className="text-gray-500 mr-1">Downloads:</span>
+                        <span className="font-medium text-gray-700">{file.downloadCount || 0}</span>
+                      </div>
+                    </div>
+
+                    {/* Tags - if available */}
+                    {file.tags && file.tags.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {file.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sharing Status */}
+                    <div className="flex items-center text-xs mb-3">
+                      {file.shared?.public ? (
+                        <span className="inline-flex items-center text-green-600 font-medium">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path>
+                          </svg>
+                          Public
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-gray-500">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
+                          </svg>
+                          Private
+                        </span>
+                      )}
+
+                      {file.shared?.passwordProtected && (
+                        <span className="inline-flex items-center ml-2 text-amber-600">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd"></path>
+                          </svg>
+                          Password Protected
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Compression Info - if available */}
+                    {file.compressed && file.compressionRatio && (
+                      <div className="text-xs text-gray-600 mb-3">
+                        <span className="font-medium">Compressed:</span> {Math.round(file.compressionRatio * 100)}% reduction
+                      </div>
+                    )}
+
+                    {/* Custom Metadata - if available */}
+                    {file.metadata && Object.keys(file.metadata).length > 0 && (
+                      <div className="text-xs text-gray-600 mb-3">
+                        <span className="font-medium block mb-1">Metadata:</span>
+                        <div className="grid grid-cols-1 gap-1 ml-2">
+                          {Object.entries(file.metadata).map(([key, value]) => (
+                            <div key={key} className="flex">
+                              <span className="font-medium mr-1">{key}:</span>
+                              <span className="truncate">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-end space-x-2 mt-3 pt-2 border-t border-gray-100">
                       <button
                         onClick={() => copyShareLink(file.id)}
-                        className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
                         title="Copy link"
                       >
-                        <FaShareAlt size={12} />
+                        <FaShareAlt size={14} />
                       </button>
 
                       <Link
                         href={`/crate/${file.id}`}
-                        className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
                         title="View details"
                       >
-                        <FaEye size={12} />
+                        <FaEye size={14} />
+                      </Link>
+
+                      <Link
+                        href={`/download/${file.id}`}
+                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                        title="Download"
+                      >
+                        <FaDownload size={14} />
                       </Link>
 
                       <button
@@ -653,10 +745,10 @@ export default function HomePage() {
                           setFileToDelete(file.id);
                           setDeleteModalVisible(true);
                         }}
-                        className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                        className="p-1.5 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors"
                         title="Delete"
                       >
-                        <FaTrash size={12} />
+                        <FaTrash size={14} />
                       </button>
                     </div>
                   </div>
