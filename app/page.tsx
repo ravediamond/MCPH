@@ -7,7 +7,7 @@ import { useAuthRedirect } from "../contexts/useAuthRedirect";
 export default function Home() {
   // This is optional since middleware handles most cases,
   // but provides an extra layer of protection for client-side navigation
-  useAuthRedirect({ whenAuthenticated: '/home' });
+  useAuthRedirect({ whenAuthenticated: "/home" });
 
   return (
     <div className="bg-beige-200 min-h-screen">

@@ -41,7 +41,7 @@
   },
   "crons": [
     {
-      "path": "/api/cron/delete-expired-files",
+      "path": "/api/delete-expired-files",
       "schedule": "0 0 * * *"
     }
   ]
