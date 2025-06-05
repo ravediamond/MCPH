@@ -77,14 +77,19 @@ const AdminDashboardPage: React.FC = () => {
           const headers = { Authorization: `Bearer ${token}` };
 
           // Fetch all stats in parallel for better performance
-          const [cratesResponse, usersResponse, mcpCallsResponse, storageResponse, firestoreResponse] =
-            await Promise.all([
-              fetch("/api/admin/stats/crates", { headers }),
-              fetch("/api/admin/stats/users", { headers }),
-              fetch("/api/admin/stats/mcp-calls", { headers }),
-              fetch("/api/admin/stats/storage", { headers }),
-              fetch("/api/admin/stats/firestore", { headers })
-            ]);
+          const [
+            cratesResponse,
+            usersResponse,
+            mcpCallsResponse,
+            storageResponse,
+            firestoreResponse,
+          ] = await Promise.all([
+            fetch("/api/admin/stats/crates", { headers }),
+            fetch("/api/admin/stats/users", { headers }),
+            fetch("/api/admin/stats/mcp-calls", { headers }),
+            fetch("/api/admin/stats/storage", { headers }),
+            fetch("/api/admin/stats/firestore", { headers }),
+          ]);
 
           // Check responses and parse data
           if (!cratesResponse.ok) {
@@ -101,7 +106,9 @@ const AdminDashboardPage: React.FC = () => {
 
           if (!mcpCallsResponse.ok) {
             const errorData = await mcpCallsResponse.json();
-            throw new Error(errorData.error || "Failed to fetch MCP call stats");
+            throw new Error(
+              errorData.error || "Failed to fetch MCP call stats",
+            );
           }
           const mcpCallsData = await mcpCallsResponse.json();
 
@@ -116,7 +123,9 @@ const AdminDashboardPage: React.FC = () => {
             console.warn("Firestore stats warning:", errorData.error);
             // Don't throw here, just log a warning since this is optional
           }
-          const firestoreData = firestoreResponse.ok ? await firestoreResponse.json() : {};
+          const firestoreData = firestoreResponse.ok
+            ? await firestoreResponse.json()
+            : {};
 
           // Combine all stats into one object
           setStats({
@@ -151,7 +160,7 @@ const AdminDashboardPage: React.FC = () => {
 
             // API usage metrics
             apiKeysTotal: firestoreData.apiKeysCount,
-            apiKeyUsageAvg: firestoreData.apiKeyUsageAvg
+            apiKeyUsageAvg: firestoreData.apiKeyUsageAvg,
           });
         } catch (err) {
           setError(
@@ -264,7 +273,9 @@ const AdminDashboardPage: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-4">Platform Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5 border-l-4 border-blue-500">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Total Crates</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Total Crates
+                </h3>
                 <p className="text-3xl font-bold text-blue-700">
                   {stats.totalCrates?.toLocaleString() ?? "N/A"}
                 </p>
@@ -273,7 +284,9 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-5 border-l-4 border-green-500">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Total Users</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Total Users
+                </h3>
                 <p className="text-3xl font-bold text-green-700">
                   {stats.totalUsers?.toLocaleString() ?? "N/A"}
                 </p>
@@ -282,7 +295,9 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
               <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-5 border-l-4 border-purple-500">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Total MCP Calls</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Total MCP Calls
+                </h3>
                 <p className="text-3xl font-bold text-purple-700">
                   {stats.totalMcpCalls?.toLocaleString() ?? "N/A"}
                 </p>
@@ -300,25 +315,33 @@ const AdminDashboardPage: React.FC = () => {
             {/* Per-user averages */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Avg. Crates Per User</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Avg. Crates Per User
+                </h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {stats.averageCratesPerUser?.toFixed(1) ?? "N/A"}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Avg. MCP Calls Per User</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Avg. MCP Calls Per User
+                </h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {stats.averageMcpCallsPerUser?.toFixed(1) ?? "N/A"}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">New Users (30 days)</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  New Users (30 days)
+                </h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {stats.newUsersLast30Days?.toLocaleString() ?? "N/A"}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Active Users (30 days)</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Active Users (30 days)
+                </h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {stats.activeUsersLast30Days?.toLocaleString() ?? "N/A"}
                 </p>
@@ -334,24 +357,37 @@ const AdminDashboardPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
               {stats.userWithMostCrates && (
                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h3 className="text-blue-800 text-sm font-medium mb-1">User with Most Crates</h3>
+                  <h3 className="text-blue-800 text-sm font-medium mb-1">
+                    User with Most Crates
+                  </h3>
                   <p className="text-xl font-bold text-blue-900">
-                    {stats.userWithMostCrates.count?.toLocaleString() ?? "N/A"} crates
+                    {stats.userWithMostCrates.count?.toLocaleString() ?? "N/A"}{" "}
+                    crates
                   </p>
                   <div className="mt-1 text-xs text-blue-700 truncate">
-                    User: {stats.userWithMostCrates.email || stats.userWithMostCrates.userId || "Unknown"}
+                    User:{" "}
+                    {stats.userWithMostCrates.email ||
+                      stats.userWithMostCrates.userId ||
+                      "Unknown"}
                   </div>
                 </div>
               )}
 
               {stats.userWithMostMcpCalls && (
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                  <h3 className="text-purple-800 text-sm font-medium mb-1">User with Most MCP Calls</h3>
+                  <h3 className="text-purple-800 text-sm font-medium mb-1">
+                    User with Most MCP Calls
+                  </h3>
                   <p className="text-xl font-bold text-purple-900">
-                    {stats.userWithMostMcpCalls.count?.toLocaleString() ?? "N/A"} calls
+                    {stats.userWithMostMcpCalls.count?.toLocaleString() ??
+                      "N/A"}{" "}
+                    calls
                   </p>
                   <div className="mt-1 text-xs text-purple-700 truncate">
-                    User: {stats.userWithMostMcpCalls.email || stats.userWithMostMcpCalls.userId || "Unknown"}
+                    User:{" "}
+                    {stats.userWithMostMcpCalls.email ||
+                      stats.userWithMostMcpCalls.userId ||
+                      "Unknown"}
                   </div>
                 </div>
               )}
@@ -361,16 +397,22 @@ const AdminDashboardPage: React.FC = () => {
             <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
               <div className="flex items-center">
                 <div>
-                  <h3 className="text-gray-700 text-sm font-medium mb-1">User Growth Rate (30 days)</h3>
+                  <h3 className="text-gray-700 text-sm font-medium mb-1">
+                    User Growth Rate (30 days)
+                  </h3>
                   <p className="text-2xl font-bold text-green-700">
                     {stats.userGrowthRate !== undefined
-                      ? `${stats.userGrowthRate > 0 ? '+' : ''}${stats.userGrowthRate.toFixed(1)}%`
+                      ? `${stats.userGrowthRate > 0 ? "+" : ""}${stats.userGrowthRate.toFixed(1)}%`
                       : "N/A"}
                   </p>
                 </div>
                 {stats.userGrowthRate !== undefined && (
                   <div className="ml-auto text-5xl">
-                    {stats.userGrowthRate > 0 ? '📈' : stats.userGrowthRate < 0 ? '📉' : '➡️'}
+                    {stats.userGrowthRate > 0
+                      ? "📈"
+                      : stats.userGrowthRate < 0
+                        ? "📉"
+                        : "➡️"}
                   </div>
                 )}
               </div>
@@ -383,7 +425,9 @@ const AdminDashboardPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
               <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Max MCP Calls Per Day</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Max MCP Calls Per Day
+                </h3>
                 <p className="text-2xl font-bold text-purple-700">
                   {stats.maxMcpCallsPerDay?.toLocaleString() ?? "N/A"}
                 </p>
@@ -393,7 +437,9 @@ const AdminDashboardPage: React.FC = () => {
               </div>
 
               <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">Max MCP Calls Per User</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Max MCP Calls Per User
+                </h3>
                 <p className="text-2xl font-bold text-indigo-700">
                   {stats.maxMcpCallsPerUser?.toLocaleString() ?? "N/A"}
                 </p>
@@ -403,7 +449,9 @@ const AdminDashboardPage: React.FC = () => {
               </div>
 
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">API Keys</h3>
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  API Keys
+                </h3>
                 <p className="text-2xl font-bold text-blue-700">
                   {stats.apiKeysTotal?.toLocaleString() ?? "N/A"}
                 </p>
@@ -421,13 +469,18 @@ const AdminDashboardPage: React.FC = () => {
             {/* MCP Calls Trend Chart */}
             {stats.mcpCallsTrend && stats.mcpCallsTrend.length > 0 && (
               <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <h3 className="text-gray-700 text-sm font-medium mb-3">MCP API Calls Trend</h3>
+                <h3 className="text-gray-700 text-sm font-medium mb-3">
+                  MCP API Calls Trend
+                </h3>
                 <div className="h-48 w-full">
                   {/* This is where a chart would go - for now we'll show a simple bar representation */}
                   <div className="flex h-36 items-end space-x-1">
                     {stats.mcpCallsTrend.map((point, i) => {
-                      const maxCount = Math.max(...stats.mcpCallsTrend!.map(p => p.count));
-                      const height = maxCount > 0 ? (point.count / maxCount) * 100 : 0;
+                      const maxCount = Math.max(
+                        ...stats.mcpCallsTrend!.map((p) => p.count),
+                      );
+                      const height =
+                        maxCount > 0 ? (point.count / maxCount) * 100 : 0;
                       return (
                         <div key={i} className="flex flex-col items-center">
                           <div
@@ -450,58 +503,100 @@ const AdminDashboardPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Crate Distribution */}
             <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Crate Distribution</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                Crate Distribution
+              </h2>
 
               {stats.cratesDistribution ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-blue-800">Small Crates (&lt;1MB)</h3>
-                      <p className="text-xl font-bold text-blue-700">{stats.cratesDistribution.smallCrates.toLocaleString()}</p>
+                      <h3 className="text-sm font-medium text-blue-800">
+                        Small Crates (&lt;1MB)
+                      </h3>
+                      <p className="text-xl font-bold text-blue-700">
+                        {stats.cratesDistribution.smallCrates.toLocaleString()}
+                      </p>
                       {stats.totalCrates && (
                         <div className="text-xs text-blue-600 mt-1">
-                          {((stats.cratesDistribution.smallCrates / stats.totalCrates) * 100).toFixed(1)}% of total
+                          {(
+                            (stats.cratesDistribution.smallCrates /
+                              stats.totalCrates) *
+                            100
+                          ).toFixed(1)}
+                          % of total
                         </div>
                       )}
                     </div>
                     <div className="bg-green-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-green-800">Medium Crates (1-10MB)</h3>
-                      <p className="text-xl font-bold text-green-700">{stats.cratesDistribution.mediumCrates.toLocaleString()}</p>
+                      <h3 className="text-sm font-medium text-green-800">
+                        Medium Crates (1-10MB)
+                      </h3>
+                      <p className="text-xl font-bold text-green-700">
+                        {stats.cratesDistribution.mediumCrates.toLocaleString()}
+                      </p>
                       {stats.totalCrates && (
                         <div className="text-xs text-green-600 mt-1">
-                          {((stats.cratesDistribution.mediumCrates / stats.totalCrates) * 100).toFixed(1)}% of total
+                          {(
+                            (stats.cratesDistribution.mediumCrates /
+                              stats.totalCrates) *
+                            100
+                          ).toFixed(1)}
+                          % of total
                         </div>
                       )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-orange-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-orange-800">Large Crates (10-100MB)</h3>
-                      <p className="text-xl font-bold text-orange-700">{stats.cratesDistribution.largeCrates.toLocaleString()}</p>
+                      <h3 className="text-sm font-medium text-orange-800">
+                        Large Crates (10-100MB)
+                      </h3>
+                      <p className="text-xl font-bold text-orange-700">
+                        {stats.cratesDistribution.largeCrates.toLocaleString()}
+                      </p>
                       {stats.totalCrates && (
                         <div className="text-xs text-orange-600 mt-1">
-                          {((stats.cratesDistribution.largeCrates / stats.totalCrates) * 100).toFixed(1)}% of total
+                          {(
+                            (stats.cratesDistribution.largeCrates /
+                              stats.totalCrates) *
+                            100
+                          ).toFixed(1)}
+                          % of total
                         </div>
                       )}
                     </div>
                     <div className="bg-red-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-red-800">Very Large Crates (&gt;100MB)</h3>
-                      <p className="text-xl font-bold text-red-700">{stats.cratesDistribution.veryLargeCrates.toLocaleString()}</p>
+                      <h3 className="text-sm font-medium text-red-800">
+                        Very Large Crates (&gt;100MB)
+                      </h3>
+                      <p className="text-xl font-bold text-red-700">
+                        {stats.cratesDistribution.veryLargeCrates.toLocaleString()}
+                      </p>
                       {stats.totalCrates && (
                         <div className="text-xs text-red-600 mt-1">
-                          {((stats.cratesDistribution.veryLargeCrates / stats.totalCrates) * 100).toFixed(1)}% of total
+                          {(
+                            (stats.cratesDistribution.veryLargeCrates /
+                              stats.totalCrates) *
+                            100
+                          ).toFixed(1)}
+                          % of total
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-gray-500 italic">Size distribution data not available</div>
+                <div className="text-gray-500 italic">
+                  Size distribution data not available
+                </div>
               )}
 
               {/* Average Crate Size */}
               <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-700 text-sm font-medium mb-1">Average Crate Size</h3>
+                <h3 className="text-gray-700 text-sm font-medium mb-1">
+                  Average Crate Size
+                </h3>
                 <p className="text-2xl font-bold text-gray-800">
                   {formatFileSize(stats.avgCrateSize || 0)}
                 </p>
@@ -510,11 +605,15 @@ const AdminDashboardPage: React.FC = () => {
 
             {/* Storage Utilization */}
             <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Storage Utilization</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                Storage Utilization
+              </h2>
 
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5 mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-gray-700 text-sm font-medium">Total Storage</h3>
+                  <h3 className="text-gray-700 text-sm font-medium">
+                    Total Storage
+                  </h3>
                   <span className="text-xl font-bold text-blue-700">
                     {formatFileSize(stats.totalStorage || 0)}
                   </span>
@@ -524,20 +623,32 @@ const AdminDashboardPage: React.FC = () => {
                 {stats.storageUtilization !== undefined && (
                   <div>
                     <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Utilization: {stats.storageUtilization.toFixed(1)}%</span>
-                      <span className={stats.storageUtilization > 90 ? 'text-red-600 font-bold' : ''}>
-                        {stats.storageUtilization > 90 ? 'CRITICAL' :
-                          stats.storageUtilization > 70 ? 'High' : 'Normal'}
+                      <span>
+                        Utilization: {stats.storageUtilization.toFixed(1)}%
+                      </span>
+                      <span
+                        className={
+                          stats.storageUtilization > 90
+                            ? "text-red-600 font-bold"
+                            : ""
+                        }
+                      >
+                        {stats.storageUtilization > 90
+                          ? "CRITICAL"
+                          : stats.storageUtilization > 70
+                            ? "High"
+                            : "Normal"}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4">
                       <div
-                        className={`h-4 rounded-full ${stats.storageUtilization > 90
+                        className={`h-4 rounded-full ${
+                          stats.storageUtilization > 90
                             ? "bg-red-600"
                             : stats.storageUtilization > 70
                               ? "bg-orange-500"
                               : "bg-green-600"
-                          }`}
+                        }`}
                         style={{
                           width: `${Math.min(100, stats.storageUtilization)}%`,
                         }}
@@ -550,16 +661,25 @@ const AdminDashboardPage: React.FC = () => {
               {/* Top File Types */}
               {stats.topFileTypes && stats.topFileTypes.length > 0 && (
                 <div>
-                  <h3 className="text-gray-700 text-lg font-medium mb-3">Top File Types</h3>
+                  <h3 className="text-gray-700 text-lg font-medium mb-3">
+                    Top File Types
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {stats.topFileTypes.slice(0, 4).map((item, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3 flex items-center">
+                      <div
+                        key={index}
+                        className="bg-gray-50 rounded-lg p-3 flex items-center"
+                      >
                         <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                          <span className="text-indigo-700 font-bold text-sm">{getFileTypeEmoji(item.type)}</span>
+                          <span className="text-indigo-700 font-bold text-sm">
+                            {getFileTypeEmoji(item.type)}
+                          </span>
                         </div>
                         <div>
                           <div className="text-sm font-medium">{item.type}</div>
-                          <div className="text-lg font-bold">{item.count.toLocaleString()}</div>
+                          <div className="text-lg font-bold">
+                            {item.count.toLocaleString()}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -629,13 +749,14 @@ function getFileTypeEmoji(fileType: string) {
     "application/vnd.ms-excel": "📊",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "📊",
     "application/vnd.ms-powerpoint": "📈",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "📈",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+      "📈",
     "application/zip": "📦",
     "application/x-rar-compressed": "📦",
     "text/csv": "📊",
     "application/javascript": "📜",
     "application/json": "📂",
-    "default": "📁"
+    default: "📁",
   };
   return emojiMap[fileType] || emojiMap["default"];
 }

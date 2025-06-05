@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     // Count crates per user
     const cratesPerUser = new Map<string, number>();
-    usersWithCratesSnapshot.docs.forEach(doc => {
+    usersWithCratesSnapshot.docs.forEach((doc) => {
       const userId = doc.data().userId;
       if (userId) {
         cratesPerUser.set(userId, (cratesPerUser.get(userId) || 0) + 1);
@@ -53,10 +53,10 @@ export async function GET(request: Request) {
       .get();
 
     const fileTypes = new Map<string, number>();
-    cratesWithContentTypeSnapshot.docs.forEach(doc => {
-      const mimeType = doc.data().mimeType || 'unknown';
+    cratesWithContentTypeSnapshot.docs.forEach((doc) => {
+      const mimeType = doc.data().mimeType || "unknown";
       // Simplify MIME type (e.g., "application/json" -> "json")
-      const simplifiedType = mimeType.split('/').pop() || mimeType;
+      const simplifiedType = mimeType.split("/").pop() || mimeType;
       fileTypes.set(simplifiedType, (fileTypes.get(simplifiedType) || 0) + 1);
     });
 
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       count: totalCrates,
       averageCratesPerUser,
       maxCratesPerUser,
-      topFileTypes
+      topFileTypes,
     });
   } catch (error: any) {
     console.error("Error fetching crate stats:", error);

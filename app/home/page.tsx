@@ -97,15 +97,15 @@ export default function HomePage() {
             const expiryDate =
               crate.createdAt && crate.ttlDays
                 ? new Date(
-                  new Date(crate.createdAt).getTime() +
-                  crate.ttlDays * 24 * 60 * 60 * 1000,
-                )
+                    new Date(crate.createdAt).getTime() +
+                      crate.ttlDays * 24 * 60 * 60 * 1000,
+                  )
                 : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-              )
+                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+                )
               : 0;
             return {
               ...crate,
@@ -301,10 +301,10 @@ export default function HomePage() {
                 : 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                  Object.entries(fields.metadata.mapValue.fields).map(
-                    ([k, v]: any) => [k, v.stringValue],
-                  ),
-                )
+                    Object.entries(fields.metadata.mapValue.fields).map(
+                      ([k, v]: any) => [k, v.stringValue],
+                    ),
+                  )
                 : undefined,
             };
           })
@@ -598,7 +598,10 @@ export default function HomePage() {
 
                         {/* File Description - if available */}
                         {file.description && (
-                          <p className="text-xs text-gray-600 mt-1 line-clamp-2" title={file.description}>
+                          <p
+                            className="text-xs text-gray-600 mt-1 line-clamp-2"
+                            title={file.description}
+                          >
                             {file.description}
                           </p>
                         )}
@@ -622,28 +625,37 @@ export default function HomePage() {
                       <div className="text-xs">
                         <span className="text-gray-500 mr-1">Category:</span>
                         <span className="font-medium text-gray-700">
-                          {file.category ? file.category.charAt(0).toUpperCase() + file.category.slice(1).toLowerCase() : 'Unknown'}
+                          {file.category
+                            ? file.category.charAt(0).toUpperCase() +
+                              file.category.slice(1).toLowerCase()
+                            : "Unknown"}
                         </span>
                       </div>
 
                       {/* Size */}
                       <div className="text-xs">
                         <span className="text-gray-500 mr-1">Size:</span>
-                        <span className="font-medium text-gray-700">{formatFileSize(file.size)}</span>
+                        <span className="font-medium text-gray-700">
+                          {formatFileSize(file.size)}
+                        </span>
                       </div>
 
                       {/* Created Date */}
                       <div className="text-xs">
                         <span className="text-gray-500 mr-1">Created:</span>
                         <span className="font-medium text-gray-700">
-                          {file.createdAt ? formatDate(file.createdAt) : 'Unknown'}
+                          {file.createdAt
+                            ? formatDate(file.createdAt)
+                            : "Unknown"}
                         </span>
                       </div>
 
                       {/* Downloads */}
                       <div className="text-xs">
                         <span className="text-gray-500 mr-1">Downloads:</span>
-                        <span className="font-medium text-gray-700">{file.downloadCount || 0}</span>
+                        <span className="font-medium text-gray-700">
+                          {file.downloadCount || 0}
+                        </span>
                       </div>
                     </div>
 
@@ -667,16 +679,34 @@ export default function HomePage() {
                     <div className="flex items-center text-xs mb-3">
                       {file.shared?.public ? (
                         <span className="inline-flex items-center text-green-600 font-medium">
-                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <svg
+                            className="w-3 h-3 mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"></path>
+                            <path
+                              fillRule="evenodd"
+                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                              clipRule="evenodd"
+                            ></path>
                           </svg>
                           Public
                         </span>
                       ) : (
                         <span className="inline-flex items-center text-gray-500">
-                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
+                          <svg
+                            className="w-3 h-3 mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                              clipRule="evenodd"
+                            ></path>
                           </svg>
                           Private
                         </span>
@@ -684,8 +714,17 @@ export default function HomePage() {
 
                       {file.shared?.passwordProtected && (
                         <span className="inline-flex items-center ml-2 text-amber-600">
-                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd"></path>
+                          <svg
+                            className="w-3 h-3 mr-1"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
+                              clipRule="evenodd"
+                            ></path>
                           </svg>
                           Password Protected
                         </span>
@@ -695,14 +734,17 @@ export default function HomePage() {
                     {/* Compression Info - if available */}
                     {file.compressed && file.compressionRatio && (
                       <div className="text-xs text-gray-600 mb-3">
-                        <span className="font-medium">Compressed:</span> {Math.round(file.compressionRatio * 100)}% reduction
+                        <span className="font-medium">Compressed:</span>{" "}
+                        {Math.round(file.compressionRatio * 100)}% reduction
                       </div>
                     )}
 
                     {/* Custom Metadata - if available */}
                     {file.metadata && Object.keys(file.metadata).length > 0 && (
                       <div className="text-xs text-gray-600 mb-3">
-                        <span className="font-medium block mb-1">Metadata:</span>
+                        <span className="font-medium block mb-1">
+                          Metadata:
+                        </span>
                         <div className="grid grid-cols-1 gap-1 ml-2">
                           {Object.entries(file.metadata).map(([key, value]) => (
                             <div key={key} className="flex">

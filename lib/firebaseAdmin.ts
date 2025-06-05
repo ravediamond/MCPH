@@ -43,7 +43,7 @@ if (!admin.apps.length) {
         console.log(
           "[FirebaseAdmin] Credentials JSON starts with:",
           credentialsJson.substring(0, Math.min(20, credentialsJson.length)) +
-          "...",
+            "...",
         );
 
         const serviceAccount = JSON.parse(credentialsJson);
