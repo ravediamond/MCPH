@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
-import { admin } from "../../../../../lib/firebaseAdmin"; // Assuming you have this
+import { firestore } from "../../../../../lib/firebaseAdmin";
+import { Timestamp } from "firebase-admin/firestore";
 
 export async function GET(request: Request) {
   try {
@@ -21,10 +22,47 @@ export async function GET(request: Request) {
       );
     }
 
+    // Get all users
     const listUsersResult = await getAuth().listUsers();
     const totalUsers = listUsersResult.users.length;
 
-    return NextResponse.json({ count: totalUsers });
+    // Get active users in the last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeUsers = listUsersResult.users.filter(user => {
+      return user.metadata.lastSignInTime &&
+        new Date(user.metadata.lastSignInTime) >= thirtyDaysAgo;
+    });
+
+    const activeUsersCount = activeUsers.length;
+
+    // Calculate user growth rate (30 days)
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    const usersCreatedLast30Days = listUsersResult.users.filter(user => {
+      return user.metadata.creationTime &&
+        new Date(user.metadata.creationTime) >= thirtyDaysAgo;
+    }).length;
+
+    const usersCreatedPrevious30Days = listUsersResult.users.filter(user => {
+      return user.metadata.creationTime &&
+        new Date(user.metadata.creationTime) >= sixtyDaysAgo &&
+        new Date(user.metadata.creationTime) < thirtyDaysAgo;
+    }).length;
+
+    // Calculate growth rate percentage
+    const growthRate = usersCreatedPrevious30Days > 0
+      ? ((usersCreatedLast30Days - usersCreatedPrevious30Days) / usersCreatedPrevious30Days) * 100
+      : usersCreatedLast30Days * 100; // If no users in previous period, growth is 100% of new users
+
+    return NextResponse.json({
+      count: totalUsers,
+      activeUsersLast30Days: activeUsersCount,
+      userGrowthRate: growthRate,
+      newUsersLast30Days: usersCreatedLast30Days
+    });
   } catch (error: any) {
     console.error("Error fetching user stats:", error);
     if (

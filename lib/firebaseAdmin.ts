@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
 console.log("[FirebaseAdmin] Module loaded. Starting initialization check...");
 console.log("[FirebaseAdmin] Current Firebase apps count:", admin.apps.length);
@@ -42,7 +43,7 @@ if (!admin.apps.length) {
         console.log(
           "[FirebaseAdmin] Credentials JSON starts with:",
           credentialsJson.substring(0, Math.min(20, credentialsJson.length)) +
-            "...",
+          "...",
         );
 
         const serviceAccount = JSON.parse(credentialsJson);
@@ -117,3 +118,4 @@ console.log(
 
 export { admin };
 export const auth = getAuth();
+export const firestore = getFirestore();
