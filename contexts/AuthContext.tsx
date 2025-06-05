@@ -47,16 +47,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           // Store the Firebase ID token in a cookie
           const idToken = await currentUser.getIdToken();
           document.cookie = `session=${idToken}; path=/; max-age=3600; SameSite=Strict`;
-
-          // Only redirect to /home if on root or login page
-          if (
-            router &&
-            typeof window !== "undefined" &&
-            (window.location.pathname === "/" ||
-              window.location.pathname === "/login")
-          ) {
-            router.push("/home");
-          }
         } catch (error) {
           console.error("Error getting ID token result: ", error);
           setIsAdmin(false);
