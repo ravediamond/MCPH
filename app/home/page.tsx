@@ -100,15 +100,15 @@ export default function HomePage() {
             const expiryDate =
               crate.createdAt && crate.ttlDays
                 ? new Date(
-                  new Date(crate.createdAt).getTime() +
-                  crate.ttlDays * 24 * 60 * 60 * 1000,
-                )
+                    new Date(crate.createdAt).getTime() +
+                      crate.ttlDays * 24 * 60 * 60 * 1000,
+                  )
                 : null;
             const now = new Date();
             const daysDiff = expiryDate
               ? Math.ceil(
-                (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-              )
+                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
+                )
               : 0;
             return {
               ...crate,
@@ -304,10 +304,10 @@ export default function HomePage() {
                 : 0,
               metadata: fields.metadata?.mapValue?.fields
                 ? Object.fromEntries(
-                  Object.entries(fields.metadata.mapValue.fields).map(
-                    ([k, v]: any) => [k, v.stringValue],
-                  ),
-                )
+                    Object.entries(fields.metadata.mapValue.fields).map(
+                      ([k, v]: any) => [k, v.stringValue],
+                    ),
+                  )
                 : undefined,
             };
           })
@@ -633,7 +633,7 @@ export default function HomePage() {
                         <span className="font-medium text-gray-700">
                           {file.category
                             ? file.category.charAt(0).toUpperCase() +
-                            file.category.slice(1).toLowerCase()
+                              file.category.slice(1).toLowerCase()
                             : "Unknown"}
                         </span>
                       </div>
