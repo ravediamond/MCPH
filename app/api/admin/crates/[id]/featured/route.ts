@@ -1,15 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { firestore } from "../../../../../../lib/firebaseAdmin";
 
+// Function to handle POST requests to toggle featured status
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const crateId = params.id;
-    const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
+    // Await the params promise to get the actual id value
+    const { id } = await params;
 
+    // Get and validate authentication token
+    const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
     if (!idToken) {
       return NextResponse.json(
         { error: "Unauthorized: No token provided" },
@@ -17,6 +20,7 @@ export async function POST(
       );
     }
 
+    // Verify the token and check admin status
     const decodedToken = await getAuth().verifyIdToken(idToken);
     if (!decodedToken.admin) {
       return NextResponse.json(
@@ -25,12 +29,19 @@ export async function POST(
       );
     }
 
-    // Get request body to determine the new featured status
-    const body = await request.json();
-    const featured = !!body.featured;
+    // Parse request body to get featured status
+    const { featured } = await request.json();
+
+    // Validate featured is a boolean
+    if (typeof featured !== "boolean") {
+      return NextResponse.json(
+        { error: "Invalid request: 'featured' must be a boolean value" },
+        { status: 400 },
+      );
+    }
 
     // Check if the crate exists
-    const crateRef = firestore.collection("crates").doc(crateId);
+    const crateRef = firestore.collection("crates").doc(id);
     const crateDoc = await crateRef.get();
 
     if (!crateDoc.exists) {
@@ -39,17 +50,19 @@ export async function POST(
 
     // Update the featured status
     await crateRef.update({
-      featured,
-      updatedAt: new Date(),
+      featured: featured,
+      updatedAt: new Date().toISOString(),
     });
 
     return NextResponse.json({
       success: true,
-      message: `Crate featured status updated to ${featured}`,
+      message: `Crate ${featured ? "added to" : "removed from"} featured`,
+      featured: featured,
     });
   } catch (error: any) {
-    console.error("Error updating crate featured status:", error);
+    console.error("Error updating featured status:", error);
 
+    // Handle specific Firebase errors
     if (
       error.code === "auth/id-token-expired" ||
       error.code === "auth/argument-error"
@@ -61,7 +74,7 @@ export async function POST(
     }
 
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }

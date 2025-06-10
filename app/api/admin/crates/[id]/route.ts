@@ -6,10 +6,12 @@ import { admin } from "../../../../../lib/firebaseAdmin";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const crateId = params.id;
+    // Await the params promise to get the actual id value
+    const { id } = await params;
+    const crateId = id;
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
 
     if (!idToken) {

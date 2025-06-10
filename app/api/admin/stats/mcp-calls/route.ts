@@ -3,6 +3,13 @@ import { getAuth } from "firebase-admin/auth";
 import { firestore } from "../../../../../lib/firebaseAdmin";
 import { Timestamp } from "firebase-admin/firestore";
 
+// Define an interface for the user stats to include the email property
+interface UserWithStats {
+  userId: string;
+  count: number;
+  email?: string; // Optional email property
+}
+
 export async function GET(request: Request) {
   try {
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
@@ -54,7 +61,7 @@ export async function GET(request: Request) {
     const maxCallsPerUser = Math.max(...Array.from(callsPerUser.values()), 0);
 
     // Find user with most MCP calls
-    let userWithMost = { userId: "", count: 0 };
+    let userWithMost: UserWithStats = { userId: "", count: 0 };
     if (maxCallsPerUser > 0) {
       for (const [userId, count] of callsPerUser.entries()) {
         if (count === maxCallsPerUser) {

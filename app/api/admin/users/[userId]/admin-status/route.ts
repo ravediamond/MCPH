@@ -3,10 +3,11 @@ import { getAuth } from "firebase-admin/auth";
 
 export async function POST(
   request: Request,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const userId = params.userId;
+    // Await the params promise to get the actual userId value
+    const { userId } = await params;
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
 
     if (!idToken) {
