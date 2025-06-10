@@ -151,6 +151,21 @@ gcloud firestore indexes composite create \
   --field-config="field-path=ownerId,order=ASCENDING" \
   --field-config="field-path=createdAt,order=DESCENDING"
 
+# Add indexes for expired crates cleanup
+echo "--- Creating composite index for expired private crates (isPublic=false + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=isPublic,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=ASCENDING"
+
+echo "--- Creating composite index for expired public crates (isPublic=true + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=isPublic,order=DESCENDING" \
+  --field-config="field-path=createdAt,order=ASCENDING"
+
 echo "--- Creating vector index for crates.embedding ---"
 gcloud firestore indexes composite create \
   --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
