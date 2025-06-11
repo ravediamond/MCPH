@@ -113,6 +113,24 @@ export async function POST(req: NextRequest) {
       ? sharedWithStr.split(",").map((uid) => uid.trim())
       : undefined;
 
+    // If the crate is public and the user is authenticated, check shared crates limit
+    if (isPublic && userId !== "anonymous") {
+      const { hasReachedSharedCratesLimit } = await import(
+        "@/services/firebaseService"
+      );
+      const limitReached = await hasReachedSharedCratesLimit(userId);
+
+      if (limitReached) {
+        return NextResponse.json(
+          {
+            error:
+              "Shared crates limit reached. You can share a maximum of 50 crates. Please delete some shared crates before sharing new ones.",
+          },
+          { status: 403 },
+        );
+      }
+    }
+
     const sharing: CrateSharing = {
       public: isPublic,
       passwordProtected,

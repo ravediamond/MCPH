@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getUserToolUsage,
   getUserStorageUsage,
+  getUserSharedCratesCount,
 } from "@/services/firebaseService";
 
 export async function GET(
@@ -12,5 +13,6 @@ export async function GET(
   // You may want to add authentication here
   const usage = await getUserToolUsage(userId);
   const storage = await getUserStorageUsage(userId);
-  return NextResponse.json({ usage, storage });
+  const sharedCrates = await getUserSharedCratesCount(userId);
+  return NextResponse.json({ usage, storage, sharedCrates });
 }
