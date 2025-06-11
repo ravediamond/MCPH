@@ -150,7 +150,7 @@ const AdminDashboardPage: React.FC = () => {
             mcpCallsTrend: mcpCallsData.trend,
             activeUsersLast30Days: usersData.activeUsersLast30Days,
             newUsersLast30Days: usersData.newUsersLast30Days,
-            
+
             // Client metrics
             topClients: mcpCallsData.topClients,
 
@@ -503,34 +503,43 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {/* MCP Calls Per Client */}
             {stats.topClients && stats.topClients.length > 0 && (
               <div className="bg-white rounded-lg p-4 border border-gray-200">
                 <h3 className="text-gray-700 text-lg font-medium mb-3">
                   Top Clients by MCP Calls
                 </h3>
-                
+
                 {/* Visual representation - horizontal bar chart */}
                 <div className="mb-4">
                   {stats.topClients.slice(0, 5).map((client, index) => {
-                    const percentage = stats.totalMcpCalls ? (client.count / stats.totalMcpCalls) * 100 : 0;
-                    const maxCount = Math.max(...stats.topClients!.slice(0, 5).map(c => c.count));
-                    const width = maxCount > 0 ? (client.count / maxCount) * 100 : 0;
-                    
+                    const percentage = stats.totalMcpCalls
+                      ? (client.count / stats.totalMcpCalls) * 100
+                      : 0;
+                    const maxCount = Math.max(
+                      ...stats.topClients!.slice(0, 5).map((c) => c.count),
+                    );
+                    const width =
+                      maxCount > 0 ? (client.count / maxCount) * 100 : 0;
+
                     return (
                       <div key={index} className="mb-3">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium truncate" style={{ maxWidth: '60%' }}>
+                          <span
+                            className="text-sm font-medium truncate"
+                            style={{ maxWidth: "60%" }}
+                          >
                             {client.name || client.clientId}
                           </span>
                           <span className="text-sm text-gray-500">
-                            {client.count.toLocaleString()} ({percentage.toFixed(1)}%)
+                            {client.count.toLocaleString()} (
+                            {percentage.toFixed(1)}%)
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div 
-                            className="bg-purple-600 h-2.5 rounded-full" 
+                          <div
+                            className="bg-purple-600 h-2.5 rounded-full"
                             style={{ width: `${width}%` }}
                           ></div>
                         </div>
@@ -538,31 +547,51 @@ const AdminDashboardPage: React.FC = () => {
                     );
                   })}
                 </div>
-                
+
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Rank
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Client ID
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Client Name
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Call Count
                         </th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           % of Total
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {stats.topClients.map((client, index) => (
-                        <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <tr
+                          key={index}
+                          className={
+                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                          }
+                        >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {index + 1}
                           </td>
@@ -570,13 +599,18 @@ const AdminDashboardPage: React.FC = () => {
                             {client.clientId}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {client.name || 'Unknown'}
+                            {client.name || "Unknown"}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {client.count.toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {stats.totalMcpCalls && ((client.count / stats.totalMcpCalls) * 100).toFixed(2)}%
+                            {stats.totalMcpCalls &&
+                              (
+                                (client.count / stats.totalMcpCalls) *
+                                100
+                              ).toFixed(2)}
+                            %
                           </td>
                         </tr>
                       ))}

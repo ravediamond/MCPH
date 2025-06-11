@@ -68,16 +68,16 @@ export async function GET(request: Request) {
     // Count MCP calls per client
     const callsPerClient = new Map<string, number>();
     const clientNames = new Map<string, string>(); // Store client names if available
-    
+
     mcpCallsPerClientSnapshot.docs.forEach((doc) => {
       const data = doc.data();
       const clientId = data.clientId || "unknown";
-      
+
       // Store client name if available
       if (data.clientName) {
         clientNames.set(clientId, data.clientName);
       }
-      
+
       callsPerClient.set(clientId, (callsPerClient.get(clientId) || 0) + 1);
     });
 
@@ -154,15 +154,15 @@ export async function GET(request: Request) {
       .map(([clientId, count]) => ({
         clientId,
         count,
-        name: clientNames.get(clientId)
+        name: clientNames.get(clientId),
       }));
-      
+
     // If no clients with IDs found, add a fallback "unknown" client with the total count
     if (topClients.length === 0 && totalCalls > 0) {
       topClients.push({
         clientId: "unknown",
         count: totalCalls,
-        name: "Unknown Client"
+        name: "Unknown Client",
       });
     }
 
