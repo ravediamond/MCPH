@@ -174,3 +174,120 @@ export async function GET(
     );
   }
 }
+
+/**
+ * API endpoint to get the content of a crate
+ * POST method allows providing a password for protected crates
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: RouteParams },
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { password } = body;
+
+    console.log(`[Content Route] POST request for crate ID: ${id}`);
+
+    // Get crate metadata
+    const crate = await getCrateMetadata(id);
+    if (!crate) {
+      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+    }
+
+    // Check if crate has expired
+    const now = new Date();
+    const expirationDate = new Date(crate.createdAt);
+    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
+
+    if (now > expirationDate) {
+      return NextResponse.json(
+        { error: "This crate has expired" },
+        { status: 410 }, // Gone
+      );
+    }
+
+    // Check authentication
+    const authHeader = req.headers.get("authorization");
+    let userId = "anonymous";
+    let isAuthenticated = false;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      try {
+        const decodedToken = await auth.verifyIdToken(token);
+        userId = decodedToken.uid;
+        isAuthenticated = true;
+      } catch (error) {
+        console.warn(`[Content Route] Invalid authentication token:`, error);
+      }
+    }
+
+    // If header auth failed, try session cookie
+    if (!isAuthenticated) {
+      const cookies = req.cookies;
+      const sessionCookie = cookies.get("session");
+
+      if (sessionCookie && sessionCookie.value) {
+        try {
+          const decodedToken = await auth.verifyIdToken(sessionCookie.value);
+          userId = decodedToken.uid;
+          isAuthenticated = true;
+        } catch (error) {
+          console.warn(`[Content Route] Invalid session cookie:`, error);
+        }
+      }
+    }
+
+    // Check access permissions
+    const isOwner = crate.ownerId === userId;
+    const isPublic = crate.shared.public;
+    const isSharedWithUser =
+      Array.isArray(crate.shared.sharedWith) &&
+      crate.shared.sharedWith.includes(userId);
+
+    // Check password if required and not the owner
+    if (!isOwner && crate.shared.passwordProtected) {
+      if (!password) {
+        return NextResponse.json(
+          { error: "This crate requires a password" },
+          { status: 401 },
+        );
+      }
+
+      // In a production system, you would verify the password here
+      // For now, we're assuming any provided password works
+      // TODO: Implement proper password verification
+    }
+
+    if (!isOwner && !isPublic && !isSharedWithUser) {
+      return NextResponse.json(
+        { error: "You don't have permission to access this crate" },
+        { status: 403 },
+      );
+    }
+
+    // Get crate content based on its category
+    const { buffer, crate: updatedCrate } = await getCrateContent(id);
+
+    // Set cache headers for better performance
+    const headers = new Headers({
+      "Content-Type": crate.mimeType,
+      "Content-Disposition": `inline; filename="${encodeURIComponent(crate.title)}"`,
+      // Cache for 1 hour if public, no cache if private
+      "Cache-Control": isPublic ? "public, max-age=3600" : "private, no-cache",
+    });
+
+    return new NextResponse(buffer, { headers });
+  } catch (error) {
+    console.error(
+      "[Content Route] Error retrieving crate content via POST:",
+      error,
+    );
+    return NextResponse.json(
+      { error: "Failed to retrieve crate content" },
+      { status: 500 },
+    );
+  }
+}

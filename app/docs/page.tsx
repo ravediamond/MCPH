@@ -353,15 +353,32 @@ Output (text):
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">crates/share</div>
+              <div className="font-semibold text-gray-800">
+                crates/[id]/share
+              </div>
               <div className="text-gray-600">
-                Make an crate shareable (public link) and optionally set/remove
-                a password.
+                Update a crate's sharing settings, including visibility,
+                password protection, and access control. This endpoint replaces
+                the legacy sharing mechanism with a unified approach.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output:
+                <code>{`Request:
+POST /api/crates/{id}/share
 {
-  id, isShared, password, shareUrl, message
+  "public": boolean,           // Whether the crate is publicly accessible
+  "passwordProtected": boolean, // Whether password protection is enabled
+  "password": string,          // Optional: Set a new password
+  "removePassword": boolean,   // Optional: Remove existing password
+  "sharedWith": string[]       // Optional: List of user IDs to share with
+}
+
+Response:
+{
+  "id": string,
+  "isShared": boolean,
+  "passwordProtected": boolean,
+  "shareUrl": string,
+  "message": string
 }`}</code>
               </pre>
             </div>
