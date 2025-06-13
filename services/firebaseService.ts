@@ -31,7 +31,7 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Crate } from "../app/types/crate";
+import { Crate, CrateSharing } from "@/app/types/crate";
 
 // --- Firebase Admin SDK Initialization ---
 let firebaseApp: App;
@@ -479,6 +479,7 @@ export async function getApiKeyToolUsage(
 
 const USER_USAGE_COLLECTION = "userUsage";
 const USER_TOOL_CALL_LIMIT = 1000;
+const USER_SHARED_CRATES_LIMIT = 50;
 
 /**
  * Increment the monthly tool usage for a user. Returns the new count and remaining quota.
@@ -716,5 +717,102 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
     } catch (e) {
       return 0;
     }
+  }
+}
+
+/**
+ * Get the count of shared crates for a user
+ */
+export async function getUserSharedCratesCount(
+  userId: string,
+): Promise<{ count: number; limit: number; remaining: number }> {
+  try {
+    const querySnapshot = await db
+      .collection(CRATES_COLLECTION)
+      .where("ownerId", "==", userId)
+      .where("shared.public", "==", true)
+      .get();
+
+    const count = querySnapshot.size;
+    return {
+      count,
+      limit: USER_SHARED_CRATES_LIMIT,
+      remaining: Math.max(0, USER_SHARED_CRATES_LIMIT - count),
+    };
+  } catch (error) {
+    console.error(
+      `Error getting shared crates count for user ${userId}:`,
+      error,
+    );
+    return {
+      count: 0,
+      limit: USER_SHARED_CRATES_LIMIT,
+      remaining: USER_SHARED_CRATES_LIMIT,
+    };
+  }
+}
+
+/**
+ * Check if a user has reached their shared crates limit
+ */
+export async function hasReachedSharedCratesLimit(
+  userId: string,
+): Promise<boolean> {
+  const { remaining } = await getUserSharedCratesCount(userId);
+  return remaining <= 0;
+}
+
+/**
+ * Update a crate's sharing settings, enforcing the shared crates limit
+ */
+export async function updateCrateSharing(
+  crateId: string,
+  userId: string,
+  sharingSettings: Partial<CrateSharing>,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Get the crate metadata
+    const crate = await getCrateMetadata(crateId);
+    if (!crate) {
+      return { success: false, error: "Crate not found" };
+    }
+
+    // Verify the user is the owner
+    if (crate.ownerId !== userId) {
+      return {
+        success: false,
+        error: "You don't have permission to update this crate",
+      };
+    }
+
+    // Check if this update would make the crate public
+    if (sharingSettings.public && !crate.shared.public) {
+      // If making the crate public, check the shared crates limit
+      const reachedLimit = await hasReachedSharedCratesLimit(userId);
+      if (reachedLimit) {
+        return {
+          success: false,
+          error:
+            "Shared crates limit reached. You can share a maximum of 50 crates. Please delete some shared crates before sharing new ones.",
+        };
+      }
+    }
+
+    // Update the sharing settings
+    const updatedSharing = {
+      ...crate.shared,
+      ...sharingSettings,
+    };
+
+    // Update the crate in Firestore
+    const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
+    await docRef.update({
+      shared: updatedSharing,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating crate sharing settings:", error);
+    return { success: false, error: "Failed to update crate sharing settings" };
   }
 }

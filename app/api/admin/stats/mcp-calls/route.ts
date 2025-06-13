@@ -10,6 +10,13 @@ interface UserWithStats {
   email?: string; // Optional email property
 }
 
+// Define an interface for client stats
+interface ClientStats {
+  clientId: string;
+  count: number;
+  name?: string; // Optional client name
+}
+
 export async function GET(request: Request) {
   try {
     const idToken = request.headers.get("Authorization")?.split("Bearer ")[1];
@@ -51,6 +58,27 @@ export async function GET(request: Request) {
       if (userId) {
         callsPerUser.set(userId, (callsPerUser.get(userId) || 0) + 1);
       }
+    });
+
+    // Get MCP calls per client - grab both clientId and possibly clientName if available
+    const mcpCallsPerClientSnapshot = await firestore
+      .collection("mcpCalls")
+      .get();
+
+    // Count MCP calls per client
+    const callsPerClient = new Map<string, number>();
+    const clientNames = new Map<string, string>(); // Store client names if available
+
+    mcpCallsPerClientSnapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      const clientId = data.clientId || "unknown";
+
+      // Store client name if available
+      if (data.clientName) {
+        clientNames.set(clientId, data.clientName);
+      }
+
+      callsPerClient.set(clientId, (callsPerClient.get(clientId) || 0) + 1);
     });
 
     // Calculate average and max MCP calls per user
@@ -119,6 +147,25 @@ export async function GET(request: Request) {
       });
     }
 
+    // Get top clients by call count (limited to top 10)
+    const topClients: ClientStats[] = Array.from(callsPerClient.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([clientId, count]) => ({
+        clientId,
+        count,
+        name: clientNames.get(clientId),
+      }));
+
+    // If no clients with IDs found, add a fallback "unknown" client with the total count
+    if (topClients.length === 0 && totalCalls > 0) {
+      topClients.push({
+        clientId: "unknown",
+        count: totalCalls,
+        name: "Unknown Client",
+      });
+    }
+
     return NextResponse.json({
       totalCalls,
       averagePerUser: averageCallsPerUser,
@@ -126,6 +173,7 @@ export async function GET(request: Request) {
       maxPerDay: maxCallsPerDay,
       userWithMost,
       trend,
+      topClients, // Add top clients to the response
     });
   } catch (error: any) {
     console.error("Error fetching MCP call stats:", error);

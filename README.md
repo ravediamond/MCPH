@@ -12,6 +12,16 @@
 
 MCPHub is a public remote crate server for the Model Context Protocol (MCP). It supports real-time crate management and sharing via the MCP protocol over Server-Sent Events (SSE).
 
+## Features at a Glance
+
+- **Direct AI Integration**: Connect ChatGPT, Claude, and other MCP-compatible AI tools directly to share content
+- **Multiple Content Types**: Share markdown, code, diagrams, images, to-do lists, and structured data
+- **Security Features**: Password protection and automatic expiration for all content
+- **Simple Sharing**: Generate shareable links that anyone can access - no login required to view content
+- **Enhanced Link Management**: Manage sharing permissions and access control from one convenient interface
+- **Improved Content Preview**: Better visualization and interaction with different content types
+- **MCP Protocol Support**: Built on the standardized Model Context Protocol for AI interoperability
+
 ## Quick Start
 
 - **SSE Endpoint:** `https://mcp.mcph.io/`
@@ -53,8 +63,11 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Output: `{ crates: [ ... ], content: [ { type: 'text', text: 'IDs: ...' } ] }`
 - **crates/upload**: Upload a new crate. For binary files, returns a presigned upload URL. For text, uploads directly.
   - Output: `{ uploadUrl, fileId, gcsPath, message }` (binary) or `{ crate, message }` (text)
-- **crates/share**: Make an crate shareable (public link) and optionally set/remove a password.
-  - Output: `{ id, isShared, password, shareUrl, message }`
+- **crates/[id]/share**: Update a crate's sharing settings with unified link management.
+  - Input: `{ public: boolean, passwordProtected: boolean, password?: string, removePassword?: boolean }`
+  - Output: `{ id, isShared, passwordProtected, shareUrl, message }`
+- **crates/[id]/content**: Optimized endpoint for content retrieval with caching and direct access.
+  - Supports both GET (with optional URL params) and POST (with JSON body for password)
 
 ## How the SSE Endpoint Works
 

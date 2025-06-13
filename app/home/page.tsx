@@ -75,6 +75,11 @@ export default function HomePage() {
     limit: number;
     remaining: number;
   } | null>(null);
+  const [userSharedCrates, setUserSharedCrates] = useState<{
+    count: number;
+    limit: number;
+    remaining: number;
+  } | null>(null);
 
   // --- Embedding-based search state ---
   const [searchResults, setSearchResults] = useState<
@@ -142,10 +147,12 @@ export default function HomePage() {
         .then((data) => {
           setUserQuota(data.usage || null);
           setUserStorage(data.storage || null);
+          setUserSharedCrates(data.sharedCrates || null);
         })
         .catch(() => {
           setUserQuota(null);
           setUserStorage(null);
+          setUserSharedCrates(null);
         })
         .finally(() => setQuotaLoading(false));
     } else {
@@ -419,6 +426,30 @@ export default function HomePage() {
                 <span className="ml-2">
                   ({((userStorage.used / userStorage.limit) * 100).toFixed(1)}%
                   used, {formatFileSize(userStorage.remaining)} left)
+                </span>
+              </div>
+            )}
+            {userSharedCrates && (
+              <div className="text-sm text-gray-700 mt-1">
+                Shared crates:{" "}
+                <span
+                  className={
+                    userSharedCrates.remaining === 0
+                      ? "text-red-600 font-semibold"
+                      : "font-semibold"
+                  }
+                >
+                  {userSharedCrates.count}
+                </span>{" "}
+                /{" "}
+                <span className="font-semibold">{userSharedCrates.limit}</span>
+                <span className="ml-2">
+                  (
+                  {(
+                    (userSharedCrates.count / userSharedCrates.limit) *
+                    100
+                  ).toFixed(1)}
+                  % used, {userSharedCrates.remaining} left)
                 </span>
               </div>
             )}
