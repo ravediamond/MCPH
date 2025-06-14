@@ -651,11 +651,18 @@ export default function CratePage() {
   };
 
   // Render tags
-  const renderTags = (tags?: string[]) => {
-    if (!tags || tags.length === 0) return null;
+  const renderTags = (tags?: string[] | any) => {
+    // Ensure tags is an array (defensive check)
+    if (!tags) return null;
+    
+    // Convert to array if it's not already (handles string or other types)
+    const tagsArray = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
+    
+    if (tagsArray.length === 0) return null;
+    
     return (
       <div className="flex flex-wrap gap-1 mt-2">
-        {tags.map((tag) => (
+        {tagsArray.map((tag) => (
           <span
             key={tag}
             className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"

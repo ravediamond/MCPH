@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateUploadUrl } from "@/services/storageService";
+import { uploadCrate } from "@/services/storageService";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,17 +18,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate pre-signed URL for direct upload to GCS
-    const { url, fileId, gcsPath } = await generateUploadUrl(
+    // Use uploadCrate with null buffer to get a presigned URL
+    const result = await uploadCrate(
+      null, // No buffer provided means we're requesting a presigned URL
       fileName,
       contentType,
-      ttlHours,
+      {
+        ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+      }
     );
 
     return NextResponse.json(
       {
-        uploadUrl: url,
-        fileId,
+        uploadUrl: result.presignedUrl,
+        fileId: result.id,
         expiresIn: "15 minutes",
         fileName,
         contentType,

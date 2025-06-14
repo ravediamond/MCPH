@@ -37,19 +37,17 @@ export interface FileMetadata {
 }
 
 /**
- * Generate a pre-signed URL for uploading a file directly to GCS
+ * Generate a pre-signed URL for uploading a crate directly to GCS
+ * This is a helper function used only by uploadCrate
  */
-export async function generateUploadUrl(
+async function generatePresignedUrl(
+  crateId: string,
   fileName: string,
   contentType: string,
-  ttlDays?: number, // Changed from ttlHours to ttlDays
-): Promise<{ url: string; fileId: string; gcsPath: string }> {
+): Promise<{ url: string; gcsPath: string }> {
   try {
-    // Generate a unique ID for the file
-    const fileId = uuidv4();
-
-    // Generate GCS path
-    const gcsPath = `${cratesFolder}${fileId}/${encodeURIComponent(fileName)}`;
+    // Generate GCS path for the crate
+    const gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
 
     // Create a GCS file object
     const file = bucket.file(gcsPath);
@@ -65,38 +63,7 @@ export async function generateUploadUrl(
       },
     });
 
-    // Calculate expiration time if provided
-    const uploadedAtDate = new Date(); // Changed from Date.now() to new Date()
-    const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(
-      uploadedAtDate.getTime(), // Pass timestamp number
-      ttlDays,
-    );
-    const expiresAtDate = expiresAtTimestamp
-      ? new Date(expiresAtTimestamp)
-      : undefined; // Convert to Date or undefined
-
-    // Prepare file metadata
-    const fileData: FileMetadata = {
-      id: fileId,
-      fileName,
-      title: fileName, // Use fileName as the default title
-      contentType,
-      size: 0, // Will be updated when file is uploaded
-      gcsPath,
-      uploadedAt: uploadedAtDate, // Store as Date
-      expiresAt: expiresAtDate, // Store as Date or undefined
-      downloadCount: 0,
-    };
-
-    // Store metadata in Firestore
-    await saveCrateMetadata({
-      ...fileData, // fileData now has Date objects
-      // Ensure Date objects are passed; new Date(Date object) is fine.
-      uploadedAt: new Date(fileData.uploadedAt),
-      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
-    } as any);
-
-    return { url, fileId, gcsPath };
+    return { url, gcsPath };
   } catch (error: any) {
     console.error("Error generating upload URL:", error);
     if (
@@ -119,196 +86,82 @@ export async function generateUploadUrl(
 }
 
 /**
- * Upload a file directly to Google Cloud Storage (server-side)
- * This is kept for backward compatibility or server-side uploads
- */
-export async function uploadFile(
-  fileBuffer: Buffer,
-  fileName: string,
-  contentType: string,
-  ttlDays?: number, // Changed from ttlHours to ttlDays
-  title?: string,
-  description?: string,
-  fileType?: string, // Added fileType parameter
-  metadata?: Record<string, string>,
-): Promise<FileMetadata> {
-  try {
-    // Generate a unique ID for the file
-    const fileId = uuidv4();
-
-    // Generate GCS path
-    const gcsPath = `${cratesFolder}${fileId}/${encodeURIComponent(fileName)}`;
-
-    // Create a GCS file object
-    const file = bucket.file(gcsPath);
-
-    // Check if the file should be compressed based on content type and filename
-    const shouldUseCompression = shouldCompress(contentType, fileName);
-    let bufferToSave = fileBuffer;
-    let compressionMetadata = null;
-
-    // Apply compression if appropriate
-    if (shouldUseCompression) {
-      console.log(`Compressing file: ${fileName} (${contentType})`);
-      try {
-        const result = await compressBuffer(fileBuffer);
-        bufferToSave = result.compressedBuffer;
-        compressionMetadata = result.compressionMetadata;
-        console.log(
-          `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
-        );
-      } catch (compressionError) {
-        console.error(
-          "Error during compression, using original buffer:",
-          compressionError,
-        );
-      }
-    }
-
-    // Upload the file with metadata
-    await file.save(bufferToSave, {
-      metadata: {
-        contentType,
-        metadata: {
-          fileId,
-          originalName: fileName,
-          ...(title && { title }),
-          ...(description && { description }),
-          ...(fileType && { fileType }), // Add fileType to metadata if provided
-          uploadedAt: Date.now().toString(),
-          ...(compressionMetadata && {
-            compressed: "true",
-            compressionMethod: compressionMetadata.compressionMethod,
-            originalSize: compressionMetadata.originalSize.toString(),
-            compressionRatio: compressionMetadata.compressionRatio.toFixed(2),
-          }),
-        },
-      },
-      resumable: false,
-    });
-
-    // Prepare file metadata
-    const uploadedAtDate = new Date(); // Changed from Date.now() to new Date()
-
-    // Calculate expiration time using DATA_TTL
-    const expiresAtTimestamp = DATA_TTL.getExpirationTimestamp(
-      uploadedAtDate.getTime(), // Pass timestamp number
-      ttlDays,
-    );
-    const expiresAtDate = expiresAtTimestamp
-      ? new Date(expiresAtTimestamp)
-      : undefined; // Convert to Date or undefined
-
-    // --- Generate searchText field ---
-    const metaString = metadata
-      ? Object.entries(metadata)
-          .map(([k, v]) => `${k} ${v}`)
-          .join(" ")
-      : "";
-    const searchText = [title, fileName, description, metaString]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    const fileData: FileMetadata & { searchText?: string } = {
-      id: fileId,
-      fileName,
-      title: title || fileName, // Use filename as title if not provided
-      ...(description && { description }),
-      contentType,
-      size: bufferToSave.length,
-      fileType: fileType || "file", // Use provided fileType or default to 'file'
-      gcsPath,
-      uploadedAt: uploadedAtDate, // Store as Date
-      expiresAt: expiresAtDate, // Store as Date or undefined
-      downloadCount: 0,
-      ...(compressionMetadata && {
-        compressed: true,
-        originalSize: compressionMetadata.originalSize,
-        compressionMethod: compressionMetadata.compressionMethod,
-        compressionRatio: compressionMetadata.compressionRatio,
-      }),
-      ...(metadata && { metadata }),
-      searchText,
-    };
-
-    // Store metadata in Firestore
-    await saveCrateMetadata({
-      ...fileData, // fileData now has Date objects
-      // Ensure Date objects are passed; new Date(Date object) is fine.
-      uploadedAt: new Date(fileData.uploadedAt),
-      expiresAt: fileData.expiresAt ? new Date(fileData.expiresAt) : undefined,
-    } as any);
-
-    return fileData;
-  } catch (error) {
-    console.error("Error uploading file to GCS:", error);
-    throw new Error("Failed to upload file");
-  }
-}
-
-/**
- * Upload a file as a Crate with the unified metadata schema
+ * Upload a crate with presigned URL capability
+ * This is the unified upload function for all crates
  */
 export async function uploadCrate(
-  fileBuffer: Buffer,
+  fileBuffer: Buffer | null,
   fileName: string,
   contentType: string,
   crateData: Partial<Crate>,
-): Promise<Crate> {
+): Promise<Crate & { presignedUrl?: string }> {
   try {
     // Generate a unique ID for the crate
     const crateId = crateData.id || uuidv4();
 
-    // Generate GCS path for the crate
-    const gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
-
-    // Create a GCS file object
-    const file = bucket.file(gcsPath);
-
-    // Check if the file should be compressed based on content type and filename
-    const shouldUseCompression = shouldCompress(contentType, fileName);
-    let bufferToSave = fileBuffer;
+    // Generate a presigned URL for client-side uploads if no buffer is provided
+    let gcsPath = "";
+    let presignedUrl: string | undefined = undefined;
     let compressionMetadata = null;
+    let fileSize = 0;
+    
+    if (!fileBuffer) {
+      // Generate presigned URL for client-side upload
+      const presignedUrlData = await generatePresignedUrl(crateId, fileName, contentType);
+      gcsPath = presignedUrlData.gcsPath;
+      presignedUrl = presignedUrlData.url;
+    } else {
+      // Server-side upload with the provided buffer
+      gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
+      
+      // Create a GCS file object
+      const file = bucket.file(gcsPath);
+      
+      // Check if the file should be compressed based on content type and filename
+      const shouldUseCompression = shouldCompress(contentType, fileName);
+      let bufferToSave = fileBuffer;
 
-    // Apply compression if appropriate
-    if (shouldUseCompression) {
-      console.log(`Compressing crate: ${fileName} (${contentType})`);
-      try {
-        const result = await compressBuffer(fileBuffer);
-        bufferToSave = result.compressedBuffer;
-        compressionMetadata = result.compressionMetadata;
-        console.log(
-          `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
-        );
-      } catch (compressionError) {
-        console.error(
-          "Error during compression, using original buffer:",
-          compressionError,
-        );
+      // Apply compression if appropriate
+      if (shouldUseCompression) {
+        console.log(`Compressing crate: ${fileName} (${contentType})`);
+        try {
+          const result = await compressBuffer(fileBuffer);
+          bufferToSave = result.compressedBuffer;
+          compressionMetadata = result.compressionMetadata;
+          console.log(
+            `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
+          );
+        } catch (compressionError) {
+          console.error(
+            "Error during compression, using original buffer:",
+            compressionError,
+          );
+        }
       }
-    }
 
-    // Upload the file with metadata
-    await file.save(bufferToSave, {
-      metadata: {
-        contentType,
+      fileSize = bufferToSave.length;
+
+      // Upload the file with metadata
+      await file.save(bufferToSave, {
         metadata: {
-          crateId,
-          originalName: fileName,
-          title: crateData.title || fileName,
-          ...(crateData.description && { description: crateData.description }),
-          ...(crateData.category && { category: crateData.category }),
-          ...(compressionMetadata && {
-            compressed: "true",
-            compressionMethod: compressionMetadata.compressionMethod,
-            originalSize: compressionMetadata.originalSize.toString(),
-            compressionRatio: compressionMetadata.compressionRatio.toFixed(2),
-          }),
+          contentType,
+          metadata: {
+            crateId,
+            originalName: fileName,
+            title: crateData.title || fileName,
+            ...(crateData.description && { description: crateData.description }),
+            ...(crateData.category && { category: crateData.category }),
+            ...(compressionMetadata && {
+              compressed: "true",
+              compressionMethod: compressionMetadata.compressionMethod,
+              originalSize: compressionMetadata.originalSize.toString(),
+              compressionRatio: compressionMetadata.compressionRatio.toFixed(2),
+            }),
+          },
         },
-      },
-      resumable: false,
-    });
+        resumable: false,
+      });
+    }
 
     // Create the searchField for hybrid search
     const metaString = crateData.metadata
@@ -356,7 +209,7 @@ export async function uploadCrate(
       shared: sharing,
       tags: crateData.tags || [], // Ensure tags is an array, not undefined
       searchField,
-      size: bufferToSave.length,
+      size: fileSize,
       downloadCount: 0,
       metadata: crateData.metadata || {}, // Ensure metadata is an object, not undefined
       fileName: fileName, // Add the fileName field
@@ -372,7 +225,8 @@ export async function uploadCrate(
     // Log the upload event
     await logEvent("crate_upload", crateId);
 
-    return completeCrate;
+    // Return the crate data with presigned URL if applicable
+    return presignedUrl ? { ...completeCrate, presignedUrl } : completeCrate;
   } catch (error) {
     console.error("Error uploading crate to GCS:", error);
     throw new Error("Failed to upload crate");

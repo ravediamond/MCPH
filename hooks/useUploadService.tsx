@@ -37,9 +37,6 @@ export const useUploadService = () => {
    */
   const uploadCrate = async (file: File, options: UploadOptions = {}): Promise<UploadResult> => {
     try {
-      // In a real implementation, this would call your API
-      // For this example, we'll simulate success
-      
       // Apply defaults for missing options
       const finalOptions = {
         title: options.title || file.name,
@@ -48,19 +45,55 @@ export const useUploadService = () => {
         password: options.password || "",
         tags: options.tags || [],
         expiresInDays: options.expiresInDays || 30, // Default to 30 days
-        sharing: options.sharing || CrateSharing.PUBLIC,
+        sharing: options.sharing || { public: true },
       };
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create form data for the API call
+      const formData = new FormData();
+      formData.append("file", file);
       
-      // Generate a random ID to simulate upload success
-      const crateId = Math.random().toString(36).substring(2, 15);
+      // Add all options to the form data
+      if (finalOptions.title) formData.append("title", finalOptions.title);
+      if (finalOptions.description) formData.append("description", finalOptions.description);
+      if (finalOptions.category) formData.append("fileType", finalOptions.category);
+      if (finalOptions.password) formData.append("password", finalOptions.password);
+      if (finalOptions.expiresInDays) formData.append("ttl", (finalOptions.expiresInDays * 24).toString());
+      
+      // Add tags if present
+      if (finalOptions.tags && finalOptions.tags.length > 0) {
+        formData.append("tags", JSON.stringify(finalOptions.tags));
+      }
+      
+      // Add auth token if user is logged in
+      const headers: Record<string, string> = {};
+      if (user && getIdToken) {
+        try {
+          const token = await getIdToken();
+          if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+          }
+        } catch (e) {
+          console.error("Failed to get auth token:", e);
+        }
+      }
+      
+      // Make the actual API call
+      const response = await fetch("/api/uploads", {
+        method: "POST",
+        body: formData,
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Upload failed with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
       
       return {
         success: true,
-        id: crateId,
-        url: `https://mcph.io/crate/${crateId}`,
+        id: data.id,
+        url: data.downloadUrl,
       };
     } catch (error) {
       console.error("Upload failed:", error);

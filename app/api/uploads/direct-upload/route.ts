@@ -112,6 +112,22 @@ export async function POST(req: NextRequest) {
         console.warn("Invalid metadata provided, ignoring:", metadataRaw);
       }
     }
+    
+    // Parse tags if provided
+    let tags: string[] | undefined = undefined;
+    const tagsRaw = formData.get("tags");
+    if (tagsRaw) {
+      try {
+        tags = JSON.parse(tagsRaw.toString());
+        // Ensure tags is an array
+        if (!Array.isArray(tags)) {
+          tags = [];
+        }
+      } catch (e) {
+        console.warn("Invalid tags format, ignoring:", tagsRaw);
+        tags = [];
+      }
+    }
 
     // Upload the file to storage as a crate
     const crateData = await uploadCrate(buffer, file.name, file.type, {
@@ -122,6 +138,7 @@ export async function POST(req: NextRequest) {
       ttlDays,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
+      tags, // Add the parsed tags
     });
 
     // --- VECTOR EMBEDDING GENERATION ---

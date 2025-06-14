@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadFile } from "@/services/storageService";
+import { uploadCrate } from "@/services/storageService";
 
 // Helper to get client IP
 function getClientIp(req: NextRequest): string {
@@ -70,17 +70,19 @@ export async function POST(req: NextRequest) {
     // Decide upload method based on fileType
     if (fileType === "file") {
       // Use presigned URL flow for generic/binary files
-      const { generateUploadUrl } = await import("@/services/storageService");
-      const { url, fileId, gcsPath } = await generateUploadUrl(
+      const result = await uploadCrate(
+        null, // No buffer provided means we're requesting a presigned URL
         file.name,
         file.type,
-        ttlHours,
+        {
+          ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+        }
       );
+      
       return NextResponse.json(
         {
-          uploadUrl: url,
-          fileId,
-          gcsPath,
+          uploadUrl: result.presignedUrl,
+          fileId: result.id,
           message: "Upload your file using this URL with a PUT request.",
         },
         { status: 201 },
@@ -89,35 +91,53 @@ export async function POST(req: NextRequest) {
 
     // Otherwise, do a normal upload (text, image, etc.)
     const buffer = Buffer.from(await file.arrayBuffer());
-    const fileData = await uploadFile(
+    
+    // Parse tags if provided
+    let tags: string[] | undefined = undefined;
+    const tagsRaw = formData.get("tags");
+    if (tagsRaw) {
+      try {
+        tags = JSON.parse(tagsRaw.toString());
+        // Ensure tags is an array
+        if (!Array.isArray(tags)) {
+          tags = [];
+        }
+      } catch (e) {
+        console.warn("Invalid tags format, ignoring:", tagsRaw);
+        tags = [];
+      }
+    }
+    
+    const crateData = await uploadCrate(
       buffer,
       file.name,
       file.type,
-      ttlHours,
-      undefined, // title
-      undefined, // description
-      fileType, // pass fileType
-      metadata, // pass metadata
+      {
+        ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+        metadata,
+        category: fileType ? fileType as any : undefined,
+        tags: tags, // Add the parsed tags
+      }
     );
 
-    // Generate download page URL
-    const downloadUrl = new URL(`/download/${fileData.id}`, req.url).toString();
+    // Generate crate page URL
+    const downloadUrl = new URL(`/crate/${crateData.id}`, req.url).toString();
 
     // Log the upload event
     console.log(
-      `File uploaded: ${fileData.id}, name: ${file.name}, size: ${file.size}`,
+      `File uploaded: ${crateData.id}, name: ${file.name}, size: ${file.size}`,
     );
 
     return NextResponse.json(
       {
-        id: fileData.id,
-        fileId: fileData.id, // For consistency with other endpoints
-        fileName: fileData.fileName,
-        contentType: fileData.contentType,
-        size: fileData.size,
-        uploadedAt: fileData.uploadedAt,
-        expiresAt: fileData.expiresAt,
-        downloadUrl: downloadUrl, // Add the download page URL
+        id: crateData.id,
+        fileId: crateData.id, // For consistency with other endpoints
+        fileName: crateData.fileName,
+        contentType: crateData.mimeType,
+        size: crateData.size,
+        uploadedAt: crateData.createdAt,
+        expiresAt: crateData.ttlDays ? new Date(crateData.createdAt.getTime() + crateData.ttlDays * 24 * 60 * 60 * 1000) : undefined,
+        downloadUrl: downloadUrl, // Add the crate page URL
       },
       { status: 201 },
     );
