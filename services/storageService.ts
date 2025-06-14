@@ -678,7 +678,6 @@ function getDefaultCategoryForFile(
   return CrateCategory.BINARY;
 }
 
-// Define MIME type to category mappings
 const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/png": CrateCategory.IMAGE,
   "image/jpeg": CrateCategory.IMAGE,
@@ -687,19 +686,15 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/svg+xml": CrateCategory.IMAGE,
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
-  "application/json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  "text/csv": CrateCategory.CODE, // Changed from CrateCategory.DATA for v1 simplification
+  "application/json": CrateCategory.JSON,
+  "text/csv": CrateCategory.CODE,
   "text/plain": CrateCategory.CODE, // Default text to code
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
   "text/css": CrateCategory.CODE,
-  // Add more specific code types if needed, e.g.:
-  // "application/x-python": CrateCategory.CODE,
-  // "application/xml": CrateCategory.CODE,
 };
 
-// Define file extension to category mappings
 const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".png": CrateCategory.IMAGE,
   ".jpg": CrateCategory.IMAGE,
@@ -709,8 +704,8 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".svg": CrateCategory.IMAGE,
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
-  ".json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  ".csv": CrateCategory.CODE, // Changed from CrateCategory.DATA for v1 simplification
+  ".json": CrateCategory.JSON,
+  ".csv": CrateCategory.CODE,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
