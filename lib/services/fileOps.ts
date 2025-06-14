@@ -32,7 +32,7 @@ export interface CompressionResult {
 export async function compressBuffer(
   buffer: Buffer,
   contentType?: string,
-  fileName?: string
+  fileName?: string,
 ): Promise<CompressionResult | null> {
   // If contentType and fileName are provided, check if we should compress
   if (contentType && fileName && !shouldCompress(contentType, fileName)) {

@@ -75,12 +75,12 @@ export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
  * @returns Promise resolving to the crate metadata or null if not found
  */
 export async function getCrateMetadata(
-  crateId: string, 
-  incrementDownloads: boolean = false
+  crateId: string,
+  incrementDownloads: boolean = false,
 ): Promise<Crate | null> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
-    
+
     // If increment flag is true, perform an atomic update before getting the document
     if (incrementDownloads) {
       try {
@@ -88,10 +88,13 @@ export async function getCrateMetadata(
           downloadCount: FieldValue.increment(1),
         });
       } catch (updateError) {
-        console.warn(`Failed to increment download count for crate ${crateId}:`, updateError);
+        console.warn(
+          `Failed to increment download count for crate ${crateId}:`,
+          updateError,
+        );
       }
     }
-    
+
     const doc = await docRef.get();
 
     if (!doc.exists) {

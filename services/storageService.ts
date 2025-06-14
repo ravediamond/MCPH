@@ -8,11 +8,11 @@ import { logEvent, deleteCrateMetadata } from "./firebaseService";
 import {
   generateSignedUploadUrl,
   generateSignedDownloadUrl,
-  saveCrateMetadata, 
+  saveCrateMetadata,
   getCrateMetadata,
-  compressBuffer, 
+  compressBuffer,
   decompressBuffer,
-  resolveCategory
+  resolveCategory,
 } from "../lib/services";
 
 // Re-export metadata functions for backward compatibility
@@ -64,7 +64,7 @@ export async function uploadCrate(
       const presignedUrlData = await generateSignedUploadUrl(
         crateId,
         fileName,
-        contentType
+        contentType,
       );
       gcsPath = presignedUrlData.gcsPath;
       presignedUrl = presignedUrlData.url;
@@ -77,11 +77,11 @@ export async function uploadCrate(
 
       // Try to compress the file using our improved FileOps module
       let bufferToSave = fileBuffer;
-      
+
       try {
         console.log(`Attempting to compress: ${fileName} (${contentType})`);
         const result = await compressBuffer(fileBuffer, contentType, fileName);
-        
+
         if (result) {
           bufferToSave = result.compressedBuffer;
           compressionMetadata = result.compressionMetadata;
@@ -89,7 +89,9 @@ export async function uploadCrate(
             `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
           );
         } else {
-          console.log(`Compression skipped for ${fileName}: not compressible or no benefit`);
+          console.log(
+            `Compression skipped for ${fileName}: not compressible or no benefit`,
+          );
         }
       } catch (compressionError) {
         console.error(
@@ -164,8 +166,7 @@ export async function uploadCrate(
       createdAt: new Date(),
       ttlDays: crateData.ttlDays || DATA_TTL.DEFAULT_DAYS,
       mimeType: contentType,
-      category:
-        crateData.category || resolveCategory(fileName, contentType),
+      category: crateData.category || resolveCategory(fileName, contentType),
       gcsPath: gcsPath,
       shared: sharing,
       tags: crateData.tags || [], // Ensure tags is an array, not undefined
@@ -216,7 +217,7 @@ export async function getSignedDownloadUrl(
     const url = await generateSignedDownloadUrl(
       gcsPath,
       actualFileName,
-      expiresInMinutes
+      expiresInMinutes,
     );
 
     // Increment download count by calling getCrateMetadata with increment flag

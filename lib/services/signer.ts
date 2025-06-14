@@ -8,8 +8,8 @@ import { bucket } from "../gcpStorageClient";
  * Result of generating a pre-signed URL
  */
 export interface SignedUrlResult {
-  url: string;      // The pre-signed URL for upload
-  gcsPath: string;  // The GCS path where the file will be stored
+  url: string; // The pre-signed URL for upload
+  gcsPath: string; // The GCS path where the file will be stored
 }
 
 /**
@@ -24,7 +24,7 @@ export async function generateSignedUploadUrl(
   fileId: string,
   fileName: string,
   contentType: string,
-  expiresInMinutes: number = 15
+  expiresInMinutes: number = 15,
 ): Promise<SignedUrlResult> {
   try {
     // Generate GCS path for the file
@@ -53,12 +53,12 @@ export async function generateSignedUploadUrl(
     ) {
       throw new Error(
         "Failed to generate upload URL due to a signing error. " +
-          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials."
+          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials.",
       );
     }
     throw new Error(
       "Failed to generate upload URL. Original error: " +
-        (error.message || "Unknown error")
+        (error.message || "Unknown error"),
     );
   }
 }
@@ -73,7 +73,7 @@ export async function generateSignedUploadUrl(
 export async function generateSignedDownloadUrl(
   gcsPath: string,
   fileName: string,
-  expiresInMinutes: number = 60
+  expiresInMinutes: number = 60,
 ): Promise<string> {
   try {
     // Create a GCS file object

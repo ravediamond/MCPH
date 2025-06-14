@@ -14,16 +14,16 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/gif": CrateCategory.IMAGE,
   "image/webp": CrateCategory.IMAGE,
   "image/svg+xml": CrateCategory.IMAGE,
-  
+
   // Markdown
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
-  
+
   // JSON
   "application/json": CrateCategory.JSON,
   "text/x-json": CrateCategory.JSON,
   "application/x-json": CrateCategory.JSON,
-  
+
   // Code
   "text/csv": CrateCategory.CODE,
   "text/plain": CrateCategory.CODE,
@@ -48,14 +48,14 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".gif": CrateCategory.IMAGE,
   ".webp": CrateCategory.IMAGE,
   ".svg": CrateCategory.IMAGE,
-  
+
   // Markdown
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
-  
+
   // JSON
   ".json": CrateCategory.JSON,
-  
+
   // Code
   ".csv": CrateCategory.CODE,
   ".js": CrateCategory.CODE,
@@ -79,7 +79,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
  */
 export function resolveCategory(
   fileName: string,
-  contentType: string
+  contentType: string,
 ): CrateCategory {
   // First check MIME type
   if (contentType && MIME_TYPE_TO_CATEGORY[contentType]) {
