@@ -1,19 +1,22 @@
 import { v4 as uuidv4 } from "uuid";
-import { bucket, cratesFolder } from "../lib/gcpStorageClient";
-import {
-  saveCrateMetadata,
-  getCrateMetadata,
-  deleteCrateMetadata,
-  incrementCrateDownloadCount,
-  logEvent,
-} from "./firebaseService";
+import { bucket } from "../lib/gcpStorageClient";
 import { DATA_TTL } from "../app/config/constants";
-import {
-  shouldCompress,
-  compressBuffer,
-  decompressBuffer,
-} from "../lib/compressionUtils";
 import { Crate, CrateCategory, CrateSharing } from "../app/types/crate";
+import { logEvent, deleteCrateMetadata } from "./firebaseService";
+
+// Import our new modular services
+import {
+  generateSignedUploadUrl,
+  generateSignedDownloadUrl,
+  saveCrateMetadata, 
+  getCrateMetadata,
+  compressBuffer, 
+  decompressBuffer,
+  resolveCategory
+} from "../lib/services";
+
+// Re-export metadata functions for backward compatibility
+export { saveCrateMetadata, getCrateMetadata };
 
 export interface FileMetadata {
   id: string;
@@ -37,55 +40,6 @@ export interface FileMetadata {
 }
 
 /**
- * Generate a pre-signed URL for uploading a crate directly to GCS
- * This is a helper function used only by uploadCrate
- */
-async function generatePresignedUrl(
-  crateId: string,
-  fileName: string,
-  contentType: string,
-): Promise<{ url: string; gcsPath: string }> {
-  try {
-    // Generate GCS path for the crate
-    const gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
-
-    // Create a GCS file object
-    const file = bucket.file(gcsPath);
-
-    // Generate a signed URL for uploads
-    const [url] = await file.getSignedUrl({
-      version: "v4",
-      action: "write",
-      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-      contentType,
-      extensionHeaders: {
-        "x-goog-content-length-range": "0,104857600", // Limit to 100MB
-      },
-    });
-
-    return { url, gcsPath };
-  } catch (error: any) {
-    console.error("Error generating upload URL:", error);
-    if (
-      error.message &&
-      error.message.includes("Cannot sign data without `client_email`")
-    ) {
-      throw new Error(
-        "Failed to generate upload URL due to a signing error. " +
-          "This usually means the GCS client is missing `client_email` or `private_key` in its credentials. " +
-          "If running in production (e.g., Vercel), ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable contains a valid service account JSON key with `client_email` and `private_key`. " +
-          'If running locally, ensure Application Default Credentials (ADC) are configured correctly with a service account key (e.g., via `gcloud auth application-default login` or GOOGLE_APPLICATION_CREDENTIALS) and that the service account has permissions to sign (e.g., "Service Account Token Creator" role).',
-      );
-    }
-    // Fallback for other errors
-    throw new Error(
-      "Failed to generate upload URL. Original error: " +
-        (error.message || "Unknown error"),
-    );
-  }
-}
-
-/**
  * Upload a crate with presigned URL capability
  * This is the unified upload function for all crates
  */
@@ -106,11 +60,11 @@ export async function uploadCrate(
     let fileSize = 0;
 
     if (!fileBuffer) {
-      // Generate presigned URL for client-side upload
-      const presignedUrlData = await generatePresignedUrl(
+      // Generate presigned URL for client-side upload using our Signer module
+      const presignedUrlData = await generateSignedUploadUrl(
         crateId,
         fileName,
-        contentType,
+        contentType
       );
       gcsPath = presignedUrlData.gcsPath;
       presignedUrl = presignedUrlData.url;
@@ -121,26 +75,27 @@ export async function uploadCrate(
       // Create a GCS file object
       const file = bucket.file(gcsPath);
 
-      // Check if the file should be compressed based on content type and filename
-      const shouldUseCompression = shouldCompress(contentType, fileName);
+      // Try to compress the file using our improved FileOps module
       let bufferToSave = fileBuffer;
-
-      // Apply compression if appropriate
-      if (shouldUseCompression) {
-        console.log(`Compressing crate: ${fileName} (${contentType})`);
-        try {
-          const result = await compressBuffer(fileBuffer);
+      
+      try {
+        console.log(`Attempting to compress: ${fileName} (${contentType})`);
+        const result = await compressBuffer(fileBuffer, contentType, fileName);
+        
+        if (result) {
           bufferToSave = result.compressedBuffer;
           compressionMetadata = result.compressionMetadata;
           console.log(
             `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
           );
-        } catch (compressionError) {
-          console.error(
-            "Error during compression, using original buffer:",
-            compressionError,
-          );
+        } else {
+          console.log(`Compression skipped for ${fileName}: not compressible or no benefit`);
         }
+      } catch (compressionError) {
+        console.error(
+          "Error during compression, using original buffer:",
+          compressionError,
+        );
       }
 
       fileSize = bufferToSave.length;
@@ -210,7 +165,7 @@ export async function uploadCrate(
       ttlDays: crateData.ttlDays || DATA_TTL.DEFAULT_DAYS,
       mimeType: contentType,
       category:
-        crateData.category || getDefaultCategoryForFile(fileName, contentType),
+        crateData.category || resolveCategory(fileName, contentType),
       gcsPath: gcsPath,
       shared: sharing,
       tags: crateData.tags || [], // Ensure tags is an array, not undefined
@@ -257,26 +212,15 @@ export async function getSignedDownloadUrl(
     const actualFileName = fileName || metadata.title;
     const gcsPath = metadata.gcsPath;
 
-    // Get the file
-    const file = bucket.file(gcsPath);
+    // Generate signed download URL using our Signer module
+    const url = await generateSignedDownloadUrl(
+      gcsPath,
+      actualFileName,
+      expiresInMinutes
+    );
 
-    // Check if file exists
-    const [exists] = await file.exists();
-    if (!exists) {
-      throw new Error("File not found in storage");
-    }
-
-    // Generate a signed URL
-    const [url] = await file.getSignedUrl({
-      version: "v4",
-      action: "read",
-      expires: Date.now() + expiresInMinutes * 60 * 1000,
-      // Set content disposition to force download with original filename
-      responseDisposition: `attachment; filename="${encodeURIComponent(actualFileName)}"`,
-    });
-
-    // Increment download count in Firestore
-    await incrementCrateDownloadCount(fileId);
+    // Increment download count by calling getCrateMetadata with increment flag
+    await getCrateMetadata(fileId, true);
 
     // Log the download event
     await logEvent("file_download", fileId);
@@ -389,7 +333,7 @@ export async function getFileContent(fileId: string): Promise<{
         );
 
         // Increment download count
-        await incrementCrateDownloadCount(fileId);
+        await getCrateMetadata(fileId, true);
 
         return { buffer: decompressedContent, metadata };
       } catch (decompressionError) {
@@ -400,7 +344,7 @@ export async function getFileContent(fileId: string): Promise<{
     }
 
     // Increment download count
-    await incrementCrateDownloadCount(fileId);
+    await getCrateMetadata(fileId, true);
 
     return { buffer: content, metadata };
   } catch (error) {
@@ -451,7 +395,7 @@ export async function getFileStream(fileId: string): Promise<{
     const stream = file.createReadStream();
 
     // Increment download count
-    await incrementCrateDownloadCount(fileId);
+    await getCrateMetadata(fileId, true);
 
     return { stream, metadata };
   } catch (error) {
@@ -496,7 +440,7 @@ export async function getCrateContent(crateId: string): Promise<{
         const decompressedContent = await decompressBuffer(content);
 
         // Increment download count
-        await incrementCrateDownloadCount(crateId);
+        await getCrateMetadata(crateId, true);
 
         return { buffer: decompressedContent, crate };
       } catch (decompressionError) {
@@ -507,7 +451,7 @@ export async function getCrateContent(crateId: string): Promise<{
     }
 
     // Increment download count
-    await incrementCrateDownloadCount(crateId);
+    await getCrateMetadata(crateId, true);
 
     return { buffer: content, crate };
   } catch (error) {
@@ -515,64 +459,3 @@ export async function getCrateContent(crateId: string): Promise<{
     throw new Error("Failed to get crate content");
   }
 }
-
-/**
- * Get the default category for a file based on its extension and MIME type
- */
-function getDefaultCategoryForFile(
-  fileName: string,
-  mimeType: string,
-): CrateCategory {
-  // First check MIME type
-  if (mimeType && MIME_TYPE_TO_CATEGORY[mimeType]) {
-    return MIME_TYPE_TO_CATEGORY[mimeType];
-  }
-
-  // Then check file extension
-  const extension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
-  if (extension && EXTENSION_TO_CATEGORY[extension]) {
-    return EXTENSION_TO_CATEGORY[extension];
-  }
-
-  // Default to binary if we can't determine the category
-  return CrateCategory.BINARY;
-}
-
-const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
-  "image/png": CrateCategory.IMAGE,
-  "image/jpeg": CrateCategory.IMAGE,
-  "image/gif": CrateCategory.IMAGE,
-  "image/webp": CrateCategory.IMAGE,
-  "image/svg+xml": CrateCategory.IMAGE,
-  "text/markdown": CrateCategory.MARKDOWN,
-  "text/x-markdown": CrateCategory.MARKDOWN,
-  "application/json": CrateCategory.JSON,
-  "text/csv": CrateCategory.CODE,
-  "text/plain": CrateCategory.CODE, // Default text to code
-  "application/javascript": CrateCategory.CODE,
-  "text/javascript": CrateCategory.CODE,
-  "text/html": CrateCategory.CODE,
-  "text/css": CrateCategory.CODE,
-};
-
-const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
-  ".png": CrateCategory.IMAGE,
-  ".jpg": CrateCategory.IMAGE,
-  ".jpeg": CrateCategory.IMAGE,
-  ".gif": CrateCategory.IMAGE,
-  ".webp": CrateCategory.IMAGE,
-  ".svg": CrateCategory.IMAGE,
-  ".md": CrateCategory.MARKDOWN,
-  ".markdown": CrateCategory.MARKDOWN,
-  ".json": CrateCategory.JSON,
-  ".csv": CrateCategory.CODE,
-  ".js": CrateCategory.CODE,
-  ".ts": CrateCategory.CODE,
-  ".html": CrateCategory.CODE,
-  ".css": CrateCategory.CODE,
-  ".py": CrateCategory.CODE,
-  ".java": CrateCategory.CODE,
-  ".xml": CrateCategory.CODE,
-  ".txt": CrateCategory.CODE,
-  ".log": CrateCategory.CODE,
-};
