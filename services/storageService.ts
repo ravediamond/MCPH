@@ -355,11 +355,11 @@ export async function uploadCrate(
         crateData.category || getDefaultCategoryForFile(fileName, contentType),
       gcsPath: gcsPath,
       shared: sharing,
-      tags: crateData.tags,
+      tags: crateData.tags || [], // Ensure tags is an array, not undefined
       searchField,
       size: bufferToSave.length,
       downloadCount: 0,
-      metadata: crateData.metadata,
+      metadata: crateData.metadata || {}, // Ensure metadata is an object, not undefined
       fileName: fileName, // Add the fileName field
       ...(compressionMetadata && {
         compressed: true,
@@ -689,7 +689,7 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
   "application/json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  "text/csv": CrateCategory.DATA,
+  "text/csv": CrateCategory.CODE, // Changed from CrateCategory.DATA for v1 simplification
   "text/plain": CrateCategory.CODE, // Default text to code
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
@@ -711,7 +711,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
   ".json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  ".csv": CrateCategory.DATA,
+  ".csv": CrateCategory.CODE, // Changed from CrateCategory.DATA for v1 simplification
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
@@ -721,8 +721,6 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".xml": CrateCategory.CODE,
   ".txt": CrateCategory.CODE, // Default .txt to code
   ".log": CrateCategory.CODE, // Default .log to code
-  ".todolist": CrateCategory.TODOLIST,
-  ".mmd": CrateCategory.DIAGRAM,
-  ".diagram": CrateCategory.DIAGRAM,
+  // Removed for v1: TODOLIST, DIAGRAM
   // Add more extensions as needed
 };

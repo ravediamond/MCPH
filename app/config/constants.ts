@@ -36,10 +36,7 @@ export const API = {
  * These constants are used for managing data expiration.
  */
 export const DATA_TTL = {
-  /** Available TTL options in days */
-  OPTIONS: [1, 7, 30],
-
-  /** Default TTL in days */
+  /** Fixed TTL value in days (simplified for v1) */
   DEFAULT_DAYS: 30,
 
   /** Maximum TTL in days (for the current release) */
@@ -59,12 +56,8 @@ export const DATA_TTL = {
    * @returns Expiration timestamp in milliseconds since epoch.
    */
   getExpirationTimestamp: (baseTimestamp: number, ttlDays?: number): number => {
-    const days =
-      ttlDays &&
-      DATA_TTL.OPTIONS.includes(ttlDays) &&
-      ttlDays <= DATA_TTL.MAX_DAYS
-        ? ttlDays
-        : DATA_TTL.DEFAULT_DAYS;
+    // Simplified for v1 - always use default TTL
+    const days = DATA_TTL.DEFAULT_DAYS;
     return baseTimestamp + days * 24 * 60 * 60 * 1000;
   },
 };

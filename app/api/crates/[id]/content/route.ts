@@ -115,9 +115,8 @@ export async function GET(
     // Check access permissions
     const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared.public;
-    const isSharedWithUser =
-      Array.isArray(crate.shared.sharedWith) &&
-      crate.shared.sharedWith.includes(userId);
+    // Simplified for v1: No per-user sharing, only public/private
+    const isSharedWithUser = false; // Removed sharedWith array in v1
 
     console.log(
       `[Content Route] Access check - isOwner: ${isOwner}, isPublic: ${isPublic}, isSharedWithUser: ${isSharedWithUser}`,
@@ -243,9 +242,8 @@ export async function POST(
     // Check access permissions
     const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared.public;
-    const isSharedWithUser =
-      Array.isArray(crate.shared.sharedWith) &&
-      crate.shared.sharedWith.includes(userId);
+    // Simplified for v1: No per-user sharing, only public/private
+    const isSharedWithUser = false; // Removed sharedWith array in v1
 
     // Check password if required and not the owner
     if (!isOwner && crate.shared.passwordProtected) {

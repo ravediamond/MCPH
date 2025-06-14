@@ -16,9 +16,9 @@ const useCases = [
     image: "/icon.png",
   },
   {
-    title: "Share Images, Diagrams, or CSVs",
+    title: "Share Images or Code Files",
     description:
-      "Send visuals and data to anyone with a single click—no email or signup needed.",
+      "Send visuals and code snippets to anyone with a single click—no email or signup needed.",
     image: "/icon.png",
   },
   {

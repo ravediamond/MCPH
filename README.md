@@ -15,11 +15,10 @@ MCPHub is a public remote crate server for the Model Context Protocol (MCP). It 
 ## Features at a Glance
 
 - **Direct AI Integration**: Connect ChatGPT, Claude, and other MCP-compatible AI tools directly to share content
-- **Multiple Content Types**: Share markdown, code, diagrams, images, to-do lists, and structured data
-- **Security Features**: Password protection and automatic expiration for all content
+- **Multiple Content Types**: Share markdown, code, images, JSON, and binary files
+- **Security Features**: Password protection and automatic 30-day expiration for all content
 - **Simple Sharing**: Generate shareable links that anyone can access - no login required to view content
-- **Enhanced Link Management**: Manage sharing permissions and access control from one convenient interface
-- **Improved Content Preview**: Better visualization and interaction with different content types
+- **Enhanced Content Preview**: Better visualization and interaction with different content types
 - **MCP Protocol Support**: Built on the standardized Model Context Protocol for AI interoperability
 
 ## Quick Start

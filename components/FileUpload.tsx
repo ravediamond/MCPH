@@ -34,28 +34,18 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [
-  ".txt",
-  ".md",
-  ".markdown",
-  ".json",
-  ".text",
-  ".todolist",
-];
+const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text"];
 
-// Available crate categories that users can select
+// Available crate categories that users can select (simplified for v1)
 const CRATE_CATEGORIES = [
   { value: CrateCategory.BINARY, label: "Generic File" },
-  { value: CrateCategory.DATA, label: "Data" },
   { value: CrateCategory.IMAGE, label: "Image" },
   { value: CrateCategory.MARKDOWN, label: "Markdown" },
-  { value: CrateCategory.TODOLIST, label: "To-Do List" },
-  { value: CrateCategory.DIAGRAM, label: "Diagram" },
   { value: CrateCategory.CODE, label: "Code" },
   { value: CrateCategory.JSON, label: "JSON" },
 ];
 
-// Mapping of MIME types to crate categories
+// Mapping of MIME types to crate categories (simplified for v1)
 const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/png": CrateCategory.IMAGE,
   "image/jpeg": CrateCategory.IMAGE,
@@ -64,8 +54,7 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/svg+xml": CrateCategory.IMAGE,
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
-  "application/json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  "text/csv": CrateCategory.DATA,
+  "application/json": CrateCategory.JSON,
   "text/plain": CrateCategory.CODE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
@@ -73,7 +62,7 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/css": CrateCategory.CODE,
 };
 
-// Mapping of file extensions to crate categories
+// Mapping of file extensions to crate categories (simplified for v1)
 const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".png": CrateCategory.IMAGE,
   ".jpg": CrateCategory.IMAGE,
@@ -83,15 +72,11 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".svg": CrateCategory.IMAGE,
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
-  ".json": CrateCategory.JSON, // Changed from CrateCategory.DATA
-  ".csv": CrateCategory.DATA,
+  ".json": CrateCategory.JSON,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
-  ".todolist": CrateCategory.TODOLIST,
-  ".mmd": CrateCategory.DIAGRAM,
-  ".diagram": CrateCategory.DIAGRAM,
 };
 
 // Type definition update to include new Crate fields
@@ -581,27 +566,14 @@ export default function FileUpload({
                 </p>
               </div>
 
-              {/* TTL Selector */}
+              {/* TTL Information - Simplified for v1 */}
               <div className="mb-4">
-                <label
-                  htmlFor="ttlSelect"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Set Time-To-Live (TTL):
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Time-To-Live (TTL):
                 </label>
-                <select
-                  id="ttlSelect"
-                  value={selectedTtlDays}
-                  onChange={(e) => setSelectedTtlDays(Number(e.target.value))}
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  disabled={isUploading}
-                >
-                  {DATA_TTL.OPTIONS.map((days) => (
-                    <option key={days} value={days}>
-                      {days} day{days > 1 ? "s" : ""}
-                    </option>
-                  ))}
-                </select>
+                <div className="mt-1 py-2 px-3 border border-gray-300 bg-gray-50 rounded-md text-sm">
+                  {DATA_TTL.DEFAULT_DAYS} days
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   The crate will be automatically deleted after this period.
                 </p>

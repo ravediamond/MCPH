@@ -20,7 +20,7 @@ export default function Home() {
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
             MCPH is a simple way to store and share content created by AI
             systems. Connect ChatGPT or Claude directly to MCPH and instantly
-            generate shareable links for diagrams, code, markdown, and more.
+            generate shareable links for code, markdown, images, and more.
           </p>
 
           {/* Carousel: Use Cases */}
@@ -127,8 +127,8 @@ export default function Home() {
                 Multiple Content Types
               </h3>
               <p className="text-gray-600 text-sm">
-                Share diagrams, code snippets, markdown documents, images, to-do
-                lists, and more. Each content type has an optimized viewing
+                Share code snippets, markdown documents, images, JSON files, and
+                binary files. Each content type has an optimized viewing
                 experience.
               </p>
             </div>
@@ -153,8 +153,8 @@ export default function Home() {
               </div>
               <h3 className="font-medium mb-2 text-gray-800">Secure Sharing</h3>
               <p className="text-gray-600 text-sm">
-                Password-protect sensitive content and set automatic expiration
-                dates. All links can be shared with anyone - no account needed
+                Password-protect sensitive content with a simple password
+                option. All links can be shared with anyone - no account needed
                 to view shared content.
               </p>
             </div>
@@ -239,7 +239,7 @@ export default function Home() {
             What Can You Share?
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg text-center shadow-sm">
               <div className="text-blue-600 mb-2">
                 <svg
@@ -258,26 +258,6 @@ export default function Home() {
                 </svg>
               </div>
               <p className="text-sm font-medium">Markdown</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg text-center shadow-sm">
-              <div className="text-blue-600 mb-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 mx-auto"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                  />
-                </svg>
-              </div>
-              <p className="text-sm font-medium">Diagrams</p>
             </div>
 
             <div className="bg-white p-4 rounded-lg text-center shadow-sm">
@@ -318,6 +298,46 @@ export default function Home() {
                 </svg>
               </div>
               <p className="text-sm font-medium">Images</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+              <div className="text-blue-600 mb-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-medium">JSON</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg text-center shadow-sm">
+              <div className="text-blue-600 mb-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm font-medium">Binary Files</p>
             </div>
           </div>
         </div>

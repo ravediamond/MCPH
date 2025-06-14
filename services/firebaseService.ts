@@ -159,9 +159,12 @@ const toFirestoreData = (data: any): any => {
   // Deep copy the object and handle Date conversion
   const result = { ...data };
 
-  // Convert Date objects to Firestore timestamps
+  // Filter out undefined values and convert Date objects to Firestore timestamps
   Object.keys(result).forEach((key) => {
-    if (result[key] instanceof Date) {
+    if (result[key] === undefined) {
+      // Remove undefined values as Firestore doesn't accept them
+      delete result[key];
+    } else if (result[key] instanceof Date) {
       // We'll keep it as a Date; Firestore will convert it automatically
     } else if (typeof result[key] === "object" && result[key] !== null) {
       result[key] = toFirestoreData(result[key]);
@@ -306,8 +309,8 @@ export async function logEvent(
       type: eventType,
       resourceId,
       timestamp,
-      ipAddress,
-      details,
+      ipAddress: ipAddress || null, // Use null instead of undefined
+      details: details || null, // Use null instead of undefined
     };
 
     // Add to the events collection with auto-generated ID

@@ -4,12 +4,10 @@
 
 /**
  * Supported content categories and their rendering strategy
+ * Simplified for v1 launch
  */
 export enum CrateCategory {
   MARKDOWN = "markdown", // Render via Markdown viewer
-  TODOLIST = "todolist", // Render in custom To-Do-List component
-  DIAGRAM = "diagram", // Render in Mermaid (or equivalent) diagram viewer
-  DATA = "data", // Display as table or JSON tree
   CODE = "code", // Syntax-highlighted code block
   IMAGE = "image", // Inline <img> preview + download button
   JSON = "json", // Render as JSON tree or raw JSON
@@ -18,10 +16,10 @@ export enum CrateCategory {
 
 /**
  * Access Control List (ACL) for a Crate
+ * Simplified for v1 release
  */
 export interface CrateSharing {
-  public: boolean; // Open link ACL
-  sharedWith?: string[]; // Explicit UIDs allowed
+  public: boolean; // Open link ACL - simple toggle
   passwordProtected?: boolean; // Whether download is password-guarded
   passwordHash?: string | null; // Hash of the password (null if no password)
   passwordSalt?: string | null; // Salt for the password (null if no password)

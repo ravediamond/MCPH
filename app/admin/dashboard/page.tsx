@@ -5,48 +5,14 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Define a type for the stats
+// Define a type for the stats (simplified for v1)
 interface AdminStats {
   // Core metrics
   totalCrates?: number;
   totalUsers?: number;
-  totalMcpCalls?: number;
-
-  // Per-user metrics
-  averageCratesPerUser?: number;
-  averageMcpCallsPerUser?: number;
-  maxCratesPerUser?: number;
-  maxMcpCallsPerUser?: number;
-  userWithMostCrates?: { userId: string; count: number; email?: string };
-  userWithMostMcpCalls?: { userId: string; count: number; email?: string };
-
-  // Time-based metrics
-  maxMcpCallsPerDay?: number;
-  mcpCallsTrend?: Array<{ date: string; count: number }>;
-  activeUsersLast30Days?: number;
-  newUsersLast30Days?: number;
-
-  // Client metrics
-  topClients?: Array<{ clientId: string; count: number; name?: string }>;
-
-  // Storage metrics
-  totalStorage?: number;
-  storageUtilization?: number;
-  avgCrateSize?: number;
-
-  // Distribution metrics
-  topFileTypes?: Array<{ type: string; count: number }>;
-  userGrowthRate?: number;
-  cratesDistribution?: {
-    smallCrates: number; // < 1MB
-    mediumCrates: number; // 1MB-10MB
-    largeCrates: number; // 10MB-100MB
-    veryLargeCrates: number; // >100MB
-  };
-
-  // API usage metrics
-  apiKeysTotal?: number;
-  apiKeyUsageAvg?: number;
+  totalDownloads?: number;
+  totalViews?: number;
+  totalMcpCalls?: number; // Added for MCP calls tracking
 }
 
 const AdminDashboardPage: React.FC = () => {
@@ -79,20 +45,13 @@ const AdminDashboardPage: React.FC = () => {
 
           const headers = { Authorization: `Bearer ${token}` };
 
-          // Fetch all stats in parallel for better performance
-          const [
-            cratesResponse,
-            usersResponse,
-            mcpCallsResponse,
-            storageResponse,
-            firestoreResponse,
-          ] = await Promise.all([
-            fetch("/api/admin/stats/crates", { headers }),
-            fetch("/api/admin/stats/users", { headers }),
-            fetch("/api/admin/stats/mcp-calls", { headers }),
-            fetch("/api/admin/stats/storage", { headers }),
-            fetch("/api/admin/stats/firestore", { headers }),
-          ]);
+          // Simplified for v1: Fetch only core stats
+          const [cratesResponse, usersResponse, mcpCallsResponse] =
+            await Promise.all([
+              fetch("/api/admin/stats/crates", { headers }),
+              fetch("/api/admin/stats/users", { headers }),
+              fetch("/api/admin/stats/mcp-calls", { headers }),
+            ]);
 
           // Check responses and parse data
           if (!cratesResponse.ok) {
@@ -107,66 +66,20 @@ const AdminDashboardPage: React.FC = () => {
           }
           const usersData = await usersResponse.json();
 
-          if (!mcpCallsResponse.ok) {
-            const errorData = await mcpCallsResponse.json();
-            throw new Error(
-              errorData.error || "Failed to fetch MCP call stats",
-            );
+          // Process MCP calls data
+          let mcpCallsData = { totalCalls: 0 };
+          if (mcpCallsResponse.ok) {
+            mcpCallsData = await mcpCallsResponse.json();
           }
-          const mcpCallsData = await mcpCallsResponse.json();
 
-          if (!storageResponse.ok) {
-            const errorData = await storageResponse.json();
-            throw new Error(errorData.error || "Failed to fetch storage stats");
-          }
-          const storageData = await storageResponse.json();
-
-          if (!firestoreResponse.ok) {
-            const errorData = await firestoreResponse.json();
-            console.warn("Firestore stats warning:", errorData.error);
-            // Don't throw here, just log a warning since this is optional
-          }
-          const firestoreData = firestoreResponse.ok
-            ? await firestoreResponse.json()
-            : {};
-
-          // Combine all stats into one object
+          // Combine simplified stats
           setStats({
-            // Core metrics
+            // Core metrics only for v1
             totalCrates: cratesData.count,
             totalUsers: usersData.count,
-            totalMcpCalls: mcpCallsData.totalCalls,
-
-            // Per-user metrics
-            averageCratesPerUser: cratesData.averagePerUser,
-            averageMcpCallsPerUser: mcpCallsData.averagePerUser,
-            maxCratesPerUser: cratesData.maxPerUser,
-            maxMcpCallsPerUser: mcpCallsData.maxPerUser,
-            userWithMostCrates: cratesData.userWithMost,
-            userWithMostMcpCalls: mcpCallsData.userWithMost,
-
-            // Time-based metrics
-            maxMcpCallsPerDay: mcpCallsData.maxPerDay,
-            mcpCallsTrend: mcpCallsData.trend,
-            activeUsersLast30Days: usersData.activeUsersLast30Days,
-            newUsersLast30Days: usersData.newUsersLast30Days,
-
-            // Client metrics
-            topClients: mcpCallsData.topClients,
-
-            // Storage metrics
-            totalStorage: storageData.totalStorage,
-            storageUtilization: storageData.utilization,
-            avgCrateSize: storageData.avgCrateSize,
-
-            // Distribution metrics
-            topFileTypes: storageData.topFileTypes,
-            userGrowthRate: usersData.userGrowthRate,
-            cratesDistribution: storageData.sizeDistribution,
-
-            // API usage metrics
-            apiKeysTotal: firestoreData.apiKeysCount,
-            apiKeyUsageAvg: firestoreData.apiKeyUsageAvg,
+            totalDownloads: cratesData.totalDownloads || 0,
+            totalViews: cratesData.totalViews || 0,
+            totalMcpCalls: mcpCallsData.totalCalls || 0, // Map totalCalls to totalMcpCalls for dashboard
           });
         } catch (err) {
           setError(
@@ -318,496 +231,177 @@ const AdminDashboardPage: React.FC = () => {
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">User Metrics</h2>
 
-            {/* Per-user averages */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Avg. Crates Per User
-                </h3>
-                <p className="text-2xl font-bold text-gray-800">
-                  {stats.averageCratesPerUser?.toFixed(1) ?? "N/A"}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Avg. MCP Calls Per User
-                </h3>
-                <p className="text-2xl font-bold text-gray-800">
-                  {stats.averageMcpCallsPerUser?.toFixed(1) ?? "N/A"}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  New Users (30 days)
-                </h3>
-                <p className="text-2xl font-bold text-gray-800">
-                  {stats.newUsersLast30Days?.toLocaleString() ?? "N/A"}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Active Users (30 days)
-                </h3>
-                <p className="text-2xl font-bold text-gray-800">
-                  {stats.activeUsersLast30Days?.toLocaleString() ?? "N/A"}
-                </p>
-                <div className="mt-1 text-xs text-gray-500">
-                  {stats.totalUsers && stats.activeUsersLast30Days
-                    ? `${((stats.activeUsersLast30Days / stats.totalUsers) * 100).toFixed(1)}% of total users`
-                    : ""}
+            {/* Simplified v1 metrics note */}
+            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+              <div className="flex items-start">
+                <div className="text-blue-600 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
-              </div>
-            </div>
-
-            {/* Top Users Highlight */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-              {stats.userWithMostCrates && (
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h3 className="text-blue-800 text-sm font-medium mb-1">
-                    User with Most Crates
-                  </h3>
-                  <p className="text-xl font-bold text-blue-900">
-                    {stats.userWithMostCrates.count?.toLocaleString() ?? "N/A"}{" "}
-                    crates
-                  </p>
-                  <div className="mt-1 text-xs text-blue-700 truncate">
-                    User:{" "}
-                    {stats.userWithMostCrates.email ||
-                      stats.userWithMostCrates.userId ||
-                      "Unknown"}
-                  </div>
-                </div>
-              )}
-
-              {stats.userWithMostMcpCalls && (
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                  <h3 className="text-purple-800 text-sm font-medium mb-1">
-                    User with Most MCP Calls
-                  </h3>
-                  <p className="text-xl font-bold text-purple-900">
-                    {stats.userWithMostMcpCalls.count?.toLocaleString() ??
-                      "N/A"}{" "}
-                    calls
-                  </p>
-                  <div className="mt-1 text-xs text-purple-700 truncate">
-                    User:{" "}
-                    {stats.userWithMostMcpCalls.email ||
-                      stats.userWithMostMcpCalls.userId ||
-                      "Unknown"}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* User Growth Rate */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
-              <div className="flex items-center">
                 <div>
-                  <h3 className="text-gray-700 text-sm font-medium mb-1">
-                    User Growth Rate (30 days)
-                  </h3>
-                  <p className="text-2xl font-bold text-green-700">
-                    {stats.userGrowthRate !== undefined
-                      ? `${stats.userGrowthRate > 0 ? "+" : ""}${stats.userGrowthRate.toFixed(1)}%`
-                      : "N/A"}
+                  <p className="font-medium text-blue-800">
+                    Simplified Metrics for v1
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Detailed user metrics will be available in future updates.
+                    Current dashboard shows core platform statistics only.
                   </p>
                 </div>
-                {stats.userGrowthRate !== undefined && (
-                  <div className="ml-auto text-5xl">
-                    {stats.userGrowthRate > 0
-                      ? "📈"
-                      : stats.userGrowthRate < 0
-                        ? "📉"
-                        : "➡️"}
+              </div>
+            </div>
+
+            {/* Basic user stats - simplified for v1 */}
+            <div className="bg-gray-50 rounded-lg p-5">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">
+                User Overview
+              </h3>
+              <div className="flex flex-col md:flex-row md:justify-between">
+                <div className="mb-4 md:mb-0">
+                  <div className="text-sm text-gray-600">
+                    Total Registered Users
                   </div>
-                )}
+                  <div className="text-2xl font-bold">
+                    {stats.totalUsers?.toLocaleString() ?? "N/A"}
+                  </div>
+                </div>
+                <div className="mb-4 md:mb-0">
+                  <div className="text-sm text-gray-600">Content Created</div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalCrates?.toLocaleString() ?? "N/A"} crates
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">API Usage</div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalMcpCalls?.toLocaleString() ?? "N/A"} calls
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* MCP API Usage Stats */}
+          {/* MCP API Usage Stats - Simplified for v1 */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">MCP API Usage</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-              <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Max MCP Calls Per Day
-                </h3>
-                <p className="text-2xl font-bold text-purple-700">
-                  {stats.maxMcpCallsPerDay?.toLocaleString() ?? "N/A"}
-                </p>
-                <div className="mt-1 text-xs text-gray-600">
-                  Highest volume of API calls in a single day
+            {/* Simplified v1 metrics note */}
+            <div className="bg-purple-50 rounded-lg p-4 mb-6 border border-purple-200">
+              <div className="flex items-start">
+                <div className="text-purple-600 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Max MCP Calls Per User
-                </h3>
-                <p className="text-2xl font-bold text-indigo-700">
-                  {stats.maxMcpCallsPerUser?.toLocaleString() ?? "N/A"}
-                </p>
-                <div className="mt-1 text-xs text-gray-600">
-                  Highest API usage by a single user
+                <div>
+                  <p className="font-medium text-purple-800">
+                    Basic API Stats for v1
+                  </p>
+                  <p className="text-sm text-purple-700">
+                    Detailed API usage analytics will be available in future
+                    versions. Currently showing basic usage metrics.
+                  </p>
                 </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  API Keys
-                </h3>
-                <p className="text-2xl font-bold text-blue-700">
-                  {stats.apiKeysTotal?.toLocaleString() ?? "N/A"}
-                </p>
-                <div className="mt-1 text-xs text-gray-600">
-                  Total active API keys
-                </div>
-                {stats.apiKeyUsageAvg && (
-                  <div className="mt-1 text-xs text-gray-600">
-                    Avg. usage: {stats.apiKeyUsageAvg.toFixed(1)} calls/key
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* MCP Calls Trend Chart */}
-            {stats.mcpCallsTrend && stats.mcpCallsTrend.length > 0 && (
-              <div className="bg-white rounded-lg p-4 border border-gray-200 mb-6">
-                <h3 className="text-gray-700 text-sm font-medium mb-3">
-                  MCP API Calls Trend
-                </h3>
-                <div className="h-48 w-full">
-                  {/* This is where a chart would go - for now we'll show a simple bar representation */}
-                  <div className="flex h-36 items-end space-x-1">
-                    {stats.mcpCallsTrend.map((point, i) => {
-                      const maxCount = Math.max(
-                        ...stats.mcpCallsTrend!.map((p) => p.count),
-                      );
-                      const height =
-                        maxCount > 0 ? (point.count / maxCount) * 100 : 0;
-                      return (
-                        <div key={i} className="flex flex-col items-center">
-                          <div
-                            className="w-6 bg-purple-500 rounded-t"
-                            style={{ height: `${height}%` }}
-                          ></div>
-                          <div className="text-xs text-gray-500 mt-1 -rotate-45 origin-top-left whitespace-nowrap">
-                            {point.date}
-                          </div>
-                        </div>
-                      );
-                    })}
+            {/* Basic MCP stats - simplified for v1 */}
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-5">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">
+                API Overview
+              </h3>
+              <div className="flex flex-col md:flex-row md:justify-between">
+                <div>
+                  <div className="text-sm text-gray-600">
+                    Total MCP API Calls
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalMcpCalls?.toLocaleString() ?? "N/A"}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Lifetime API usage
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* MCP Calls Per Client */}
-            {stats.topClients && stats.topClients.length > 0 && (
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <h3 className="text-gray-700 text-lg font-medium mb-3">
-                  Top Clients by MCP Calls
-                </h3>
-
-                {/* Visual representation - horizontal bar chart */}
-                <div className="mb-4">
-                  {stats.topClients.slice(0, 5).map((client, index) => {
-                    const percentage = stats.totalMcpCalls
-                      ? (client.count / stats.totalMcpCalls) * 100
-                      : 0;
-                    const maxCount = Math.max(
-                      ...stats.topClients!.slice(0, 5).map((c) => c.count),
-                    );
-                    const width =
-                      maxCount > 0 ? (client.count / maxCount) * 100 : 0;
-
-                    return (
-                      <div key={index} className="mb-3">
-                        <div className="flex justify-between items-center mb-1">
-                          <span
-                            className="text-sm font-medium truncate"
-                            style={{ maxWidth: "60%" }}
-                          >
-                            {client.name || client.clientId}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {client.count.toLocaleString()} (
-                            {percentage.toFixed(1)}%)
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                          <div
-                            className="bg-purple-600 h-2.5 rounded-full"
-                            style={{ width: `${width}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Rank
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Client ID
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Client Name
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Call Count
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          % of Total
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {stats.topClients.map((client, index) => (
-                        <tr
-                          key={index}
-                          className={
-                            index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                          }
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {index + 1}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {client.clientId}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {client.name || "Unknown"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {client.count.toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {stats.totalMcpCalls &&
-                              (
-                                (client.count / stats.totalMcpCalls) *
-                                100
-                              ).toFixed(2)}
-                            %
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
-          {/* Crate Stats and Storage */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Crate Distribution */}
-            <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">
-                Crate Distribution
-              </h2>
+          {/* Simplified Crate Stats for v1 */}
+          <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Crate Statistics</h2>
 
-              {stats.cratesDistribution ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-blue-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-blue-800">
-                        Small Crates (&lt;1MB)
-                      </h3>
-                      <p className="text-xl font-bold text-blue-700">
-                        {stats.cratesDistribution.smallCrates.toLocaleString()}
-                      </p>
-                      {stats.totalCrates && (
-                        <div className="text-xs text-blue-600 mt-1">
-                          {(
-                            (stats.cratesDistribution.smallCrates /
-                              stats.totalCrates) *
-                            100
-                          ).toFixed(1)}
-                          % of total
-                        </div>
-                      )}
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-green-800">
-                        Medium Crates (1-10MB)
-                      </h3>
-                      <p className="text-xl font-bold text-green-700">
-                        {stats.cratesDistribution.mediumCrates.toLocaleString()}
-                      </p>
-                      {stats.totalCrates && (
-                        <div className="text-xs text-green-600 mt-1">
-                          {(
-                            (stats.cratesDistribution.mediumCrates /
-                              stats.totalCrates) *
-                            100
-                          ).toFixed(1)}
-                          % of total
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-orange-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-orange-800">
-                        Large Crates (10-100MB)
-                      </h3>
-                      <p className="text-xl font-bold text-orange-700">
-                        {stats.cratesDistribution.largeCrates.toLocaleString()}
-                      </p>
-                      {stats.totalCrates && (
-                        <div className="text-xs text-orange-600 mt-1">
-                          {(
-                            (stats.cratesDistribution.largeCrates /
-                              stats.totalCrates) *
-                            100
-                          ).toFixed(1)}
-                          % of total
-                        </div>
-                      )}
-                    </div>
-                    <div className="bg-red-50 rounded-lg p-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Very Large Crates (&gt;100MB)
-                      </h3>
-                      <p className="text-xl font-bold text-red-700">
-                        {stats.cratesDistribution.veryLargeCrates.toLocaleString()}
-                      </p>
-                      {stats.totalCrates && (
-                        <div className="text-xs text-red-600 mt-1">
-                          {(
-                            (stats.cratesDistribution.veryLargeCrates /
-                              stats.totalCrates) *
-                            100
-                          ).toFixed(1)}
-                          % of total
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            {/* Simplified v1 metrics note */}
+            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+              <div className="flex items-start">
+                <div className="text-blue-600 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                 </div>
-              ) : (
-                <div className="text-gray-500 italic">
-                  Size distribution data not available
+                <div>
+                  <p className="font-medium text-blue-800">
+                    Basic Crate Stats for v1
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Detailed file statistics and storage metrics will be
+                    available in future updates.
+                  </p>
                 </div>
-              )}
-
-              {/* Average Crate Size */}
-              <div className="mt-6 bg-gray-50 rounded-lg p-4">
-                <h3 className="text-gray-700 text-sm font-medium mb-1">
-                  Average Crate Size
-                </h3>
-                <p className="text-2xl font-bold text-gray-800">
-                  {formatFileSize(stats.avgCrateSize || 0)}
-                </p>
               </div>
             </div>
 
-            {/* Storage Utilization */}
-            <div className="bg-white shadow-lg rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">
-                Storage Utilization
-              </h2>
-
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-gray-700 text-sm font-medium">
-                    Total Storage
-                  </h3>
-                  <span className="text-xl font-bold text-blue-700">
-                    {formatFileSize(stats.totalStorage || 0)}
-                  </span>
-                </div>
-
-                {/* Storage utilization progress bar */}
-                {stats.storageUtilization !== undefined && (
-                  <div>
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>
-                        Utilization: {stats.storageUtilization.toFixed(1)}%
-                      </span>
-                      <span
-                        className={
-                          stats.storageUtilization > 90
-                            ? "text-red-600 font-bold"
-                            : ""
-                        }
-                      >
-                        {stats.storageUtilization > 90
-                          ? "CRITICAL"
-                          : stats.storageUtilization > 70
-                            ? "High"
-                            : "Normal"}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-4">
-                      <div
-                        className={`h-4 rounded-full ${
-                          stats.storageUtilization > 90
-                            ? "bg-red-600"
-                            : stats.storageUtilization > 70
-                              ? "bg-orange-500"
-                              : "bg-green-600"
-                        }`}
-                        style={{
-                          width: `${Math.min(100, stats.storageUtilization)}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Top File Types */}
-              {stats.topFileTypes && stats.topFileTypes.length > 0 && (
+            {/* Basic crate stats - simplified for v1 */}
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5">
+              <h3 className="text-lg font-medium text-gray-800 mb-4">
+                Crate Overview
+              </h3>
+              <div className="flex flex-col md:flex-row md:justify-between">
                 <div>
-                  <h3 className="text-gray-700 text-lg font-medium mb-3">
-                    Top File Types
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {stats.topFileTypes.slice(0, 4).map((item, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 rounded-lg p-3 flex items-center"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                          <span className="text-indigo-700 font-bold text-sm">
-                            {getFileTypeEmoji(item.type)}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">{item.type}</div>
-                          <div className="text-lg font-bold">
-                            {item.count.toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="text-sm text-gray-600">Total Crates</div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalCrates?.toLocaleString() ?? "N/A"}
                   </div>
                 </div>
-              )}
+                <div>
+                  <div className="text-sm text-gray-600">Total Downloads</div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalDownloads?.toLocaleString() ?? "N/A"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">Total Views</div>
+                  <div className="text-2xl font-bold">
+                    {stats.totalViews?.toLocaleString() ?? "N/A"}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -815,24 +409,6 @@ const AdminDashboardPage: React.FC = () => {
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Admin Actions</h2>
             <div className="flex flex-wrap gap-4">
-              <button
-                className="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors"
-                onClick={() => {
-                  // Export stats to CSV logic would go here
-                  alert("This would export current stats data to CSV");
-                }}
-              >
-                Export Stats to CSV
-              </button>
-              <button
-                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-                onClick={() => {
-                  // Generate report logic would go here
-                  alert("This would generate a full PDF report");
-                }}
-              >
-                Generate Full Report
-              </button>
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 onClick={() => {

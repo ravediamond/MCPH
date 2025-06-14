@@ -84,10 +84,6 @@ export async function POST(req: NextRequest) {
         category = CrateCategory.IMAGE;
       } else if (file.name.endsWith(".md") || file.name.endsWith(".markdown")) {
         category = CrateCategory.MARKDOWN;
-      } else if (file.name.endsWith(".todolist")) {
-        category = CrateCategory.TODOLIST;
-      } else if (file.name.endsWith(".mmd") || file.name.endsWith(".diagram")) {
-        category = CrateCategory.DIAGRAM;
       } else if (file.type.includes("json") || file.name.endsWith(".json")) {
         // Added check for .json extension
         category = CrateCategory.JSON;
@@ -108,10 +104,11 @@ export async function POST(req: NextRequest) {
     // Parse sharing settings
     const isPublic = formData.get("public") === "true";
     const passwordProtected = formData.get("password") ? true : false;
-    const sharedWithStr = formData.get("sharedWith")?.toString();
-    const sharedWith = sharedWithStr
-      ? sharedWithStr.split(",").map((uid) => uid.trim())
-      : undefined;
+    // Simplified for v1: No per-user sharing lists
+    // const sharedWithStr = formData.get("sharedWith")?.toString();
+    // const sharedWith = sharedWithStr
+    //   ? sharedWithStr.split(",").map((uid) => uid.trim())
+    //   : undefined;
 
     // If the crate is public and the user is authenticated, check shared crates limit
     if (isPublic && userId !== "anonymous") {
@@ -134,7 +131,7 @@ export async function POST(req: NextRequest) {
     const sharing: CrateSharing = {
       public: isPublic,
       passwordProtected,
-      ...(sharedWith && { sharedWith }),
+      // Simplified for v1: No per-user sharing lists
     };
 
     // Parse metadata if provided (expects JSON string or array of key-value pairs)

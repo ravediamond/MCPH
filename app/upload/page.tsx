@@ -49,32 +49,23 @@ export default function UploadPage() {
                 </h2>
                 <ul className="list-disc pl-5 text-gray-700 text-sm space-y-2">
                   <li>
-                    <b>Data (CSV, TSV):</b> Tabular crate files, visualized as
-                    tables or charts.
-                  </li>
-                  <li>
                     <b>Markdown:</b> .md crates, rendered as formatted text with
                     headings, lists, and code blocks.
                   </li>
                   <li>
-                    <b>To-Do List:</b> .todolist or .md files formatted as a
-                    task list (e.g., "- [ ] Task"). Rendered as an interactive
-                    checklist.
+                    <b>Code:</b> Code files with syntax highlighting for
+                    multiple languages.
                   </li>
                   <li>
                     <b>JSON:</b> .json crates, shown as formatted code or parsed
                     data.
                   </li>
                   <li>
-                    <b>Diagram (Mermaid):</b> .mmd, .mermaid, or .md files using
-                    Mermaid syntax. Rendered as diagrams.
-                  </li>
-                  <li>
                     <b>Image:</b> Common image formats (PNG, JPG, GIF, SVG),
                     displayed as images.
                   </li>
                   <li>
-                    <b>Generic Crate:</b> Any binary crate that cannot be
+                    <b>Binary Files:</b> Any binary crate that cannot be
                     streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not
                     previewed and must be downloaded to view.
                   </li>
@@ -87,9 +78,7 @@ export default function UploadPage() {
               <ul className="space-y-3 text-gray-600 text-sm">
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>
-                  <span>
-                    Set your preferred expiration time with the TTL options
-                  </span>
+                  <span>All crates automatically expire after 30 days</span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-primary-500 font-bold mr-2">•</span>

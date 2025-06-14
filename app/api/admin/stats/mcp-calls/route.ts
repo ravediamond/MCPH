@@ -168,6 +168,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       totalCalls,
+      totalMcpCalls: totalCalls, // Add this alias to match the expected interface property
       averagePerUser: averageCallsPerUser,
       maxPerUser: maxCallsPerUser,
       maxPerDay: maxCallsPerDay,
