@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   FaUpload,
@@ -125,6 +125,8 @@ export default function FileUpload({
   // Sharing state
   const [isShared, setIsShared] = useState<boolean>(false); // New: sharing toggle
   const [password, setPassword] = useState<string>(""); // New: optional password
+  // Collapsible advanced options state
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -159,7 +161,7 @@ export default function FileUpload({
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `Crate is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `File is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
       );
       return;
     }
@@ -194,10 +196,44 @@ export default function FileUpload({
     setFileType(detectedCategory);
   }, []); // Keep dependencies minimal, assuming MIME_TYPE_TO_CATEGORY and EXTENSION_TO_CATEGORY are stable
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
     onDrop,
     multiple: false,
+    noClick: false,
   });
+  
+  // Add an effect to show the full-width highlight when dragging over the form
+  useEffect(() => {
+    const handleFormDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      if (!formRef.current) return;
+      formRef.current.classList.add('ring-4', 'ring-[#ff7a32]/30');
+    };
+    
+    const handleFormDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      if (!formRef.current) return;
+      formRef.current.classList.remove('ring-4', 'ring-[#ff7a32]/30');
+    };
+    
+    const handleFormDrop = (e: DragEvent) => {
+      if (!formRef.current) return;
+      formRef.current.classList.remove('ring-4', 'ring-[#ff7a32]/30');
+    };
+    
+    const formElement = formRef.current;
+    if (formElement) {
+      formElement.addEventListener('dragover', handleFormDragOver);
+      formElement.addEventListener('dragleave', handleFormDragLeave);
+      formElement.addEventListener('drop', handleFormDrop);
+      
+      return () => {
+        formElement.removeEventListener('dragover', handleFormDragOver);
+        formElement.removeEventListener('dragleave', handleFormDragLeave);
+        formElement.removeEventListener('drop', handleFormDrop);
+      };
+    }
+  }, []);
 
   // Handle metadata changes
   const handleMetadataChange = (
@@ -316,6 +352,32 @@ export default function FileUpload({
         uploadedAt: new Date().toISOString(),
       });
 
+      // Auto-copy the URL to clipboard
+      navigator.clipboard.writeText(crateUrl)
+        .then(() => {
+          setUrlCopied(true);
+          toast.success("Link copied to clipboard!");
+          
+          // Reset copy status after 3 seconds
+          setTimeout(() => setUrlCopied(false), 3000);
+        })
+        .catch(err => {
+          console.error("Failed to copy: ", err);
+        });
+
+      // Auto-copy the URL to clipboard
+      navigator.clipboard.writeText(crateUrl)
+        .then(() => {
+          setUrlCopied(true);
+          toast.success("Link copied to clipboard!");
+          
+          // Reset copy status after 3 seconds
+          setTimeout(() => setUrlCopied(false), 3000);
+        })
+        .catch(err => {
+          console.error("Failed to copy: ", err);
+        });
+
       // Reset form
       if (formRef.current) {
         formRef.current.reset();
@@ -426,27 +488,34 @@ export default function FileUpload({
                   type="text"
                   readOnly
                   value={uploadedFile.downloadUrl}
-                  className="w-full bg-white py-2 px-3 pr-20 rounded-md text-sm border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full bg-white py-2 px-3 pr-24 rounded-md text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ff7a32]"
                   onClick={(e) => (e.target as HTMLInputElement).select()}
+                  aria-label="Generated file link"
                 />
                 <div className="absolute right-1 top-1 flex">
                   <button
                     onClick={handleCopyUrl}
-                    className="p-1 text-gray-500 hover:text-primary-500 bg-gray-100 rounded mr-1"
+                    className={`p-1.5 rounded mr-1 flex items-center justify-center ${
+                      urlCopied 
+                        ? "bg-green-100 text-green-700" 
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-[#ff7a32]"
+                    }`}
                     title="Copy to clipboard"
+                    aria-label="Copy link to clipboard"
                   >
                     {urlCopied ? (
-                      <FaCheckCircle className="text-green-500" />
+                      <><FaCheckCircle className="text-green-500 mr-1" /> <span className="text-xs">Copied!</span></>
                     ) : (
-                      <FaCopy />
+                      <><FaCopy className="mr-1" /> <span className="text-xs">Copy</span></>
                     )}
                   </button>
                   <a
                     href={uploadedFile.downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-1 text-gray-500 hover:text-primary-500 bg-gray-100 rounded"
+                    className="p-1.5 bg-gray-100 rounded text-gray-700 hover:bg-gray-200 hover:text-[#ff7a32] flex items-center"
                     title="Open in new tab"
+                    aria-label="Open link in new tab"
                   >
                     <FaExternalLinkAlt />
                   </a>
@@ -456,21 +525,41 @@ export default function FileUpload({
               <div className="mt-4 flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <a
                   href={uploadedFile.downloadUrl}
-                  className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-center text-white rounded-md shadow transition-colors" // Changed to blue
+                  className="inline-block px-4 py-2 border border-[#ff7a32] text-[#ff7a32] hover:bg-[#fff8f3] text-center rounded-md transition-colors"
                 >
-                  Download Crate
+                  Download File
                 </a>
                 <button
                   onClick={() => setUploadedFile(null)}
-                  className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-center text-white rounded-md shadow transition-colors" // Changed to blue
+                  className="inline-block px-4 py-2 bg-[#ff7a32] hover:bg-[#e96d2d] text-center text-white rounded-md shadow transition-colors"
                 >
-                  Upload Another Crate
+                  Upload Another File
                 </button>
+              </div>
+              
+              {/* MCP CLI snippet */}
+              <div className="mt-5 bg-gray-800 rounded-md p-3 text-xs">
+                <div className="flex justify-between mb-1">
+                  <span className="text-gray-400">MCP CLI</span>
+                  <button 
+                    onClick={() => {
+                      const cliCommand = `npx mcp-remote crates/get ${uploadedFile.id}`;
+                      navigator.clipboard.writeText(cliCommand);
+                      toast.success("CLI command copied!");
+                    }}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <FaCopy size={12} />
+                  </button>
+                </div>
+                <div className="font-mono text-green-400">
+                  $ npx mcp-remote crates/get {uploadedFile.id}
+                </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-500 text-center mt-4">
-              Share this link to allow others to download the crate.
+              Give this link to an agent or teammate—no login needed.
             </p>
           </div>
         </div>
@@ -481,12 +570,14 @@ export default function FileUpload({
           className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
         >
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            Upload an Crate
+            Upload a File
           </h2>
 
           <div
             {...getRootProps({
               className: `border-2 border-dashed ${isDragActive ? "border-primary-400 bg-beige-100" : "border-gray-300"} rounded-lg p-8 text-center cursor-pointer hover:bg-beige-50 transition-colors mb-4`,
+              role: "button",
+              "aria-label": "Upload area. Drag and drop files here or click to browse"
             })}
           >
             <input {...getInputProps()} />
@@ -499,10 +590,10 @@ export default function FileUpload({
               ) : (
                 <>
                   <p className="text-gray-600">
-                    Drag & drop an crate here, or click to select
+                    Drag & drop a file here, or click to select
                   </p>
                   <p className="text-xs text-gray-500">
-                    Maximum crate size: 50MB
+                    Maximum file size: 50MB
                   </p>
                 </>
               )}
@@ -510,28 +601,50 @@ export default function FileUpload({
           </div>
 
           {file && (
-            <div className="bg-beige-100 p-3 rounded-md mb-4 flex items-center">
-              <FaFile className="text-primary-400 mr-3" />
-              <div className="overflow-hidden">
-                <p className="font-medium truncate">{file.name}</p>
-                <p className="text-sm text-gray-500">
-                  {formatBytes(file.size)} •{" "}
-                  {file.type || "application/octet-stream"}
-                  {shouldUseFirestore(file) && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                      Text crate
-                    </span>
+            <div className="bg-white p-3 rounded-md mb-4 border border-gray-200 shadow-sm">
+              <div className="flex items-center">
+                <FaFile className="text-primary-400 mr-3" />
+                <div className="overflow-hidden flex-1">
+                  <p className="font-medium truncate">{file.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {formatBytes(file.size)} •{" "}
+                    {file.type || "application/octet-stream"}
+                    {shouldUseFirestore(file) && (
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                        Text file
+                      </span>
+                    )}
+                  </p>
+                  
+                  {isUploading && (
+                    <div className="mt-2">
+                      <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full transition-all duration-300 ease-in-out rounded-full"
+                          style={{
+                            width: `${uploadProgress}%`,
+                            backgroundColor: uploadProgress < 30 
+                              ? '#93c5fd' // light blue
+                              : uploadProgress < 70 
+                                ? '#60a5fa' // medium blue
+                                : '#ff7a32' // orange
+                          }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{Math.round(uploadProgress)}% uploaded</p>
+                    </div>
                   )}
-                </p>
+                </div>
+                <button
+                  type="button"
+                  className="ml-auto text-gray-400 hover:text-red-500"
+                  onClick={() => setFile(null)}
+                  aria-label="Remove crate"
+                  disabled={isUploading}
+                >
+                  <FaTimes />
+                </button>
               </div>
-              <button
-                type="button"
-                className="ml-auto text-gray-400 hover:text-red-500"
-                onClick={() => setFile(null)}
-                aria-label="Remove crate"
-              >
-                <FaTimes />
-              </button>
             </div>
           )}
 
@@ -549,7 +662,7 @@ export default function FileUpload({
                   id="fileTypeSelect"
                   value={fileType}
                   onChange={(e) => setFileType(e.target.value as CrateCategory)}
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
                   disabled={isUploading}
                 >
                   {CRATE_CATEGORIES.map((type) => (
@@ -563,20 +676,7 @@ export default function FileUpload({
                 </p>
               </div>
 
-              {/* TTL Information - Simplified for v1 */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Time-To-Live (TTL):
-                </label>
-                <div className="mt-1 py-2 px-3 border border-gray-300 bg-gray-50 rounded-md text-sm">
-                  {DATA_TTL.DEFAULT_DAYS} days
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  The crate will be automatically deleted after this period.
-                </p>
-              </div>
-
-              {/* Title and Description Fields */}
+              {/* Title Field */}
               <div className="mb-4">
                 <label
                   htmlFor="fileTitle"
@@ -589,8 +689,8 @@ export default function FileUpload({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter a title for your crate"
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  placeholder="Enter a title for your file"
+                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
                   required
                   disabled={isUploading}
                   autoComplete="off"
@@ -598,104 +698,148 @@ export default function FileUpload({
                 />
               </div>
 
-              <div className="mb-4">
-                <label
-                  htmlFor="fileDescription"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Description (optional)
-                </label>
-                <textarea
-                  id="fileDescription"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter a description for your crate"
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  rows={3}
-                  disabled={isUploading}
-                />
-              </div>
-
-              {/* Metadata Key-Value Pairs */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Metadata (optional)
-                </label>
-                {metadataList.map((item, idx) => (
-                  <div key={idx} className="flex items-center mb-2">
-                    <input
-                      type="text"
-                      placeholder="Key"
-                      value={item.key}
-                      onChange={(e) =>
-                        handleMetadataChange(idx, "key", e.target.value)
-                      }
-                      className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
-                      disabled={isUploading}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Value"
-                      value={item.value}
-                      onChange={(e) =>
-                        handleMetadataChange(idx, "value", e.target.value)
-                      }
-                      className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded"
-                      disabled={isUploading}
-                    />
-                    <button
-                      type="button"
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleRemoveMetadata(idx)}
-                      disabled={isUploading}
-                    >
-                      <FaTimes />
-                    </button>
-                  </div>
-                ))}
+              {/* Advanced options toggle */}
+              <div className="mb-4 border-t pt-4">
                 <button
                   type="button"
-                  className="mt-2 px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs"
-                  onClick={handleAddMetadata}
-                  disabled={isUploading}
+                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
+                  className="flex items-center text-sm font-medium text-gray-700 hover:text-[#ff7a32] transition-colors"
                 >
-                  + Add Metadata
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className={`mr-1 transition-transform ${showAdvancedOptions ? 'rotate-90' : ''}`}
+                  >
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                  Advanced options
                 </button>
               </div>
 
-              {/* Sharing Options */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sharing Options:
-                </label>
-                <div className="flex items-center mb-2">
-                  <input
-                    id="isShared"
-                    type="checkbox"
-                    checked={isShared}
-                    onChange={(e) => setIsShared(e.target.checked)}
-                    disabled={isUploading}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isShared" className="text-sm text-gray-700">
-                    Make this crate shared (anyone with the link can download)
-                  </label>
+              {/* Collapsible advanced options section */}
+              {showAdvancedOptions && (
+                <div className="space-y-4 bg-gray-50 p-4 rounded-md border border-gray-200 mb-4">
+                  {/* TTL Information - Simplified for v1 */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Time-To-Live (TTL):
+                    </label>
+                    <div className="mt-1 py-2 px-3 border border-gray-300 bg-gray-50 rounded-md text-sm">
+                      {DATA_TTL.DEFAULT_DAYS} days
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      We auto-delete the file after this time.
+                    </p>
+                  </div>
+
+                  {/* Description Field */}
+                  <div className="mb-4">
+                    <label
+                      htmlFor="fileDescription"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Description (optional)
+                    </label>
+                    <textarea
+                      id="fileDescription"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Enter a description for your file"
+                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
+                      rows={3}
+                      disabled={isUploading}
+                    />
+                  </div>
+
+                  {/* Metadata Key-Value Pairs */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Metadata (optional)
+                    </label>
+                    {metadataList.map((item, idx) => (
+                      <div key={idx} className="flex items-center mb-2">
+                        <input
+                          type="text"
+                          placeholder="Key"
+                          value={item.key}
+                          onChange={(e) =>
+                            handleMetadataChange(idx, "key", e.target.value)
+                          }
+                          className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32]"
+                          disabled={isUploading}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Value"
+                          value={item.value}
+                          onChange={(e) =>
+                            handleMetadataChange(idx, "value", e.target.value)
+                          }
+                          className="mr-2 flex-1 py-1 px-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32]"
+                          disabled={isUploading}
+                        />
+                        <button
+                          type="button"
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleRemoveMetadata(idx)}
+                          disabled={isUploading}
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="mt-2 px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs"
+                      onClick={handleAddMetadata}
+                      disabled={isUploading}
+                    >
+                      + Add Metadata
+                    </button>
+                  </div>
+
+                  {/* Sharing Options */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Sharing Options:
+                    </label>
+                    <div className="flex items-center mb-2">
+                      <input
+                        id="isShared"
+                        type="checkbox"
+                        checked={isShared}
+                        onChange={(e) => setIsShared(e.target.checked)}
+                        disabled={isUploading}
+                        className="mr-2"
+                      />
+                      <label htmlFor="isShared" className="text-sm text-gray-700">
+                        Make this file shared (anyone with the link can download)
+                      </label>
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        type="password"
+                        placeholder="Optional password (leave blank for none)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={!isShared || isUploading}
+                        className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32]"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        If set, users must enter this password to download the
+                        file.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <input
-                    type="password"
-                    placeholder="Optional password (leave blank for none)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={!isShared || isUploading}
-                    className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    If set, users must enter this password to download the
-                    crate.
-                  </p>
-                </div>
-              </div>
+              )}
             </>
           )}
 
@@ -703,7 +847,7 @@ export default function FileUpload({
             <div className="mb-4">
               <div className="h-2 bg-gray-200 rounded-full mb-1 overflow-hidden">
                 <div
-                  className="h-full bg-primary-500 rounded-full"
+                  className="h-full bg-[#ff7a32] rounded-full transition-all duration-300 ease-in-out"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
@@ -716,7 +860,7 @@ export default function FileUpload({
             className={`w-full py-2 px-4 rounded-md shadow-sm flex items-center justify-center border font-medium transition-colors ${
               !file || isUploading || !title.trim()
                 ? "bg-gray-300 cursor-not-allowed text-gray-500 border-gray-300"
-                : "bg-blue-500 hover:bg-blue-600 text-white border-blue-600" // Changed to blue-500 and blue-600
+                : "bg-[#ff7a32] hover:bg-[#e96d2d] text-white border-[#ff7a32]" // Changed to brand orange
             }
                         `}
           >
@@ -726,12 +870,12 @@ export default function FileUpload({
                 Uploading...
               </>
             ) : (
-              "Upload Crate"
+              "Upload File"
             )}
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            By uploading an crate, you agree to our Terms of Service and Privacy
+            By uploading a file, you agree to our Terms of Service and Privacy
             Policy.
           </p>
         </form>
