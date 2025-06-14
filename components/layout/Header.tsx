@@ -9,9 +9,9 @@ import {
   FaUserCircle,
   FaUpload,
   FaHome,
-} from "react-icons/fa"; // Added FaUpload, FaHome
-import Image from "next/image"; // Import the Image component
-import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+} from "react-icons/fa";
+import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,10 +20,9 @@ export default function Header() {
     isAdmin,
     signInWithGoogle,
     signOut: firebaseSignOut,
-  } = useAuth(); // Use useAuth hook
+  } = useAuth();
   const pathname = usePathname();
 
-  // Handle navigation logic - only for the Home link in the nav menu
   const getHomeLink = () => (user ? "/home" : "/");
 
   const handleGoogleSignIn = async () => {

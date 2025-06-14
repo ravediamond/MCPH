@@ -15,18 +15,17 @@ import {
 } from "../lib/compressionUtils";
 import { Crate, CrateCategory, CrateSharing } from "../app/types/crate";
 
-// File metadata type definition
 export interface FileMetadata {
   id: string;
   fileName: string;
-  title: string; // Added title field (mandatory)
-  description?: string; // Added description field (optional)
+  title: string;
+  description?: string;
   contentType: string;
   size: number;
-  fileType?: string; // Added fileType field (optional)
+  fileType?: string;
   gcsPath: string;
-  uploadedAt: Date; // Changed from number to Date
-  expiresAt?: Date; // Changed from number to Date
+  uploadedAt: Date;
+  expiresAt?: Date;
   downloadCount: number;
   ipAddress?: string;
   userId?: string;
@@ -719,8 +718,6 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".py": CrateCategory.CODE,
   ".java": CrateCategory.CODE,
   ".xml": CrateCategory.CODE,
-  ".txt": CrateCategory.CODE, // Default .txt to code
-  ".log": CrateCategory.CODE, // Default .log to code
-  // Removed for v1: TODOLIST, DIAGRAM
-  // Add more extensions as needed
+  ".txt": CrateCategory.CODE,
+  ".log": CrateCategory.CODE,
 };

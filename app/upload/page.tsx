@@ -12,7 +12,6 @@ export default function UploadPage() {
   return (
     <div className="bg-beige-200 min-h-screen py-12">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header section */}
         <div className="mb-8">
           <Link
             href="/"

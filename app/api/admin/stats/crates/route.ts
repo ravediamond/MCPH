@@ -1,4 +1,3 @@
-// filepath: /Users/ravindu.somawansa@airliquide.com/Workspace/git_repos/perso/MCPHub/app/api/admin/stats/crates/route.ts
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { firestore } from "../../../../../lib/firebaseAdmin";
@@ -21,11 +20,9 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get total crates count
     const cratesSnapshot = await firestore.collection("crates").count().get();
     const totalCrates = cratesSnapshot.data().count;
 
-    // Get crates per user metrics
     const usersWithCratesSnapshot = await firestore
       .collection("crates")
       .select("userId")

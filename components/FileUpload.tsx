@@ -17,13 +17,10 @@ import { useAuth } from "../contexts/AuthContext";
 import { DATA_TTL } from "../app/config/constants";
 import { CrateCategory, CrateSharing } from "../app/types/crate";
 
-// Maximum file size in bytes (50MB)
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-// API base URL is now relative since we're using Next.js API routes on Vercel
 const API_BASE_URL = "";
 
-// Content types to store in Firestore
 const TEXT_CONTENT_TYPES = [
   "text/plain",
   "text/markdown",

@@ -4,7 +4,6 @@ import { CrateCategory, CrateSharing } from "@/app/types/crate";
 import { DATA_TTL } from "@/app/config/constants";
 import { auth } from "@/lib/firebaseAdmin";
 
-// Helper to get client IP
 function getClientIp(req: NextRequest): string {
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
@@ -13,12 +12,8 @@ function getClientIp(req: NextRequest): string {
   return "127.0.0.1";
 }
 
-/**
- * API endpoint to upload a crate (file with metadata)
- */
 export async function POST(req: NextRequest) {
   try {
-    // Check if the request is multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
@@ -27,7 +22,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Parse the form data
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 

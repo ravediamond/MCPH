@@ -205,10 +205,9 @@ export default function CratePage() {
     const shouldFetchContent = () => {
       switch (crateInfo.category) {
         case CrateCategory.MARKDOWN:
-        // Removed for v1: TODOLIST, DIAGRAM, DATA
         case CrateCategory.CODE:
         case CrateCategory.JSON:
-        case CrateCategory.JSON: // Added JSON category
+        case CrateCategory.JSON:
           return true;
         default:
           return false;
@@ -585,13 +584,12 @@ export default function CratePage() {
     switch (crateInfo.category) {
       case CrateCategory.MARKDOWN:
         return <FaFileAlt className="text-purple-500" />;
-      // Removed for v1: TODOLIST, DIAGRAM, DATA categories
       case CrateCategory.CODE:
         return <FaFileCode className="text-yellow-500" />;
       case CrateCategory.IMAGE:
         return <FaFileImage className="text-blue-500" />;
-      case CrateCategory.JSON: // Added JSON category
-        return <FaFileCode className="text-orange-500" />; // Using FaFileCode with a different color for now
+      case CrateCategory.JSON:
+        return <FaFileCode className="text-orange-500" />;
       case CrateCategory.BINARY:
       default:
         // Fallback to mime type checking for legacy or unknown types

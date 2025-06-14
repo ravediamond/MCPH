@@ -5,35 +5,32 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Define a type for the stats (simplified for v1)
 interface AdminStats {
-  // Core metrics
   totalCrates?: number;
   totalUsers?: number;
   totalDownloads?: number;
   totalViews?: number;
-  totalMcpCalls?: number; // Added for MCP calls tracking
+  totalMcpCalls?: number;
 }
 
 const AdminDashboardPage: React.FC = () => {
-  const { user, isAdmin, loading, getIdToken } = useAuth(); // Add getIdToken
+  const { user, isAdmin, loading, getIdToken } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats>({});
   const [error, setError] = useState<string | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true); // For loading state of stats
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/home"); // Or your login page
+      router.push("/home");
     } else if (!loading && user && !isAdmin) {
-      router.push("/home"); // Not an admin, redirect to home
+      router.push("/home");
       alert("Access denied. You are not an admin.");
     }
   }, [user, isAdmin, loading, router]);
 
   useEffect(() => {
     if (isAdmin && user) {
-      // Ensure user is available for token
       const fetchStats = async () => {
         setStatsLoading(true);
         setError(null);
@@ -45,7 +42,6 @@ const AdminDashboardPage: React.FC = () => {
 
           const headers = { Authorization: `Bearer ${token}` };
 
-          // Simplified for v1: Fetch only core stats
           const [cratesResponse, usersResponse, mcpCallsResponse] =
             await Promise.all([
               fetch("/api/admin/stats/crates", { headers }),
@@ -53,7 +49,6 @@ const AdminDashboardPage: React.FC = () => {
               fetch("/api/admin/stats/mcp-calls", { headers }),
             ]);
 
-          // Check responses and parse data
           if (!cratesResponse.ok) {
             const errorData = await cratesResponse.json();
             throw new Error(errorData.error || "Failed to fetch crate stats");
@@ -66,20 +61,17 @@ const AdminDashboardPage: React.FC = () => {
           }
           const usersData = await usersResponse.json();
 
-          // Process MCP calls data
           let mcpCallsData = { totalCalls: 0 };
           if (mcpCallsResponse.ok) {
             mcpCallsData = await mcpCallsResponse.json();
           }
 
-          // Combine simplified stats
           setStats({
-            // Core metrics only for v1
             totalCrates: cratesData.count,
             totalUsers: usersData.count,
             totalDownloads: cratesData.totalDownloads || 0,
             totalViews: cratesData.totalViews || 0,
-            totalMcpCalls: mcpCallsData.totalCalls || 0, // Map totalCalls to totalMcpCalls for dashboard
+            totalMcpCalls: mcpCallsData.totalCalls || 0,
           });
         } catch (err) {
           setError(
@@ -106,8 +98,6 @@ const AdminDashboardPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-
-      {/* Admin Navigation */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Admin Tools</h2>
         <div className="flex flex-wrap gap-4">
@@ -129,7 +119,6 @@ const AdminDashboardPage: React.FC = () => {
             </svg>
             Manage Feedback
           </Link>
-          {/* Add user management link */}
           <Link
             href="/admin/users"
             className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
@@ -151,7 +140,6 @@ const AdminDashboardPage: React.FC = () => {
             </svg>
             Manage Users
           </Link>
-          {/* Add crate management link */}
           <Link
             href="/admin/crates"
             className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
@@ -187,7 +175,6 @@ const AdminDashboardPage: React.FC = () => {
         </div>
       ) : (
         <div>
-          {/* Platform Overview - Key Metrics */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Platform Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -227,40 +214,9 @@ const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* User Metrics Dashboard */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">User Metrics</h2>
 
-            {/* Simplified v1 metrics note */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
-              <div className="flex items-start">
-                <div className="text-blue-600 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-blue-800">
-                    Simplified Metrics for v1
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    Detailed user metrics will be available in future updates.
-                    Current dashboard shows core platform statistics only.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Basic user stats - simplified for v1 */}
             <div className="bg-gray-50 rounded-lg p-5">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
                 User Overview
@@ -290,40 +246,9 @@ const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* MCP API Usage Stats - Simplified for v1 */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">MCP API Usage</h2>
 
-            {/* Simplified v1 metrics note */}
-            <div className="bg-purple-50 rounded-lg p-4 mb-6 border border-purple-200">
-              <div className="flex items-start">
-                <div className="text-purple-600 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-purple-800">
-                    Basic API Stats for v1
-                  </p>
-                  <p className="text-sm text-purple-700">
-                    Detailed API usage analytics will be available in future
-                    versions. Currently showing basic usage metrics.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Basic MCP stats - simplified for v1 */}
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-5">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
                 API Overview
@@ -344,40 +269,9 @@ const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Simplified Crate Stats for v1 */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Crate Statistics</h2>
 
-            {/* Simplified v1 metrics note */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
-              <div className="flex items-start">
-                <div className="text-blue-600 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-blue-800">
-                    Basic Crate Stats for v1
-                  </p>
-                  <p className="text-sm text-blue-700">
-                    Detailed file statistics and storage metrics will be
-                    available in future updates.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Basic crate stats - simplified for v1 */}
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5">
               <h3 className="text-lg font-medium text-gray-800 mb-4">
                 Crate Overview
@@ -405,14 +299,12 @@ const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Export Data Section */}
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Admin Actions</h2>
             <div className="flex flex-wrap gap-4">
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                 onClick={() => {
-                  // Refresh stats logic
                   window.location.reload();
                 }}
               >
@@ -437,7 +329,6 @@ function formatFileSize(size: number) {
 }
 
 function getFileTypeEmoji(fileType: string) {
-  // Simple emoji mapping based on file type
   const emojiMap: { [key: string]: string } = {
     "image/jpeg": "📷",
     "image/png": "🖼️",

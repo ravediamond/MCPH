@@ -170,9 +170,6 @@ export async function POST(
           { status: 401 },
         );
       }
-
-      // TODO: Implement proper password verification here
-      // For now, we'll assume any provided password works
     }
 
     if (!isOwner && !isPublic && !isSharedWithUser) {

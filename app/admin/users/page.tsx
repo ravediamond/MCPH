@@ -5,7 +5,6 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Define user type
 interface User {
   uid: string;
   email: string;

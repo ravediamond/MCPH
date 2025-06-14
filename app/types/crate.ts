@@ -1,33 +1,18 @@
-/**
- * Crate schema - Unified metadata format for all uploaded content
- */
-
-/**
- * Supported content categories and their rendering strategy
- * Simplified for v1 launch
- */
 export enum CrateCategory {
-  MARKDOWN = "markdown", // Render via Markdown viewer
-  CODE = "code", // Syntax-highlighted code block
-  IMAGE = "image", // Inline <img> preview + download button
-  JSON = "json", // Render as JSON tree or raw JSON
-  BINARY = "binary", // Show only "Download via signed URL" button
+  MARKDOWN = "markdown",
+  CODE = "code",
+  IMAGE = "image",
+  JSON = "json",
+  BINARY = "binary",
 }
 
-/**
- * Access Control List (ACL) for a Crate
- * Simplified for v1 release
- */
 export interface CrateSharing {
-  public: boolean; // Open link ACL - simple toggle
-  passwordProtected?: boolean; // Whether download is password-guarded
-  passwordHash?: string | null; // Hash of the password (null if no password)
-  passwordSalt?: string | null; // Salt for the password (null if no password)
+  public: boolean;
+  passwordProtected?: boolean;
+  passwordHash?: string | null;
+  passwordSalt?: string | null;
 }
 
-/**
- * Crate metadata schema - represents a unified document for all uploaded files
- */
 export interface Crate {
   id: string; // Firestore doc ID (also GCS object key)
   title: string; // User-supplied title

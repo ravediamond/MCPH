@@ -254,9 +254,6 @@ export async function POST(
         );
       }
 
-      // In a production system, you would verify the password here
-      // For now, we're assuming any provided password works
-      // TODO: Implement proper password verification
     }
 
     if (!isOwner && !isPublic && !isSharedWithUser) {

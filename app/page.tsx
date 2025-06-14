@@ -5,13 +5,10 @@ import Carousel from "../components/Carousel";
 import { useAuthRedirect } from "../contexts/useAuthRedirect";
 
 export default function Home() {
-  // This is optional since middleware handles most cases,
-  // but provides an extra layer of protection for client-side navigation
   useAuthRedirect({ whenAuthenticated: "/home" });
 
   return (
     <div className="bg-beige-200 min-h-screen">
-      {/* Hero Section - Clear Value Proposition */}
       <section className="py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-3xl font-bold mb-3 text-gray-800">
@@ -23,10 +20,8 @@ export default function Home() {
             generate shareable links for code, markdown, images, and more.
           </p>
 
-          {/* Carousel: Use Cases */}
           <Carousel />
 
-          {/* Upload Button */}
           <Link
             href="/login"
             className="inline-flex items-center justify-center px-6 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition duration-300 border border-blue-700 mr-4"
