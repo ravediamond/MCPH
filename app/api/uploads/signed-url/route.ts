@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       contentType,
       {
         ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
-      }
+      },
     );
 
     return NextResponse.json(

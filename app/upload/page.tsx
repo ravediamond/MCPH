@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function UploadPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  
+
   useEffect(() => {
     // Redirect to login if not authenticated (after auth state is loaded)
     if (!loading && !user) {
@@ -26,7 +26,7 @@ export default function UploadPage() {
       </div>
     );
   }
-  
+
   // Don't render the upload page for unauthenticated users
   if (!user) return null;
 
@@ -45,7 +45,8 @@ export default function UploadPage() {
             Advanced Upload
           </h1>
           <p className="text-gray-600">
-            Multi-file batch uploads with metadata, tagging, and custom expiration.
+            Multi-file batch uploads with metadata, tagging, and custom
+            expiration.
           </p>
         </div>
 
@@ -96,12 +97,16 @@ export default function UploadPage() {
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <h3 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
                   <span>Pro features</span>
-                  <span className="ml-2 bg-[#ff7a32] text-white text-xs px-2 py-0.5 rounded-sm">PRO</span>
+                  <span className="ml-2 bg-[#ff7a32] text-white text-xs px-2 py-0.5 rounded-sm">
+                    PRO
+                  </span>
                 </h3>
                 <ul className="space-y-3 text-gray-600 text-sm">
                   <li className="flex items-start">
                     <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>Upload multiple files in batch (up to 20 at once)</span>
+                    <span>
+                      Upload multiple files in batch (up to 20 at once)
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-primary-500 font-bold mr-2">•</span>
@@ -111,21 +116,15 @@ export default function UploadPage() {
                   </li>
                   <li className="flex items-start">
                     <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>
-                      Up to 50MB per file
-                    </span>
+                    <span>Up to 50MB per file</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>
-                      Set custom expiration dates
-                    </span>
+                    <span>Set custom expiration dates</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>
-                      Manage your uploaded files from your dashboard
-                    </span>
+                    <span>Manage your uploaded files from your dashboard</span>
                   </li>
                 </ul>
               </div>
@@ -137,10 +136,7 @@ export default function UploadPage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
             Need a quick single-file upload?{" "}
-            <Link
-              href="/"
-              className="text-primary-500 hover:text-primary-600"
-            >
+            <Link href="/" className="text-primary-500 hover:text-primary-600">
               Use the home page dropzone
             </Link>{" "}
             for simplified uploads without additional options.

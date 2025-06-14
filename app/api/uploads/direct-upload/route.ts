@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
         console.warn("Invalid metadata provided, ignoring:", metadataRaw);
       }
     }
-    
+
     // Parse tags if provided
     let tags: string[] | undefined = undefined;
     const tagsRaw = formData.get("tags");

@@ -35,7 +35,10 @@ export const useUploadService = () => {
    * @param options Optional upload configuration
    * @returns Promise with upload result
    */
-  const uploadCrate = async (file: File, options: UploadOptions = {}): Promise<UploadResult> => {
+  const uploadCrate = async (
+    file: File,
+    options: UploadOptions = {},
+  ): Promise<UploadResult> => {
     try {
       // Apply defaults for missing options
       const finalOptions = {
@@ -47,23 +50,27 @@ export const useUploadService = () => {
         expiresInDays: options.expiresInDays || 30, // Default to 30 days
         sharing: options.sharing || { public: true },
       };
-      
+
       // Create form data for the API call
       const formData = new FormData();
       formData.append("file", file);
-      
+
       // Add all options to the form data
       if (finalOptions.title) formData.append("title", finalOptions.title);
-      if (finalOptions.description) formData.append("description", finalOptions.description);
-      if (finalOptions.category) formData.append("fileType", finalOptions.category);
-      if (finalOptions.password) formData.append("password", finalOptions.password);
-      if (finalOptions.expiresInDays) formData.append("ttl", (finalOptions.expiresInDays * 24).toString());
-      
+      if (finalOptions.description)
+        formData.append("description", finalOptions.description);
+      if (finalOptions.category)
+        formData.append("fileType", finalOptions.category);
+      if (finalOptions.password)
+        formData.append("password", finalOptions.password);
+      if (finalOptions.expiresInDays)
+        formData.append("ttl", (finalOptions.expiresInDays * 24).toString());
+
       // Add tags if present
       if (finalOptions.tags && finalOptions.tags.length > 0) {
         formData.append("tags", JSON.stringify(finalOptions.tags));
       }
-      
+
       // Add auth token if user is logged in
       const headers: Record<string, string> = {};
       if (user && getIdToken) {
@@ -76,20 +83,20 @@ export const useUploadService = () => {
           console.error("Failed to get auth token:", e);
         }
       }
-      
+
       // Make the actual API call
       const response = await fetch("/api/uploads", {
         method: "POST",
         body: formData,
-        headers
+        headers,
       });
-      
+
       if (!response.ok) {
         throw new Error(`Upload failed with status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       return {
         success: true,
         id: data.id,
@@ -101,11 +108,12 @@ export const useUploadService = () => {
         success: false,
         id: "",
         url: "",
-        error: error instanceof Error ? error.message : "Unknown error occurred",
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
       };
     }
   };
-  
+
   /**
    * Detect the appropriate crate category based on file type
    * @param file The file to analyze
@@ -114,15 +122,17 @@ export const useUploadService = () => {
   const detectCrateCategory = (file: File): CrateCategory => {
     const fileName = file.name.toLowerCase();
     const mimeType = file.type.toLowerCase();
-    
+
     // Image detection
     if (
       mimeType.startsWith("image/") ||
-      [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"].some(ext => fileName.endsWith(ext))
+      [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"].some((ext) =>
+        fileName.endsWith(ext),
+      )
     ) {
       return CrateCategory.IMAGE;
     }
-    
+
     // Markdown detection
     if (
       mimeType === "text/markdown" ||
@@ -132,25 +142,32 @@ export const useUploadService = () => {
     ) {
       return CrateCategory.MARKDOWN;
     }
-    
+
     // JSON detection
-    if (
-      mimeType === "application/json" ||
-      fileName.endsWith(".json")
-    ) {
+    if (mimeType === "application/json" || fileName.endsWith(".json")) {
       return CrateCategory.JSON;
     }
-    
+
     // Code detection (simplistic)
     if (
-      [".js", ".ts", ".html", ".css", ".py", ".java", ".go", ".rb", ".php"].some(ext => fileName.endsWith(ext))
+      [
+        ".js",
+        ".ts",
+        ".html",
+        ".css",
+        ".py",
+        ".java",
+        ".go",
+        ".rb",
+        ".php",
+      ].some((ext) => fileName.endsWith(ext))
     ) {
       return CrateCategory.CODE;
     }
-    
+
     // Default to binary for unknown types
     return CrateCategory.BINARY;
   };
-  
+
   return { uploadCrate, detectCrateCategory };
 };

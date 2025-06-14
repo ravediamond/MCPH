@@ -612,7 +612,7 @@ export default function CratePage() {
     if (crateInfo.category === CrateCategory.MARKDOWN) {
       return "markdown";
     } else if (crateInfo.category === CrateCategory.JSON) {
-      // Check if it's JSON 
+      // Check if it's JSON
       return "json";
     } else if (crateInfo.category === CrateCategory.CODE) {
       // Try to determine the language from the mime type or file extension
@@ -654,12 +654,16 @@ export default function CratePage() {
   const renderTags = (tags?: string[] | any) => {
     // Ensure tags is an array (defensive check)
     if (!tags) return null;
-    
+
     // Convert to array if it's not already (handles string or other types)
-    const tagsArray = Array.isArray(tags) ? tags : typeof tags === 'string' ? [tags] : [];
-    
+    const tagsArray = Array.isArray(tags)
+      ? tags
+      : typeof tags === "string"
+        ? [tags]
+        : [];
+
     if (tagsArray.length === 0) return null;
-    
+
     return (
       <div className="flex flex-wrap gap-1 mt-2">
         {tagsArray.map((tag) => (
@@ -848,7 +852,7 @@ export default function CratePage() {
         );
 
       // Removed for v1: TODOLIST, DIAGRAM, DATA categories
-      
+
       case CrateCategory.CODE:
         return (
           <div className="text-sm">

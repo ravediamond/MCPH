@@ -253,7 +253,6 @@ export async function POST(
           { status: 401 },
         );
       }
-
     }
 
     if (!isOwner && !isPublic && !isSharedWithUser) {

@@ -40,12 +40,12 @@ The upload flow is built around these key components:
 
 Navigation items have different visibility based on authentication status:
 
-| Nav item | Unauthenticated | Authenticated |
-|----------|-----------------|---------------|
-| Docs     | visible         | visible       |
-| Log in   | visible         | becomes avatar dropdown |
-| Upload   | hidden          | visible; points to /upload |
-| Home / Files | hidden      | visible; dashboard grid |
+| Nav item     | Unauthenticated | Authenticated              |
+| ------------ | --------------- | -------------------------- |
+| Docs         | visible         | visible                    |
+| Log in       | visible         | becomes avatar dropdown    |
+| Upload       | hidden          | visible; points to /upload |
+| Home / Files | hidden          | visible; dashboard grid    |
 
 ## Shared Upload Logic
 

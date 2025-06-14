@@ -104,19 +104,23 @@ export async function uploadCrate(
     let presignedUrl: string | undefined = undefined;
     let compressionMetadata = null;
     let fileSize = 0;
-    
+
     if (!fileBuffer) {
       // Generate presigned URL for client-side upload
-      const presignedUrlData = await generatePresignedUrl(crateId, fileName, contentType);
+      const presignedUrlData = await generatePresignedUrl(
+        crateId,
+        fileName,
+        contentType,
+      );
       gcsPath = presignedUrlData.gcsPath;
       presignedUrl = presignedUrlData.url;
     } else {
       // Server-side upload with the provided buffer
       gcsPath = `crates/${crateId}/${encodeURIComponent(fileName)}`;
-      
+
       // Create a GCS file object
       const file = bucket.file(gcsPath);
-      
+
       // Check if the file should be compressed based on content type and filename
       const shouldUseCompression = shouldCompress(contentType, fileName);
       let bufferToSave = fileBuffer;
@@ -149,7 +153,9 @@ export async function uploadCrate(
             crateId,
             originalName: fileName,
             title: crateData.title || fileName,
-            ...(crateData.description && { description: crateData.description }),
+            ...(crateData.description && {
+              description: crateData.description,
+            }),
             ...(crateData.category && { category: crateData.category }),
             ...(compressionMetadata && {
               compressed: "true",

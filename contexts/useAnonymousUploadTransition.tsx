@@ -17,7 +17,7 @@ export const useAnonymousUploadTransition = () => {
     if (loading || !user) return;
 
     // Check local storage for temporary crate IDs
-    const tempCrateIdsJson = localStorage.getItem('mcphub_temp_crates');
+    const tempCrateIdsJson = localStorage.getItem("mcphub_temp_crates");
     if (!tempCrateIdsJson) return;
 
     try {
@@ -28,25 +28,27 @@ export const useAnonymousUploadTransition = () => {
       const transferCrates = async () => {
         // In a real implementation, this would call an API endpoint to update ownership
         // For this example, we'll just simulate success
-        console.log(`Transferring ${tempCrateIds.length} temporary crates to user ${user.uid}`);
-        
+        console.log(
+          `Transferring ${tempCrateIds.length} temporary crates to user ${user.uid}`,
+        );
+
         // Show success toast
         toast.success(
           `${tempCrateIds.length} previously anonymous uploads have been added to your account.`,
           {
             duration: 5000,
-            icon: '📦',
+            icon: "📦",
             style: {
-              borderRadius: '10px',
-              background: '#f0fdf4',
-              border: '1px solid #dcfce7',
-              color: '#166534',
+              borderRadius: "10px",
+              background: "#f0fdf4",
+              border: "1px solid #dcfce7",
+              color: "#166534",
             },
-          }
+          },
         );
-        
+
         // Clear the temporary crates from local storage
-        localStorage.removeItem('mcphub_temp_crates');
+        localStorage.removeItem("mcphub_temp_crates");
       };
 
       transferCrates();
@@ -61,16 +63,17 @@ export const useAnonymousUploadTransition = () => {
    */
   const storeTempCrateId = (crateId: string) => {
     try {
-      const existingIdsJson = localStorage.getItem('mcphub_temp_crates') || '[]';
+      const existingIdsJson =
+        localStorage.getItem("mcphub_temp_crates") || "[]";
       const existingIds = JSON.parse(existingIdsJson);
       if (!Array.isArray(existingIds)) {
-        localStorage.setItem('mcphub_temp_crates', JSON.stringify([crateId]));
+        localStorage.setItem("mcphub_temp_crates", JSON.stringify([crateId]));
         return;
       }
-      
+
       if (!existingIds.includes(crateId)) {
         existingIds.push(crateId);
-        localStorage.setItem('mcphub_temp_crates', JSON.stringify(existingIds));
+        localStorage.setItem("mcphub_temp_crates", JSON.stringify(existingIds));
       }
     } catch (error) {
       console.error("Error storing temporary crate ID:", error);

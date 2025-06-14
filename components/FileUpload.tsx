@@ -126,7 +126,8 @@ export default function FileUpload({
   const [isShared, setIsShared] = useState<boolean>(false); // New: sharing toggle
   const [password, setPassword] = useState<string>(""); // New: optional password
   // Collapsible advanced options state
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
+  const [showAdvancedOptions, setShowAdvancedOptions] =
+    useState<boolean>(false);
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -201,36 +202,36 @@ export default function FileUpload({
     multiple: false,
     noClick: false,
   });
-  
+
   // Add an effect to show the full-width highlight when dragging over the form
   useEffect(() => {
     const handleFormDragOver = (e: DragEvent) => {
       e.preventDefault();
       if (!formRef.current) return;
-      formRef.current.classList.add('ring-4', 'ring-[#ff7a32]/30');
+      formRef.current.classList.add("ring-4", "ring-[#ff7a32]/30");
     };
-    
+
     const handleFormDragLeave = (e: DragEvent) => {
       e.preventDefault();
       if (!formRef.current) return;
-      formRef.current.classList.remove('ring-4', 'ring-[#ff7a32]/30');
+      formRef.current.classList.remove("ring-4", "ring-[#ff7a32]/30");
     };
-    
+
     const handleFormDrop = (e: DragEvent) => {
       if (!formRef.current) return;
-      formRef.current.classList.remove('ring-4', 'ring-[#ff7a32]/30');
+      formRef.current.classList.remove("ring-4", "ring-[#ff7a32]/30");
     };
-    
+
     const formElement = formRef.current;
     if (formElement) {
-      formElement.addEventListener('dragover', handleFormDragOver);
-      formElement.addEventListener('dragleave', handleFormDragLeave);
-      formElement.addEventListener('drop', handleFormDrop);
-      
+      formElement.addEventListener("dragover", handleFormDragOver);
+      formElement.addEventListener("dragleave", handleFormDragLeave);
+      formElement.addEventListener("drop", handleFormDrop);
+
       return () => {
-        formElement.removeEventListener('dragover', handleFormDragOver);
-        formElement.removeEventListener('dragleave', handleFormDragLeave);
-        formElement.removeEventListener('drop', handleFormDrop);
+        formElement.removeEventListener("dragover", handleFormDragOver);
+        formElement.removeEventListener("dragleave", handleFormDragLeave);
+        formElement.removeEventListener("drop", handleFormDrop);
       };
     }
   }, []);
@@ -353,28 +354,30 @@ export default function FileUpload({
       });
 
       // Auto-copy the URL to clipboard
-      navigator.clipboard.writeText(crateUrl)
+      navigator.clipboard
+        .writeText(crateUrl)
         .then(() => {
           setUrlCopied(true);
           toast.success("Link copied to clipboard!");
-          
+
           // Reset copy status after 3 seconds
           setTimeout(() => setUrlCopied(false), 3000);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Failed to copy: ", err);
         });
 
       // Auto-copy the URL to clipboard
-      navigator.clipboard.writeText(crateUrl)
+      navigator.clipboard
+        .writeText(crateUrl)
         .then(() => {
           setUrlCopied(true);
           toast.success("Link copied to clipboard!");
-          
+
           // Reset copy status after 3 seconds
           setTimeout(() => setUrlCopied(false), 3000);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Failed to copy: ", err);
         });
 
@@ -496,17 +499,23 @@ export default function FileUpload({
                   <button
                     onClick={handleCopyUrl}
                     className={`p-1.5 rounded mr-1 flex items-center justify-center ${
-                      urlCopied 
-                        ? "bg-green-100 text-green-700" 
+                      urlCopied
+                        ? "bg-green-100 text-green-700"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-[#ff7a32]"
                     }`}
                     title="Copy to clipboard"
                     aria-label="Copy link to clipboard"
                   >
                     {urlCopied ? (
-                      <><FaCheckCircle className="text-green-500 mr-1" /> <span className="text-xs">Copied!</span></>
+                      <>
+                        <FaCheckCircle className="text-green-500 mr-1" />{" "}
+                        <span className="text-xs">Copied!</span>
+                      </>
                     ) : (
-                      <><FaCopy className="mr-1" /> <span className="text-xs">Copy</span></>
+                      <>
+                        <FaCopy className="mr-1" />{" "}
+                        <span className="text-xs">Copy</span>
+                      </>
                     )}
                   </button>
                   <a
@@ -536,12 +545,12 @@ export default function FileUpload({
                   Upload Another File
                 </button>
               </div>
-              
+
               {/* MCP CLI snippet */}
               <div className="mt-5 bg-gray-800 rounded-md p-3 text-xs">
                 <div className="flex justify-between mb-1">
                   <span className="text-gray-400">MCP CLI</span>
-                  <button 
+                  <button
                     onClick={() => {
                       const cliCommand = `npx mcp-remote crates/get ${uploadedFile.id}`;
                       navigator.clipboard.writeText(cliCommand);
@@ -577,7 +586,8 @@ export default function FileUpload({
             {...getRootProps({
               className: `border-2 border-dashed ${isDragActive ? "border-primary-400 bg-beige-100" : "border-gray-300"} rounded-lg p-8 text-center cursor-pointer hover:bg-beige-50 transition-colors mb-4`,
               role: "button",
-              "aria-label": "Upload area. Drag and drop files here or click to browse"
+              "aria-label":
+                "Upload area. Drag and drop files here or click to browse",
             })}
           >
             <input {...getInputProps()} />
@@ -615,23 +625,26 @@ export default function FileUpload({
                       </span>
                     )}
                   </p>
-                  
+
                   {isUploading && (
                     <div className="mt-2">
                       <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full transition-all duration-300 ease-in-out rounded-full"
                           style={{
                             width: `${uploadProgress}%`,
-                            backgroundColor: uploadProgress < 30 
-                              ? '#93c5fd' // light blue
-                              : uploadProgress < 70 
-                                ? '#60a5fa' // medium blue
-                                : '#ff7a32' // orange
+                            backgroundColor:
+                              uploadProgress < 30
+                                ? "#93c5fd" // light blue
+                                : uploadProgress < 70
+                                  ? "#60a5fa" // medium blue
+                                  : "#ff7a32", // orange
                           }}
                         ></div>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">{Math.round(uploadProgress)}% uploaded</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {Math.round(uploadProgress)}% uploaded
+                      </p>
                     </div>
                   )}
                 </div>
@@ -705,17 +718,17 @@ export default function FileUpload({
                   onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
                   className="flex items-center text-sm font-medium text-gray-700 hover:text-[#ff7a32] transition-colors"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="16" 
-                    height="16" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    className={`mr-1 transition-transform ${showAdvancedOptions ? 'rotate-90' : ''}`}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`mr-1 transition-transform ${showAdvancedOptions ? "rotate-90" : ""}`}
                   >
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
@@ -819,8 +832,12 @@ export default function FileUpload({
                         disabled={isUploading}
                         className="mr-2"
                       />
-                      <label htmlFor="isShared" className="text-sm text-gray-700">
-                        Make this file shared (anyone with the link can download)
+                      <label
+                        htmlFor="isShared"
+                        className="text-sm text-gray-700"
+                      >
+                        Make this file shared (anyone with the link can
+                        download)
                       </label>
                     </div>
                     <div className="mt-2">

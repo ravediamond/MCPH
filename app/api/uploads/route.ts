@@ -76,9 +76,9 @@ export async function POST(req: NextRequest) {
         file.type,
         {
           ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
-        }
+        },
       );
-      
+
       return NextResponse.json(
         {
           uploadUrl: result.presignedUrl,
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
     // Otherwise, do a normal upload (text, image, etc.)
     const buffer = Buffer.from(await file.arrayBuffer());
-    
+
     // Parse tags if provided
     let tags: string[] | undefined = undefined;
     const tagsRaw = formData.get("tags");
@@ -107,18 +107,13 @@ export async function POST(req: NextRequest) {
         tags = [];
       }
     }
-    
-    const crateData = await uploadCrate(
-      buffer,
-      file.name,
-      file.type,
-      {
-        ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
-        metadata,
-        category: fileType ? fileType as any : undefined,
-        tags: tags, // Add the parsed tags
-      }
-    );
+
+    const crateData = await uploadCrate(buffer, file.name, file.type, {
+      ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+      metadata,
+      category: fileType ? (fileType as any) : undefined,
+      tags: tags, // Add the parsed tags
+    });
 
     // Generate crate page URL
     const downloadUrl = new URL(`/crate/${crateData.id}`, req.url).toString();
@@ -136,7 +131,12 @@ export async function POST(req: NextRequest) {
         contentType: crateData.mimeType,
         size: crateData.size,
         uploadedAt: crateData.createdAt,
-        expiresAt: crateData.ttlDays ? new Date(crateData.createdAt.getTime() + crateData.ttlDays * 24 * 60 * 60 * 1000) : undefined,
+        expiresAt: crateData.ttlDays
+          ? new Date(
+              crateData.createdAt.getTime() +
+                crateData.ttlDays * 24 * 60 * 60 * 1000,
+            )
+          : undefined,
         downloadUrl: downloadUrl, // Add the crate page URL
       },
       { status: 201 },
