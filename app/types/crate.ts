@@ -32,6 +32,4 @@ export interface Crate {
 
   // Optional metadata
   metadata?: Record<string, string>; // Key-value user metadata
-  compressed?: boolean;
-  compressionRatio?: number;
 }

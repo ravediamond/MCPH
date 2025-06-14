@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
     );
     await incrementMetric("crate_uploads");
 
-    // Return the upload result with compression info if available
+    // Return the upload result
     return NextResponse.json({
       success: true,
       fileId: crateData.id,
@@ -200,8 +200,6 @@ export async function POST(req: NextRequest) {
               crateData.ttlDays * 24 * 60 * 60 * 1000,
           ).toISOString()
         : undefined,
-      compressed: crateData.compressed,
-      compressionRatio: crateData.compressionRatio,
     });
   } catch (error: any) {
     console.error("Error handling direct upload:", error);

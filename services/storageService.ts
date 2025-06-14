@@ -10,8 +10,6 @@ import {
   generateSignedDownloadUrl,
   saveCrateMetadata,
   getCrateMetadata,
-  compressBuffer,
-  decompressBuffer,
   resolveCategory,
 } from "../lib/services";
 
@@ -33,10 +31,6 @@ export interface FileMetadata {
   ipAddress?: string;
   userId?: string;
   metadata?: Record<string, string>;
-  compressed?: boolean; // Whether the file is compressed
-  originalSize?: number; // Original size before compression (if compressed)
-  compressionMethod?: string; // The compression method used (gzip, brotli, etc.)
-  compressionRatio?: number; // Compression ratio as percentage saved
 }
 
 /**
@@ -56,7 +50,6 @@ export async function uploadCrate(
     // Generate a presigned URL for client-side uploads if no buffer is provided
     let gcsPath = "";
     let presignedUrl: string | undefined = undefined;
-    let compressionMetadata = null;
     let fileSize = 0;
 
     if (!fileBuffer) {
@@ -75,30 +68,8 @@ export async function uploadCrate(
       // Create a GCS file object
       const file = bucket.file(gcsPath);
 
-      // Try to compress the file using our improved FileOps module
+      // Use the original buffer
       let bufferToSave = fileBuffer;
-
-      try {
-        console.log(`Attempting to compress: ${fileName} (${contentType})`);
-        const result = await compressBuffer(fileBuffer, contentType, fileName);
-
-        if (result) {
-          bufferToSave = result.compressedBuffer;
-          compressionMetadata = result.compressionMetadata;
-          console.log(
-            `Compression successful: ${fileName} - Original: ${compressionMetadata.originalSize} bytes, Compressed: ${compressionMetadata.compressedSize} bytes, Ratio: ${compressionMetadata.compressionRatio.toFixed(2)}%`,
-          );
-        } else {
-          console.log(
-            `Compression skipped for ${fileName}: not compressible or no benefit`,
-          );
-        }
-      } catch (compressionError) {
-        console.error(
-          "Error during compression, using original buffer:",
-          compressionError,
-        );
-      }
 
       fileSize = bufferToSave.length;
 
@@ -114,12 +85,6 @@ export async function uploadCrate(
               description: crateData.description,
             }),
             ...(crateData.category && { category: crateData.category }),
-            ...(compressionMetadata && {
-              compressed: "true",
-              compressionMethod: compressionMetadata.compressionMethod,
-              originalSize: compressionMetadata.originalSize.toString(),
-              compressionRatio: compressionMetadata.compressionRatio.toFixed(2),
-            }),
           },
         },
         resumable: false,
@@ -175,10 +140,7 @@ export async function uploadCrate(
       downloadCount: 0,
       metadata: crateData.metadata || {}, // Ensure metadata is an object, not undefined
       fileName: fileName, // Add the fileName field
-      ...(compressionMetadata && {
-        compressed: true,
-        compressionRatio: compressionMetadata.compressionRatio,
-      }),
+      // No compression metadata - compression is disabled
     };
 
     // Store metadata in Firestore
@@ -295,7 +257,7 @@ export async function deleteFile(fileId: string): Promise<boolean> {
 }
 
 /**
- * Get a file's content as a buffer, with automatic decompression if needed
+ * Get a file's content as a buffer
  */
 export async function getFileContent(fileId: string): Promise<{
   buffer: Buffer;
@@ -322,27 +284,9 @@ export async function getFileContent(fileId: string): Promise<{
     // Download the file content
     const [content] = await file.download();
 
-    // Check if file is compressed and needs decompression
-    if (metadata.compressed) {
-      try {
-        console.log(
-          `Decompressing file: ${metadata.fileName} (${metadata.compressionMethod})`,
-        );
-        const decompressedContent = await decompressBuffer(content);
-        console.log(
-          `Decompression successful: ${metadata.fileName} - Compressed: ${content.length} bytes, Decompressed: ${decompressedContent.length} bytes`,
-        );
-
-        // Increment download count
-        await getCrateMetadata(fileId, true);
-
-        return { buffer: decompressedContent, metadata };
-      } catch (decompressionError) {
-        console.error("Error during decompression:", decompressionError);
-        // Fall back to returning the compressed content
-        return { buffer: content, metadata };
-      }
-    }
+    console.log(
+      `Retrieved file: ${metadata.fileName} - Size: ${content.length} bytes`,
+    );
 
     // Increment download count
     await getCrateMetadata(fileId, true);
@@ -355,7 +299,7 @@ export async function getFileContent(fileId: string): Promise<{
 }
 
 /**
- * Stream file content directly, with automatic decompression if needed
+ * Stream file content directly
  */
 export async function getFileStream(fileId: string): Promise<{
   stream: NodeJS.ReadableStream;
@@ -370,20 +314,7 @@ export async function getFileStream(fileId: string): Promise<{
       throw new Error("File not found");
     }
 
-    // Check if file is compressed - if so, we need to handle differently
-    if (metadata.compressed) {
-      // For compressed files, download the full content first, decompression it,
-      // and then create a stream from the decompressed buffer
-      const { buffer } = await getFileContent(fileId);
-
-      // Create a readable stream from the decompressed buffer
-      const { Readable } = require("stream");
-      const stream = Readable.from(buffer);
-
-      return { stream, metadata };
-    }
-
-    // For non-compressed files, stream directly from storage
+    // Stream directly from storage
     const file = bucket.file(metadata.gcsPath);
 
     // Check if file exists
@@ -406,7 +337,7 @@ export async function getFileStream(fileId: string): Promise<{
 }
 
 /**
- * Get a crate's content as a buffer, with automatic decompression if needed
+ * Get a crate's content as a buffer
  */
 export async function getCrateContent(crateId: string): Promise<{
   buffer: Buffer;
@@ -431,25 +362,7 @@ export async function getCrateContent(crateId: string): Promise<{
     // Download the file content
     const [content] = await file.download();
 
-    // Check if file is compressed and needs decompression
-    const fileMetadata = await file.getMetadata();
-    const compressed = fileMetadata[0]?.metadata?.compressed === "true";
-
-    if (compressed) {
-      try {
-        console.log(`Decompressing crate: ${crate.id}`);
-        const decompressedContent = await decompressBuffer(content);
-
-        // Increment download count
-        await getCrateMetadata(crateId, true);
-
-        return { buffer: decompressedContent, crate };
-      } catch (decompressionError) {
-        console.error("Error during decompression:", decompressionError);
-        // Fall back to returning the compressed content
-        return { buffer: content, crate };
-      }
-    }
+    console.log(`Retrieved crate: ${crate.id} - Size: ${content.length} bytes`);
 
     // Increment download count
     await getCrateMetadata(crateId, true);

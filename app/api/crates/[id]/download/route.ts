@@ -27,7 +27,7 @@ export async function GET(
 
   try {
     // Fetch crate data (includes metadata check, gets content buffer, and increments download count)
-    // getCrateContent is designed for crates, handles decompression, and calls incrementCrateDownloadCount.
+    // getCrateContent is designed for crates and calls incrementCrateDownloadCount.
     const { buffer, crate } = await getCrateContent(crateId);
 
     // Note: Permission checks (e.g., for private crates not owned by the user)

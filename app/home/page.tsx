@@ -767,14 +767,6 @@ export default function HomePage() {
                       )}
                     </div>
 
-                    {/* Compression Info - if available */}
-                    {file.compressed && file.compressionRatio && (
-                      <div className="text-xs text-gray-600 mb-3">
-                        <span className="font-medium">Compressed:</span>{" "}
-                        {Math.round(file.compressionRatio * 100)}% reduction
-                      </div>
-                    )}
-
                     {/* Custom Metadata - if available */}
                     {file.metadata && Object.keys(file.metadata).length > 0 && (
                       <div className="text-xs text-gray-600 mb-3">
