@@ -224,7 +224,7 @@ function getServer(req?: AuthenticatedRequest) {
                   `Description: ${c.description || "No description"}\n` +
                   `Category: ${c.category || "N/A"}\n` + 
                   `Content Type: ${c.contentType || "N/A"}\n` + 
-                  `Tags: ${c.tags?.join(", ") || "None"}\n`,
+                  `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
               )
               .join("\n---\n"),
           },
@@ -460,7 +460,7 @@ function getServer(req?: AuthenticatedRequest) {
                         `Description: ${c.description || "No description"}\n` +
                         `Category: ${c.category || "N/A"}\n` + 
                         `Content Type: ${c.contentType || "N/A"}\n` + 
-                        `Tags: ${c.tags?.join(", ") || "None"}\n`,
+                        `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
                     )
                     .join("\n---\n")
                 : `No crates found matching "${query}"`,
@@ -627,7 +627,7 @@ function getServer(req?: AuthenticatedRequest) {
             .map(([k, v]) => `${k}: ${v}`)
             .join(" ")
         : "";
-      const tagsString = tags ? tags.join(" ") : "";
+      const tagsString = Array.isArray(tags) ? tags.join(" ") : "";
       const searchText = [title, description, tagsString, metaString]
         .filter(Boolean)
         .join(" ");

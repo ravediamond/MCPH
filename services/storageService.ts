@@ -97,7 +97,7 @@ export async function uploadCrate(
           .join(" ")
       : "";
 
-    const tagsString = crateData.tags ? crateData.tags.join(" ") : "";
+    const tagsString = Array.isArray(crateData.tags) ? crateData.tags.join(" ") : "";
     const searchField = [
       crateData.title || fileName,
       crateData.description || "",
