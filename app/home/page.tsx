@@ -101,19 +101,10 @@ export default function HomePage() {
 
           // Process crates to add expiry metadata
           const processedCrates = data.map((crate: Crate) => {
-            const expiryDate =
-              crate.createdAt && crate.ttlDays
-                ? new Date(
-                    new Date(crate.createdAt).getTime() +
-                      crate.ttlDays * 24 * 60 * 60 * 1000,
-                  )
-                : null;
+            // TTL expiry logic removed as ttlDays is no longer supported
+            const expiryDate = null;
             const now = new Date();
-            const daysDiff = expiryDate
-              ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
-              : 0;
+            const daysDiff = 0;
             return {
               ...crate,
               isExpiringSoon: daysDiff <= 3 && daysDiff > 0,

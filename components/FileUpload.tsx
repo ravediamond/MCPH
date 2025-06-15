@@ -270,11 +270,11 @@ export default function FileUpload({
       formData.append("description", description);
       formData.append("fileType", fileType);
       formData.append("isShared", isShared ? "true" : "false");
-      
+
       if (user) {
         formData.append("userId", user.uid);
       }
-      
+
       uploadResponse = await fetch("/api/uploads/direct-upload", {
         method: "POST",
         headers: {
@@ -527,9 +527,14 @@ export default function FileUpload({
           </h2>
 
           <div className="mb-4 bg-blue-50 p-4 rounded-md text-blue-700 text-sm">
-            <p><strong>Simple File Sharing</strong></p>
-            <p className="mt-2">Upload a single file (up to 50MB) to quickly share with others. 
-            Your file will be automatically categorized based on its type and will be accessible via a simple link.</p>
+            <p>
+              <strong>Simple File Sharing</strong>
+            </p>
+            <p className="mt-2">
+              Upload a single file (up to 50MB) to quickly share with others.
+              Your file will be automatically categorized based on its type and
+              will be accessible via a simple link.
+            </p>
           </div>
 
           <div

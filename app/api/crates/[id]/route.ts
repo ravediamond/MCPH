@@ -19,17 +19,7 @@ export async function GET(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
+    // Expiration check removed as ttlDays is no longer used
 
     // Check access permissions
     const authHeader = req.headers.get("authorization");
@@ -85,8 +75,7 @@ export async function GET(
       mimeType: crate.mimeType,
       size: crate.size,
       createdAt: crate.createdAt,
-      ttlDays: crate.ttlDays,
-      expiresAt: expirationDate,
+      // ttlDays and expiresAt removed as they're no longer used
       downloadCount: crate.downloadCount,
       isPublic: crate.shared.public,
       isPasswordProtected: crate.shared.passwordProtected,
@@ -124,17 +113,7 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
+    // Expiration check removed as ttlDays is no longer used
 
     // Check authentication
     const authHeader = req.headers.get("authorization");

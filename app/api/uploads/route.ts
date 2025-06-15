@@ -38,8 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get TTL if provided
-    const ttl = formData.get("ttl");
-    const ttlHours = ttl ? parseInt(ttl.toString(), 10) : undefined;
+    // TTL processing removed as it's no longer supported
 
     // Parse metadata if provided (expects JSON string or array of key-value pairs)
     let metadata: Record<string, string> | undefined = undefined;
@@ -75,7 +74,7 @@ export async function POST(req: NextRequest) {
         file.name,
         file.type,
         {
-          ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+          // ttlDays removed as it's no longer supported
         },
       );
 
@@ -109,7 +108,7 @@ export async function POST(req: NextRequest) {
     }
 
     const crateData = await uploadCrate(buffer, file.name, file.type, {
-      ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+      // ttlDays removed as it's no longer supported
       metadata,
       category: fileType ? (fileType as any) : undefined,
       tags: tags, // Add the parsed tags
@@ -131,12 +130,7 @@ export async function POST(req: NextRequest) {
         contentType: crateData.mimeType,
         size: crateData.size,
         uploadedAt: crateData.createdAt,
-        expiresAt: crateData.ttlDays
-          ? new Date(
-              crateData.createdAt.getTime() +
-                crateData.ttlDays * 24 * 60 * 60 * 1000,
-            )
-          : undefined,
+        // expiresAt removed as ttlDays is no longer supported
         downloadUrl: downloadUrl, // Add the crate page URL
       },
       { status: 201 },

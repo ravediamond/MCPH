@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     // Extract file details from request body
-    const { fileName, contentType, ttlHours } = body;
+    const { fileName, contentType } = body;
 
     if (!fileName || !contentType) {
       return NextResponse.json(
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       fileName,
       contentType,
       {
-        ttlDays: ttlHours ? ttlHours / 24 : undefined, // Convert hours to days if provided
+        // ttlDays removed as it's no longer supported
       },
     );
 

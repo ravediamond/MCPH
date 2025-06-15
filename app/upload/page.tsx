@@ -62,7 +62,7 @@ export default function UploadPage() {
                   console.error("Upload error:", error);
                 }}
               />
-              
+
               {/* Features description */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
@@ -84,12 +84,14 @@ export default function UploadPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
-                      <span>Manage your uploaded files from your dashboard</span>
+                      <span>
+                        Manage your uploaded files from your dashboard
+                      </span>
                     </li>
                   </ul>
                 </div>
               </div>
-              
+
               {/* Crate type information */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-2">

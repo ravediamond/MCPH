@@ -1497,19 +1497,7 @@ export default function CratePage() {
                     className="mb-2"
                   />
 
-                  {crateInfo.ttlDays && (
-                    <div className="mt-3">
-                      <StatsCard.Progress
-                        label="Time Remaining"
-                        value={Math.min(crateInfo.ttlDays, 30)} // Cap at 30 for display
-                        max={30} // Assuming max expiry is 30 days
-                        color={crateInfo.ttlDays < 3 ? "red" : "primary"}
-                      />
-                      <div className="text-xs text-gray-500 mt-1 flex justify-end">
-                        <span>{crateInfo.ttlDays} days total TTL</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* TTL display removed as ttlDays is no longer supported */}
                 </>
               )}
             </div>

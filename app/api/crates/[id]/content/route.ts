@@ -30,21 +30,6 @@ export async function GET(
       `[Content Route] Found crate: ${crate.title}, Owner: ${crate.ownerId}, Public: ${crate.shared.public}`,
     );
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      console.log(
-        `[Content Route] Crate expired. Created: ${crate.createdAt}, TTL: ${crate.ttlDays} days`,
-      );
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
-
     // Enhanced logging for debugging auth issues
     console.log(
       "[Content Route] Request headers:",
@@ -195,17 +180,7 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
+    // Expiration check removed as ttlDays is no longer used
 
     // Check authentication
     const authHeader = req.headers.get("authorization");
