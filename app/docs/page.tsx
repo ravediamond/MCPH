@@ -34,15 +34,15 @@ export default function DocsPage() {
             </li>
             <li>
               <b>Store multiple content types</b> including markdown, code,
-              diagrams, images, and more
+              JSON, images, and binary files
             </li>
             <li>
               <b>Integrate directly with AI tools</b> so you can create and
               share without manual uploads
             </li>
             <li>
-              <b>Password-protect sensitive content</b> and set automatic
-              expiration dates
+              <b>Password-protect sensitive content</b> with a simple security
+              option
             </li>
           </ul>
           <p className="text-gray-600">
@@ -192,8 +192,8 @@ export default function DocsPage() {
           </p>
 
           <div className="bg-gray-100 p-3 rounded-lg mb-4 text-gray-700 text-sm">
-            "Create a flowchart diagram showing the process of user
-            authentication and share it via MCPH."
+            "Create a markdown guide explaining user authentication best
+            practices and share it via MCPH."
           </div>
 
           <p className="text-gray-600 mb-3">
@@ -368,8 +368,7 @@ POST /api/crates/{id}/share
   "public": boolean,           // Whether the crate is publicly accessible
   "passwordProtected": boolean, // Whether password protection is enabled
   "password": string,          // Optional: Set a new password
-  "removePassword": boolean,   // Optional: Remove existing password
-  "sharedWith": string[]       // Optional: List of user IDs to share with
+  "removePassword": boolean    // Optional: Remove existing password
 }
 
 Response:

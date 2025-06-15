@@ -14,12 +14,12 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from "../lib/firebaseClient";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  isAdmin: boolean; // Add isAdmin flag
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;

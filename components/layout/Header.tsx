@@ -9,9 +9,9 @@ import {
   FaUserCircle,
   FaUpload,
   FaHome,
-} from "react-icons/fa"; // Added FaUpload, FaHome
-import Image from "next/image"; // Import the Image component
-import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
+} from "react-icons/fa";
+import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,10 +20,9 @@ export default function Header() {
     isAdmin,
     signInWithGoogle,
     signOut: firebaseSignOut,
-  } = useAuth(); // Use useAuth hook
+  } = useAuth();
   const pathname = usePathname();
 
-  // Handle navigation logic - only for the Home link in the nav menu
   const getHomeLink = () => (user ? "/home" : "/");
 
   const handleGoogleSignIn = async () => {
@@ -65,19 +64,24 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {/* Home link is dynamic based on login state */}
-            <Link
-              href={getHomeLink()}
-              className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isHomePage ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
-            >
-              <FaHome className="mr-1 h-4 w-4" /> Home
-            </Link>
-            <Link
-              href="/upload"
-              className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/upload") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
-            >
-              <FaUpload className="mr-1 h-4 w-4" /> Upload
-            </Link>
+            {/* Only show Home and Upload when authenticated */}
+            {user && (
+              <>
+                <Link
+                  href={getHomeLink()}
+                  className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isHomePage ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+                >
+                  <FaHome className="mr-1 h-4 w-4" /> Home
+                </Link>
+                <Link
+                  href="/upload"
+                  className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/upload") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+                >
+                  <FaUpload className="mr-1 h-4 w-4" /> Upload
+                </Link>
+              </>
+            )}
+            {/* Always show Documentation */}
             <Link
               href="/docs"
               className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/docs") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
@@ -130,7 +134,8 @@ export default function Header() {
             )}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-500 hover:text-gray-900"
+              className="text-gray-500 hover:text-gray-900 p-2 rounded-md"
+              aria-label="Toggle mobile menu"
             >
               {isMenuOpen ? (
                 <FaTimes className="h-5 w-5" />
@@ -145,21 +150,26 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-gray-200 bg-stone-50 animate-fadeIn">
             <nav className="flex flex-col space-y-3">
-              {/* Home link is dynamic based on login state */}
-              <Link
-                href={getHomeLink()}
-                className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isHomePage ? "bg-gray-100 text-gray-900" : ""}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaHome className="mr-2 h-4 w-4" /> Home
-              </Link>
-              <Link
-                href="/upload"
-                className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/upload") ? "bg-gray-100 text-gray-900" : ""}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaUpload className="mr-2 h-4 w-4" /> Upload
-              </Link>
+              {/* Only show Home and Upload when authenticated */}
+              {user && (
+                <>
+                  <Link
+                    href={getHomeLink()}
+                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isHomePage ? "bg-gray-100 text-gray-900" : ""}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FaHome className="mr-2 h-4 w-4" /> Home
+                  </Link>
+                  <Link
+                    href="/upload"
+                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/upload") ? "bg-gray-100 text-gray-900" : ""}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FaUpload className="mr-2 h-4 w-4" /> Upload
+                  </Link>
+                </>
+              )}
+              {/* Always show Documentation */}
               <Link
                 href="/docs"
                 className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/docs") ? "bg-gray-100 text-gray-900" : ""}`}

@@ -22,7 +22,8 @@ export async function POST(
       passwordProtected,
       password,
       removePassword,
-      sharedWith,
+      // Simplified for v1: No per-user sharing
+      // sharedWith,
       generateLink = true,
     } = await req.json();
 
@@ -112,10 +113,11 @@ export async function POST(
       sharingSettings.passwordProtected = false;
     }
 
+    // Simplified for v1: No per-user sharing
     // Update shared with users if provided
-    if (sharedWith) {
-      sharingSettings.sharedWith = sharedWith;
-    }
+    // if (sharedWith) {
+    //   sharingSettings.sharedWith = sharedWith;
+    // }
 
     // Update sharing settings
     const result = await updateCrateSharing(id, userId, sharingSettings);

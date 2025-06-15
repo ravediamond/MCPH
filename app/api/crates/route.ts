@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
 import { CrateCategory, CrateSharing } from "@/app/types/crate";
-import { DATA_TTL } from "@/app/config/constants";
 import { auth } from "@/lib/firebaseAdmin";
 
-// Helper to get client IP
 function getClientIp(req: NextRequest): string {
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
@@ -13,12 +11,8 @@ function getClientIp(req: NextRequest): string {
   return "127.0.0.1";
 }
 
-/**
- * API endpoint to upload a crate (file with metadata)
- */
 export async function POST(req: NextRequest) {
   try {
-    // Check if the request is multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
@@ -27,7 +21,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Parse the form data
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
@@ -64,10 +57,6 @@ export async function POST(req: NextRequest) {
     const title = formData.get("title")?.toString() || file.name;
     const description = formData.get("description")?.toString();
     const categoryStr = formData.get("category")?.toString();
-    const ttlDaysStr = formData.get("ttlDays")?.toString();
-    const ttlDays = ttlDaysStr
-      ? parseInt(ttlDaysStr, 10)
-      : DATA_TTL.DEFAULT_DAYS;
     const tagsStr = formData.get("tags")?.toString();
     const tags = tagsStr ? tagsStr.split(",").map((t) => t.trim()) : undefined;
 
@@ -84,10 +73,6 @@ export async function POST(req: NextRequest) {
         category = CrateCategory.IMAGE;
       } else if (file.name.endsWith(".md") || file.name.endsWith(".markdown")) {
         category = CrateCategory.MARKDOWN;
-      } else if (file.name.endsWith(".todolist")) {
-        category = CrateCategory.TODOLIST;
-      } else if (file.name.endsWith(".mmd") || file.name.endsWith(".diagram")) {
-        category = CrateCategory.DIAGRAM;
       } else if (file.type.includes("json") || file.name.endsWith(".json")) {
         // Added check for .json extension
         category = CrateCategory.JSON;
@@ -108,10 +93,11 @@ export async function POST(req: NextRequest) {
     // Parse sharing settings
     const isPublic = formData.get("public") === "true";
     const passwordProtected = formData.get("password") ? true : false;
-    const sharedWithStr = formData.get("sharedWith")?.toString();
-    const sharedWith = sharedWithStr
-      ? sharedWithStr.split(",").map((uid) => uid.trim())
-      : undefined;
+    // Simplified for v1: No per-user sharing lists
+    // const sharedWithStr = formData.get("sharedWith")?.toString();
+    // const sharedWith = sharedWithStr
+    //   ? sharedWithStr.split(",").map((uid) => uid.trim())
+    //   : undefined;
 
     // If the crate is public and the user is authenticated, check shared crates limit
     if (isPublic && userId !== "anonymous") {
@@ -134,7 +120,7 @@ export async function POST(req: NextRequest) {
     const sharing: CrateSharing = {
       public: isPublic,
       passwordProtected,
-      ...(sharedWith && { sharedWith }),
+      // Simplified for v1: No per-user sharing lists
     };
 
     // Parse metadata if provided (expects JSON string or array of key-value pairs)
@@ -166,7 +152,6 @@ export async function POST(req: NextRequest) {
       title,
       description,
       category,
-      ttlDays,
       tags,
       ownerId: userId,
       shared: sharing,
@@ -191,7 +176,6 @@ export async function POST(req: NextRequest) {
         size: crate.size,
         crateUrl,
         createdAt: crate.createdAt,
-        ttlDays: crate.ttlDays,
       },
       { status: 201 },
     );

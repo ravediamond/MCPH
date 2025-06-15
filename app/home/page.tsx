@@ -25,9 +25,8 @@ import {
   FaKey,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
-import { Crate, CrateSharing, CrateCategory } from "../types/crate"; // Import CrateCategory as well
+import { Crate, CrateSharing, CrateCategory } from "../types/crate";
 
-// Add FileMetadataExtended type
 type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
   id: string;
   fileName: string;
@@ -102,19 +101,10 @@ export default function HomePage() {
 
           // Process crates to add expiry metadata
           const processedCrates = data.map((crate: Crate) => {
-            const expiryDate =
-              crate.createdAt && crate.ttlDays
-                ? new Date(
-                    new Date(crate.createdAt).getTime() +
-                      crate.ttlDays * 24 * 60 * 60 * 1000,
-                  )
-                : null;
+            // TTL expiry logic removed as ttlDays is no longer supported
+            const expiryDate = null;
             const now = new Date();
-            const daysDiff = expiryDate
-              ? Math.ceil(
-                  (expiryDate.getTime() - now.getTime()) / (1000 * 3600 * 24),
-                )
-              : 0;
+            const daysDiff = 0;
             return {
               ...crate,
               isExpiringSoon: daysDiff <= 3 && daysDiff > 0,
@@ -767,14 +757,6 @@ export default function HomePage() {
                         </span>
                       )}
                     </div>
-
-                    {/* Compression Info - if available */}
-                    {file.compressed && file.compressionRatio && (
-                      <div className="text-xs text-gray-600 mb-3">
-                        <span className="font-medium">Compressed:</span>{" "}
-                        {Math.round(file.compressionRatio * 100)}% reduction
-                      </div>
-                    )}
 
                     {/* Custom Metadata - if available */}
                     {file.metadata && Object.keys(file.metadata).length > 0 && (

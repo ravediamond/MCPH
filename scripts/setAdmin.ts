@@ -1,4 +1,4 @@
-import { admin } from "../lib/firebaseAdmin.js"; // Adjust path as needed
+import { admin } from "../lib/firebaseAdmin.js";
 
 async function setAdminClaimForUser(uid: string) {
   if (!uid) {
@@ -7,7 +7,6 @@ async function setAdminClaimForUser(uid: string) {
   }
 
   try {
-    // Firebase Admin is initialized on import
     await admin.auth().setCustomUserClaims(uid, { admin: true });
     console.log(`Successfully set admin claim for user: ${uid}`);
     console.log(
@@ -20,6 +19,5 @@ async function setAdminClaimForUser(uid: string) {
   }
 }
 
-// Get UID from command line arguments
 const uid = process.argv[2];
 setAdminClaimForUser(uid);

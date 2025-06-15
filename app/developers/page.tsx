@@ -105,7 +105,7 @@ export default function DevelopersPage() {
             </div>
           </div>
 
-          {/* SDKs & Libraries Card */}
+          {/* Basic Examples Card - Simplified for v1 */}
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm transform transition-transform hover:shadow-md hover:-translate-y-1">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center mb-4">
@@ -113,12 +113,11 @@ export default function DevelopersPage() {
                   <FaTools className="h-6 w-6 text-purple-600" />
                 </div>
                 <h2 className="text-2xl font-semibold text-gray-800 ml-4">
-                  Tools & Examples
+                  REST Examples
                 </h2>
               </div>
               <p className="text-gray-600">
-                Client libraries, code samples, and example integrations in
-                JavaScript, Python, and more.
+                Simple curl examples to help you get started with our REST API.
               </p>
             </div>
             <div className="bg-gray-50 px-6 py-3">

@@ -205,11 +205,9 @@ export default function CratePage() {
     const shouldFetchContent = () => {
       switch (crateInfo.category) {
         case CrateCategory.MARKDOWN:
-        case CrateCategory.TODOLIST:
-        case CrateCategory.DIAGRAM:
-        case CrateCategory.DATA:
         case CrateCategory.CODE:
-        case CrateCategory.JSON: // Added JSON category
+        case CrateCategory.JSON:
+        case CrateCategory.JSON:
           return true;
         default:
           return false;
@@ -586,18 +584,12 @@ export default function CratePage() {
     switch (crateInfo.category) {
       case CrateCategory.MARKDOWN:
         return <FaFileAlt className="text-purple-500" />;
-      case CrateCategory.TODOLIST:
-        return <FaTasks className="text-indigo-500" />;
-      case CrateCategory.DIAGRAM:
-        return <FaProjectDiagram className="text-green-500" />;
-      case CrateCategory.DATA:
-        return <FaTable className="text-blue-500" />;
       case CrateCategory.CODE:
         return <FaFileCode className="text-yellow-500" />;
       case CrateCategory.IMAGE:
         return <FaFileImage className="text-blue-500" />;
-      case CrateCategory.JSON: // Added JSON category
-        return <FaFileCode className="text-orange-500" />; // Using FaFileCode with a different color for now
+      case CrateCategory.JSON:
+        return <FaFileCode className="text-orange-500" />;
       case CrateCategory.BINARY:
       default:
         // Fallback to mime type checking for legacy or unknown types
@@ -616,20 +608,12 @@ export default function CratePage() {
   const getLanguage = () => {
     if (!crateInfo) return "text";
 
-    if (crateInfo.category === CrateCategory.DIAGRAM) {
-      return "mermaid";
-    } else if (
-      crateInfo.category === CrateCategory.MARKDOWN ||
-      crateInfo.category === CrateCategory.TODOLIST
-    ) {
+    // Removed DIAGRAM, TODOLIST for v1 simplification
+    if (crateInfo.category === CrateCategory.MARKDOWN) {
       return "markdown";
-    } else if (
-      crateInfo.category === CrateCategory.DATA ||
-      crateInfo.category === CrateCategory.JSON
-    ) {
-      // Added JSON category
-      // Check if it's JSON or another data format
-      return crateInfo.mimeType?.includes("json") ? "json" : "text";
+    } else if (crateInfo.category === CrateCategory.JSON) {
+      // Check if it's JSON
+      return "json";
     } else if (crateInfo.category === CrateCategory.CODE) {
       // Try to determine the language from the mime type or file extension
       const mimeType = crateInfo.mimeType?.toLowerCase() || "";
@@ -667,11 +651,22 @@ export default function CratePage() {
   };
 
   // Render tags
-  const renderTags = (tags?: string[]) => {
-    if (!tags || tags.length === 0) return null;
+  const renderTags = (tags?: string[] | any) => {
+    // Ensure tags is an array (defensive check)
+    if (!tags) return null;
+
+    // Convert to array if it's not already (handles string or other types)
+    const tagsArray = Array.isArray(tags)
+      ? tags
+      : typeof tags === "string"
+        ? [tags]
+        : [];
+
+    if (tagsArray.length === 0) return null;
+
     return (
       <div className="flex flex-wrap gap-1 mt-2">
-        {tags.map((tag) => (
+        {tagsArray.map((tag) => (
           <span
             key={tag}
             className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"
@@ -683,37 +678,7 @@ export default function CratePage() {
     );
   };
 
-  // Render a To-Do list from markdown content
-  const renderTodoList = (markdownContent: string) => {
-    const lines = markdownContent.split("\n");
-    return (
-      <ul className="list-none p-0 m-0">
-        {lines.map((line, index) => {
-          const taskMatch = line.match(/^- \[( |x|X)\] (.*)/);
-          if (taskMatch) {
-            const isChecked = taskMatch[1] !== " ";
-            const taskText = taskMatch[2];
-            return (
-              <li key={index} className="flex items-center mb-2">
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  readOnly
-                  className="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <span
-                  className={`text-sm ${isChecked ? "line-through text-gray-500" : "text-gray-800"}`}
-                >
-                  {taskText}
-                </span>
-              </li>
-            );
-          }
-          return null;
-        })}
-      </ul>
-    );
-  };
+  // Note: Removed todolist rendering function for v1 simplification
 
   // Enhanced content preview renderer
   const renderPreview = () => {
@@ -797,35 +762,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.DIAGRAM: // Enhanced diagram rendering
-        return (
-          <div className="text-sm">
-            <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
-              <span className="text-gray-700 font-medium">Diagram Preview</span>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    window.open(`/api/crates/${crateId}/content`, "_blank")
-                  }
-                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
-                >
-                  <FaExternalLinkAlt className="inline mr-1" />
-                  Open Raw
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
-                >
-                  <FaDownload className="inline mr-1" />
-                  Download
-                </button>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded border border-gray-100 overflow-auto">
-              <div className="mermaid">{crateContent}</div>
-            </div>
-          </div>
-        );
+      // Removed DIAGRAM category for v1 simplification
 
       case CrateCategory.CODE: // Enhanced code rendering
         return (
@@ -914,24 +851,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.TODOLIST:
-        return (
-          <div className="bg-gray-50 rounded border p-4 max-h-96 overflow-auto">
-            {renderTodoList(crateContent)}
-          </div>
-        );
-
-      case CrateCategory.DIAGRAM:
-        return <MermaidDiagram>{crateContent}</MermaidDiagram>;
-
-      case CrateCategory.DATA:
-        return (
-          <div className="text-sm">
-            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
-              {crateContent}
-            </SyntaxHighlighter>
-          </div>
-        );
+      // Removed for v1: TODOLIST, DIAGRAM, DATA categories
 
       case CrateCategory.CODE:
         return (
@@ -1337,11 +1257,8 @@ export default function CratePage() {
 
               {/* Show preview button for supported categories */}
               {(crateInfo.category === CrateCategory.MARKDOWN ||
-                crateInfo.category === CrateCategory.TODOLIST ||
-                crateInfo.category === CrateCategory.DIAGRAM ||
                 crateInfo.category === CrateCategory.CODE ||
-                crateInfo.category === CrateCategory.DATA ||
-                crateInfo.category === CrateCategory.JSON || // Added JSON category
+                crateInfo.category === CrateCategory.JSON ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
@@ -1580,19 +1497,7 @@ export default function CratePage() {
                     className="mb-2"
                   />
 
-                  {crateInfo.ttlDays && (
-                    <div className="mt-3">
-                      <StatsCard.Progress
-                        label="Time Remaining"
-                        value={Math.min(crateInfo.ttlDays, 30)} // Cap at 30 for display
-                        max={30} // Assuming max expiry is 30 days
-                        color={crateInfo.ttlDays < 3 ? "red" : "primary"}
-                      />
-                      <div className="text-xs text-gray-500 mt-1 flex justify-end">
-                        <span>{crateInfo.ttlDays} days total TTL</span>
-                      </div>
-                    </div>
-                  )}
+                  {/* TTL display removed as ttlDays is no longer supported */}
                 </>
               )}
             </div>

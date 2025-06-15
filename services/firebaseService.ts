@@ -2,16 +2,12 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-// Utility to handle service account credentials for Vercel
 function setupServiceAccountForVercel() {
   if (process.env.VERCEL_ENV) {
     const jsonContent = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     if (jsonContent && jsonContent.trim().startsWith("{")) {
       try {
-        // Validate the JSON is parseable
         JSON.parse(jsonContent);
-        // In Vercel, we'll use the JSON content directly in other modules
-        // No need to write to temp file
       } catch (error) {
         console.error("[FirebaseService] Invalid JSON in credentials:", error);
       }
@@ -33,7 +29,6 @@ import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { Crate, CrateSharing } from "@/app/types/crate";
 
-// --- Firebase Admin SDK Initialization ---
 let firebaseApp: App;
 let db: Firestore;
 
@@ -47,12 +42,10 @@ if (!getApps().length) {
       let serviceAccount: ServiceAccount;
       const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-      // Check if it's a JSON string or a file path
       if (
         process.env.VERCEL_ENV &&
         process.env.GOOGLE_APPLICATION_CREDENTIALS.trim().startsWith("{")
       ) {
-        // Parse JSON string for Vercel environment
         try {
           serviceAccount = JSON.parse(
             process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -65,8 +58,6 @@ if (!getApps().length) {
           throw new Error("Failed to parse service account credentials JSON.");
         }
       } else {
-        // Use file path for local environment
-        // Handle both absolute and relative paths
         const resolvedPath = credentialsPath.startsWith("/")
           ? credentialsPath
           : path.resolve(process.cwd(), credentialsPath);
@@ -81,7 +72,6 @@ if (!getApps().length) {
         serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
       }
 
-      // Initialize with explicit credentials
       firebaseApp = initializeApp({
         credential: cert(serviceAccount),
       });
@@ -94,20 +84,16 @@ if (!getApps().length) {
         "GOOGLE_APPLICATION_CREDENTIALS not found, falling back to Application Default Credentials (ADC).",
       );
 
-      firebaseApp = initializeApp({
-        // No 'credential' property is provided, so ADC will be used.
-      });
+      firebaseApp = initializeApp({});
 
       console.log(
         "Firebase Admin SDK initialized with Application Default Credentials.",
       );
     }
 
-    // Initialize Firestore for the first time
     db = getFirestore(firebaseApp);
     console.log("Firestore instance obtained.");
 
-    // Apply settings immediately to handle undefined values
     db.settings({
       ignoreUndefinedProperties: true,
     });
@@ -119,10 +105,9 @@ if (!getApps().length) {
     );
   }
 } else {
-  firebaseApp = getApp(); // Use the already initialized app
-  db = getFirestore(firebaseApp); // Get the existing Firestore instance
+  firebaseApp = getApp();
+  db = getFirestore(firebaseApp);
 
-  // Ensure settings are applied even if using existing instance
   try {
     db.settings({
       ignoreUndefinedProperties: true,
@@ -142,27 +127,19 @@ if (!getApps().length) {
   );
 }
 
-// --- End Firebase Admin SDK Initialization ---
-
-// Collection names for Firestore
-const CRATES_COLLECTION = "crates"; // Collection for crates
+const CRATES_COLLECTION = "crates";
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 
-// Export collection names for use in other modules
 export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
 
-/**
- * Convert Firebase timestamp to Date and vice versa
- */
 const toFirestoreData = (data: any): any => {
-  // Deep copy the object and handle Date conversion
   const result = { ...data };
 
-  // Convert Date objects to Firestore timestamps
   Object.keys(result).forEach((key) => {
-    if (result[key] instanceof Date) {
-      // We'll keep it as a Date; Firestore will convert it automatically
+    if (result[key] === undefined) {
+      delete result[key];
+    } else if (result[key] instanceof Date) {
     } else if (typeof result[key] === "object" && result[key] !== null) {
       result[key] = toFirestoreData(result[key]);
     }
@@ -174,10 +151,8 @@ const toFirestoreData = (data: any): any => {
 const fromFirestoreData = (data: any): any => {
   if (!data) return null;
 
-  // Convert Firestore timestamps to Date objects
   const result = { ...data };
 
-  // Convert Firestore timestamps back to Date objects
   Object.keys(result).forEach((key) => {
     if (result[key] && typeof result[key].toDate === "function") {
       result[key] = result[key].toDate();
@@ -189,9 +164,6 @@ const fromFirestoreData = (data: any): any => {
   return result;
 };
 
-/**
- * Increment a general metric counter
- */
 export async function incrementMetric(
   metric: string,
   amount: number = 1,
@@ -199,28 +171,22 @@ export async function incrementMetric(
   try {
     const metricRef = db.collection(METRICS_COLLECTION).doc("counters");
 
-    // Get today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
     const dailyMetricRef = db
       .collection(METRICS_COLLECTION)
       .doc(`daily_${today}`);
 
-    // Use FieldValue.increment for atomic increment
     const updateData: Record<string, any> = {};
     updateData[metric] = FieldValue.increment(amount);
 
-    // Update the total counters
     await metricRef.set(updateData, { merge: true });
 
-    // Also update the timestamp
     await metricRef.update({
       lastUpdated: new Date(),
     });
 
-    // Update daily counters
     await dailyMetricRef.set(updateData, { merge: true });
 
-    // Get updated value
     const updatedDoc = await metricRef.get();
     return updatedDoc.data()?.[metric] || 0;
   } catch (error) {
@@ -229,9 +195,6 @@ export async function incrementMetric(
   }
 }
 
-/**
- * Get a general metric value
- */
 export async function getMetric(metric: string): Promise<number> {
   try {
     const metricRef = db.collection(METRICS_COLLECTION).doc("counters");
@@ -248,9 +211,6 @@ export async function getMetric(metric: string): Promise<number> {
   }
 }
 
-/**
- * Get daily metrics for a specific metric type over a number of days
- */
 export async function getDailyMetrics(
   metric: string,
   days: number = 30,
@@ -288,9 +248,6 @@ export async function getDailyMetrics(
   }
 }
 
-/**
- * Log an event to Firestore
- */
 export async function logEvent(
   eventType: string,
   resourceId: string,
@@ -306,24 +263,18 @@ export async function logEvent(
       type: eventType,
       resourceId,
       timestamp,
-      ipAddress,
-      details,
+      ipAddress: ipAddress || null,
+      details: details || null,
     };
 
-    // Add to the events collection with auto-generated ID
     await db.collection(EVENTS_COLLECTION).doc(eventId).set(eventData);
 
-    // Create a query for cleanup (to run in a scheduled function)
-    // This just increments the event counter; actual cleanup is done separately
     await incrementMetric(`events:${eventType}`);
   } catch (error) {
     console.error("Error logging event to Firestore:", error);
   }
 }
 
-/**
- * Get recent events of a specific type from Firestore
- */
 export async function getEvents(
   eventType: string,
   limit: number = 100,
@@ -340,10 +291,8 @@ export async function getEvents(
       return [];
     }
 
-    // Convert to array of data
     return querySnapshot.docs.map((doc) => {
       const data = doc.data();
-      // Convert any Firestore timestamps to Date objects
       return fromFirestoreData(data);
     });
   } catch (error) {
@@ -352,16 +301,15 @@ export async function getEvents(
   }
 }
 
-// --- API Keys Collection ---
 const API_KEYS_COLLECTION = "apiKeys";
 
 export interface ApiKeyRecord {
-  id: string; // Firestore doc ID
+  id: string;
   userId: string;
-  hashedKey: string; // Store only hashed version
+  hashedKey: string;
   createdAt: Date;
   lastUsedAt?: Date;
-  name?: string; // Optional: user-friendly name
+  name?: string;
 }
 
 import * as crypto from "crypto";
@@ -423,7 +371,6 @@ export async function findUserByApiKey(
     return null;
   }
   const record = fromFirestoreData(snapshot.docs[0].data()) as ApiKeyRecord;
-  // Optionally update lastUsedAt
   await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
   return record;
 }
@@ -431,9 +378,6 @@ export async function findUserByApiKey(
 const API_KEY_USAGE_COLLECTION = "apiKeyUsage";
 const API_KEY_TOOL_CALL_LIMIT = 1000;
 
-/**
- * Increment the monthly tool usage for an API key. Returns the new count and remaining quota.
- */
 export async function incrementApiKeyToolUsage(
   apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
@@ -453,15 +397,11 @@ export async function incrementApiKeyToolUsage(
     },
     { merge: true },
   );
-  // Read the updated count
   const doc = await docRef.get();
   const count = doc.data()?.count || 0;
   return { count, remaining: Math.max(0, API_KEY_TOOL_CALL_LIMIT - count) };
 }
 
-/**
- * Get the current monthly tool usage for an API key.
- */
 export async function getApiKeyToolUsage(
   apiKeyId: string,
 ): Promise<{ count: number; remaining: number }> {
@@ -481,9 +421,6 @@ const USER_USAGE_COLLECTION = "userUsage";
 const USER_TOOL_CALL_LIMIT = 1000;
 const USER_SHARED_CRATES_LIMIT = 50;
 
-/**
- * Increment the monthly tool usage for a user. Returns the new count and remaining quota.
- */
 export async function incrementUserToolUsage(
   userId: string,
 ): Promise<{ count: number; remaining: number }> {
@@ -508,9 +445,6 @@ export async function incrementUserToolUsage(
   return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
 }
 
-/**
- * Get the current monthly tool usage for a user.
- */
 export async function getUserToolUsage(
   userId: string,
 ): Promise<{ count: number; remaining: number }> {
@@ -526,9 +460,6 @@ export async function getUserToolUsage(
   return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
 }
 
-/**
- * Get total storage used by a user (sum of all crate sizes in bytes)
- */
 export async function getUserStorageUsage(
   userId: string,
 ): Promise<{ used: number; limit: number; remaining: number }> {
@@ -547,17 +478,12 @@ export async function getUserStorageUsage(
   }
 }
 
-/**
- * Save crate metadata to Firestore.
- */
 export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
   try {
-    // Convert the data for Firestore
     const dataToSave = toFirestoreData({
       ...crateData,
     });
 
-    // Add to Firestore
     await db.collection(CRATES_COLLECTION).doc(crateData.id).set(dataToSave);
 
     return true;
@@ -567,9 +493,6 @@ export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
   }
 }
 
-/**
- * Get crate metadata from Firestore
- */
 export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
@@ -581,7 +504,6 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
 
     const data = doc.data();
 
-    // Convert Firestore timestamps back to Date objects
     return fromFirestoreData(data) as Crate;
   } catch (error) {
     console.error("Error getting crate metadata from Firestore:", error);
@@ -589,9 +511,6 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
   }
 }
 
-/**
- * Increment download count for a crate in Firestore
- */
 export async function incrementCrateDownloadCount(
   crateId: string,
 ): Promise<number> {
@@ -606,15 +525,12 @@ export async function incrementCrateDownloadCount(
       return 0;
     }
 
-    // Use FieldValue.increment() for atomic increment operation
     await docRef.update({
       downloadCount: FieldValue.increment(1),
     });
 
-    // Also update general metrics
     await incrementMetric("downloads");
 
-    // Get the updated document to return the new count
     const updatedDoc = await docRef.get();
     const downloadCount = updatedDoc.data()?.downloadCount || 0;
 
@@ -625,7 +541,6 @@ export async function incrementCrateDownloadCount(
       error,
     );
 
-    // Attempt to get current count if update failed
     try {
       const doc = await db.collection(CRATES_COLLECTION).doc(crateId).get();
       return doc.data()?.downloadCount || 0;
@@ -635,9 +550,6 @@ export async function incrementCrateDownloadCount(
   }
 }
 
-/**
- * Delete crate metadata from Firestore
- */
 export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
   try {
     await db.collection(CRATES_COLLECTION).doc(crateId).delete();
@@ -648,9 +560,6 @@ export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
   }
 }
 
-/**
- * Get crates for a specific user from Firestore
- */
 export async function getUserCrates(userId: string): Promise<Crate[]> {
   try {
     const querySnapshot = await db
@@ -663,7 +572,6 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
       return [];
     }
 
-    // Convert to array of data, converting Firestore timestamps to Date objects
     return querySnapshot.docs.map(
       (doc) => fromFirestoreData(doc.data()) as Crate,
     );
@@ -672,13 +580,10 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
       `Error getting crates for user ${userId} from Firestore:`,
       error,
     );
-    return []; // Return empty array on error
+    return [];
   }
 }
 
-/**
- * Increment download count for a file in Firestore
- */
 export async function incrementDownloadCount(fileId: string): Promise<number> {
   try {
     const docRef = db.collection("files").doc(fileId);
@@ -691,15 +596,12 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
       return 0;
     }
 
-    // Use FieldValue.increment() for atomic increment operation
     await docRef.update({
       downloadCount: FieldValue.increment(1),
     });
 
-    // Also update general metrics
     await incrementMetric("downloads");
 
-    // Get the updated document to return the new count
     const updatedDoc = await docRef.get();
     const downloadCount = updatedDoc.data()?.downloadCount || 0;
 
@@ -710,7 +612,6 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
       error,
     );
 
-    // Attempt to get current count if update failed
     try {
       const doc = await db.collection("files").doc(fileId).get();
       return doc.data()?.downloadCount || 0;
@@ -720,9 +621,6 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
   }
 }
 
-/**
- * Get the count of shared crates for a user
- */
 export async function getUserSharedCratesCount(
   userId: string,
 ): Promise<{ count: number; limit: number; remaining: number }> {
@@ -752,9 +650,6 @@ export async function getUserSharedCratesCount(
   }
 }
 
-/**
- * Check if a user has reached their shared crates limit
- */
 export async function hasReachedSharedCratesLimit(
   userId: string,
 ): Promise<boolean> {
@@ -762,22 +657,17 @@ export async function hasReachedSharedCratesLimit(
   return remaining <= 0;
 }
 
-/**
- * Update a crate's sharing settings, enforcing the shared crates limit
- */
 export async function updateCrateSharing(
   crateId: string,
   userId: string,
   sharingSettings: Partial<CrateSharing>,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Get the crate metadata
     const crate = await getCrateMetadata(crateId);
     if (!crate) {
       return { success: false, error: "Crate not found" };
     }
 
-    // Verify the user is the owner
     if (crate.ownerId !== userId) {
       return {
         success: false,
@@ -785,9 +675,7 @@ export async function updateCrateSharing(
       };
     }
 
-    // Check if this update would make the crate public
     if (sharingSettings.public && !crate.shared.public) {
-      // If making the crate public, check the shared crates limit
       const reachedLimit = await hasReachedSharedCratesLimit(userId);
       if (reachedLimit) {
         return {
@@ -798,13 +686,11 @@ export async function updateCrateSharing(
       }
     }
 
-    // Update the sharing settings
     const updatedSharing = {
       ...crate.shared,
       ...sharingSettings,
     };
 
-    // Update the crate in Firestore
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     await docRef.update({
       shared: updatedSharing,

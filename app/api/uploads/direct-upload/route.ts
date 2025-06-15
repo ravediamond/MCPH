@@ -6,7 +6,6 @@ import {
   incrementMetric,
   getUserStorageUsage,
 } from "@/services/firebaseService";
-import { DATA_TTL } from "@/app/config/constants";
 import { CrateCategory, CrateSharing } from "@/app/types/crate";
 import crypto from "crypto"; // Import crypto module
 
@@ -32,10 +31,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Get additional form fields
-    const ttlDaysParam = formData.get("ttlDays") as string | null;
-    const ttlDays = ttlDaysParam
-      ? parseInt(ttlDaysParam, 10)
-      : DATA_TTL.DEFAULT_DAYS;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const userId = formData.get("userId") as string;
@@ -113,15 +108,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Parse tags if provided
+    let tags: string[] | undefined = undefined;
+    const tagsRaw = formData.get("tags");
+    if (tagsRaw) {
+      try {
+        tags = JSON.parse(tagsRaw.toString());
+        // Ensure tags is an array
+        if (!Array.isArray(tags)) {
+          tags = [];
+        }
+      } catch (e) {
+        console.warn("Invalid tags format, ignoring:", tagsRaw);
+        tags = [];
+      }
+    }
+
     // Upload the file to storage as a crate
     const crateData = await uploadCrate(buffer, file.name, file.type, {
       title,
       description,
       category: fileType as CrateCategory,
       ownerId: userId || "anonymous",
-      ttlDays,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
+      tags, // Add the parsed tags
     });
 
     // --- VECTOR EMBEDDING GENERATION ---
@@ -161,7 +172,7 @@ export async function POST(req: NextRequest) {
     );
     await incrementMetric("crate_uploads");
 
-    // Return the upload result with compression info if available
+    // Return the upload result
     return NextResponse.json({
       success: true,
       fileId: crateData.id,
@@ -177,14 +188,6 @@ export async function POST(req: NextRequest) {
         crateData.createdAt instanceof Date
           ? crateData.createdAt.toISOString()
           : crateData.createdAt,
-      expiresAt: crateData.ttlDays
-        ? new Date(
-            new Date(crateData.createdAt).getTime() +
-              crateData.ttlDays * 24 * 60 * 60 * 1000,
-          ).toISOString()
-        : undefined,
-      compressed: crateData.compressed,
-      compressionRatio: crateData.compressionRatio,
     });
   } catch (error: any) {
     console.error("Error handling direct upload:", error);

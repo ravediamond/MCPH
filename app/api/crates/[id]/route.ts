@@ -19,17 +19,7 @@ export async function GET(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
+    // Expiration check removed as ttlDays is no longer used
 
     // Check access permissions
     const authHeader = req.headers.get("authorization");
@@ -54,9 +44,8 @@ export async function GET(
     // Check if user has access to this crate
     const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared.public;
-    const isSharedWithUser =
-      Array.isArray(crate.shared.sharedWith) &&
-      crate.shared.sharedWith.includes(userId);
+    // Simplified for v1: No per-user sharing, only public/private
+    const isSharedWithUser = false; // Removed sharedWith array in v1
 
     // If the crate is public, password-protected, and the user is not the owner,
     // require a password to view.
@@ -86,8 +75,7 @@ export async function GET(
       mimeType: crate.mimeType,
       size: crate.size,
       createdAt: crate.createdAt,
-      ttlDays: crate.ttlDays,
-      expiresAt: expirationDate,
+      // ttlDays and expiresAt removed as they're no longer used
       downloadCount: crate.downloadCount,
       isPublic: crate.shared.public,
       isPasswordProtected: crate.shared.passwordProtected,
@@ -125,17 +113,7 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check if crate has expired
-    const now = new Date();
-    const expirationDate = new Date(crate.createdAt);
-    expirationDate.setDate(expirationDate.getDate() + crate.ttlDays);
-
-    if (now > expirationDate) {
-      return NextResponse.json(
-        { error: "This crate has expired" },
-        { status: 410 }, // Gone
-      );
-    }
+    // Expiration check removed as ttlDays is no longer used
 
     // Check authentication
     const authHeader = req.headers.get("authorization");
@@ -158,9 +136,8 @@ export async function POST(
     // Check access permissions
     const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared.public;
-    const isSharedWithUser =
-      Array.isArray(crate.shared.sharedWith) &&
-      crate.shared.sharedWith.includes(userId);
+    // Simplified for v1: No per-user sharing, only public/private
+    const isSharedWithUser = false; // Removed sharedWith array in v1
 
     // Check password if required and not the owner
     if (!isOwner && crate.shared.passwordProtected) {
@@ -172,9 +149,6 @@ export async function POST(
           { status: 401 },
         );
       }
-
-      // TODO: Implement proper password verification here
-      // For now, we'll assume any provided password works
     }
 
     if (!isOwner && !isPublic && !isSharedWithUser) {

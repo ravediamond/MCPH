@@ -5,7 +5,6 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Define crate type
 interface Crate {
   id: string;
   name: string;
