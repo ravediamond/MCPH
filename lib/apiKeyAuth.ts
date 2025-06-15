@@ -43,12 +43,23 @@ export async function requireApiKeyAuth(req: NextRequest) {
 /**
  * Express middleware to check API key authentication
  */
-export function apiKeyAuthMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function apiKeyAuthMiddleware(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) {
   // Look for the API key in headers (prefer x-authorization, fallback to authorization)
-  const authHeader = req.headers["x-authorization"] || req.headers.authorization;
-  
-  if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith("Bearer ")) {
-    console.log("[apiKeyAuthMiddleware] Missing or invalid Authorization header");
+  const authHeader =
+    req.headers["x-authorization"] || req.headers.authorization;
+
+  if (
+    !authHeader ||
+    typeof authHeader !== "string" ||
+    !authHeader.startsWith("Bearer ")
+  ) {
+    console.log(
+      "[apiKeyAuthMiddleware] Missing or invalid Authorization header",
+    );
     return res.status(401).json({
       jsonrpc: "2.0",
       error: {
@@ -58,9 +69,9 @@ export function apiKeyAuthMiddleware(req: AuthenticatedRequest, res: Response, n
       id: req.body?.id || null,
     });
   }
-  
+
   const apiKey = authHeader.replace("Bearer ", "").trim();
-  
+
   // Validate the API key against the database
   findUserByApiKey(apiKey)
     .then((apiKeyRecord: ApiKeyRecord | null) => {
@@ -75,17 +86,17 @@ export function apiKeyAuthMiddleware(req: AuthenticatedRequest, res: Response, n
           id: req.body?.id || null,
         });
       }
-      
+
       // Attach the user to the request object for use in downstream handlers
       req.user = {
         userId: apiKeyRecord.userId,
       };
-      
+
       // Extract client name if available in the request
       if (req.body?.params?.name) {
         req.clientName = req.body.params.name;
       }
-      
+
       next();
     })
     .catch((error) => {

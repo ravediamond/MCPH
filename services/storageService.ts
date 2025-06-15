@@ -97,7 +97,9 @@ export async function uploadCrate(
           .join(" ")
       : "";
 
-    const tagsString = Array.isArray(crateData.tags) ? crateData.tags.join(" ") : "";
+    const tagsString = Array.isArray(crateData.tags)
+      ? crateData.tags.join(" ")
+      : "";
     const searchField = [
       crateData.title || fileName,
       crateData.description || "",
@@ -389,7 +391,11 @@ export async function generateUploadUrl(
     const gcsPath = `crates/${fileId}/${encodeURIComponent(fileName)}`;
 
     // Generate a pre-signed URL for upload using the signer module
-    const { url } = await generateSignedUploadUrl(fileId, fileName, contentType);
+    const { url } = await generateSignedUploadUrl(
+      fileId,
+      fileName,
+      contentType,
+    );
 
     // Return the URL, file ID, and GCS path
     return { url, fileId, gcsPath };
@@ -403,7 +409,10 @@ export async function generateUploadUrl(
  * Delete a crate from storage and metadata
  * Wrapper around deleteFile to maintain API compatibility
  */
-export async function deleteCrate(crateId: string, userId?: string): Promise<boolean> {
+export async function deleteCrate(
+  crateId: string,
+  userId?: string,
+): Promise<boolean> {
   try {
     // Get crate metadata
     const crate = await getCrateMetadata(crateId);
@@ -413,18 +422,20 @@ export async function deleteCrate(crateId: string, userId?: string): Promise<boo
 
     // Check if the user has permission to delete this crate
     if (userId && crate.ownerId !== userId && crate.ownerId !== "anonymous") {
-      console.warn(`User ${userId} attempted to delete crate ${crateId} owned by ${crate.ownerId}`);
+      console.warn(
+        `User ${userId} attempted to delete crate ${crateId} owned by ${crate.ownerId}`,
+      );
       return false;
     }
 
     // Use the existing deleteFile function
     const result = await deleteFile(crateId);
-    
+
     // Log the deletion event with user info
     if (result) {
       await logEvent("crate_delete", crateId, undefined, { userId });
     }
-    
+
     return result;
   } catch (error) {
     console.error("Error deleting crate:", error);

@@ -50,7 +50,7 @@ process.on("uncaughtException", (err) => {
 // Load environment variables
 // Note: When running with npm run dev, this is loaded automatically through the -r dotenv/config flag
 // This is here for the production build or direct node execution
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: "../.env.local" });
 } else {
   dotenv.config({ path: ".env.local" });
@@ -141,7 +141,9 @@ function getServer(req?: AuthenticatedRequest) {
         if (req?.user && req.user.userId) {
           const userId = req.user.userId;
           // Log the tool name and client for debugging, but only pass userId to incrementUserToolUsage
-          console.log(`Tool ${toolName} called by user ${userId} from client ${req.clientName || "unknown"}`);
+          console.log(
+            `Tool ${toolName} called by user ${userId} from client ${req.clientName || "unknown"}`,
+          );
           const usage = await incrementUserToolUsage(userId);
           console.log(
             `Tool usage incremented for user ${userId}: ${toolName}, client: ${req.clientName || "unknown"}, count: ${usage.count}, remaining: ${usage.remaining}`,
@@ -195,14 +197,14 @@ function getServer(req?: AuthenticatedRequest) {
         // Get document data properly
         const data = doc.data() as any;
         const id = doc.id;
-        
+
         // Filter out unwanted properties using safe type casting
         const { embedding, searchField, gcsPath, ...filteredData } = data;
-        
+
         // Access potentially undefined properties safely
         const mimeType = data.mimeType;
         const category = data.category;
-        
+
         return {
           id: doc.id,
           ...filteredData,
@@ -222,8 +224,8 @@ function getServer(req?: AuthenticatedRequest) {
                 (c) =>
                   `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
                   `Description: ${c.description || "No description"}\n` +
-                  `Category: ${c.category || "N/A"}\n` + 
-                  `Content Type: ${c.contentType || "N/A"}\n` + 
+                  `Category: ${c.category || "N/A"}\n` +
+                  `Content Type: ${c.contentType || "N/A"}\n` +
                   `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
               )
               .join("\n---\n"),
@@ -254,9 +256,7 @@ function getServer(req?: AuthenticatedRequest) {
           : 300;
 
       // Special handling for BINARY category - direct user to use crates_get_download_link instead
-      if (
-        meta.category === CrateCategory.BINARY
-      ) {
+      if (meta.category === CrateCategory.BINARY) {
         return {
           content: [
             {
@@ -429,14 +429,14 @@ function getServer(req?: AuthenticatedRequest) {
         // Get document data properly
         const data = doc as any;
         const id = doc.id;
-        
+
         // Extract remaining properties safely (they might not all exist)
         const { embedding, searchField, gcsPath, ...filteredData } = data;
-        
+
         // Access potentially undefined properties safely
         const mimeType = data.mimeType;
         const category = data.category;
-        
+
         return {
           id,
           ...filteredData,
@@ -458,8 +458,8 @@ function getServer(req?: AuthenticatedRequest) {
                       (c) =>
                         `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
                         `Description: ${c.description || "No description"}\n` +
-                        `Category: ${c.category || "N/A"}\n` + 
-                        `Content Type: ${c.contentType || "N/A"}\n` + 
+                        `Category: ${c.category || "N/A"}\n` +
+                        `Content Type: ${c.contentType || "N/A"}\n` +
                         `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
                     )
                     .join("\n---\n")
@@ -597,7 +597,7 @@ function getServer(req?: AuthenticatedRequest) {
       if (isBigDataType && !data) {
         const { url, fileId, gcsPath } = await generateUploadUrl(
           effectiveFileName,
-          contentType
+          contentType,
         );
         return {
           content: [
@@ -806,57 +806,65 @@ function getServer(req?: AuthenticatedRequest) {
 }
 
 // Stateless MCP endpoint (modern Streamable HTTP, stateless)
-app.post("/", apiKeyAuthMiddleware as unknown as express.RequestHandler, async (req, res) => {
-  // Safely use the request as AuthenticatedRequest after middleware has processed it
-  const authReq = req as unknown as AuthenticatedRequest;
-  
-  console.log(
-    `[${new Date().toISOString()}] Incoming POST / from ${authReq.ip || authReq.socket.remoteAddress}`,
-  );
-  console.log("Request body:", JSON.stringify(authReq.body));
-  try {
-    // Extract client name from the initialize params if available
-    let clientName: string | undefined = undefined;
+app.post(
+  "/",
+  apiKeyAuthMiddleware as unknown as express.RequestHandler,
+  async (req, res) => {
+    // Safely use the request as AuthenticatedRequest after middleware has processed it
+    const authReq = req as unknown as AuthenticatedRequest;
 
-    // Check if this is an initialize request with name parameter
-    if (authReq.body && authReq.body.method === "initialize" && authReq.body.params?.name) {
-      clientName = authReq.body.params.name;
-      // Store the client name on the request object for future reference
-      authReq.clientName = clientName;
-    }
-    // For other jsonrpc methods, try to extract from params
-    else if (authReq.body && authReq.body.params?.name) {
-      clientName = authReq.body.params.name;
-      authReq.clientName = clientName;
-    }
+    console.log(
+      `[${new Date().toISOString()}] Incoming POST / from ${authReq.ip || authReq.socket.remoteAddress}`,
+    );
+    console.log("Request body:", JSON.stringify(authReq.body));
+    try {
+      // Extract client name from the initialize params if available
+      let clientName: string | undefined = undefined;
 
-    // Create a new server instance for this request
-    const server = getServer(authReq);
+      // Check if this is an initialize request with name parameter
+      if (
+        authReq.body &&
+        authReq.body.method === "initialize" &&
+        authReq.body.params?.name
+      ) {
+        clientName = authReq.body.params.name;
+        // Store the client name on the request object for future reference
+        authReq.clientName = clientName;
+      }
+      // For other jsonrpc methods, try to extract from params
+      else if (authReq.body && authReq.body.params?.name) {
+        clientName = authReq.body.params.name;
+        authReq.clientName = clientName;
+      }
 
-    const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined, // stateless
-    });
+      // Create a new server instance for this request
+      const server = getServer(authReq);
 
-    res.on("close", () => {
-      transport.close();
-      server.close();
-    });
-    await server.connect(transport);
-    await transport.handleRequest(authReq, res, authReq.body);
-  } catch (error) {
-    console.error("Error handling MCP request:", error);
-    if (!res.headersSent) {
-      res.status(500).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32603,
-          message: "Internal server error",
-        },
-        id: null,
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined, // stateless
       });
+
+      res.on("close", () => {
+        transport.close();
+        server.close();
+      });
+      await server.connect(transport);
+      await transport.handleRequest(authReq, res, authReq.body);
+    } catch (error) {
+      console.error("Error handling MCP request:", error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal server error",
+          },
+          id: null,
+        });
+      }
     }
-  }
-});
+  },
+);
 
 // Optionally, reject GET/DELETE on / for clarity
 app.get("/", (req, res) => {
