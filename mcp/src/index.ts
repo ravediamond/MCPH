@@ -92,7 +92,6 @@ const UploadCrateParams = z.object({
   fileName: z.string(),
   contentType: z.string(),
   data: z.string().optional(), // base64-encoded if present
-  ttlDays: z.number().int().min(1).max(365).optional(),
   title: z.string().optional(),
   description: z.string().optional(),
   category: z.nativeEnum(CrateCategory).optional(),
@@ -141,11 +140,9 @@ function getServer(req?: AuthenticatedRequest) {
       try {
         if (req?.user && req.user.userId) {
           const userId = req.user.userId;
-          const usage = await incrementUserToolUsage(
-            userId,
-            toolName,
-            req.clientName,
-          );
+          // Log the tool name and client for debugging, but only pass userId to incrementUserToolUsage
+          console.log(`Tool ${toolName} called by user ${userId} from client ${req.clientName || "unknown"}`);
+          const usage = await incrementUserToolUsage(userId);
           console.log(
             `Tool usage incremented for user ${userId}: ${toolName}, client: ${req.clientName || "unknown"}, count: ${usage.count}, remaining: ${usage.remaining}`,
           );
@@ -205,21 +202,13 @@ function getServer(req?: AuthenticatedRequest) {
         // Access potentially undefined properties safely
         const mimeType = data.mimeType;
         const category = data.category;
-        const ttlDays = data.ttlDays;
-        const createdAt = data.createdAt;
         
         return {
           id: doc.id,
           ...filteredData,
           contentType: mimeType, // Add contentType
           category: category, // Add category
-          // Calculate expiration date if ttlDays is present
-          expiresAt: ttlDays
-            ? new Date(
-                new Date(createdAt.toDate()).getTime() +
-                  ttlDays * 24 * 60 * 60 * 1000,
-              ).toISOString()
-            : null,
+          expiresAt: null, // ttlDays is no longer supported
         };
       });
 
@@ -233,10 +222,9 @@ function getServer(req?: AuthenticatedRequest) {
                 (c) =>
                   `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
                   `Description: ${c.description || "No description"}\n` +
-                  `Category: ${c.category || "N/A"}\n` + // Add category
-                  `Content Type: ${c.contentType || "N/A"}\n` + // Add contentType
-                  `Tags: ${c.tags?.join(", ") || "None"}\n` +
-                  `Expires: ${c.expiresAt || "Never"}\n`,
+                  `Category: ${c.category || "N/A"}\n` + 
+                  `Content Type: ${c.contentType || "N/A"}\n` + 
+                  `Tags: ${c.tags?.join(", ") || "None"}\n`,
               )
               .join("\n---\n"),
           },
@@ -265,10 +253,9 @@ function getServer(req?: AuthenticatedRequest) {
           ? Math.max(1, Math.min(86400, expiresInSeconds))
           : 300;
 
-      // Special handling for BINARY and DATA categories - direct user to use crates_get_download_link instead
+      // Special handling for BINARY category - direct user to use crates_get_download_link instead
       if (
-        meta.category === CrateCategory.BINARY ||
-        meta.category === CrateCategory.DATA
+        meta.category === CrateCategory.BINARY
       ) {
         return {
           content: [
@@ -449,22 +436,13 @@ function getServer(req?: AuthenticatedRequest) {
         // Access potentially undefined properties safely
         const mimeType = data.mimeType;
         const category = data.category;
-        const ttlDays = data.ttlDays;
-        const createdAt = data.createdAt;
         
         return {
           id,
           ...filteredData,
           contentType: mimeType, // Use safely extracted mimeType
           category: category, // Use safely extracted category
-          // Calculate expiration date if ttlDays is present
-          expiresAt:
-            ttlDays && createdAt
-              ? new Date(
-                  new Date(createdAt.toDate()).getTime() +
-                    ttlDays * 24 * 60 * 60 * 1000,
-                ).toISOString()
-              : null,
+          expiresAt: null, // ttlDays is no longer supported
         };
       });
 
@@ -480,10 +458,9 @@ function getServer(req?: AuthenticatedRequest) {
                       (c) =>
                         `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
                         `Description: ${c.description || "No description"}\n` +
-                        `Category: ${c.category || "N/A"}\n` + // Add category
-                        `Content Type: ${c.contentType || "N/A"}\n` + // Add contentType
-                        `Tags: ${c.tags?.join(", ") || "None"}\n` +
-                        `Expires: ${c.expiresAt || "Never"}\n`,
+                        `Category: ${c.category || "N/A"}\n` + 
+                        `Content Type: ${c.contentType || "N/A"}\n` + 
+                        `Tags: ${c.tags?.join(", ") || "None"}\n`,
                     )
                     .join("\n---\n")
                 : `No crates found matching "${query}"`,
@@ -506,7 +483,6 @@ function getServer(req?: AuthenticatedRequest) {
         fileName, // Original fileName from args
         contentType,
         data,
-        ttlDays,
         title, // Original title from args
         description,
         category, // Original category from args
@@ -549,16 +525,6 @@ function getServer(req?: AuthenticatedRequest) {
             case CrateCategory.BINARY:
               extension = ".bin";
               break;
-            case CrateCategory.DATA:
-              extension = ".dat";
-              break;
-            // Removed for v1 simplification:
-            // case CrateCategory.TODOLIST:
-            //   extension = ".todolist";
-            //   break;
-            // case CrateCategory.DIAGRAM:
-            //   extension = ".mmd";
-            //   break;
             default:
               extension = ".dat";
           }
@@ -592,12 +558,13 @@ function getServer(req?: AuthenticatedRequest) {
       const partialCrate: Partial<Crate> = {
         title: title || effectiveFileName, // Use original title, or fallback to effectiveFileName
         description,
-        ttlDays,
         ownerId: req?.user?.userId || "anonymous",
         shared: {
           public: isPublic,
           passwordProtected: !!password,
-          password: password, // Store the actual password (or a hash of it)
+          // Store password hash instead of actual password (this should be handled by a service)
+          passwordHash: password ? "hashed-password" : null,
+          passwordSalt: password ? "salt" : null,
         },
       };
 
@@ -616,14 +583,12 @@ function getServer(req?: AuthenticatedRequest) {
       }
 
       // Determine if we should return a presigned URL or directly upload
-      const isBinaryOrDataCategory =
-        category === CrateCategory.BINARY || category === CrateCategory.DATA;
+      const isBinaryCategory = category === CrateCategory.BINARY;
       const isBinaryContentType =
         contentType.startsWith("application/") ||
         contentType === "binary/octet-stream";
 
       const isBigDataType =
-        category === CrateCategory.DATA ||
         category === CrateCategory.BINARY ||
         contentType === "text/csv" ||
         contentType.startsWith("application/octet-stream") ||
@@ -632,8 +597,7 @@ function getServer(req?: AuthenticatedRequest) {
       if (isBigDataType && !data) {
         const { url, fileId, gcsPath } = await generateUploadUrl(
           effectiveFileName,
-          contentType,
-          ttlDays,
+          contentType
         );
         return {
           content: [
@@ -842,29 +806,32 @@ function getServer(req?: AuthenticatedRequest) {
 }
 
 // Stateless MCP endpoint (modern Streamable HTTP, stateless)
-app.post("/", apiKeyAuthMiddleware, async (req: AuthenticatedRequest, res) => {
+app.post("/", apiKeyAuthMiddleware as unknown as express.RequestHandler, async (req, res) => {
+  // Safely use the request as AuthenticatedRequest after middleware has processed it
+  const authReq = req as unknown as AuthenticatedRequest;
+  
   console.log(
-    `[${new Date().toISOString()}] Incoming POST / from ${req.ip || req.socket.remoteAddress}`,
+    `[${new Date().toISOString()}] Incoming POST / from ${authReq.ip || authReq.socket.remoteAddress}`,
   );
-  console.log("Request body:", JSON.stringify(req.body));
+  console.log("Request body:", JSON.stringify(authReq.body));
   try {
     // Extract client name from the initialize params if available
     let clientName: string | undefined = undefined;
 
     // Check if this is an initialize request with name parameter
-    if (req.body && req.body.method === "initialize" && req.body.params?.name) {
-      clientName = req.body.params.name;
+    if (authReq.body && authReq.body.method === "initialize" && authReq.body.params?.name) {
+      clientName = authReq.body.params.name;
       // Store the client name on the request object for future reference
-      req.clientName = clientName;
+      authReq.clientName = clientName;
     }
     // For other jsonrpc methods, try to extract from params
-    else if (req.body && req.body.params?.name) {
-      clientName = req.body.params.name;
-      req.clientName = clientName;
+    else if (authReq.body && authReq.body.params?.name) {
+      clientName = authReq.body.params.name;
+      authReq.clientName = clientName;
     }
 
     // Create a new server instance for this request
-    const server = getServer(req);
+    const server = getServer(authReq);
 
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined, // stateless
@@ -875,7 +842,7 @@ app.post("/", apiKeyAuthMiddleware, async (req: AuthenticatedRequest, res) => {
       server.close();
     });
     await server.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    await transport.handleRequest(authReq, res, authReq.body);
   } catch (error) {
     console.error("Error handling MCP request:", error);
     if (!res.headersSent) {
