@@ -15,7 +15,8 @@
     "dev:next": "next dev",
     "dev:mcp": "cd mcp && npm run dev",
     "build:mcp": "cd mcp && npm run build",
-    "start:mcp": "cd mcp && npm run start"
+    "start:mcp": "cd mcp && npm run start",
+    "cleanup": "./cleanup-js-files.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
