@@ -6,7 +6,6 @@ import {
   incrementMetric,
   getUserStorageUsage,
 } from "@/services/firebaseService";
-import { DATA_TTL } from "@/app/config/constants";
 import { CrateCategory, CrateSharing } from "@/app/types/crate";
 import crypto from "crypto"; // Import crypto module
 
@@ -32,10 +31,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Get additional form fields
-    const ttlDaysParam = formData.get("ttlDays") as string | null;
-    const ttlDays = ttlDaysParam
-      ? parseInt(ttlDaysParam, 10)
-      : DATA_TTL.DEFAULT_DAYS;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const userId = formData.get("userId") as string;
@@ -135,7 +130,6 @@ export async function POST(req: NextRequest) {
       description,
       category: fileType as CrateCategory,
       ownerId: userId || "anonymous",
-      ttlDays,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
       tags, // Add the parsed tags
@@ -194,12 +188,6 @@ export async function POST(req: NextRequest) {
         crateData.createdAt instanceof Date
           ? crateData.createdAt.toISOString()
           : crateData.createdAt,
-      expiresAt: crateData.ttlDays
-        ? new Date(
-            new Date(crateData.createdAt).getTime() +
-              crateData.ttlDays * 24 * 60 * 60 * 1000,
-          ).toISOString()
-        : undefined,
     });
   } catch (error: any) {
     console.error("Error handling direct upload:", error);

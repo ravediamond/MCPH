@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../lib/gcpStorageClient";
-import { DATA_TTL } from "../app/config/constants";
 import { Crate, CrateCategory, CrateSharing } from "../app/types/crate";
 import { logEvent, deleteCrateMetadata } from "./firebaseService";
 
@@ -129,7 +128,6 @@ export async function uploadCrate(
       description: crateData.description,
       ownerId: crateData.ownerId || "anonymous",
       createdAt: new Date(),
-      ttlDays: crateData.ttlDays || DATA_TTL.DEFAULT_DAYS,
       mimeType: contentType,
       category: crateData.category || resolveCategory(fileName, contentType),
       gcsPath: gcsPath,

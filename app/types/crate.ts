@@ -19,7 +19,6 @@ export interface Crate {
   description?: string; // Optional longer description
   ownerId: string; // UID of uploader
   createdAt: Date; // Timestamp when created
-  ttlDays: number; // "time-to-live" in days
   mimeType: string; // e.g. "text/markdown", "image/png"
   category: CrateCategory; // One of the supported content categories
   gcsPath: string; // GCS object path (e.g. "crates/{id}")

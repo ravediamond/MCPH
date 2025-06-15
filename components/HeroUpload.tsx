@@ -15,7 +15,6 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { useUploadService } from "../hooks/useUploadService";
-import { DATA_TTL } from "../app/config/constants";
 import { CrateCategory } from "../app/types/crate";
 import Link from "next/link";
 
@@ -252,7 +251,7 @@ export default function HeroUpload() {
                         or paste Markdown / JSON
                       </p>
                       <span className="inline-block mt-3 md:mt-4 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        10 MB max • 30-day expiry
+                        10 MB max • Files removed after 30 days
                       </span>
                     </div>
                   </>

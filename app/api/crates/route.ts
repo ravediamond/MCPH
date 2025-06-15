@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
 import { CrateCategory, CrateSharing } from "@/app/types/crate";
-import { DATA_TTL } from "@/app/config/constants";
 import { auth } from "@/lib/firebaseAdmin";
 
 function getClientIp(req: NextRequest): string {
@@ -58,10 +57,6 @@ export async function POST(req: NextRequest) {
     const title = formData.get("title")?.toString() || file.name;
     const description = formData.get("description")?.toString();
     const categoryStr = formData.get("category")?.toString();
-    const ttlDaysStr = formData.get("ttlDays")?.toString();
-    const ttlDays = ttlDaysStr
-      ? parseInt(ttlDaysStr, 10)
-      : DATA_TTL.DEFAULT_DAYS;
     const tagsStr = formData.get("tags")?.toString();
     const tags = tagsStr ? tagsStr.split(",").map((t) => t.trim()) : undefined;
 
@@ -157,7 +152,6 @@ export async function POST(req: NextRequest) {
       title,
       description,
       category,
-      ttlDays,
       tags,
       ownerId: userId,
       shared: sharing,
@@ -182,7 +176,6 @@ export async function POST(req: NextRequest) {
         size: crate.size,
         crateUrl,
         createdAt: crate.createdAt,
-        ttlDays: crate.ttlDays,
       },
       { status: 201 },
     );

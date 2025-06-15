@@ -10,7 +10,6 @@ export interface UploadOptions {
   category?: CrateCategory;
   password?: string;
   tags?: string[];
-  expiresInDays?: number;
   sharing?: CrateSharing;
 }
 
@@ -47,7 +46,6 @@ export const useUploadService = () => {
         category: options.category || detectCrateCategory(file),
         password: options.password || "",
         tags: options.tags || [],
-        expiresInDays: options.expiresInDays || 30, // Default to 30 days
         sharing: options.sharing || { public: true },
       };
 
@@ -63,8 +61,6 @@ export const useUploadService = () => {
         formData.append("fileType", finalOptions.category);
       if (finalOptions.password)
         formData.append("password", finalOptions.password);
-      if (finalOptions.expiresInDays)
-        formData.append("ttl", (finalOptions.expiresInDays * 24).toString());
 
       // Add tags if present
       if (finalOptions.tags && finalOptions.tags.length > 0) {

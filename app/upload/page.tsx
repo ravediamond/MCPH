@@ -52,7 +52,7 @@ export default function UploadPage() {
 
         {/* Upload container with subtle design */}
         <div className="bg-white rounded-lg shadow-sm p-6 md:p-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex flex-col gap-8">
             <div className="flex-1">
               <FileUpload
                 onUploadSuccess={(data) => {
@@ -62,6 +62,34 @@ export default function UploadPage() {
                   console.error("Upload error:", error);
                 }}
               />
+              
+              {/* Features description */}
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                  Upload Features
+                </h2>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>Single file upload up to 50MB per file</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>Add title and description to your files</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>Files are stored for 30 days</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>Manage your uploaded files from your dashboard</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
               {/* Crate type information */}
               <div className="mt-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-2">
@@ -88,43 +116,6 @@ export default function UploadPage() {
                     <b>Binary Files:</b> Any binary crate that cannot be
                     streamed as text (e.g., ZIP, PDF, DOCX, EXE). These are not
                     previewed and must be downloaded to view.
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="w-full md:w-64 shrink-0">
-              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <h3 className="text-lg font-medium text-gray-800 mb-3 flex items-center">
-                  <span>Pro features</span>
-                  <span className="ml-2 bg-[#ff7a32] text-white text-xs px-2 py-0.5 rounded-sm">
-                    PRO
-                  </span>
-                </h3>
-                <ul className="space-y-3 text-gray-600 text-sm">
-                  <li className="flex items-start">
-                    <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>
-                      Upload multiple files in batch (up to 20 at once)
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>
-                      Add detailed metadata with titles, descriptions, and tags
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>Up to 50MB per file</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>Set custom expiration dates</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary-500 font-bold mr-2">•</span>
-                    <span>Manage your uploaded files from your dashboard</span>
                   </li>
                 </ul>
               </div>
