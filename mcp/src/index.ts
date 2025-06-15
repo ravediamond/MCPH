@@ -8,23 +8,22 @@ import {
   requireApiKeyAuth,
   apiKeyAuthMiddleware,
   AuthenticatedRequest,
-} from "./lib/apiKeyAuth.js";
+} from "../../lib/apiKeyAuth.js";
 import {
   getCrateMetadata,
   CRATES_COLLECTION,
   incrementUserToolUsage,
   db,
-} from "./services/firebaseService.js";
+} from "../../services/firebaseService.js";
 import {
   getSignedDownloadUrl,
   getCrateContent,
   generateUploadUrl,
   uploadCrate,
   deleteCrate,
-} from "./services/storageService.js";
-import { getEmbedding } from "./lib/vertexAiEmbedding.js";
+} from "../../services/storageService.js";
 import util from "util";
-import { Crate, CrateCategory } from "./types/crate.js";
+import { Crate, CrateCategory } from "../../shared/types/crate.js";
 
 // Global error handlers for better diagnostics
 process.on("unhandledRejection", (reason, promise) => {

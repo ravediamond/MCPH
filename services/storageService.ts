@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../lib/gcpStorageClient";
-import { Crate, CrateCategory, CrateSharing } from "../app/types/crate";
+import { Crate, CrateCategory, CrateSharing } from "../shared/types/crate";
 import { logEvent, deleteCrateMetadata } from "./firebaseService";
 
 // Import our new modular services
@@ -369,5 +369,65 @@ export async function getCrateContent(crateId: string): Promise<{
   } catch (error) {
     console.error("Error getting crate content:", error);
     throw new Error("Failed to get crate content");
+  }
+}
+
+/**
+ * Generate a pre-signed upload URL for a crate
+ * This is used for client-side uploads of large files
+ */
+export async function generateUploadUrl(
+  fileName: string,
+  contentType: string,
+  ttlDays?: number,
+): Promise<{ url: string; fileId: string; gcsPath: string }> {
+  try {
+    // Generate a unique file ID
+    const fileId = uuidv4();
+
+    // Generate the GCS path
+    const gcsPath = `crates/${fileId}/${encodeURIComponent(fileName)}`;
+
+    // Generate a pre-signed URL for upload using the signer module
+    const { url } = await generateSignedUploadUrl(fileId, fileName, contentType);
+
+    // Return the URL, file ID, and GCS path
+    return { url, fileId, gcsPath };
+  } catch (error) {
+    console.error("Error generating upload URL:", error);
+    throw new Error("Failed to generate upload URL");
+  }
+}
+
+/**
+ * Delete a crate from storage and metadata
+ * Wrapper around deleteFile to maintain API compatibility
+ */
+export async function deleteCrate(crateId: string, userId?: string): Promise<boolean> {
+  try {
+    // Get crate metadata
+    const crate = await getCrateMetadata(crateId);
+    if (!crate) {
+      return false;
+    }
+
+    // Check if the user has permission to delete this crate
+    if (userId && crate.ownerId !== userId && crate.ownerId !== "anonymous") {
+      console.warn(`User ${userId} attempted to delete crate ${crateId} owned by ${crate.ownerId}`);
+      return false;
+    }
+
+    // Use the existing deleteFile function
+    const result = await deleteFile(crateId);
+    
+    // Log the deletion event with user info
+    if (result) {
+      await logEvent("crate_delete", crateId, undefined, { userId });
+    }
+    
+    return result;
+  } catch (error) {
+    console.error("Error deleting crate:", error);
+    return false;
   }
 }

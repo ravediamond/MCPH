@@ -6,7 +6,7 @@ import {
   incrementMetric,
   getUserStorageUsage,
 } from "@/services/firebaseService";
-import { CrateCategory, CrateSharing } from "@/app/types/crate";
+import { CrateCategory, CrateSharing } from "@/shared/types/crate";
 import crypto from "crypto"; // Import crypto module
 
 /**

@@ -27,7 +27,7 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Crate, CrateSharing } from "@/app/types/crate";
+import { Crate, CrateSharing } from "../shared/types/crate";
 
 let firebaseApp: App;
 let db: Firestore;
@@ -131,7 +131,7 @@ const CRATES_COLLECTION = "crates";
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 
-export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
+export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, db };
 
 const toFirestoreData = (data: any): any => {
   const result = { ...data };

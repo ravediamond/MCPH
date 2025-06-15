@@ -25,7 +25,7 @@ import {
   FaKey,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
-import { Crate, CrateSharing, CrateCategory } from "../types/crate";
+import { Crate, CrateSharing, CrateCategory } from "../../shared/types/crate";
 
 type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
   id: string;
