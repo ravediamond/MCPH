@@ -58,15 +58,9 @@ if (!getApps().length) {
           throw new Error("Failed to parse service account credentials JSON.");
         }
       } else {
-        // Check if we're in the mcp subdirectory, and adjust path to look in parent
-        const isMcpDir =
-          process.cwd().endsWith("/mcp") || process.cwd().endsWith("\\mcp");
         const resolvedPath = credentialsPath.startsWith("/")
           ? credentialsPath
-          : path.resolve(
-              isMcpDir ? path.join(process.cwd(), "..") : process.cwd(),
-              credentialsPath,
-            );
+          : path.resolve(process.cwd(), credentialsPath);
 
         console.log(`Using service account file at: ${resolvedPath}`);
 

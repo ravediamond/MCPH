@@ -4,6 +4,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import dotenv from "dotenv";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
 import {
   requireApiKeyAuth,
   apiKeyAuthMiddleware,
@@ -59,6 +60,65 @@ if (process.env.NODE_ENV !== "production") {
 const app = express();
 app.use(express.json());
 
+// In-memory IP-based request throttling
+// Map of IP addresses to {count, timestamp}
+const ipThrottleMap = new Map<string, { count: number, timestamp: number }>();
+const MAX_REQUESTS_PER_WINDOW = 50; // Maximum requests per window
+const THROTTLE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Clean up the throttle map every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of ipThrottleMap.entries()) {
+    if (now - data.timestamp > THROTTLE_WINDOW_MS) {
+      ipThrottleMap.delete(ip);
+    }
+  }
+}, THROTTLE_WINDOW_MS);
+
+// IP throttling middleware
+app.use((req, res, next) => {
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  
+  // Skip throttling for specific IPs if needed
+  // if (ip === 'trusted-ip') return next();
+  
+  const now = Date.now();
+  const ipData = ipThrottleMap.get(ip);
+  
+  if (!ipData) {
+    // First request from this IP
+    ipThrottleMap.set(ip, { count: 1, timestamp: now });
+    return next();
+  }
+  
+  // Reset counter if outside the window
+  if (now - ipData.timestamp > THROTTLE_WINDOW_MS) {
+    ipThrottleMap.set(ip, { count: 1, timestamp: now });
+    return next();
+  }
+  
+  // Increment counter if within the window
+  ipData.count += 1;
+  
+  // Check if over limit
+  if (ipData.count > MAX_REQUESTS_PER_WINDOW) {
+    console.warn(`Rate limit exceeded for IP: ${ip}`);
+    return res.status(429).json({
+      jsonrpc: "2.0",
+      error: {
+        code: -32000,
+        message: "Too many requests. Please try again later.",
+      },
+      id: null,
+    });
+  }
+  
+  // Update the map
+  ipThrottleMap.set(ip, ipData);
+  next();
+});
+
 // Add CORS headers for API endpoints
 app.use(function (
   req: express.Request,
@@ -99,14 +159,26 @@ const UploadCrateParams = z.object({
   metadata: z.record(z.string(), z.string()).optional(),
   isPublic: z.boolean().optional().default(false),
   password: z.string().optional(),
-});
+}).refine(
+  (data) => !(data.isPublic && data.password),
+  {
+    message: "A crate cannot be both public and password-protected",
+    path: ["isPublic", "password"],
+  }
+);
 const ShareCrateParams = z.object({
   id: z.string(),
   public: z.boolean().optional(),
   // Removed for v1 simplification:
   // sharedWith: z.array(z.string()).optional(),
   passwordProtected: z.boolean().optional(),
-});
+}).refine(
+  (data) => !(data.public && data.passwordProtected),
+  {
+    message: "A crate cannot be both public and password-protected",
+    path: ["public", "passwordProtected"],
+  }
+);
 const UnshareCrateParams = z.object({
   id: z.string(),
 });
@@ -473,7 +545,7 @@ function getServer(req?: AuthenticatedRequest) {
   // crates/upload
   server.tool(
     "crates_upload",
-    UploadCrateParams.shape,
+    UploadCrateParams,
     {
       description:
         "Uploads a new crate to the system. For small text-based content, performs a direct upload. For large binary files, returns a pre-signed upload URL.",
@@ -562,9 +634,9 @@ function getServer(req?: AuthenticatedRequest) {
         shared: {
           public: isPublic,
           passwordProtected: !!password,
-          // Store password hash instead of actual password (this should be handled by a service)
-          passwordHash: password ? "hashed-password" : null,
-          passwordSalt: password ? "salt" : null,
+          // Use bcrypt to hash the password
+          passwordHash: password ? await bcrypt.hash(password, 10) : null,
+          passwordSalt: null, // bcrypt includes the salt in the hash
         },
       };
 
@@ -657,7 +729,7 @@ function getServer(req?: AuthenticatedRequest) {
   // crates/share
   server.tool(
     "crates_share",
-    ShareCrateParams.shape,
+    ShareCrateParams,
     {
       description:
         "Updates the sharing settings for a crate. Allows making a crate public, sharing with specific users, and setting password protection.",
