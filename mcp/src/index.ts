@@ -62,45 +62,39 @@ app.use(express.json());
 
 // In-memory IP-based request throttling
 // Map of IP addresses to {count, timestamp}
-const ipThrottleMap = new Map<string, { count: number, timestamp: number }>();
+const ipThrottleMap = new Map<string, { count: number; timestamp: number }>();
 const MAX_REQUESTS_PER_WINDOW = 50; // Maximum requests per window
 const THROTTLE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-// Clean up the throttle map every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, data] of ipThrottleMap.entries()) {
-    if (now - data.timestamp > THROTTLE_WINDOW_MS) {
-      ipThrottleMap.delete(ip);
-    }
-  }
-}, THROTTLE_WINDOW_MS);
+// Create a typed IP throttling middleware
+const ipThrottlingMiddleware = function (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
 
-// IP throttling middleware
-app.use((req, res, next) => {
-  const ip = req.ip || req.socket.remoteAddress || 'unknown';
-  
   // Skip throttling for specific IPs if needed
   // if (ip === 'trusted-ip') return next();
-  
+
   const now = Date.now();
   const ipData = ipThrottleMap.get(ip);
-  
+
   if (!ipData) {
     // First request from this IP
     ipThrottleMap.set(ip, { count: 1, timestamp: now });
     return next();
   }
-  
+
   // Reset counter if outside the window
   if (now - ipData.timestamp > THROTTLE_WINDOW_MS) {
     ipThrottleMap.set(ip, { count: 1, timestamp: now });
     return next();
   }
-  
+
   // Increment counter if within the window
   ipData.count += 1;
-  
+
   // Check if over limit
   if (ipData.count > MAX_REQUESTS_PER_WINDOW) {
     console.warn(`Rate limit exceeded for IP: ${ip}`);
@@ -113,11 +107,24 @@ app.use((req, res, next) => {
       id: null,
     });
   }
-  
+
   // Update the map
   ipThrottleMap.set(ip, ipData);
   next();
-});
+};
+
+// Clean up the throttle map every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, data] of ipThrottleMap.entries()) {
+    if (now - data.timestamp > THROTTLE_WINDOW_MS) {
+      ipThrottleMap.delete(ip);
+    }
+  }
+}, THROTTLE_WINDOW_MS);
+
+// IP throttling middleware
+app.use(ipThrottlingMiddleware as express.RequestHandler);
 
 // Add CORS headers for API endpoints
 app.use(function (
@@ -142,43 +149,40 @@ app.use(function (
 const ListCratesParams = z.object({});
 const GetCrateParams = z.object({
   id: z.string(),
-  expiresInSeconds: z.number().int().min(1).max(86400).optional(),
 });
 const GetCrateDownloadLinkParams = z.object({
   id: z.string(),
   expiresInSeconds: z.number().int().min(1).max(86400).optional(),
 });
-const UploadCrateParams = z.object({
-  fileName: z.string(),
-  contentType: z.string(),
-  data: z.string().optional(), // base64-encoded if present
-  title: z.string().optional(),
-  description: z.string().optional(),
-  category: z.nativeEnum(CrateCategory).optional(),
-  tags: z.array(z.string()).optional(),
-  metadata: z.record(z.string(), z.string()).optional(),
-  isPublic: z.boolean().optional().default(false),
-  password: z.string().optional(),
-}).refine(
-  (data) => !(data.isPublic && data.password),
-  {
+const UploadCrateParams = z
+  .object({
+    fileName: z.string(),
+    contentType: z.string(),
+    data: z.string().optional(), // base64-encoded if present
+    title: z.string().optional(),
+    description: z.string().optional(),
+    category: z.nativeEnum(CrateCategory).optional(),
+    tags: z.array(z.string()).optional(),
+    metadata: z.record(z.string(), z.string()).optional(),
+    isPublic: z.boolean().optional().default(false),
+    password: z.string().optional(),
+  })
+  .refine((data) => !(data.isPublic && data.password), {
     message: "A crate cannot be both public and password-protected",
     path: ["isPublic", "password"],
-  }
-);
-const ShareCrateParams = z.object({
-  id: z.string(),
-  public: z.boolean().optional(),
-  // Removed for v1 simplification:
-  // sharedWith: z.array(z.string()).optional(),
-  passwordProtected: z.boolean().optional(),
-}).refine(
-  (data) => !(data.public && data.passwordProtected),
-  {
+  });
+const ShareCrateParams = z
+  .object({
+    id: z.string(),
+    public: z.boolean().optional(),
+    // Removed for v1 simplification:
+    // sharedWith: z.array(z.string()).optional(),
+    passwordProtected: z.boolean().optional(),
+  })
+  .refine((data) => !(data.public && data.passwordProtected), {
     message: "A crate cannot be both public and password-protected",
     path: ["public", "passwordProtected"],
-  }
-);
+  });
 const UnshareCrateParams = z.object({
   id: z.string(),
 });
@@ -246,7 +250,7 @@ function getServer(req?: AuthenticatedRequest) {
       description:
         "Lists all available crates in the system, including their metadata, ID, title, description, category, content type, tags, and expiration date.",
     },
-    async () => {
+    async (_: unknown, extra?: any) => {
       const snapshot = await db
         .collection(CRATES_COLLECTION)
         .where(
@@ -315,17 +319,14 @@ function getServer(req?: AuthenticatedRequest) {
       description:
         "Retrieves the content of a specific crate by its ID. Returns text content for code, markdown, and JSON, image data for images, and directs to download links for binary files.",
     },
-    async ({ id, expiresInSeconds }, extra) => {
+    async ({ id }: { id: string }, extra: any) => {
       const meta = await getCrateMetadata(id);
       if (!meta) {
         throw new Error("Crate not found");
       }
 
-      // Default expiration time (5 minutes) if not specified
-      const exp =
-        typeof expiresInSeconds === "number"
-          ? Math.max(1, Math.min(86400, expiresInSeconds))
-          : 300;
+      // Default expiration time (5 minutes)
+      const exp = 300;
 
       // Special handling for BINARY category - direct user to use crates_get_download_link instead
       if (meta.category === CrateCategory.BINARY) {
@@ -432,19 +433,22 @@ function getServer(req?: AuthenticatedRequest) {
     GetCrateDownloadLinkParams.shape,
     {
       description:
-        "Generates a pre-signed download URL for a crate, particularly useful for binary or large files. The URL expires after the specified time.",
+        "Generates a pre-signed download URL for a crate, particularly useful for binary or large files. The URL defaults to 24 hours validity unless specified otherwise, and the response includes expiration information.",
     },
-    async ({ id, expiresInSeconds }, extra) => {
+    async (
+      { id, expiresInSeconds }: { id: string; expiresInSeconds?: number },
+      extra: any,
+    ) => {
       const meta = await getCrateMetadata(id);
       if (!meta) {
         throw new Error("Crate not found");
       }
 
-      // Default expiration time (5 minutes) if not specified
+      // Default expiration time (24 hours) if not specified
       const exp =
         typeof expiresInSeconds === "number"
           ? Math.max(1, Math.min(86400, expiresInSeconds))
-          : 300;
+          : 86400; // Default to 24 hours
 
       // Get pre-signed URL regardless of type
       const url = await getSignedDownloadUrl(
@@ -457,10 +461,12 @@ function getServer(req?: AuthenticatedRequest) {
         content: [
           {
             type: "text",
-            text: `Download link for crate ${meta.title}: ${url}`,
+            text: `Download link for crate ${meta.title}: ${url}\nThis link is valid for ${Math.round(exp / 3600)} hours and ${Math.round((exp % 3600) / 60)} minutes.`,
           },
         ],
         url,
+        validForSeconds: exp,
+        expiresAt: new Date(Date.now() + exp * 1000).toISOString(),
       };
     },
   );
@@ -473,7 +479,7 @@ function getServer(req?: AuthenticatedRequest) {
       description:
         "Searches for crates by text matching. Returns crates that match the query in title, description, or tags.",
     },
-    async ({ query }) => {
+    async ({ query }: { query: string }) => {
       // Simplified for v1 - text search only (no vector search)
       let topK = 10;
       const cratesRef = db.collection(CRATES_COLLECTION);
@@ -545,12 +551,12 @@ function getServer(req?: AuthenticatedRequest) {
   // crates/upload
   server.tool(
     "crates_upload",
-    UploadCrateParams,
+    UploadCrateParams._def.schema._def.shape(),
     {
       description:
         "Uploads a new crate to the system. For small text-based content, performs a direct upload. For large binary files, returns a pre-signed upload URL.",
     },
-    async (args, extra) => {
+    async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
       const {
         fileName, // Original fileName from args
         contentType,
@@ -729,12 +735,12 @@ function getServer(req?: AuthenticatedRequest) {
   // crates/share
   server.tool(
     "crates_share",
-    ShareCrateParams,
+    ShareCrateParams._def.schema._def.shape(),
     {
       description:
         "Updates the sharing settings for a crate. Allows making a crate public, sharing with specific users, and setting password protection.",
     },
-    async (args, extra) => {
+    async (args: z.infer<typeof ShareCrateParams>, extra: any) => {
       const { id, public: isPublic, passwordProtected } = args;
       const crateRef = db.collection(CRATES_COLLECTION).doc(id);
 
@@ -785,7 +791,7 @@ function getServer(req?: AuthenticatedRequest) {
       description:
         "Removes all sharing settings from a crate, making it private. Resets all sharing settings, removing public access and shared users.",
     },
-    async (args, extra) => {
+    async (args: { id: string }, extra: any) => {
       const { id } = args;
       const crateRef = db.collection(CRATES_COLLECTION).doc(id);
 
@@ -831,7 +837,7 @@ function getServer(req?: AuthenticatedRequest) {
       description:
         "Permanently deletes a crate. Removes both the crate content from storage and its metadata from the database.",
     },
-    async (args, extra) => {
+    async (args: { id: string }, extra: any) => {
       const { id } = args;
 
       try {

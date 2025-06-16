@@ -4,7 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "..",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -14,11 +14,16 @@
     "paths": {
       "@/lib/*": ["../lib/*"],
       "@/services/*": ["../services/*"],
-      "@/types/*": ["../app/types/*", "../types/*"]
+      "@/types/*": ["../app/types/*", "../types/*", "../shared/types/*"]
     },
     "baseUrl": ".",
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../lib/**/*.ts",
+    "../services/**/*.ts",
+    "../shared/types/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
