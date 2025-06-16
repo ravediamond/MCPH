@@ -3,10 +3,10 @@
  */
 
 // Export Signer module functions
-export { generateSignedUploadUrl, generateSignedDownloadUrl } from "./signer.js";
+export { generateSignedUploadUrl, generateSignedDownloadUrl } from "./signer";
 
 // Export MetadataStore module functions
-export { saveCrateMetadata, getCrateMetadata } from "./metadataStore.js";
+export { saveCrateMetadata, getCrateMetadata } from "./metadataStore";
 
 // Export CategoryResolver module functions
-export { resolveCategory, getMimeTypesForCategory } from "./categoryResolver.js";
+export { resolveCategory, getMimeTypesForCategory } from "./categoryResolver";

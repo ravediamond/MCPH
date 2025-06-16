@@ -27,7 +27,9 @@ npm run build:mcp
 ```
 
 # Or from the root directory
+
 npm run build:mcp
+
 ```
 
 ## Deployment
@@ -49,3 +51,4 @@ Environment variables are stored in `.env.local`. For production, these are set 
 ## Docker
 
 The Docker image is built using the `Dockerfile` in this directory. It includes only the necessary files and dependencies for the MCP server.
+```

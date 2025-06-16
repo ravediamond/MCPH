@@ -2,7 +2,7 @@
  * CategoryResolver module for determining file categories based on content type and extension
  * Responsible for mapping files to appropriate category enums
  */
-import { CrateCategory } from "../../shared/types/crate.js";
+import { CrateCategory } from "../../shared/types/crate";
 
 /**
  * Mapping of MIME types to crate categories

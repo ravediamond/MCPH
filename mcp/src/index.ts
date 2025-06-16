@@ -9,22 +9,22 @@ import {
   requireApiKeyAuth,
   apiKeyAuthMiddleware,
   AuthenticatedRequest,
-} from "../../lib/apiKeyAuth.js";
+} from "../../lib/apiKeyAuth";
 import {
   getCrateMetadata,
   CRATES_COLLECTION,
   incrementUserToolUsage,
   db,
-} from "../../services/firebaseService.js";
+} from "../../services/firebaseService";
 import {
   getSignedDownloadUrl,
   getCrateContent,
   generateUploadUrl,
   uploadCrate,
   deleteCrate,
-} from "../../services/storageService.js";
+} from "../../services/storageService";
 import util from "util";
-import { Crate, CrateCategory } from "../../shared/types/crate.js";
+import { Crate, CrateCategory } from "../../shared/types/crate";
 
 // Global error handlers for better diagnostics
 process.on("unhandledRejection", (reason, promise) => {
@@ -258,27 +258,27 @@ function getServer(req?: AuthenticatedRequest) {
     async (_: unknown, extra: any) => {
       // Default base URL from environment variable or hardcoded fallback
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://mcph.io";
-      
+
       // Generate a random state parameter
       const oauthState = randomUUID();
-      
+
       // Use default redirect URI that matches the authorized redirect URIs in Google Cloud Console
       // For local development, we need to use port 5000 as that's what's authorized
       let callbackUrl: string;
-      if (baseUrl.includes('localhost')) {
+      if (baseUrl.includes("localhost")) {
         // For localhost, use port 5000 as configured in Google Cloud Console
-        callbackUrl = 'http://localhost:5000';
-      } else if (baseUrl.includes('mcph-dev')) {
+        callbackUrl = "http://localhost:5000";
+      } else if (baseUrl.includes("mcph-dev")) {
         // For development environment
-        callbackUrl = 'https://mcph-dev.firebaseapp.com/__/auth/handler';
+        callbackUrl = "https://mcph-dev.firebaseapp.com/__/auth/handler";
       } else {
         // For production or other environments
         callbackUrl = `${baseUrl}/auth/callback`;
       }
-      
+
       // Default scope for Google OAuth
       const scope = "profile email";
-      
+
       // Configure OAuth parameters
       const params = new URLSearchParams({
         client_id: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
@@ -289,10 +289,10 @@ function getServer(req?: AuthenticatedRequest) {
         state: oauthState,
         prompt: "consent",
       });
-      
+
       // Construct the Google OAuth URL
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-      
+
       return {
         content: [
           {

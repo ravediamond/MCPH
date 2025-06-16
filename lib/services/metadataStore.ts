@@ -3,10 +3,10 @@
  * Responsible for saving, reading, and updating metadata
  */
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { Crate } from "../../shared/types/crate.js";
+import { Crate } from "../../shared/types/crate";
 
 // Import the existing Firebase admin properly to prevent circular dependencies
-import { firestore } from "../firebaseAdmin.js";
+import { firestore } from "../firebaseAdmin";
 
 // Collection name for crates in Firestore
 const CRATES_COLLECTION = "crates";

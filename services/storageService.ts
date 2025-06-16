@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import { bucket } from "../lib/gcpStorageClient.js";
-import { Crate, CrateCategory, CrateSharing } from "../shared/types/crate.js";
-import { logEvent, deleteCrateMetadata } from "./firebaseService.js";
+import { bucket } from "../lib/gcpStorageClient";
+import { Crate, CrateCategory, CrateSharing } from "../shared/types/crate";
+import { logEvent, deleteCrateMetadata } from "./firebaseService";
 
 // Import our new modular services
 import {
@@ -10,7 +10,7 @@ import {
   saveCrateMetadata,
   getCrateMetadata,
   resolveCategory,
-} from "../lib/services/index.js";
+} from "../lib/services";
 
 // Re-export metadata functions for backward compatibility
 export { saveCrateMetadata, getCrateMetadata };
