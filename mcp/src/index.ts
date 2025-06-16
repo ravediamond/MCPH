@@ -154,6 +154,11 @@ const GetCrateDownloadLinkParams = z.object({
   id: z.string(),
   expiresInSeconds: z.number().int().min(1).max(86400).optional(),
 });
+const GoogleOAuthParams = z.object({
+  scope: z.string().optional().default("profile email"),
+  state: z.string().optional(),
+  redirectUri: z.string().optional(),
+});
 const UploadCrateParams = z
   .object({
     fileName: z.string(),
@@ -241,6 +246,65 @@ function getServer(req?: AuthenticatedRequest) {
     }
     return (originalTool as any).apply(server, args);
   };
+
+  // google_oauth
+  server.tool(
+    "google_oauth",
+    {}, // Empty object makes it callable with no arguments
+    {
+      description:
+        "Initiates a Google OAuth flow. Returns a URL that the user can visit to authenticate with Google and grant access to the requested scopes.",
+    },
+    async (_: unknown, extra: any) => {
+      // Default base URL from environment variable or hardcoded fallback
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://mcph.io";
+      
+      // Generate a random state parameter
+      const oauthState = randomUUID();
+      
+      // Use default redirect URI that matches the authorized redirect URIs in Google Cloud Console
+      // For local development, we need to use port 5000 as that's what's authorized
+      let callbackUrl: string;
+      if (baseUrl.includes('localhost')) {
+        // For localhost, use port 5000 as configured in Google Cloud Console
+        callbackUrl = 'http://localhost:5000';
+      } else if (baseUrl.includes('mcph-dev')) {
+        // For development environment
+        callbackUrl = 'https://mcph-dev.firebaseapp.com/__/auth/handler';
+      } else {
+        // For production or other environments
+        callbackUrl = `${baseUrl}/auth/callback`;
+      }
+      
+      // Default scope for Google OAuth
+      const scope = "profile email";
+      
+      // Configure OAuth parameters
+      const params = new URLSearchParams({
+        client_id: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+        redirect_uri: callbackUrl,
+        response_type: "code",
+        scope: scope,
+        access_type: "offline",
+        state: oauthState,
+        prompt: "consent",
+      });
+      
+      // Construct the Google OAuth URL
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Please visit the following URL to authenticate with Google:\n\n${authUrl}\n\nAfter authentication, you will be redirected to ${callbackUrl}.`,
+          },
+        ],
+        authUrl,
+        state: oauthState,
+      };
+    },
+  );
 
   // crates/list
   server.tool(
