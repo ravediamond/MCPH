@@ -4,6 +4,9 @@
 # Next.js build output
 **/.next
 
+# Express build output
+**/dist
+
 # Firebase build output
 out
 *.log

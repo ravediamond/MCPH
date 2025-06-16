@@ -27,7 +27,7 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Crate, CrateSharing } from "../shared/types/crate";
+import { Crate, CrateSharing } from "../shared/types/crate.js";
 
 let firebaseApp: App;
 let db: Firestore;

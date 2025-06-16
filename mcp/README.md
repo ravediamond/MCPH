@@ -14,13 +14,6 @@ npm run dev
 npm run dev:mcp
 ```
 
-To run both the Next.js app and MCP server simultaneously:
-
-```bash
-# From the root directory
-npm run dev:all
-```
-
 ## Building
 
 To build the MCP server:
@@ -28,6 +21,10 @@ To build the MCP server:
 ```bash
 # From the mcp directory
 npm run build
+
+# Or from the root directory
+npm run build:mcp
+```
 
 # Or from the root directory
 npm run build:mcp

@@ -1,5 +1,5 @@
-import { logEvent } from "./firebaseService";
-import { getCrateMetadata } from "../lib/services";
+import { logEvent } from "./firebaseService.js";
+import { getCrateMetadata } from "../lib/services/index.js";
 
 export async function incrementCrateDownloadCount(
   crateId: string,

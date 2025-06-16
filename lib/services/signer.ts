@@ -2,7 +2,7 @@
  * Signer module for generating pre-signed URLs for GCS
  * Responsible for URL generation and GCS path creation
  */
-import { bucket } from "../gcpStorageClient";
+import { bucket } from "../gcpStorageClient.js";
 
 /**
  * Result of generating a pre-signed URL

@@ -1,6 +1,14 @@
-import { findUserByApiKey, ApiKeyRecord } from "../services/firebaseService";
-import { NextRequest } from "next/server";
+import { findUserByApiKey, ApiKeyRecord } from "../services/firebaseService.js";
 import type { Request, Response, NextFunction } from "express";
+
+/**
+ * Simple NextRequest type for MCP standalone use
+ */
+interface NextRequest {
+  headers: {
+    get(name: string): string | null;
+  };
+}
 
 /**
  * Interface for authenticated request
@@ -99,7 +107,7 @@ export function apiKeyAuthMiddleware(
 
       next();
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       console.error("[apiKeyAuthMiddleware] Error validating API key:", error);
       res.status(500).json({
         jsonrpc: "2.0",
