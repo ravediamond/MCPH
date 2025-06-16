@@ -11,7 +11,7 @@ out
 
 # Environment Variables
 .env.local
-.env.prod
+.env.production
 service-account-credentials*.json
 *creds.json
 
