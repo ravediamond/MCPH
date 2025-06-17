@@ -60,5 +60,5 @@ ENV NODE_PATH=/app:/app/mcp
 RUN echo "==== FINAL DEBUG: Check for apiKeyAuth module ====" && \
     find /app -name "apiKeyAuth.js" || echo "apiKeyAuth.js not found"
 
-# Start the application with the correct module resolution settings
-CMD ["node", "--experimental-specifier-resolution=node", "dist/mcp/src/index.js"]
+# Start the application with enhanced module resolution settings
+CMD ["node", "--experimental-specifier-resolution=node", "--es-module-specifier-resolution=node", "dist/mcp/src/index.js"]
