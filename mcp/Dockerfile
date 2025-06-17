@@ -77,6 +77,14 @@ RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"/app/mcp/dist/\([^"]*\)"|"/
 # Fix any double .js.js extensions that might have been created
 RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|\.js\.js"|\.js"|g' {} \;
 
+# Fix specific firebaseAdmin imports in metadataStore.js
+RUN if [ -f "/app/mcp/dist/lib/services/metadataStore.js" ]; then \
+      echo "Fixing firebaseAdmin import in metadataStore.js..." && \
+      sed -i 's|import { firestore } from ".*firebaseAdmin.*"|import { firestore } from "/app/mcp/dist/lib/firebaseAdmin.js";|g' /app/mcp/dist/lib/services/metadataStore.js && \
+      sed -i 's|import.*firebaseAdmin|import { firestore } from "/app/mcp/dist/lib/firebaseAdmin.js";|g' /app/mcp/dist/lib/services/metadataStore.js && \
+      echo "Fixed firebaseAdmin import in metadataStore.js"; \
+    fi
+
 # Make sure all imports in lib/services directory have .js extension
 RUN find /app/mcp/dist/lib/services -name "*.js" -exec sed -i 's|from "\./\([^"]*\)"|from "/app/mcp/dist/lib/services/\1.js"|g' {} \;
 RUN find /app/mcp/dist/lib/services -name "*.js" -exec sed -i 's|"\./|"/app/mcp/dist/lib/services/|g' {} \;
@@ -99,9 +107,25 @@ RUN echo "Fixing imports in signer.js specifically..." && \
 RUN echo "Checking if metadataStore.js exists..." && \
     if [ ! -f "/app/mcp/dist/lib/services/metadataStore.js" ]; then \
         echo "metadataStore.js not found, creating it..." && \
-        echo 'export function saveCrateMetadata() { return {}; }' > /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'import { getFirestore, FieldValue } from "firebase-admin/firestore";' > /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'import { Crate } from "/app/mcp/dist/shared/types/crate.js";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'import { firestore } from "/app/mcp/dist/lib/firebaseAdmin.js";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'const CRATES_COLLECTION = "crates";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'const db = firestore;' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'const toFirestoreData = (data) => {' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '  const result = { ...data };' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '  Object.keys(result).forEach((key) => {' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '    if (result[key] === undefined) delete result[key];' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '  });' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '  return result;' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo '};' >> /app/mcp/dist/lib/services/metadataStore.js && \
+        echo 'export function saveCrateMetadata() { return {}; }' >> /app/mcp/dist/lib/services/metadataStore.js && \
         echo 'export function getCrateMetadata() { return {}; }' >> /app/mcp/dist/lib/services/metadataStore.js && \
-        echo "Created metadataStore.js with proper exports"; \
+        echo "Created metadataStore.js with proper exports and imports"; \
+    else \
+        echo "metadataStore.js exists, fixing imports..." && \
+        sed -i 's|import { firestore } from ".*firebaseAdmin.*"|import { firestore } from "/app/mcp/dist/lib/firebaseAdmin.js"|g' /app/mcp/dist/lib/services/metadataStore.js && \
+        echo "Fixed import paths in metadataStore.js"; \
     fi
 
 # Create categoryResolver.js if it doesn't exist
@@ -175,6 +199,50 @@ RUN if [ ! -f "/app/mcp/dist/lib/gcpStorageClient.js" ]; then \
       echo "Created gcpStorageClient.js with proper exports"; \
     fi
 
+# Special care for firebaseAdmin.js
+RUN if [ ! -f "/app/mcp/dist/lib/firebaseAdmin.js" ]; then \
+      echo "firebaseAdmin.js not found, creating it manually..." && \
+      mkdir -p /app/mcp/dist/lib && \
+      echo 'import admin from "firebase-admin";' > /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'import { initializeApp, getApps, cert } from "firebase-admin/app";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'import { getFirestore } from "firebase-admin/firestore";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'import { getAuth } from "firebase-admin/auth";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'import { getStorage } from "firebase-admin/storage";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'import fs from "fs";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'const credentialPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || "/app/mcp/service-account-credentials.json";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'let serviceAccount;' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'try {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  const rawData = fs.readFileSync(credentialPath, "utf8");' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  serviceAccount = JSON.parse(rawData);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '} catch (error) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  console.error("Error loading service account:", error);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  serviceAccount = {};' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '}' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'if (!admin.apps.length) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  try {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '    admin.initializeApp({' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '      credential: admin.credential.cert(serviceAccount),' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '      storageBucket: process.env.GCS_BUCKET_NAME || "mcphub-storage"' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '    });' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '    console.log("Firebase Admin initialized successfully");' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  } catch (error) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '    console.error("Firebase initialization error:", error);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '  }' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '}' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'export const firestore = getFirestore();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'export const auth = getAuth();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'export const storage = getStorage();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo 'export default admin;' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+      echo "Created firebaseAdmin.js with proper exports"; \
+    else \
+      echo "firebaseAdmin.js exists, ensuring exports are present..." && \
+      grep -q "export const firestore" /app/mcp/dist/lib/firebaseAdmin.js || \
+      echo 'export const firestore = getFirestore();' >> /app/mcp/dist/lib/firebaseAdmin.js; \
+    fi
+
 # Debug: Check the file structure to verify files are in the correct locations
 RUN echo "==== DEBUG: File structure after build ====" && \
     echo "Contents of /app/mcp/dist:" && ls -la /app/mcp/dist && \
@@ -215,10 +283,18 @@ RUN echo "==== FINAL DEBUG: Check for key modules ====" && \
     find /app -name "gcpStorageClient.js" || echo "gcpStorageClient.js not found" && \
     echo "Looking for signer.js:" && \
     find /app -name "signer.js" || echo "signer.js not found" && \
+    echo "Looking for firebaseAdmin.js:" && \
+    find /app -name "firebaseAdmin.js" || echo "firebaseAdmin.js not found" && \
+    echo "Looking for metadataStore.js:" && \
+    find /app -name "metadataStore.js" || echo "metadataStore.js not found" && \
+    echo "Checking imports in metadataStore.js (if found):" && \
+    find /app -name "metadataStore.js" -exec grep -n "import" {} \; || echo "No imports found" && \
     echo "Checking imports in gcpStorageClient.js (if found):" && \
     find /app -name "gcpStorageClient.js" -exec grep -n "import" {} \; || echo "No imports found" && \
     echo "Checking imports in signer.js (if found):" && \
-    find /app -name "signer.js" -exec grep -n "import" {} \; || echo "No imports found"
+    find /app -name "signer.js" -exec grep -n "import" {} \; || echo "No imports found" && \
+    echo "Checking imports in firebaseAdmin.js (if found):" && \
+    find /app -name "firebaseAdmin.js" -exec grep -n "import" {} \; || echo "No imports found"
 
 # Add debug: Display the content of key import files to verify import paths have been fixed
 RUN echo "==== DEBUG: Checking import paths in key files ====" && \
@@ -231,7 +307,11 @@ RUN echo "==== DEBUG: Checking import paths in key files ====" && \
     echo "=== lib/services/index.js imports ===" && \
     grep -n "export.*from" /app/mcp/dist/lib/services/index.js || echo "No exports found" && \
     echo "=== lib/services/signer.js imports ===" && \
-    grep -n "import.*from" /app/mcp/dist/lib/services/signer.js || echo "No imports found"
+    grep -n "import.*from" /app/mcp/dist/lib/services/signer.js || echo "No imports found" && \
+    echo "=== lib/services/metadataStore.js imports ===" && \
+    grep -n "import.*from" /app/mcp/dist/lib/services/metadataStore.js | grep "firebaseAdmin" || echo "No firebaseAdmin imports found" && \
+    echo "=== lib/firebaseAdmin.js imports and exports ===" && \
+    grep -n "export" /app/mcp/dist/lib/firebaseAdmin.js || echo "No exports found"
 
 # Start the application with a check for all imports and files
 CMD ["sh", "-c", "echo 'Verifying module imports and files...' && \
@@ -243,12 +323,55 @@ CMD ["sh", "-c", "echo 'Verifying module imports and files...' && \
        echo 'export function generateSignedDownloadUrl() { return bucket; }' >> /app/mcp/dist/lib/services/signer.js; \
      fi && \
      if [ ! -f '/app/mcp/dist/lib/services/metadataStore.js' ]; then \
-       echo 'export function saveCrateMetadata() { return {}; }' > /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'import { getFirestore, FieldValue } from \"firebase-admin/firestore\";' > /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'import { Crate } from \"/app/mcp/dist/shared/types/crate.js\";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'import { firestore } from \"/app/mcp/dist/lib/firebaseAdmin.js\";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'const CRATES_COLLECTION = \"crates\";' >> /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'const db = firestore;' >> /app/mcp/dist/lib/services/metadataStore.js && \
+       echo 'export function saveCrateMetadata() { return {}; }' >> /app/mcp/dist/lib/services/metadataStore.js && \
        echo 'export function getCrateMetadata() { return {}; }' >> /app/mcp/dist/lib/services/metadataStore.js; \
+     else \
+       sed -i 's|import { firestore } from \".*firebaseAdmin.*\"|import { firestore } from \"/app/mcp/dist/lib/firebaseAdmin.js\"|g' /app/mcp/dist/lib/services/metadataStore.js; \
      fi && \
      if [ ! -f '/app/mcp/dist/lib/services/categoryResolver.js' ]; then \
        echo 'export function resolveCategory() { return \"unknown\"; }' > /app/mcp/dist/lib/services/categoryResolver.js && \
        echo 'export function getMimeTypesForCategory() { return []; }' >> /app/mcp/dist/lib/services/categoryResolver.js; \
+     fi && \
+     if [ ! -f '/app/mcp/dist/lib/firebaseAdmin.js' ]; then \
+       echo 'Creating missing firebaseAdmin.js...' && \
+       mkdir -p /app/mcp/dist/lib && \
+       echo 'import admin from \"firebase-admin\";' > /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'import { getFirestore } from \"firebase-admin/firestore\";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'import { getAuth } from \"firebase-admin/auth\";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'import { getStorage } from \"firebase-admin/storage\";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'import fs from \"fs\";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'const credentialPath = process.env.GOOGLE_APPLICATION_CREDENTIALS || \"/app/mcp/service-account-credentials.json\";' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'let serviceAccount;' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'try {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  const rawData = fs.readFileSync(credentialPath, \"utf8\");' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  serviceAccount = JSON.parse(rawData);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '} catch (error) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  console.error(\"Error loading service account:\", error);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  serviceAccount = {};' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '}' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'if (!admin.apps.length) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  try {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '    admin.initializeApp({' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '      credential: admin.credential.cert(serviceAccount),' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '      storageBucket: process.env.GCS_BUCKET_NAME || \"mcphub-storage\"' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '    });' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '    console.log(\"Firebase Admin initialized successfully\");' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  } catch (error) {' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '    console.error(\"Firebase initialization error:\", error);' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '  }' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '}' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo '' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'export const firestore = getFirestore();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'export const auth = getAuth();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'export const storage = getStorage();' >> /app/mcp/dist/lib/firebaseAdmin.js && \
+       echo 'export default admin;' >> /app/mcp/dist/lib/firebaseAdmin.js; \
      fi && \
      # Check for bad imports \
      grep -r 'import.*from' /app/mcp/dist --include='*.js' | grep -v '\\.js\"' || echo 'All imports look good!' && \
