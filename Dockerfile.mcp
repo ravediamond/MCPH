@@ -1,0 +1,38 @@
+# Use official Node.js slim image as the base
+FROM node:slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy configuration files
+COPY package*.json nx.json tsconfig*.json workspace.json ./
+COPY mcp/package.json ./mcp/
+COPY mcp/project.json ./mcp/
+COPY mcp/tsconfig.json ./mcp/
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY mcp/src ./mcp/src
+COPY mcp/scripts ./mcp/scripts
+COPY lib ./lib
+COPY services ./services
+COPY shared ./shared
+COPY app/types ./app/types
+
+# Build the application using Nx
+RUN npx nx build mcp
+
+# Remove dev dependencies for a smaller image
+RUN npm prune --production
+
+# Expose the application port
+EXPOSE 8080
+
+# Set environment variables
+ENV PORT=8080
+ENV NODE_PATH=/app
+
+# Start the application
+CMD ["node", "dist/mcp/main.js"]

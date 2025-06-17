@@ -6,7 +6,7 @@
     "cleanup-js": "./scripts/cleanup-js-files.sh",
     "dev": "next dev",
     "build": "next build",
-    "build:all": "npm run build:mcp && next build",
+    "build:all": "nx build mcp && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit --incremental",
@@ -14,8 +14,8 @@
     "prepare": "husky install",
     "set-admin": "node --loader ts-node/esm scripts/setAdmin.ts",
     "dev:next": "next dev",
-    "dev:mcp": "cd mcp && npm run dev",
-    "build:mcp": "cd mcp && npm run build",
+    "dev:mcp": "nx serve mcp",
+    "build:mcp": "nx build mcp",
     "start:mcp": "cd mcp && npm run start",
     "cleanup": "./cleanup-js-files.sh"
   },
@@ -89,6 +89,8 @@
     "tls-browserify": "^0.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
-    "vm-browserify": "^1.1.2"
+    "vm-browserify": "^1.1.2",
+    "nx": "16.10.0",
+    "@nrwl/node": "16.10.0"
   }
 }

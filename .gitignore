@@ -19,6 +19,10 @@ shared/**/*.js
 !middleware.js
 !tailwind.config.js
 
+# Nx files
+.nx/
+.angular/
+
 # Firebase build output
 out
 *.log
