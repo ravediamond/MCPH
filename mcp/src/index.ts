@@ -1,4 +1,12 @@
 import express from "express";
+import type {
+  Request,
+  Response,
+  NextFunction,
+  RequestHandler,
+  Application,
+} from "express";
+import bodyParser from "body-parser";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
@@ -63,7 +71,8 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
-app.use(express.json());
+// Use body-parser middleware for JSON
+app.use(bodyParser.json());
 
 // In-memory IP-based request throttling
 // Map of IP addresses to {count, timestamp}
@@ -73,9 +82,9 @@ const THROTTLE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 // Create a typed IP throttling middleware
 const ipThrottlingMiddleware = function (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ) {
   const ip = req.ip || req.socket.remoteAddress || "unknown";
 
@@ -129,14 +138,10 @@ setInterval(() => {
 }, THROTTLE_WINDOW_MS);
 
 // IP throttling middleware
-app.use(ipThrottlingMiddleware as express.RequestHandler);
+app.use(ipThrottlingMiddleware);
 
 // Add CORS headers for API endpoints
-app.use(function (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-): void {
+app.use(function (req: Request, res: Response, next: NextFunction): void {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
@@ -955,8 +960,8 @@ function getServer(req?: AuthenticatedRequest) {
 // Stateless MCP endpoint (modern Streamable HTTP, stateless)
 app.post(
   "/",
-  apiKeyAuthMiddleware as unknown as express.RequestHandler,
-  async (req, res) => {
+  apiKeyAuthMiddleware as RequestHandler,
+  async (req: Request, res: Response) => {
     // Safely use the request as AuthenticatedRequest after middleware has processed it
     const authReq = req as unknown as AuthenticatedRequest;
 
@@ -1015,7 +1020,7 @@ app.post(
 );
 
 // Optionally, reject GET/DELETE on / for clarity
-app.get("/", (req, res) => {
+app.get("/", (req: Request, res: Response) => {
   res.status(405).json({
     jsonrpc: "2.0",
     error: {
@@ -1025,7 +1030,7 @@ app.get("/", (req, res) => {
     id: null,
   });
 });
-app.delete("/", (req, res) => {
+app.delete("/", (req: Request, res: Response) => {
   res.status(405).json({
     jsonrpc: "2.0",
     error: {
@@ -1036,7 +1041,7 @@ app.delete("/", (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 app.listen(PORT, () => {
   console.log(`MCPH ready to go!`);
 });
