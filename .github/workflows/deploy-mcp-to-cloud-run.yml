@@ -12,7 +12,6 @@ on:
       - ".github/workflows/deploy-mcp-to-cloud-run.yml"
       - "nx.json"
       - "tsconfig.base.json"
-      - "workspace.json"
       - "Dockerfile.mcp"
 
 jobs:
