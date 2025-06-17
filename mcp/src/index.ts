@@ -572,7 +572,7 @@ function getServer(req?: AuthenticatedRequest) {
           contentType?: string;
           category?: CrateCategory;
         }
-      > = allCrates.map((doc: {id: string, [key: string]: any}) => {
+      > = allCrates.map((doc: { id: string; [key: string]: any }) => {
         // Get document data properly
         const data = doc as any;
         const id = doc.id;
@@ -961,7 +961,7 @@ app.post(
     const authReq = req as unknown as AuthenticatedRequest;
 
     console.log(
-      `[${new Date().toISOString()}] Incoming POST / from ${authReq.socket?.remoteAddress || 'unknown'}`,
+      `[${new Date().toISOString()}] Incoming POST / from ${authReq.socket?.remoteAddress || "unknown"}`,
     );
     console.log("Request body:", JSON.stringify(authReq.body));
     try {
