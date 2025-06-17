@@ -6,6 +6,18 @@
 
 # Express build output
 **/dist
+# Don't track JavaScript files compiled from TypeScript
+lib/**/*.js
+services/**/*.js
+shared/**/*.js
+**/*.js.map
+# Allow these JavaScript files
+!**/jest.config.js
+!**/*.config.js
+!next.config.js
+!postcss.config.mjs
+!middleware.js
+!tailwind.config.js
 
 # Firebase build output
 out

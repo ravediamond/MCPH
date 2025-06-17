@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "cleanup-js": "./scripts/cleanup-js-files.sh",
     "dev": "next dev",
     "build": "next build",
     "build:all": "npm run build:mcp && next build",

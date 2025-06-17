@@ -36,5 +36,5 @@ EXPOSE 8080
 # Set environment variables
 ENV PORT=8080
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application using the correct path to the entry point
+CMD ["node", "dist/mcp/src/index.js"]
