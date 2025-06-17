@@ -34,14 +34,17 @@ RUN cp -r /app/shared/* /app/mcp/dist/shared/
 # Build the application
 RUN npm run build
 
+# Debug: Check the file structure to verify files are in the correct locations
+RUN echo "==== DEBUG: File structure after build ====" && \
+    echo "Contents of /app/mcp/dist:" && ls -la /app/mcp/dist && \
+    echo "Contents of /app/lib:" && ls -la /app/lib && \
+    echo "Contents of /app/mcp/dist/lib (should contain apiKeyAuth.js):" && ls -la /app/mcp/dist/lib || echo "Directory not found" && \
+    echo "Contents of /app/mcp/dist/mcp/src:" && ls -la /app/mcp/dist/mcp/src || echo "Directory not found"
+
 # Ensure JS files in lib, services, and shared are available in the dist directory
 RUN find /app/lib -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
 RUN find /app/services -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
 RUN find /app/shared -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
-
-# Copy and set permissions for the start script
-COPY mcp/start.sh ./start.sh
-RUN chmod +x ./start.sh
 
 # Remove dev dependencies for a smaller image
 RUN npm prune --production
@@ -53,5 +56,9 @@ EXPOSE 8080
 ENV PORT=8080
 ENV NODE_PATH=/app:/app/mcp
 
-# Start the application using the wrapper script
-CMD ["./start.sh"]
+# Add one last debug check before starting
+RUN echo "==== FINAL DEBUG: Check for apiKeyAuth module ====" && \
+    find /app -name "apiKeyAuth.js" || echo "apiKeyAuth.js not found"
+
+# Start the application with the correct module resolution settings
+CMD ["node", "--experimental-specifier-resolution=node", "dist/mcp/src/index.js"]
