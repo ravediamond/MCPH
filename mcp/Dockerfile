@@ -4,7 +4,7 @@ FROM node:slim
 # Set working directory
 WORKDIR /app
 
-# Copy package files from both root and mcp directory
+# Copy all package files
 COPY package*.json ./
 COPY mcp/package*.json ./mcp/
 
@@ -15,17 +15,20 @@ RUN npm install
 WORKDIR /app/mcp
 RUN npm install
 
-# Copy source files
+# Copy all source files to maintain the correct directory structure
 COPY mcp/tsconfig.json ./tsconfig.json
 COPY mcp/src ./src
-COPY lib ../lib
-COPY services ../services
-COPY shared ../shared
-COPY app/types ../app/types
-COPY mcp/src/types ./src/types
+COPY lib /app/lib
+COPY services /app/services
+COPY shared /app/shared
+COPY app/types /app/app/types
 
 # Build the application
 RUN npm run build
+
+# Ensure the dist directory has the correct structure for imports
+RUN mkdir -p /app/mcp/dist/lib /app/mcp/dist/services /app/mcp/dist/shared
+RUN cp -r /app/lib /app/mcp/dist/ && cp -r /app/services /app/mcp/dist/ && cp -r /app/shared /app/mcp/dist/
 
 # Remove dev dependencies for a smaller image
 RUN npm prune --production
