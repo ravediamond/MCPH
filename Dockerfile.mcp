@@ -10,8 +10,9 @@ COPY mcp/package.json ./mcp/
 COPY mcp/project.json ./mcp/
 COPY mcp/tsconfig.json ./mcp/
 
-# Install dependencies
+# Install dependencies (both Nx-specific and regular TypeScript tools)
 RUN npm install
+RUN npm install -g nx@latest @nx/node @nx/workspace typescript ts-node
 
 # Copy source code
 COPY mcp/src ./mcp/src
@@ -25,10 +26,15 @@ COPY app/types ./app/types
 RUN mkdir -p mcp/scripts && \
     echo '#!/bin/sh' > mcp/scripts/post-build.sh && \
     echo 'echo "Running post-build script to fix any remaining issues"' >> mcp/scripts/post-build.sh && \
+    echo 'find ./dist -name "*.js" -exec sed -i "s|from \\"\\([^\\"]*\\)\\"|from \\"\\1.js\\"|g" {} \\;' >> mcp/scripts/post-build.sh && \
+    echo 'find ./dist -name "*.js" -exec sed -i "s|\\.js\\.js\\"|.js\\"|g" {} \\;' >> mcp/scripts/post-build.sh && \
     chmod +x mcp/scripts/post-build.sh
 
+# Create dist directory structure in case we need to use the fallback build
+RUN mkdir -p dist/mcp
+
 # Build the application using Nx
-RUN npx nx build mcp
+RUN npx nx build mcp || (echo "Nx build failed, falling back to tsc" && cd mcp && npx tsc)
 
 # Remove dev dependencies for a smaller image
 RUN npm prune --production
@@ -40,5 +46,5 @@ EXPOSE 8080
 ENV PORT=8080
 ENV NODE_PATH=/app
 
-# Start the application
-CMD ["node", "dist/mcp/main.js"]
+# Start the application (handles both Nx and fallback build output paths)
+CMD ["sh", "-c", "if [ -f dist/mcp/main.js ]; then node dist/mcp/main.js; elif [ -f mcp/dist/mcp/src/index.js ]; then node mcp/dist/mcp/src/index.js; else node $(find /app -name index.js | head -1); fi"]
