@@ -10,10 +10,12 @@ COPY mcp/package.json ./mcp/
 COPY mcp/project.json ./mcp/
 COPY mcp/tsconfig.json ./mcp/
 
-# Install dependencies with focus on Nx
+# Install all dependencies including Nx
 RUN npm install
-# Install Nx packages properly
-RUN npm install --save-dev @nx/node @nx/workspace nx
+
+# Ensure Nx plugins are properly installed (fix for @nx/node/plugin not found)
+RUN npm install --save-dev @nrwl/node @nrwl/workspace nx @nx/node @nx/workspace
+RUN npm install -g nx
 
 # Copy source code
 COPY mcp/src ./mcp/src
@@ -27,7 +29,8 @@ COPY app/types ./app/types
 RUN chmod +x mcp/scripts/post-build.sh
 
 # Build the application using Nx
-RUN npx nx build mcp
+RUN npx nx reset
+RUN npx nx build mcp || (echo "Nx build failed, checking errors" && ls -la && cat mcp/project.json && exit 1)
 
 # Remove dev dependencies for a smaller image
 RUN npm prune --production
