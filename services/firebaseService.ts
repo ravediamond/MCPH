@@ -25,9 +25,14 @@ import {
   getApps,
   getApp,
 } from "firebase-admin/app";
-import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
+import {
+  getFirestore,
+  Firestore,
+  FieldValue,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Crate, CrateSharing } from "@/app/types/crate";
+import { Crate, CrateSharing } from "../shared/types/crate";
 
 let firebaseApp: App;
 let db: Firestore;
@@ -131,7 +136,7 @@ const CRATES_COLLECTION = "crates";
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 
-export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION };
+export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, db };
 
 const toFirestoreData = (data: any): any => {
   const result = { ...data };
@@ -231,7 +236,7 @@ export async function getDailyMetrics(
           .collection(METRICS_COLLECTION)
           .doc(`daily_${dateStr}`)
           .get()
-          .then((doc) => {
+          .then((doc: any) => {
             result[dateStr] = doc.exists ? doc.data()?.[metric] || 0 : 0;
           }),
       );
@@ -291,7 +296,7 @@ export async function getEvents(
       return [];
     }
 
-    return querySnapshot.docs.map((doc) => {
+    return querySnapshot.docs.map((doc: any) => {
       const data = doc.data();
       return fromFirestoreData(data);
     });
@@ -343,7 +348,7 @@ export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
     .orderBy("createdAt", "desc")
     .get();
   return snapshot.docs.map(
-    (doc) => fromFirestoreData(doc.data()) as ApiKeyRecord,
+    (doc: any) => fromFirestoreData(doc.data()) as ApiKeyRecord,
   );
 }
 
@@ -573,7 +578,7 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
     }
 
     return querySnapshot.docs.map(
-      (doc) => fromFirestoreData(doc.data()) as Crate,
+      (doc: QueryDocumentSnapshot) => fromFirestoreData(doc.data()) as Crate,
     );
   } catch (error) {
     console.error(

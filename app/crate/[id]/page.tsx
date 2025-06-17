@@ -35,7 +35,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
-import { Crate, CrateCategory } from "../../types/crate";
+import { Crate, CrateCategory } from "../../../shared/types/crate";
 import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
 
 // Dynamic imports for markdown and code rendering

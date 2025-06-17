@@ -5,12 +5,18 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:all": "npm run build:mcp && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit --incremental",
     "check": "npm run type-check && npm run lint",
     "prepare": "husky install",
-    "set-admin": "node --loader ts-node/esm scripts/setAdmin.ts"
+    "set-admin": "node --loader ts-node/esm scripts/setAdmin.ts",
+    "dev:next": "next dev",
+    "dev:mcp": "cd mcp && npm run dev",
+    "build:mcp": "cd mcp && npm run build",
+    "start:mcp": "cd mcp && npm run start",
+    "cleanup": "./cleanup-js-files.sh"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -26,6 +32,7 @@
     "@lightenna/react-mermaid-diagram": "^1.0.17",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
+    "concurrently": "^9.1.2",
     "date-fns": "^4.1.0",
     "firebase": "^10.10.0",
     "firebase-admin": "^13.4.0",
@@ -69,6 +76,7 @@
     "http-browserify": "^1.7.0",
     "https-browserify": "^1.0.0",
     "husky": "^9.1.7",
+    "ignore-loader": "^0.1.2",
     "jest": "^29.7.0",
     "lint-staged": "^15.5.1",
     "net-browserify": "^0.1.4",

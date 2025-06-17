@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
-import { CrateCategory } from "../app/types/crate";
+import { CrateCategory } from "../shared/types/crate";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CrateCategory, CrateSharing } from "@/app/types/crate";
+import { CrateCategory, CrateSharing } from "@/shared/types/crate";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Type definitions for upload options

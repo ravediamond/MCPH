@@ -4,6 +4,9 @@
 # Next.js build output
 **/.next
 
+# Express build output
+**/dist
+
 # Firebase build output
 out
 *.log
@@ -11,7 +14,7 @@ out
 
 # Environment Variables
 .env.local
-.env.prod
+.env.production
 service-account-credentials*.json
 *creds.json
 

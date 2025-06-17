@@ -27,6 +27,34 @@ MCPHub is a public remote crate server for the Model Context Protocol (MCP). It 
 - **Web UI:** [mcph.io](https://mcph.io)
 - **Crate Page:** `https://mcph.io/crate/[id]`
 
+## Development
+
+### Running the Application
+
+The project consists of two separate services:
+
+```bash
+# Run the Next.js frontend
+npm run dev
+
+# Run the MCP server (from the mcp directory)
+cd mcp && npm run dev
+# Or using the helper script from the root directory
+npm run dev:mcp
+```
+
+### Building
+
+```bash
+# Build the Next.js frontend
+npm run build
+
+# Build the MCP server (from the mcp directory)
+cd mcp && npm run build
+# Or using the helper script from the root directory
+npm run build:mcp
+```
+
 ### Connect with mcp-remote
 
 ```sh

@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { useUploadService } from "../hooks/useUploadService";
-import { CrateCategory } from "../app/types/crate";
+import { CrateCategory } from "../shared/types/crate";
 import Link from "next/link";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for the simplified landing page version

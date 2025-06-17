@@ -1,0 +1,5 @@
+# Ignore the MCP directory for Vercel builds
+mcp/
+
+# Ignore other unnecessary directories
+scripts/

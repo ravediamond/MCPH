@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
-import { CrateCategory, CrateSharing } from "@/app/types/crate";
+import { CrateCategory, CrateSharing } from "@/shared/types/crate";
 import { auth } from "@/lib/firebaseAdmin";
 
 function getClientIp(req: NextRequest): string {

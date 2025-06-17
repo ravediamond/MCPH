@@ -9,9 +9,9 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
+    "noEmit": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -33,5 +33,13 @@
     "next-env.d.ts",
     "out/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "functions", "functions/**"]
+  "exclude": [
+    "node_modules",
+    "functions",
+    "functions/**",
+    "mcp",
+    "mcp/**",
+    "scripts",
+    "scripts/**"
+  ]
 }

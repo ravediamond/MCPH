@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "outputDirectory": ".next",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':!mcp/'",
   "headers": [
     {
       "source": "/api/sse",
