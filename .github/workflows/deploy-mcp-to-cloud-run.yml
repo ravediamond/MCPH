@@ -2,7 +2,7 @@ name: Build and Deploy MCP Server to Cloud Run
 
 on:
   push:
-    branches: [master, fix/fix-mcp-deploy]
+    branches: [master]
     paths:
       - "mcp/**"
       - "lib/**"
