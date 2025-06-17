@@ -5,6 +5,11 @@ import { z } from "zod";
 import dotenv from "dotenv";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
+import { IncomingMessage } from "http";
+
+// Use any for Firebase types to avoid complicated type issues
+type AnyDoc = any;
+
 import {
   requireApiKeyAuth,
   apiKeyAuthMiddleware,
@@ -333,7 +338,7 @@ function getServer(req?: AuthenticatedRequest) {
           contentType?: string;
           category?: CrateCategory;
         }
-      > = snapshot.docs.map((doc) => {
+      > = snapshot.docs.map((doc: AnyDoc) => {
         // Get document data properly
         const data = doc.data() as any;
         const id = doc.id;
@@ -554,7 +559,7 @@ function getServer(req?: AuthenticatedRequest) {
         .where("searchField", "<=", textQuery + "\uf8ff")
         .limit(topK)
         .get();
-      const allCrates = classicalSnapshot.docs.map((doc) => ({
+      const allCrates = classicalSnapshot.docs.map((doc: AnyDoc) => ({
         id: doc.id,
         ...doc.data(),
       }));
@@ -567,7 +572,7 @@ function getServer(req?: AuthenticatedRequest) {
           contentType?: string;
           category?: CrateCategory;
         }
-      > = allCrates.map((doc) => {
+      > = allCrates.map((doc: {id: string, [key: string]: any}) => {
         // Get document data properly
         const data = doc as any;
         const id = doc.id;
@@ -956,7 +961,7 @@ app.post(
     const authReq = req as unknown as AuthenticatedRequest;
 
     console.log(
-      `[${new Date().toISOString()}] Incoming POST / from ${authReq.ip || authReq.socket.remoteAddress}`,
+      `[${new Date().toISOString()}] Incoming POST / from ${authReq.socket?.remoteAddress || 'unknown'}`,
     );
     console.log("Request body:", JSON.stringify(authReq.body));
     try {
@@ -991,7 +996,8 @@ app.post(
         server.close();
       });
       await server.connect(transport);
-      await transport.handleRequest(authReq, res, authReq.body);
+      // Cast authReq to any to avoid type checking issues
+      await transport.handleRequest(authReq as any, res, authReq.body);
     } catch (error) {
       console.error("Error handling MCP request:", error);
       if (!res.headersSent) {

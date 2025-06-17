@@ -1,5 +1,6 @@
 import { findUserByApiKey, ApiKeyRecord } from "../services/firebaseService";
 import type { Request, Response, NextFunction } from "express";
+import { IncomingMessage } from "http";
 
 /**
  * Simple NextRequest type for MCP standalone use
@@ -10,14 +11,35 @@ interface NextRequest {
   };
 }
 
+// Define Response for throwing response objects
+class CustomResponse {
+  constructor(body?: any, init?: { status?: number; headers?: Record<string, string> }) {
+    this.body = body;
+    this.status = init?.status || 200;
+    this.headers = init?.headers || {};
+  }
+  body: any;
+  status: number;
+  headers: Record<string, string>;
+}
+
 /**
- * Interface for authenticated request
+ * Interface for authenticated request that extends IncomingMessage
  */
-export interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends IncomingMessage {
   user?: {
     userId: string;
   };
   clientName?: string;
+  body: any;
+  headers: {
+    [key: string]: string | string[] | undefined;
+    "x-authorization"?: string;
+    authorization?: string;
+  };
+  auth?: {
+    // Add auth properties as needed
+  };
 }
 
 /**
@@ -28,7 +50,7 @@ export async function requireApiKeyAuth(req: NextRequest) {
 
   if (!authHeader || !authHeader.trim() || !authHeader.startsWith("Bearer ")) {
     console.log("[requireApiKeyAuth] Missing or invalid Authorization header");
-    throw new Response(
+    throw new CustomResponse(
       JSON.stringify({ error: "Missing or invalid API key" }),
       {
         status: 401,
@@ -40,7 +62,7 @@ export async function requireApiKeyAuth(req: NextRequest) {
   const apiKeyRecord = await findUserByApiKey(apiKey);
   if (!apiKeyRecord) {
     console.log("[requireApiKeyAuth] API key not found in database");
-    throw new Response(JSON.stringify({ error: "Invalid API key" }), {
+    throw new CustomResponse(JSON.stringify({ error: "Invalid API key" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });

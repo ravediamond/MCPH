@@ -231,7 +231,7 @@ export async function getDailyMetrics(
           .collection(METRICS_COLLECTION)
           .doc(`daily_${dateStr}`)
           .get()
-          .then((doc) => {
+          .then((doc: any) => {
             result[dateStr] = doc.exists ? doc.data()?.[metric] || 0 : 0;
           }),
       );
@@ -291,7 +291,7 @@ export async function getEvents(
       return [];
     }
 
-    return querySnapshot.docs.map((doc) => {
+    return querySnapshot.docs.map((doc: any) => {
       const data = doc.data();
       return fromFirestoreData(data);
     });
@@ -343,7 +343,7 @@ export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
     .orderBy("createdAt", "desc")
     .get();
   return snapshot.docs.map(
-    (doc) => fromFirestoreData(doc.data()) as ApiKeyRecord,
+    (doc: any) => fromFirestoreData(doc.data()) as ApiKeyRecord,
   );
 }
 

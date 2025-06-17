@@ -10,17 +10,25 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.7.0",
     "@modelcontextprotocol/sdk": "^1.11.4",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "firebase": "^10.9.0",
     "firebase-admin": "^13.4.0",
+    "google-auth-library": "^9.6.3",
+    "uuid": "^9.0.1",
     "zod": "^3.25.7"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.19",
+    "@types/uuid": "^9.0.8",
+    "@types/google-auth-library": "^3.0.2",
+    "@types/firebase": "^3.2.1",
+    "@types/firebase-admin": "^11.0.0",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
