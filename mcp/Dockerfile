@@ -35,11 +35,36 @@ RUN cp -r /app/shared/* /app/mcp/dist/shared/
 RUN npm run build
 
 # Fix import paths in the compiled JavaScript files
-RUN echo "Fixing import paths in compiled files..."
+RUN echo "Fixing import paths in all compiled files..."
+
+# Fix imports in main index.js
 RUN sed -i 's|"../../lib/apiKeyAuth"|"/app/mcp/dist/lib/apiKeyAuth.js"|g' /app/mcp/dist/mcp/src/index.js
 RUN sed -i 's|"../../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/mcp/src/index.js
 RUN sed -i 's|"../../services/storageService"|"/app/mcp/dist/services/storageService.js"|g' /app/mcp/dist/mcp/src/index.js
 RUN sed -i 's|"../../shared/types/crate"|"/app/mcp/dist/shared/types/crate.js"|g' /app/mcp/dist/mcp/src/index.js
+
+# Fix imports in lib/apiKeyAuth.js
+RUN sed -i 's|"../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/lib/apiKeyAuth.js
+
+# Fix imports in services/firebaseService.js
+RUN sed -i 's|"../lib/firebaseAdmin"|"/app/mcp/dist/lib/firebaseAdmin.js"|g' /app/mcp/dist/services/firebaseService.js
+RUN sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /app/mcp/dist/services/firebaseService.js
+RUN sed -i 's|"../shared/types/crate"|"/app/mcp/dist/shared/types/crate.js"|g' /app/mcp/dist/services/firebaseService.js
+
+# Fix imports in services/storageService.js
+RUN sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /app/mcp/dist/services/storageService.js
+RUN sed -i 's|"../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
+
+# Find all JS files and recursively fix relative imports
+RUN find /app/mcp/dist -name "*.js" -exec grep -l "from \"\.\./" {} \; | \
+    xargs -I{} echo "Checking imports in {}" && \
+    find /app/mcp/dist -name "*.js" -exec sed -i 's|"../lib/|"/app/mcp/dist/lib/|g; s|"../services/|"/app/mcp/dist/services/|g; s|"../shared/|"/app/mcp/dist/shared/|g' {} \;
+
+# Also fix potential double-level imports (../../)
+RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"../../lib/|"/app/mcp/dist/lib/|g; s|"../../services/|"/app/mcp/dist/services/|g; s|"../../shared/|"/app/mcp/dist/shared/|g' {} \;
+
+# Make sure all import paths include .js extension
+RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"/app/mcp/dist/\([^"]*\)"|"/app/mcp/dist/\1.js"|g' {} \;
 
 # Debug: Check the file structure to verify files are in the correct locations
 RUN echo "==== DEBUG: File structure after build ====" && \
@@ -67,9 +92,14 @@ ENV NODE_PATH=/app:/app/mcp
 RUN echo "==== FINAL DEBUG: Check for apiKeyAuth module ====" && \
     find /app -name "apiKeyAuth.js" || echo "apiKeyAuth.js not found"
 
-# Add debug: Display the content of index.js to verify import paths have been fixed
-RUN echo "==== DEBUG: Checking import paths in index.js ====" && \
-    grep -n "import.*from" /app/mcp/dist/mcp/src/index.js | grep "lib\|services\|shared"
+# Add debug: Display the content of key import files to verify import paths have been fixed
+RUN echo "==== DEBUG: Checking import paths in key files ====" && \
+    echo "=== index.js imports ===" && \
+    grep -n "import.*from" /app/mcp/dist/mcp/src/index.js | grep "lib\|services\|shared" && \
+    echo "=== apiKeyAuth.js imports ===" && \
+    grep -n "import.*from" /app/mcp/dist/lib/apiKeyAuth.js | grep "services" && \
+    echo "=== firebaseService.js imports ===" && \
+    grep -n "import.*from" /app/mcp/dist/services/firebaseService.js | grep "lib"
 
 # Start the application
 CMD ["node", "dist/mcp/src/index.js"]
