@@ -34,6 +34,13 @@ RUN cp -r /app/shared/* /app/mcp/dist/shared/
 # Build the application
 RUN npm run build
 
+# Fix import paths in the compiled JavaScript files
+RUN echo "Fixing import paths in compiled files..."
+RUN sed -i 's|"../../lib/apiKeyAuth"|"/app/mcp/dist/lib/apiKeyAuth.js"|g' /app/mcp/dist/mcp/src/index.js
+RUN sed -i 's|"../../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/mcp/src/index.js
+RUN sed -i 's|"../../services/storageService"|"/app/mcp/dist/services/storageService.js"|g' /app/mcp/dist/mcp/src/index.js
+RUN sed -i 's|"../../shared/types/crate"|"/app/mcp/dist/shared/types/crate.js"|g' /app/mcp/dist/mcp/src/index.js
+
 # Debug: Check the file structure to verify files are in the correct locations
 RUN echo "==== DEBUG: File structure after build ====" && \
     echo "Contents of /app/mcp/dist:" && ls -la /app/mcp/dist && \
@@ -60,5 +67,9 @@ ENV NODE_PATH=/app:/app/mcp
 RUN echo "==== FINAL DEBUG: Check for apiKeyAuth module ====" && \
     find /app -name "apiKeyAuth.js" || echo "apiKeyAuth.js not found"
 
-# Start the application with enhanced module resolution settings
-CMD ["node", "--experimental-specifier-resolution=node", "--es-module-specifier-resolution=node", "dist/mcp/src/index.js"]
+# Add debug: Display the content of index.js to verify import paths have been fixed
+RUN echo "==== DEBUG: Checking import paths in index.js ====" && \
+    grep -n "import.*from" /app/mcp/dist/mcp/src/index.js | grep "lib\|services\|shared"
+
+# Start the application
+CMD ["node", "dist/mcp/src/index.js"]
