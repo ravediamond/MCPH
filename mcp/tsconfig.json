@@ -18,7 +18,10 @@
       "@/services/*": ["../services/*"],
       "@/types/*": ["../app/types/*", "../types/*", "../shared/types/*"]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "sourceMap": false,
+    "declaration": false,
+    "noEmitOnError": true
   },
   "include": [
     "src/**/*.ts",

@@ -1,13 +1,14 @@
 {
   "name": "mcph-mcp-api",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/mcp/src/index.js",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --watch ../services --watch ../lib --ext ts --exec \"tsc && node dist/src/index.js\"",
+    "dev": "nodemon --watch src --watch ../services --watch ../lib --ext ts --exec \"tsc && node dist/mcp/src/index.js\"",
     "build": "rm -rf dist && tsc",
-    "start": "node dist/index.js"
+    "clean": "rm -rf dist",
+    "start": "node dist/mcp/src/index.js"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
