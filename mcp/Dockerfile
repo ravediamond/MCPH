@@ -1,35 +1,48 @@
-# Use official Node.js slim image as the base
-FROM node:slim
+# Use Node.js Alpine for smaller image size
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
 
-# Copy all package files
+# Copy package files
 COPY package*.json ./
 COPY mcp/package*.json ./mcp/
 
-# Install root dependencies first
-RUN npm install
+# Install dependencies
+RUN npm ci
 
-# Change to mcp directory and install its dependencies
+# Copy source files
+COPY mcp/tsconfig.json ./mcp/
+COPY mcp/src ./mcp/src
+COPY lib ./lib
+COPY services ./services
+COPY shared ./shared
+
+# Build the application
 WORKDIR /app/mcp
-RUN npm install
+RUN npm ci
+RUN npm run build
 
-# Copy the needed directories with a structure that matches imports
-COPY mcp/tsconfig.json ./tsconfig.json
-COPY mcp/src ./src
-COPY lib /app/lib
-COPY services /app/services
-COPY shared /app/shared
-COPY app/types /app/app/types
+# Create production image
+FROM node:20-slim
+WORKDIR /app
 
-# Pre-create the output directory structure to match imports
-RUN mkdir -p dist/mcp/src dist/lib dist/services dist/shared
+# Copy built files and package.json
+COPY --from=builder /app/mcp/dist ./dist
+COPY --from=builder /app/mcp/package*.json ./
 
-# Transpile TypeScript source files manually to preserve correct import paths
-RUN cp -r /app/lib/* /app/mcp/dist/lib/
-RUN cp -r /app/services/* /app/mcp/dist/services/
-RUN cp -r /app/shared/* /app/mcp/dist/shared/
+# Install production dependencies only
+RUN npm ci --omit=dev
+
+# Set environment variables
+ENV PORT=8080
+ENV NODE_ENV=production
+
+# Expose port
+EXPOSE 8080
+
+# Start the server
+CMD ["node", "dist/index.js"]
 
 # Build the application
 RUN npm run build
