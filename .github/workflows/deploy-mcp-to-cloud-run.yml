@@ -1,16 +1,8 @@
 name: Build and Deploy MCP Server to Cloud Run
 
 on:
-  pull_request:
-    branches: [master, feat/unifiy-repo]
-    paths:
-      - "mcp/**"
-      - "lib/**"
-      - "services/**"
-      - "app/types/**"
-      - ".github/workflows/deploy-mcp-to-cloud-run.yml"
   push:
-    branches: [master, feat/unifiy-repo]
+    branches: [master]
     paths:
       - "mcp/**"
       - "lib/**"
@@ -19,25 +11,7 @@ on:
       - ".github/workflows/deploy-mcp-to-cloud-run.yml"
 
 jobs:
-  build:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - name: Install root dependencies
-        run: npm ci
-      - name: Install MCP dependencies
-        working-directory: ./mcp
-        run: npm ci
-      - name: Build MCP server
-        working-directory: ./mcp
-        run: npm run build
-
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
     steps:
