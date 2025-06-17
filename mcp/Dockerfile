@@ -54,6 +54,7 @@ RUN sed -i 's|"../shared/types/crate"|"/app/mcp/dist/shared/types/crate.js"|g' /
 # Fix imports in services/storageService.js
 RUN sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /app/mcp/dist/services/storageService.js
 RUN sed -i 's|"../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
+RUN sed -i 's|"/app/mcp/dist/services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
 
 # Find all JS files and recursively fix relative imports
 RUN find /app/mcp/dist -name "*.js" -exec grep -l "from \"\.\./" {} \; | \
@@ -68,6 +69,14 @@ RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"/app/mcp/dist/\([^"]*\)"|"/
 
 # Fix any double .js.js extensions that might have been created
 RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|\.js\.js"|\.js"|g' {} \;
+
+# Additional targeted fixes for specific files
+RUN sed -i 's|/app/mcp/dist/services/firebaseService"|/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
+RUN sed -i 's|firebaseService/|firebaseService.js"|g' /app/mcp/dist/services/storageService.js
+
+# Final pass to check and fix any remaining relative imports
+RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"\.\.\/|"/app/mcp/dist/|g' {} \;
+RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"\.\.\/\.\.\/|"/app/mcp/dist/|g' {} \;
 
 # Debug: Check the file structure to verify files are in the correct locations
 RUN echo "==== DEBUG: File structure after build ====" && \
