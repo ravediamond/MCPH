@@ -33,7 +33,7 @@ const nextConfig = {
     config.module = config.module || {};
     config.module.rules = config.module.rules || [];
     config.module.rules.push({
-      test: /mcp[\\/]src[\\/].*\.ts$/,
+      test: /mcp[\\/].*\.ts$/,
       loader: "ignore-loader",
     });
 
