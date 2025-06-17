@@ -15,22 +15,33 @@ RUN npm install
 WORKDIR /app/mcp
 RUN npm install
 
-# Copy all source files to maintain the correct directory structure
+# Copy the needed directories with a structure that matches imports
 COPY mcp/tsconfig.json ./tsconfig.json
 COPY mcp/src ./src
-COPY lib ../lib
-COPY services ../services
-COPY shared ../shared
-COPY app/types ../app/types
+COPY lib /app/lib
+COPY services /app/services
+COPY shared /app/shared
+COPY app/types /app/app/types
 
-# Create symlinks so the import paths will resolve correctly
-RUN mkdir -p dist/lib dist/services dist/shared
-RUN ln -s /app/lib /app/mcp/dist/lib
-RUN ln -s /app/services /app/mcp/dist/services
-RUN ln -s /app/shared /app/mcp/dist/shared
+# Pre-create the output directory structure to match imports
+RUN mkdir -p dist/mcp/src dist/lib dist/services dist/shared
+
+# Transpile TypeScript source files manually to preserve correct import paths
+RUN cp -r /app/lib/* /app/mcp/dist/lib/
+RUN cp -r /app/services/* /app/mcp/dist/services/
+RUN cp -r /app/shared/* /app/mcp/dist/shared/
 
 # Build the application
 RUN npm run build
+
+# Ensure JS files in lib, services, and shared are available in the dist directory
+RUN find /app/lib -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
+RUN find /app/services -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
+RUN find /app/shared -name "*.js" -exec cp --parents {} /app/mcp/dist/ \;
+
+# Copy and set permissions for the start script
+COPY mcp/start.sh ./start.sh
+RUN chmod +x ./start.sh
 
 # Remove dev dependencies for a smaller image
 RUN npm prune --production
@@ -40,6 +51,7 @@ EXPOSE 8080
 
 # Set environment variables
 ENV PORT=8080
+ENV NODE_PATH=/app:/app/mcp
 
-# Start the application using the correct path to the entry point
-CMD ["node", "--experimental-specifier-resolution=node", "dist/mcp/src/index.js"]
+# Start the application using the wrapper script
+CMD ["./start.sh"]
