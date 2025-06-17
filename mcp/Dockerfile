@@ -66,6 +66,9 @@ RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"../../lib/|"/app/mcp/dist/l
 # Make sure all import paths include .js extension
 RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"/app/mcp/dist/\([^"]*\)"|"/app/mcp/dist/\1.js"|g' {} \;
 
+# Fix any double .js.js extensions that might have been created
+RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|\.js\.js"|\.js"|g' {} \;
+
 # Debug: Check the file structure to verify files are in the correct locations
 RUN echo "==== DEBUG: File structure after build ====" && \
     echo "Contents of /app/mcp/dist:" && ls -la /app/mcp/dist && \
@@ -95,11 +98,11 @@ RUN echo "==== FINAL DEBUG: Check for apiKeyAuth module ====" && \
 # Add debug: Display the content of key import files to verify import paths have been fixed
 RUN echo "==== DEBUG: Checking import paths in key files ====" && \
     echo "=== index.js imports ===" && \
-    grep -n "import.*from" /app/mcp/dist/mcp/src/index.js | grep "lib\|services\|shared" && \
+    grep -n "import.*from" /app/mcp/dist/mcp/src/index.js | grep "lib\|services\|shared" || echo "No matching imports found" && \
     echo "=== apiKeyAuth.js imports ===" && \
-    grep -n "import.*from" /app/mcp/dist/lib/apiKeyAuth.js | grep "services" && \
+    grep -n "import.*from" /app/mcp/dist/lib/apiKeyAuth.js | grep "services" || echo "No matching imports found" && \
     echo "=== firebaseService.js imports ===" && \
-    grep -n "import.*from" /app/mcp/dist/services/firebaseService.js | grep "lib"
+    grep -n "import.*from" /app/mcp/dist/services/firebaseService.js | grep "lib" || echo "No matching imports found"
 
 # Start the application
 CMD ["node", "dist/mcp/src/index.js"]
