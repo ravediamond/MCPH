@@ -25,7 +25,12 @@ import {
   getApps,
   getApp,
 } from "firebase-admin/app";
-import { getFirestore, Firestore, FieldValue } from "firebase-admin/firestore";
+import {
+  getFirestore,
+  Firestore,
+  FieldValue,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
 import { Crate, CrateSharing } from "../shared/types/crate";
 
@@ -573,7 +578,7 @@ export async function getUserCrates(userId: string): Promise<Crate[]> {
     }
 
     return querySnapshot.docs.map(
-      (doc) => fromFirestoreData(doc.data()) as Crate,
+      (doc: QueryDocumentSnapshot) => fromFirestoreData(doc.data()) as Crate,
     );
   } catch (error) {
     console.error(
