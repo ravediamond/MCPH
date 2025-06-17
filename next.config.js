@@ -18,8 +18,25 @@ const nextConfig = {
   // Vercel handles API routes, so no need for trailing slashes
   // trailingSlash: true,
 
+  // Exclude the MCP directory from the Next.js build
+  pageExtensions: ["tsx", "ts", "jsx", "js"],
+
   // Configure webpack for Node.js core modules in browser
   webpack: (config, { isServer }) => {
+    // Exclude the MCP directory from the build
+    config.externals = [
+      ...(config.externals || []),
+      { "@modelcontextprotocol/sdk": "commonjs @modelcontextprotocol/sdk" },
+    ];
+
+    // Add a rule to ignore the MCP folder
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+    config.module.rules.push({
+      test: /mcp[\\/]src[\\/].*\.ts$/,
+      loader: "ignore-loader",
+    });
+
     // Add fallbacks for Node.js core modules
     if (!isServer) {
       config.resolve.fallback = {

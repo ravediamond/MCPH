@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "outputDirectory": ".next",
+  "ignoreCommand": "ls mcp > /dev/null",
   "headers": [
     {
       "source": "/api/sse",

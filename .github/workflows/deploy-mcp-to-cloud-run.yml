@@ -4,19 +4,19 @@ on:
   pull_request:
     branches: [master, feat/unifiy-repo]
     paths:
-      - 'mcp/**'
-      - 'lib/**'
-      - 'services/**'
-      - 'app/types/**'
-      - '.github/workflows/deploy-mcp-to-cloud-run.yml'
+      - "mcp/**"
+      - "lib/**"
+      - "services/**"
+      - "app/types/**"
+      - ".github/workflows/deploy-mcp-to-cloud-run.yml"
   push:
     branches: [master, feat/unifiy-repo]
     paths:
-      - 'mcp/**'
-      - 'lib/**'
-      - 'services/**'
-      - 'app/types/**'
-      - '.github/workflows/deploy-mcp-to-cloud-run.yml'
+      - "mcp/**"
+      - "lib/**"
+      - "services/**"
+      - "app/types/**"
+      - ".github/workflows/deploy-mcp-to-cloud-run.yml"
 
 jobs:
   build:
