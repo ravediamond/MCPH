@@ -1,36 +1,42 @@
 {
-  "npmScope": "mcphub",
-  "affected": {
-    "defaultBase": "master"
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": ["build", "lint", "test"]
-      }
+    "npmScope": "mcphub",
+    "affected": {
+        "defaultBase": "master"
+    },
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "nx/tasks-runners/default",
+            "options": {
+                "cacheableOperations": [
+                    "build",
+                    "lint",
+                    "test"
+                ]
+            }
+        }
+    },
+    "targetDefaults": {
+        "build": {
+            "dependsOn": [
+                "^build"
+            ]
+        }
+    },
+    "plugins": [
+        {
+            "plugin": "@nrwl/node/plugin",
+            "options": {
+                "buildTargetName": "build",
+                "serveTargetName": "serve"
+            }
+        }
+    ],
+    "generators": {
+        "@nx/node:application": {
+            "style": "css",
+            "linter": "eslint",
+            "unitTestRunner": "jest",
+            "e2eTestRunner": "none"
+        }
     }
-  },
-  "targetDefaults": {
-    "build": {
-      "dependsOn": ["^build"]
-    }
-  },
-  "plugins": [
-    {
-      "plugin": "@nx/node/plugin",
-      "options": {
-        "buildTargetName": "build",
-        "serveTargetName": "serve"
-      }
-    }
-  ],
-  "generators": {
-    "@nx/node:application": {
-      "style": "css",
-      "linter": "eslint",
-      "unitTestRunner": "jest",
-      "e2eTestRunner": "none"
-    }
-  }
 }
