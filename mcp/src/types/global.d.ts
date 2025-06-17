@@ -1,3 +1,80 @@
+// Basic type declarations for express
+declare module "express" {
+  import { EventEmitter } from "events";
+  import { IncomingMessage, ServerResponse } from "http";
+
+  export interface Request extends IncomingMessage {
+    body: any;
+    params: Record<string, string>;
+    query: Record<string, string>;
+    headers: Record<string, string | string[] | undefined>;
+    cookies: Record<string, string>;
+    path: string;
+    method: string;
+    ip: string;
+    app: Application;
+    [key: string]: any;
+  }
+
+  export interface Response extends ServerResponse {
+    status(code: number): Response;
+    send(body: any): Response;
+    json(body: any): Response;
+    end(): Response;
+    setHeader(name: string, value: string | string[]): Response;
+    cookie(name: string, value: string, options?: any): Response;
+    clearCookie(name: string, options?: any): Response;
+    redirect(url: string): Response;
+    redirect(status: number, url: string): Response;
+    [key: string]: any;
+  }
+
+  export interface NextFunction {
+    (err?: any): void;
+  }
+
+  export interface RequestHandler {
+    (req: Request, res: Response, next: NextFunction): any;
+  }
+
+  export interface ErrorRequestHandler {
+    (err: any, req: Request, res: Response, next: NextFunction): any;
+  }
+
+  export interface Application {
+    get(path: string, ...handlers: RequestHandler[]): Application;
+    post(path: string, ...handlers: RequestHandler[]): Application;
+    put(path: string, ...handlers: RequestHandler[]): Application;
+    delete(path: string, ...handlers: RequestHandler[]): Application;
+    use(...handlers: RequestHandler[]): Application;
+    use(path: string, ...handlers: RequestHandler[]): Application;
+    listen(port: number, callback?: () => void): any;
+    [key: string]: any;
+  }
+
+  export interface Router {
+    get(path: string, ...handlers: RequestHandler[]): Router;
+    post(path: string, ...handlers: RequestHandler[]): Router;
+    put(path: string, ...handlers: RequestHandler[]): Router;
+    delete(path: string, ...handlers: RequestHandler[]): Router;
+    use(...handlers: RequestHandler[]): Router;
+    use(path: string, ...handlers: RequestHandler[]): Router;
+    [key: string]: any;
+  }
+
+  export function Router(options?: any): Router;
+
+  export default function createApplication(): Application;
+}
+
+// Add uuid module declaration
+declare module "uuid" {
+  export function v4(): string;
+  export function v1(): string;
+  export function validate(uuid: string): boolean;
+  export function version(uuid: string): number;
+}
+
 // Add firebase-admin type declarations
 declare module "firebase-admin/app" {
   export interface App {}
