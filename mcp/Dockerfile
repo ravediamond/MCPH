@@ -51,8 +51,10 @@ RUN sed -i 's|"../lib/firebaseAdmin"|"/app/mcp/dist/lib/firebaseAdmin.js"|g' /ap
 RUN sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /app/mcp/dist/services/firebaseService.js
 RUN sed -i 's|"../shared/types/crate"|"/app/mcp/dist/shared/types/crate.js"|g' /app/mcp/dist/services/firebaseService.js
 
-# Fix imports in services/storageService.js
+# Fix imports in services/storageService.js with specific patterns
 RUN sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /app/mcp/dist/services/storageService.js
+RUN sed -i 's|"../lib/services"|"/app/mcp/dist/lib/services/index.js"|g' /app/mcp/dist/services/storageService.js
+RUN sed -i 's|"./firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
 RUN sed -i 's|"../services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
 RUN sed -i 's|"/app/mcp/dist/services/firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
 
@@ -70,9 +72,24 @@ RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"/app/mcp/dist/\([^"]*\)"|"/
 # Fix any double .js.js extensions that might have been created
 RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|\.js\.js"|\.js"|g' {} \;
 
-# Additional targeted fixes for specific files
-RUN sed -i 's|/app/mcp/dist/services/firebaseService"|/app/mcp/dist/services/firebaseService.js"|g' /app/mcp/dist/services/storageService.js
-RUN sed -i 's|firebaseService/|firebaseService.js"|g' /app/mcp/dist/services/storageService.js
+# More direct approach for the problematic storageService.js file
+RUN echo "==== Direct fix for storageService.js ====" && \
+    mkdir -p /tmp && \
+    # Extract import statements
+    grep "import" /app/mcp/dist/services/storageService.js > /tmp/imports.txt && \
+    # Replace relative paths with absolute paths + .js extension
+    sed -i 's|"./firebaseService"|"/app/mcp/dist/services/firebaseService.js"|g' /tmp/imports.txt && \
+    sed -i 's|"../lib/gcpStorageClient"|"/app/mcp/dist/lib/gcpStorageClient.js"|g' /tmp/imports.txt && \
+    sed -i 's|"../lib/services"|"/app/mcp/dist/lib/services/index.js"|g' /tmp/imports.txt && \
+    # Create new file with fixed imports
+    cat /tmp/imports.txt > /tmp/storageService.js && \
+    # Append everything after the import statements
+    sed -n '/^import/,${/^import/!p}' /app/mcp/dist/services/storageService.js >> /tmp/storageService.js && \
+    # Replace the original file
+    mv /tmp/storageService.js /app/mcp/dist/services/storageService.js && \
+    # Show the result
+    echo "==== New imports in storageService.js ====" && \
+    grep "import" /app/mcp/dist/services/storageService.js
 
 # Final pass to check and fix any remaining relative imports
 RUN find /app/mcp/dist -name "*.js" -exec sed -i 's|"\.\.\/|"/app/mcp/dist/|g' {} \;
@@ -113,5 +130,5 @@ RUN echo "==== DEBUG: Checking import paths in key files ====" && \
     echo "=== firebaseService.js imports ===" && \
     grep -n "import.*from" /app/mcp/dist/services/firebaseService.js | grep "lib" || echo "No matching imports found"
 
-# Start the application
-CMD ["node", "dist/mcp/src/index.js"]
+# Start the application with a check for all imports
+CMD ["sh", "-c", "echo 'Verifying module imports...' && grep -r 'import.*from' /app/mcp/dist --include='*.js' | grep -v '\\.js\"' || echo 'All imports look good!' && node dist/mcp/src/index.js"]
