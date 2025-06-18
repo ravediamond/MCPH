@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --watch ../services --watch ../lib --ext ts --exec \"tsup src/index.ts --out-dir dist --format esm && node dist/index.js\"",
+    "dev": "DOTENV_CONFIG_PATH=.env.local nodemon --watch src --watch ../services --watch ../lib --ext ts --exec \"tsup src/index.ts --out-dir dist --format esm && node -r dotenv/config dist/index.js\"",
     "build": "tsup src/index.ts --out-dir dist --format esm --dts --treeshake --external @google-cloud/storage --external @modelcontextprotocol/sdk --external firebase-admin --external firebase --external express --external bcrypt --external body-parser --external dotenv --external google-auth-library --external uuid --external zod",
     "clean": "rm -rf dist",
     "start": "node dist/index.js"
