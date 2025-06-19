@@ -34,14 +34,27 @@ export default function FAQPage() {
 
             <div>
               <h3 className="text-xl font-medium mb-2">
-                Which AI models support MCP?
+                Which AI models and frameworks support MCP?
               </h3>
               <p className="text-lg text-gray-700">
                 MCP is designed to work with any AI platform that implements the
-                protocol. Currently, it's supported by Anthropic's Claude and
-                various open-source AI frameworks. The list of supported
-                platforms is growing.
+                protocol. Here are some of the tools and frameworks that support
+                MCP:
               </p>
+              <ul className="list-disc pl-6 mt-3 space-y-2 text-lg text-gray-700">
+                {[
+                  "Claude Desktop",
+                  "Cursor",
+                  "Windsurf",
+                  "GitHub Copilot",
+                  "Mistral Le Chat",
+                  "LangGraph",
+                  "CrewAI",
+                  "LlamaIndex",
+                ].map((tool) => (
+                  <li key={tool}>{tool}</li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
