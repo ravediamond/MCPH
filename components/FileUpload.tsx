@@ -513,6 +513,10 @@ export default function FileUpload({
 
             <p className="text-sm text-gray-500 text-center mt-4">
               Give this link to an agent or teammate—no login needed.
+              <br />
+              <span className="text-xs text-amber-600">
+                Download link expires in 24 hours. Crate available for 30 days.
+              </span>
             </p>
           </div>
         </div>
@@ -693,7 +697,8 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            Crates are automatically removed after 30 days.
+            Crates are automatically removed after 30 days. Download links
+            expire after 24 hours.
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
             By uploading a crate, you agree to our Terms of Service and Privacy

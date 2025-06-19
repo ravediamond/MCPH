@@ -219,7 +219,8 @@ function getServer(req?: AuthenticatedRequest) {
       "- Google OAuth flow for authentication\n" +
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +
-      "- Streamable HTTP transport\n\n" +
+      "- Streamable HTTP transport\n" +
+      "- Crates are stored for 30 days. Download links expire in 24 hours\n\n" +
       "Natural-language AI commands:\n" +
       "• “list my crates” → crates_list\n" +
       "• “show crate with ID 12345” → crates_get\n" +
@@ -343,7 +344,7 @@ function getServer(req?: AuthenticatedRequest) {
     {},
     {
       description:
-        "Lists all your crates (metadata, IDs, titles, descriptions, categories, tags, expiration).\n\n" +
+        "Lists all your crates (metadata, IDs, titles, descriptions, categories, tags, expiration). Crates are stored for 30 days.\n\n" +
         "AI usage examples:\n" +
         "• “list my crates”\n" +
         "• “show my recent crates”",
@@ -534,7 +535,7 @@ function getServer(req?: AuthenticatedRequest) {
     GetCrateDownloadLinkParams.shape,
     {
       description:
-        "Generates a pre-signed download URL for a crate, especially for binaries or large files. Response includes expiry info.\n\n" +
+        "Generates a pre-signed download URL for a crate, especially for binaries or large files. Download links expire in 24 hours. Response includes expiry info.\n\n" +
         "AI usage example:\n" +
         "• “get download link for crate 12345”",
     },

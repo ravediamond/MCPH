@@ -103,7 +103,8 @@ export default function DocsPage() {
           </h3>
           <p className="text-gray-600 mb-3">
             MCPH works with any AI tool that supports the Model Context
-            Protocol. The simplest way to connect is using the{" "}
+            Protocol. Crates are stored for 30 days and all generated download
+            links expires in 24 hours. The simplest way to connect is using the{" "}
             <code>mcp-remote</code> CLI tool:
           </p>
 
