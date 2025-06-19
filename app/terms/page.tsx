@@ -10,7 +10,26 @@ export default function TermsPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Terms of Service
           </h1>
-          <p className="text-gray-600">Last updated: May 7, 2025</p>
+          <p className="text-gray-600">Last updated: June 19, 2025</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            TL;DR: The Short Version
+          </h2>
+          <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
+            <li>
+              You must not use our service for illegal activities, including
+              sharing copyrighted material you don't own.
+            </li>
+            <li>
+              Crates are deleted automatically after an expiration time
+              (default: 30 days).
+            </li>
+            <li>
+              We can remove content and block users who violate these terms.
+            </li>
+          </ul>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
@@ -19,14 +38,14 @@ export default function TermsPage() {
           </h2>
           <p className="text-gray-600 mb-4">
             Welcome to MCPH ("we," "our," or "us"). By accessing or using our
-            file-sharing service, you agree to be bound by these Terms of
+            crate-sharing service, you agree to be bound by these Terms of
             Service ("Terms"). If you disagree with any part of the Terms, you
             do not have permission to access or use our service.
           </p>
 
           <p className="text-gray-600">
-            MCPH provides a temporary file-sharing service with automatic file
-            expiration. All files uploaded to our service are subject to
+            MCPH provides a temporary crate-sharing service with automatic
+            expiration. All crates uploaded to our service are subject to
             automatic deletion after their expiration period.
           </p>
         </div>
@@ -37,19 +56,19 @@ export default function TermsPage() {
           </h2>
 
           <p className="text-gray-600 mb-4">
-            MCPH allows you to upload files and receive a link that you can
-            share with others to download those files. Key features of our
+            MCPH allows you to upload crates and receive a link that you can
+            share with others to download those crates. Key features of our
             service include:
           </p>
 
           <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
             <li>No account or registration required</li>
             <li>
-              Files are automatically deleted after a set expiration period
-              (default: 1 hour)
+              Crates are automatically deleted after a set expiration period
+              (default: 30 days)
             </li>
             <li>Maximum file size limit of 500MB per upload</li>
-            <li>Maximum expiration period of 24 hours</li>
+            <li>Maximum expiration period of 30 days</li>
             <li>
               Rate limits to prevent abuse (20 uploads per 10 minutes per IP)
             </li>
@@ -103,14 +122,14 @@ export default function TermsPage() {
           </h2>
 
           <p className="text-gray-600 mb-4">
-            You retain all ownership rights to the files you upload. By
-            uploading files to MCPH, you grant us a limited license to store and
-            make your files available for download until their expiration.
+            You retain all ownership rights to the crates you upload. By
+            uploading crates to MCPH, you grant us a limited license to store
+            and make your crates available for download until their expiration.
           </p>
 
           <p className="text-gray-600 mb-4">
             You represent and warrant that you have all necessary rights to the
-            files you upload and that your use of MCPH does not violate any
+            crates you upload and that your use of MCPH does not violate any
             third party's intellectual property rights.
           </p>
 
@@ -134,12 +153,12 @@ export default function TermsPage() {
 
           <p className="text-gray-600 mb-4">
             We do not guarantee that our service will be uninterrupted, timely,
-            secure, or error-free. Files may be deleted before their scheduled
+            secure, or error-free. Crates may be deleted before their scheduled
             expiration time in case of service issues or maintenance.
           </p>
 
           <p className="text-gray-600 font-medium">
-            We strongly recommend keeping backup copies of any important files
+            We strongly recommend keeping backup copies of any important crates
             you upload to our service, as we cannot guarantee their availability
             for the full duration of the specified expiration period.
           </p>
@@ -160,7 +179,7 @@ export default function TermsPage() {
 
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>Your use or inability to use our service</li>
-            <li>Early deletion or loss of your uploaded files</li>
+            <li>Early deletion or loss of your uploaded crates</li>
             <li>Unauthorized access to or alteration of your uploads</li>
             <li>Any third party conduct or content on our service</li>
             <li>Any other matter relating to our service</li>

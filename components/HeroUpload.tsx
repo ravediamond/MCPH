@@ -49,7 +49,7 @@ export default function HeroUpload() {
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `File is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
       );
       return;
     }
@@ -97,7 +97,7 @@ export default function HeroUpload() {
 
           // Anonymous user success message
           toast.success(
-            "Link generated! Need titles, tags, or bigger files? Create a free account →",
+            "Link generated! Download link expires in 24 hours. Crate available for 30 days. Need titles, tags, or bigger crates? Create a free account →",
             {
               duration: 5000,
               icon: "🔗",
@@ -112,7 +112,7 @@ export default function HeroUpload() {
         } else {
           // Authenticated user success message
           toast.success(
-            "Link generated! View all your uploads in your dashboard.",
+            "Link generated! Download link expires in 24 hours. Crate available for 30 days. View all your uploads in your dashboard.",
             {
               duration: 4000,
               icon: "✓",
@@ -140,11 +140,11 @@ export default function HeroUpload() {
             console.error("Failed to copy: ", err);
           });
       } else {
-        throw new Error(result.error || "Upload failed");
+        throw new Error(result.error || "Sorry, we couldn't upload your file");
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Upload failed. Please try again.");
+      toast.error("Sorry, we couldn't upload your file. Please try again.");
       setIsUploading(false);
     }
   };
@@ -196,7 +196,7 @@ export default function HeroUpload() {
             onPaste={handlePaste}
             tabIndex={0}
             role="button"
-            aria-label="Drop files here or click to upload"
+            aria-label="Drop crates here or click to upload"
           >
             <input {...getInputProps()} />
 
@@ -215,7 +215,7 @@ export default function HeroUpload() {
                   </p>
                   {file && (
                     <p className="text-sm text-gray-600 mt-1 truncate max-w-full">
-                      {file.name}
+                      {file.name} (crate)
                     </p>
                   )}
                 </div>
@@ -239,19 +239,20 @@ export default function HeroUpload() {
 
                 {isDragActive ? (
                   <p className="text-orange-500 text-lg md:text-xl font-medium">
-                    Drop your file here...
+                    Drop your crate here...
                   </p>
                 ) : (
                   <>
                     <div>
                       <p className="text-gray-800 text-xl md:text-2xl font-medium mb-2">
-                        DROP FILE HERE
+                        DROP CRATE HERE
                       </p>
                       <p className="text-gray-700 text-base md:text-lg">
                         or paste Markdown / JSON
                       </p>
                       <span className="inline-block mt-3 md:mt-4 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        10 MB max • Files removed after 30 days
+                        10 MB max • Crates available for 30 days • Download
+                        links expire in 24 hours
                       </span>
                     </div>
                   </>
@@ -329,7 +330,8 @@ export default function HeroUpload() {
             <div className="text-center mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 rounded-lg">
               {!user ? (
                 <p className="text-xs md:text-sm text-blue-700">
-                  This link will expire in 30 days.{" "}
+                  Download link expires in 24 hours. Crate available for 30
+                  days.{" "}
                   <a href="/login" className="font-medium underline">
                     Create an account
                   </a>{" "}
@@ -338,8 +340,8 @@ export default function HeroUpload() {
               ) : (
                 <div className="space-y-2">
                   <p className="text-xs md:text-sm text-blue-700">
-                    Need more options? Use the advanced uploader for metadata,
-                    tags, and batch uploads.
+                    Download link expires in 24 hours. Crate available for 30
+                    days. Need more options? Use the advanced uploader.
                   </p>
                   <Link
                     href="/upload"

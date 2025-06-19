@@ -20,7 +20,7 @@ export default function DevelopersPage() {
             Developer Resources
           </h1>
           <p className="text-gray-600 text-lg">
-            Everything you need to integrate with MCPH's file sharing service
+            Everything you need to integrate with MCPH's crate sharing service
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export default function DevelopersPage() {
         <div className="mt-12 bg-blue-600 text-white rounded-lg p-8 shadow text-center">
           <h2 className="text-2xl font-bold mb-3">Ready to get started?</h2>
           <p className="mb-6 max-w-2xl mx-auto">
-            Integrate MCPH's file sharing capabilities into your own
+            Integrate MCPH's crate sharing capabilities into your own
             applications with just a few lines of code.
           </p>
           <div className="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">

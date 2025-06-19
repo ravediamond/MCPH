@@ -24,36 +24,22 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Calculate expiration dates
-    // Private crates expire after 30 days, public crates after 90 days
-    const privateExpirationDate = new Date();
-    privateExpirationDate.setDate(privateExpirationDate.getDate() - 30);
+    // Calculate expiration date for all crates (30 days)
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() - 30);
 
-    const publicExpirationDate = new Date();
-    publicExpirationDate.setDate(publicExpirationDate.getDate() - 90);
+    console.log("Cleaning up expired crates older than 30 days...");
+    console.log("Expiration date:", expirationDate);
 
-    console.log("Cleaning up expired crates...");
-    console.log("Private expiration date:", privateExpirationDate);
-    console.log("Public expiration date:", publicExpirationDate);
-
-    // First, query for expired private crates (older than 30 days)
-    const privateSnapshot = await firestore
+    // Query for all expired crates (older than 30 days)
+    const snapshot = await firestore
       .collection("crates")
-      .where("createdAt", "<", privateExpirationDate)
-      .where("isPublic", "==", false)
+      .where("createdAt", "<", expirationDate)
       .get();
 
-    // Then, query for expired public crates (older than 90 days)
-    const publicSnapshot = await firestore
-      .collection("crates")
-      .where("createdAt", "<", publicExpirationDate)
-      .where("isPublic", "==", true)
-      .get();
+    console.log(`Found ${snapshot.size} expired crates`);
 
-    console.log(`Found ${privateSnapshot.size} expired private crates`);
-    console.log(`Found ${publicSnapshot.size} expired public crates`);
-
-    if (privateSnapshot.empty && publicSnapshot.empty) {
+    if (snapshot.empty) {
       return NextResponse.json({
         success: true,
         message: "No expired crates found",
@@ -63,33 +49,22 @@ export async function GET(req: NextRequest) {
 
     // Delete the expired crates
     const batch = firestore.batch();
-    let privateCount = 0;
-    let publicCount = 0;
+    let count = 0;
 
-    privateSnapshot.forEach((doc) => {
+    snapshot.forEach((doc) => {
       batch.delete(doc.ref);
-      privateCount++;
-    });
-
-    publicSnapshot.forEach((doc) => {
-      batch.delete(doc.ref);
-      publicCount++;
+      count++;
     });
 
     await batch.commit();
-    const totalCount = privateCount + publicCount;
 
     // Log for monitoring purposes
-    console.log(
-      `Deleted ${privateCount} private and ${publicCount} public expired crates (total: ${totalCount})`,
-    );
+    console.log(`Deleted ${count} expired crates.`);
 
     return NextResponse.json({
       success: true,
-      message: `Successfully cleaned up ${totalCount} expired crates (${privateCount} private, ${publicCount} public)`,
-      privateCount,
-      publicCount,
-      totalCount,
+      message: `Successfully cleaned up ${count} expired crates`,
+      totalCount: count,
     });
   } catch (error: any) {
     console.error("Error cleaning up expired crates:", error);
@@ -105,7 +80,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Failed to clean up expired crates" },
+      { error: "Internal Server Error" },
       { status: 500 },
     );
   }

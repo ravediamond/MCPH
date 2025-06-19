@@ -168,7 +168,7 @@ export default function LegalHubPage() {
                 <p className="text-gray-600 mb-6">
                   MCPH was built with a simple mission: to make secure file
                   sharing effortless while prioritizing privacy through
-                  ephemeral storage. We believe that file sharing should be
+                  ephemeral storage. We believe that crate sharing should be
                   simple, secure, and respect your privacy by default.
                 </p>
 

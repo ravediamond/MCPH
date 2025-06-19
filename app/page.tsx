@@ -25,6 +25,9 @@ export default function Home() {
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
               Share AI outputs instantly. No sign-up needed.
             </p>
+            <p className="text-sm text-gray-500 max-w-xl mx-auto mt-2">
+              A crate = one file. Upload, share, and access with ease.
+            </p>
           </div>
 
           {/* File Upload Hero Component */}
@@ -150,7 +153,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Arrow from AI to MCPHub */}
+            {/* Arrow from AI to MCPH */}
             <div className="hidden md:block text-gray-400 transform rotate-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +187,7 @@ export default function Home() {
               </svg>
             </div>
 
-            {/* MCPHub Node */}
+            {/* MCPH Node */}
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-5 shadow-sm w-full md:w-64 text-center relative z-10">
               <div className="bg-orange-100 text-orange-600 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg
@@ -202,11 +205,11 @@ export default function Home() {
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">MCPHub</h3>
+              <h3 className="font-medium text-gray-800 mb-2">MCPH</h3>
               <p className="text-sm text-gray-600">Generates shareable link</p>
             </div>
 
-            {/* Arrow from MCPHub to Viewer */}
+            {/* Arrow from MCPH to Viewer */}
             <div className="hidden md:block text-gray-400">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -431,7 +434,7 @@ export default function Home() {
           {/* Testimonial */}
           <div className="mt-12 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <p className="italic text-gray-600 text-center">
-              "MCPHub has transformed how our AI services share information with
+              "MCPH has transformed how our AI services share information with
               users. The streamlined process and instant sharing have
               significantly improved our user experience."
             </p>
@@ -825,7 +828,7 @@ export default function Home() {
                 Status
               </Link>
               <Link
-                href="https://github.com/yourgithub/mcphub"
+                href="https://github.com/yourgithub/mcph"
                 className="text-gray-500 hover:text-orange-600 text-sm"
               >
                 GitHub

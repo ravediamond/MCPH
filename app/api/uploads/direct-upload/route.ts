@@ -19,13 +19,16 @@ export async function POST(req: NextRequest) {
     // Extract file from formData
     const file = formData.get("file") as File | null;
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Please select a file to upload" },
+        { status: 400 },
+      );
     }
 
-    // Enforce 50MB file size limit
-    if (file.size > 50 * 1024 * 1024) {
+    // Enforce 10MB file size limit
+    if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "File is too large. Maximum size is 50MB." },
+        { error: "That file is too big (limit 10 MB). Try compressing it." },
         { status: 400 },
       );
     }
@@ -192,7 +195,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Error handling direct upload:", error);
     return NextResponse.json(
-      { error: "Upload failed", message: error.message },
+      {
+        error: "Sorry, we couldn't upload your file. Please try again.",
+        message: error.message,
+      },
       { status: 500 },
     );
   }

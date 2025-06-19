@@ -45,6 +45,42 @@ export default function DocsPage() {
               option
             </li>
           </ul>
+
+          {/* Why crate? call-out box */}
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Why "crate"?
+            </h3>
+            <p className="text-gray-700 mb-2">
+              We use the term "crate" to describe the shareable artifacts in
+              MCPH:
+            </p>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>
+                <b>Files</b> are raw digital content with specific formats
+                (e.g., .md, .jpg, .json)
+              </li>
+              <li>
+                <b>Artifacts</b> are the AI-generated outputs you want to
+                preserve and share
+              </li>
+              <li>
+                <b>Crates</b> are these artifacts packaged with metadata, making
+                them easy to discover, share, and use
+              </li>
+              <li>
+                <b>Like a shipping crate</b>, they can be transported across
+                systems and opened anywhere
+              </li>
+            </ul>
+            <p className="text-xs text-gray-500 mt-2">
+              <i>
+                Looking for more details? Run <code>npx mcp-remote --help</code>{" "}
+                for CLI information.
+              </i>
+            </p>
+          </div>
+
           <p className="text-gray-600">
             MCPH is built on the{" "}
             <a
@@ -55,6 +91,75 @@ export default function DocsPage() {
             </a>
             , which enables AI models to maintain and share context across
             interactions.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
+          <ul className="list-disc pl-5 text-gray-600 space-y-2">
+            <li>
+              <Link
+                href="/docs/search"
+                className="text-blue-500 hover:underline"
+              >
+                Hybrid Search
+              </Link>
+              <p className="text-sm text-gray-500">
+                Combine keyword and semantic search for more relevant results.
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Anonymous vs. Logged-in Users
+          </h2>
+          <p className="text-gray-600 mb-3">
+            MCPH offers different capabilities depending on whether you are
+            logged in or using the service anonymously.
+          </p>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="border-b p-2">Feature</th>
+                <th className="border-b p-2">Anonymous Users</th>
+                <th className="border-b p-2">Logged-in Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border-b p-2">Download Crates</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Upload Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Search Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Delete Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Manage API Keys</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="text-xs text-gray-500 mt-2">
+            <i>
+              Anonymous users can only download public crates. Logged-in users
+              can manage their own crates and API keys.
+            </i>
           </p>
         </div>
 
@@ -103,7 +208,8 @@ export default function DocsPage() {
           </h3>
           <p className="text-gray-600 mb-3">
             MCPH works with any AI tool that supports the Model Context
-            Protocol. The simplest way to connect is using the{" "}
+            Protocol. Crates are stored for 30 days and all generated download
+            links expires in 24 hours. The simplest way to connect is using the{" "}
             <code>mcp-remote</code> CLI tool:
           </p>
 
@@ -267,7 +373,7 @@ export default function DocsPage() {
                     Upload Content Manually
                   </p>
                   <p className="text-xs text-gray-600">
-                    Upload files through the web interface
+                    Upload crates through the web interface
                   </p>
                 </div>
               </Link>

@@ -148,7 +148,7 @@ export default function FileUpload({
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `File is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
       );
       return;
     }
@@ -227,12 +227,12 @@ export default function FileUpload({
     e.preventDefault();
 
     if (!file) {
-      toast.error("Please select a file to upload.");
+      toast.error("Please select a crate to upload.");
       return;
     }
 
     if (!title.trim()) {
-      toast.error("Please enter a title for your file.");
+      toast.error("Please enter a title for your crate.");
       return;
     }
 
@@ -284,7 +284,7 @@ export default function FileUpload({
       });
 
       if (!uploadResponse.ok) {
-        let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+        let errorDetail = `Sorry, we couldn't upload your file. Please try again.`;
         try {
           const errorData = await uploadResponse.json();
           errorDetail = errorData.error || errorData.details || errorDetail;
@@ -337,7 +337,7 @@ export default function FileUpload({
       setTitle("");
       setDescription("");
 
-      toast.success("File uploaded successfully!");
+      toast.success("Your file has been uploaded successfully!");
 
       // Call the onUploadSuccess callback if provided
       if (onUploadSuccess) {
@@ -360,7 +360,7 @@ export default function FileUpload({
       const errorMessage =
         error instanceof Error ? error.message : "Unknown upload error";
       console.error("Upload error:", errorMessage);
-      toast.error(`Upload failed: ${errorMessage}`);
+      toast.error(`Sorry, we couldn't upload your file. Please try again.`);
 
       // Call onUploadError callback if provided
       if (onUploadError) {
@@ -437,7 +437,7 @@ export default function FileUpload({
                   value={uploadedFile.downloadUrl}
                   className="w-full bg-white py-2 px-3 pr-24 rounded-md text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ff7a32]"
                   onClick={(e) => (e.target as HTMLInputElement).select()}
-                  aria-label="Generated file link"
+                  aria-label="Generated crate link"
                 />
                 <div className="absolute right-1 top-1 flex">
                   <button
@@ -480,13 +480,13 @@ export default function FileUpload({
                   href={uploadedFile.downloadUrl}
                   className="inline-block px-4 py-2 border border-[#ff7a32] text-[#ff7a32] hover:bg-[#fff8f3] text-center rounded-md transition-colors"
                 >
-                  Download File
+                  Download Crate
                 </a>
                 <button
                   onClick={() => setUploadedFile(null)}
                   className="inline-block px-4 py-2 bg-[#ff7a32] hover:bg-[#e96d2d] text-center text-white rounded-md shadow transition-colors"
                 >
-                  Upload Another File
+                  Upload Another Crate
                 </button>
               </div>
 
@@ -513,6 +513,10 @@ export default function FileUpload({
 
             <p className="text-sm text-gray-500 text-center mt-4">
               Give this link to an agent or teammate—no login needed.
+              <br />
+              <span className="text-xs text-amber-600">
+                Download link expires in 24 hours. Crate available for 30 days.
+              </span>
             </p>
           </div>
         </div>
@@ -523,16 +527,16 @@ export default function FileUpload({
           className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
         >
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            Upload a File
+            Upload a Crate
           </h2>
 
           <div className="mb-4 bg-blue-50 p-4 rounded-md text-blue-700 text-sm">
             <p>
-              <strong>Simple File Sharing</strong>
+              <strong>Simple Crate Sharing</strong>
             </p>
             <p className="mt-2">
-              Upload a single file (up to 50MB) to quickly share with others.
-              Your file will be automatically categorized based on its type and
+              Upload a single crate (up to 50MB) to quickly share with others.
+              Your crate will be automatically categorized based on its type and
               will be accessible via a simple link.
             </p>
           </div>
@@ -542,7 +546,7 @@ export default function FileUpload({
               className: `border-2 border-dashed ${isDragActive ? "border-primary-400 bg-beige-100" : "border-gray-300"} rounded-lg p-8 text-center cursor-pointer hover:bg-beige-50 transition-colors mb-4`,
               role: "button",
               "aria-label":
-                "Upload area. Drag and drop files here or click to browse",
+                "Upload area. Drag and drop crates here or click to browse",
             })}
           >
             <input {...getInputProps()} />
@@ -551,14 +555,14 @@ export default function FileUpload({
               <FaUpload className="mx-auto text-gray-400 text-3xl" />
 
               {isDragActive ? (
-                <p className="text-primary-500">Drop the file here...</p>
+                <p className="text-primary-500">Drop the crate here...</p>
               ) : (
                 <>
                   <p className="text-gray-600">
-                    Drag & drop a file here, or click to select
+                    Drag & drop a crate here, or click to select
                   </p>
                   <p className="text-xs text-gray-500">
-                    Maximum file size: 50MB
+                    Maximum crate size: 50MB
                   </p>
                 </>
               )}
@@ -607,7 +611,7 @@ export default function FileUpload({
                   type="button"
                   className="ml-auto text-gray-400 hover:text-red-500"
                   onClick={() => setFile(null)}
-                  aria-label="Remove file"
+                  aria-label="Remove crate"
                   disabled={isUploading}
                 >
                   <FaTimes />
@@ -652,7 +656,7 @@ export default function FileUpload({
                   id="fileDescription"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter a description for your file"
+                  placeholder="Enter a description for your crate"
                   className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
                   rows={3}
                   disabled={isUploading}
@@ -688,15 +692,16 @@ export default function FileUpload({
                 Uploading...
               </>
             ) : (
-              "Upload File"
+              "Upload Crate"
             )}
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            Files are automatically removed after 30 days.
+            Crates are automatically removed after 30 days. Download links
+            expire after 24 hours.
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
-            By uploading a file, you agree to our Terms of Service and Privacy
+            By uploading a crate, you agree to our Terms of Service and Privacy
             Policy.
           </p>
         </form>

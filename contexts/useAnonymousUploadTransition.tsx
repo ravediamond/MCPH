@@ -17,7 +17,7 @@ export const useAnonymousUploadTransition = () => {
     if (loading || !user) return;
 
     // Check local storage for temporary crate IDs
-    const tempCrateIdsJson = localStorage.getItem("mcphub_temp_crates");
+    const tempCrateIdsJson = localStorage.getItem("mcph_temp_crates");
     if (!tempCrateIdsJson) return;
 
     try {
@@ -48,7 +48,7 @@ export const useAnonymousUploadTransition = () => {
         );
 
         // Clear the temporary crates from local storage
-        localStorage.removeItem("mcphub_temp_crates");
+        localStorage.removeItem("mcph_temp_crates");
       };
 
       transferCrates();
@@ -63,17 +63,16 @@ export const useAnonymousUploadTransition = () => {
    */
   const storeTempCrateId = (crateId: string) => {
     try {
-      const existingIdsJson =
-        localStorage.getItem("mcphub_temp_crates") || "[]";
+      const existingIdsJson = localStorage.getItem("mcph_temp_crates") || "[]";
       const existingIds = JSON.parse(existingIdsJson);
       if (!Array.isArray(existingIds)) {
-        localStorage.setItem("mcphub_temp_crates", JSON.stringify([crateId]));
+        localStorage.setItem("mcph_temp_crates", JSON.stringify([crateId]));
         return;
       }
 
       if (!existingIds.includes(crateId)) {
         existingIds.push(crateId);
-        localStorage.setItem("mcphub_temp_crates", JSON.stringify(existingIds));
+        localStorage.setItem("mcph_temp_crates", JSON.stringify(existingIds));
       }
     } catch (error) {
       console.error("Error storing temporary crate ID:", error);

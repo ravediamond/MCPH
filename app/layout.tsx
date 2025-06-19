@@ -19,21 +19,21 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata = {
   metadataBase: new URL("https://mcph.io"),
-  title: "MCPH | Secure, Simple File Sharing",
+  title: "MCPH | Secure, Simple Crate Sharing",
   description:
-    "Upload and share files that automatically expire. No account required.",
+    "Upload and share crates that automatically expire. No account required.",
   keywords: [
-    "file sharing",
-    "temporary files",
-    "secure file transfer",
-    "file upload",
+    "crate sharing",
+    "temporary crates",
+    "secure crate transfer",
+    "crate upload",
     "auto-expiring",
   ],
   authors: [{ name: "MCPH Team" }],
   openGraph: {
-    title: "MCPH | Secure, Simple File Sharing",
+    title: "MCPH | Secure, Simple Crate Sharing",
     description:
-      "Upload and share files that automatically expire. No account required.",
+      "Upload and share crates that automatically expire. No account required.",
     url: "https://mcph.io",
     siteName: "MCPH",
     images: [
@@ -49,9 +49,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MCPH | Secure, Simple File Sharing",
+    title: "MCPH | Secure, Simple Crate Sharing",
     description:
-      "Upload and share files that automatically expire. No account required.",
+      "Upload and share crates that automatically expire. No account required.",
     images: ["/icon-transparent.png"],
   },
   robots: {
