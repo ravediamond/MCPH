@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
-        { error: "Content type must be multipart/form-data" },
+        {
+          error:
+            "Your upload method isn't supported. Please use the form on our website.",
+        },
         { status: 400 },
       );
     }
@@ -26,13 +29,16 @@ export async function POST(req: NextRequest) {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Please select a file to upload" },
+        { status: 400 },
+      );
     }
 
     // Enforce 10MB file size limit
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "Crate is too large. Maximum size is 10MB." },
+        { error: "That file is too big (limit 10 MB). Try compressing it." },
         { status: 400 },
       );
     }
@@ -138,7 +144,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error uploading file:", error);
     return NextResponse.json(
-      { error: "Failed to upload crate" },
+      { error: "Sorry, we couldn't upload your file. Please try again." },
       { status: 500 },
     );
   }

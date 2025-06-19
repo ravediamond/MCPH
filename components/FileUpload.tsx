@@ -148,7 +148,7 @@ export default function FileUpload({
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `Crate is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
       );
       return;
     }
@@ -284,7 +284,7 @@ export default function FileUpload({
       });
 
       if (!uploadResponse.ok) {
-        let errorDetail = `Upload failed with status: ${uploadResponse.status}`;
+        let errorDetail = `Sorry, we couldn't upload your file. Please try again.`;
         try {
           const errorData = await uploadResponse.json();
           errorDetail = errorData.error || errorData.details || errorDetail;
@@ -337,7 +337,7 @@ export default function FileUpload({
       setTitle("");
       setDescription("");
 
-      toast.success("Crate uploaded successfully!");
+      toast.success("Your file has been uploaded successfully!");
 
       // Call the onUploadSuccess callback if provided
       if (onUploadSuccess) {
@@ -360,7 +360,7 @@ export default function FileUpload({
       const errorMessage =
         error instanceof Error ? error.message : "Unknown upload error";
       console.error("Upload error:", errorMessage);
-      toast.error(`Upload failed: ${errorMessage}`);
+      toast.error(`Sorry, we couldn't upload your file. Please try again.`);
 
       // Call onUploadError callback if provided
       if (onUploadError) {

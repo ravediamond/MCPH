@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     if (!file || !uploadUrl) {
       return NextResponse.json(
         {
-          error: "File and upload URL are required",
+          error: "Please select a file to upload and try again",
         },
         { status: 400 },
       );
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // Enforce 10MB file size limit
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "Crate is too large. Maximum size is 10MB." },
+        { error: "That file is too big (limit 10 MB). Try compressing it." },
         { status: 400 },
       );
     }
@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Crate uploaded successfully",
+      message: "Your file has been uploaded successfully",
     });
   } catch (error) {
     console.error("Error in proxy upload:", error);
     return NextResponse.json(
       {
-        error: "Failed to upload crate",
+        error: "Sorry, we couldn't upload your file. Please try again.",
         details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },

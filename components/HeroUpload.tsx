@@ -49,7 +49,7 @@ export default function HeroUpload() {
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `Crate is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
       );
       return;
     }
@@ -140,11 +140,11 @@ export default function HeroUpload() {
             console.error("Failed to copy: ", err);
           });
       } else {
-        throw new Error(result.error || "Upload failed");
+        throw new Error(result.error || "Sorry, we couldn't upload your file");
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Upload failed. Please try again.");
+      toast.error("Sorry, we couldn't upload your file. Please try again.");
       setIsUploading(false);
     }
   };

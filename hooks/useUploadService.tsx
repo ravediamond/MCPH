@@ -88,7 +88,9 @@ export const useUploadService = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Upload failed with status: ${response.status}`);
+        throw new Error(
+          `Sorry, we couldn't upload your file. Please try again.`,
+        );
       }
 
       const data = await response.json();
