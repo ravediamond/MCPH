@@ -118,24 +118,47 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Our Team
+            Trust & Transparency
+          </h2>
+          <p className="text-gray-600 mb-4">
+            We believe in being open about our security and privacy practices.
+            Your trust is important to us, and we are committed to protecting
+            your data.
+          </p>
+          <ul className="list-disc pl-6 text-gray-600 space-y-2">
+            <li>
+              <strong>Encryption in Transit:</strong> All data is transmitted
+              securely over HTTPS, ensuring it is encrypted between you and our
+              servers.
+            </li>
+            <li>
+              <strong>Encryption at Rest:</strong> Your files are stored on
+              Google Cloud Storage, which automatically encrypts all data at
+              rest.
+            </li>
+            <li>
+              <strong>Ephemeral by Design:</strong> Crates are automatically and
+              permanently deleted after their expiration time.
+            </li>
+            <li>
+              <strong>No User Tracking:</strong> We do not require accounts or
+              track personal information.
+            </li>
+          </ul>
+        </div>
+
+        <div className="text-center mt-12">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Get Started
           </h2>
           <p className="text-gray-600 mb-6">
-            MCPH is maintained by a small team of developers passionate about
-            creating simple, privacy-focused tools. We believe in building
-            products that solve real problems without unnecessary complexity or
-            privacy compromises.
+            Ready to experience simple, secure crate sharing?{" "}
+            <Link href="/get-started" passHref>
+              <Button variant="primary">Get Started Now</Button>
+            </Link>
           </p>
-
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <p className="text-gray-500 italic">
-              MCPH was originally pivoted from an MCP (Model Context Protocol)
-              hub in May 2025 to focus exclusively on providing a simple,
-              privacy-focused file-sharing service.
-            </p>
-          </div>
         </div>
       </div>
     </div>
