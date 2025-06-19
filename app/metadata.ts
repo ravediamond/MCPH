@@ -1,57 +1,38 @@
 import type { Metadata } from "next";
 
+const title = "MCP Hub | Crate Sharing & AI Tool Hand-off for Developers";
+const description =
+  "MCP Hub is a secure crate sharing service for developers. Seamlessly hand-off context between AI tools and services.";
+const keywords = [
+  "crate sharing",
+  "AI tool hand-off",
+  "secure file sharing",
+  "developer tools",
+  "context hand-off",
+];
+
 export const metadata: Metadata = {
-  title: "MCPH - One Link for Humans & AI Agents",
-  description:
-    "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
-  keywords: [
-    "AI content sharing",
-    "crate sharing",
-    "AI tools",
-    "model context protocol",
-    "MCP",
-    "crate upload",
-    "shareable links",
-  ],
+  title,
+  description,
+  keywords,
   openGraph: {
-    title: "MCPH - One Link for Humans & AI Agents",
-    description:
-      "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
-    url: "https://mcph.io",
-    siteName: "MCPH",
+    title,
+    description,
+    url: "https://mcphub.com",
+    siteName: "MCP Hub",
     images: [
       {
-        url: "https://mcph.io/og-image.png",
+        url: "https://mcphub.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "MCPH - Share AI content instantly",
+        alt: "MCP Hub | Crate Sharing & AI Tool Hand-off for Developers",
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "MCPH - One Link for Humans & AI Agents",
-    description:
-      "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
-    images: ["https://mcph.io/og-image.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  verification: {
-    google: "verification_token",
-  },
-  alternates: {
-    canonical: "https://mcph.io",
+    title,
+    description,
+    images: ["https://mcphub.com/twitter-image.png"],
   },
 };
