@@ -137,7 +137,7 @@ export async function POST(
     });
 
     // Generate response with share URL
-    const baseUrl = req.headers.get("origin") || "https://mcphub.dev";
+    const baseUrl = req.headers.get("origin") || "https://mcph.dev";
     const shareUrl = `${baseUrl}/crate/${id}`;
 
     // Return the updated sharing information

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MCPHub - One Link for Humans & AI Agents",
+  title: "MCPH - One Link for Humans & AI Agents",
   description:
     "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
   keywords: [
@@ -14,17 +14,17 @@ export const metadata: Metadata = {
     "shareable links",
   ],
   openGraph: {
-    title: "MCPHub - One Link for Humans & AI Agents",
+    title: "MCPH - One Link for Humans & AI Agents",
     description:
       "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
     url: "https://mcph.io",
-    siteName: "MCPHub",
+    siteName: "MCPH",
     images: [
       {
         url: "https://mcph.io/og-image.png",
         width: 1200,
         height: 630,
-        alt: "MCPHub - Share AI content instantly",
+        alt: "MCPH - Share AI content instantly",
       },
     ],
     locale: "en_US",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MCPHub - One Link for Humans & AI Agents",
+    title: "MCPH - One Link for Humans & AI Agents",
     description:
       "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
     images: ["https://mcph.io/og-image.png"],
