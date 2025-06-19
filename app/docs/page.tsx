@@ -96,6 +96,58 @@ export default function DocsPage() {
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Anonymous vs. Logged-in Users
+          </h2>
+          <p className="text-gray-600 mb-3">
+            MCPH offers different capabilities depending on whether you are
+            logged in or using the service anonymously.
+          </p>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th className="border-b p-2">Feature</th>
+                <th className="border-b p-2">Anonymous Users</th>
+                <th className="border-b p-2">Logged-in Users</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border-b p-2">Download Crates</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Upload Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Search Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Delete Crates</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+              <tr>
+                <td className="border-b p-2">Manage API Keys</td>
+                <td className="border-b p-2 text-red-500">✗</td>
+                <td className="border-b p-2 text-green-500">✓</td>
+              </tr>
+            </tbody>
+          </table>
+          <p className="text-xs text-gray-500 mt-2">
+            <i>
+              Anonymous users can only download public crates. Logged-in users
+              can manage their own crates and API keys.
+            </i>
+          </p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
             Getting Started
           </h2>
 
