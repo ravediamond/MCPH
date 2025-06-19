@@ -61,8 +61,8 @@ export default function DocsPage() {
                 (e.g., .md, .jpg, .json)
               </li>
               <li>
-                <b>Artifacts</b> are the AI-generated outputs you want to preserve
-                and share
+                <b>Artifacts</b> are the AI-generated outputs you want to
+                preserve and share
               </li>
               <li>
                 <b>Crates</b> are these artifacts packaged with metadata, making
@@ -75,8 +75,8 @@ export default function DocsPage() {
             </ul>
             <p className="text-xs text-gray-500 mt-2">
               <i>
-                Looking for more details? Run{" "}
-                <code>npx mcp-remote --help</code> for CLI information.
+                Looking for more details? Run <code>npx mcp-remote --help</code>{" "}
+                for CLI information.
               </i>
             </p>
           </div>

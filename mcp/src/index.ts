@@ -1,11 +1,5 @@
 import express from "express";
-import type {
-  Request,
-  Response,
-  NextFunction,
-  RequestHandler,
-  Application,
-} from "express";
+import type { Request, Response, NextFunction, Application } from "express";
 import bodyParser from "body-parser";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -1000,7 +994,13 @@ function getServer(req?: AuthenticatedRequest) {
 // Stateless MCP endpoint (modern Streamable HTTP, stateless)
 app.post(
   "/",
-  apiKeyAuthMiddleware as RequestHandler,
+  (req: Request, res: Response, next: NextFunction): void => {
+    // Allow unauthenticated access to crates_get only
+    if (req.body?.method === "crates_get") {
+      return next();
+    }
+    apiKeyAuthMiddleware(req, res, next);
+  },
   async (req: Request, res: Response) => {
     // Safely use the request as AuthenticatedRequest after middleware has processed it
     const authReq = req as unknown as AuthenticatedRequest;
