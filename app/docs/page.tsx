@@ -95,6 +95,23 @@ export default function DocsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
+          <ul className="list-disc pl-5 text-gray-600 space-y-2">
+            <li>
+              <Link
+                href="/docs/search"
+                className="text-blue-500 hover:underline"
+              >
+                Hybrid Search
+              </Link>
+              <p className="text-sm text-gray-500">
+                Combine keyword and semantic search for more relevant results.
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">
             Anonymous vs. Logged-in Users
           </h2>
