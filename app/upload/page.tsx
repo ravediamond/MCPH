@@ -56,7 +56,7 @@ export default function UploadPage() {
             <div className="flex-1">
               <FileUpload
                 onUploadSuccess={(data) => {
-                  console.log("File uploaded successfully:", data.id);
+                  console.log("Crate uploaded successfully:", data.id);
                 }}
                 onUploadError={(error) => {
                   console.error("Upload error:", error);

@@ -41,7 +41,7 @@ export default function PrivacyPage() {
               Files and Content
             </h3>
             <p className="text-gray-600 mb-3">
-              When you upload files to MCPH, we temporarily store:
+              When you upload crates to MCPH, we temporarily store:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
               <li>

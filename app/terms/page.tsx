@@ -37,7 +37,7 @@ export default function TermsPage() {
           </h2>
 
           <p className="text-gray-600 mb-4">
-            MCPH allows you to upload files and receive a link that you can
+            MCPH allows you to upload crates and receive a link that you can
             share with others to download those files. Key features of our
             service include:
           </p>

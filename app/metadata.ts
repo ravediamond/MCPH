@@ -6,11 +6,11 @@ export const metadata: Metadata = {
     "Share AI-generated content instantly with both humans and AI agents through a single link. No login required to view content.",
   keywords: [
     "AI content sharing",
-    "file sharing",
+    "crate sharing",
     "AI tools",
     "model context protocol",
     "MCP",
-    "file upload",
+    "crate upload",
     "shareable links",
   ],
   openGraph: {

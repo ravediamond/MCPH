@@ -13,7 +13,7 @@ export default function AboutPage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">About MCPH</h1>
           <p className="text-gray-600 text-lg">
-            Secure, ephemeral file-sharing made simple
+            Secure, ephemeral crate-sharing made simple
           </p>
         </div>
 
@@ -22,16 +22,16 @@ export default function AboutPage() {
             Our Mission
           </h2>
           <p className="text-gray-600 mb-6">
-            MCPH was built with a simple mission: to make secure file sharing
+            MCPH was built with a simple mission: to make secure crate sharing
             effortless while prioritizing privacy through ephemeral storage. We
-            believe that file sharing should be simple, secure, and respect your
-            privacy by default.
+            believe that crate sharing should be simple, secure, and respect
+            your privacy by default.
           </p>
 
           <p className="text-gray-600 mb-6">
             Our service is designed for those moments when you need to quickly
-            share files without the overhead of creating accounts or managing
-            complex permissions. Files are automatically deleted after their
+            share crates without the overhead of creating accounts or managing
+            complex permissions. Crates are automatically deleted after their
             expiration time, ensuring that your data doesn't persist longer than
             needed.
           </p>
@@ -41,7 +41,7 @@ export default function AboutPage() {
           </h3>
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>
-              <strong>Privacy by Default</strong> - All files automatically
+              <strong>Privacy by Default</strong> - All crates automatically
               expire and are completely purged from our systems.
             </li>
             <li>

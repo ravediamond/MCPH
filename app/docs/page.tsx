@@ -267,7 +267,7 @@ export default function DocsPage() {
                     Upload Content Manually
                   </p>
                   <p className="text-xs text-gray-600">
-                    Upload files through the web interface
+                    Upload crates through the web interface
                   </p>
                 </div>
               </Link>

@@ -49,7 +49,7 @@ export default function HeroUpload() {
 
     if (selectedFile.size > MAX_FILE_SIZE) {
       toast.error(
-        `File is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
+        `Crate is too large (${formatBytes(selectedFile.size)}). Maximum size is ${formatBytes(MAX_FILE_SIZE)}.`,
       );
       return;
     }
@@ -97,7 +97,7 @@ export default function HeroUpload() {
 
           // Anonymous user success message
           toast.success(
-            "Link generated! Need titles, tags, or bigger files? Create a free account →",
+            "Link generated! Need titles, tags, or bigger crates? Create a free account →",
             {
               duration: 5000,
               icon: "🔗",
@@ -196,7 +196,7 @@ export default function HeroUpload() {
             onPaste={handlePaste}
             tabIndex={0}
             role="button"
-            aria-label="Drop files here or click to upload"
+            aria-label="Drop crates here or click to upload"
           >
             <input {...getInputProps()} />
 
@@ -215,7 +215,7 @@ export default function HeroUpload() {
                   </p>
                   {file && (
                     <p className="text-sm text-gray-600 mt-1 truncate max-w-full">
-                      {file.name}
+                      {file.name} (crate)
                     </p>
                   )}
                 </div>
@@ -239,19 +239,19 @@ export default function HeroUpload() {
 
                 {isDragActive ? (
                   <p className="text-orange-500 text-lg md:text-xl font-medium">
-                    Drop your file here...
+                    Drop your crate here...
                   </p>
                 ) : (
                   <>
                     <div>
                       <p className="text-gray-800 text-xl md:text-2xl font-medium mb-2">
-                        DROP FILE HERE
+                        DROP CRATE HERE
                       </p>
                       <p className="text-gray-700 text-base md:text-lg">
                         or paste Markdown / JSON
                       </p>
                       <span className="inline-block mt-3 md:mt-4 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        10 MB max • Files removed after 30 days
+                        10 MB max • Crates removed after 30 days
                       </span>
                     </div>
                   </>

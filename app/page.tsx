@@ -25,6 +25,9 @@ export default function Home() {
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
               Share AI outputs instantly. No sign-up needed.
             </p>
+            <p className="text-sm text-gray-500 max-w-xl mx-auto mt-2">
+              A crate = one file. Upload, share, and access with ease.
+            </p>
           </div>
 
           {/* File Upload Hero Component */}

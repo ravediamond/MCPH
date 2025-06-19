@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Enforce 10MB file size limit
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
-        { error: "File is too large. Maximum size is 10MB." },
+        { error: "Crate is too large. Maximum size is 10MB." },
         { status: 400 },
       );
     }
