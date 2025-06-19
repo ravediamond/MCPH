@@ -45,6 +45,42 @@ export default function DocsPage() {
               option
             </li>
           </ul>
+
+          {/* Why crate? call-out box */}
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Why "crate"?
+            </h3>
+            <p className="text-gray-700 mb-2">
+              We use the term "crate" to describe the shareable artifacts in
+              MCPH:
+            </p>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>
+                <b>Files</b> are raw digital content with specific formats
+                (e.g., .md, .jpg, .json)
+              </li>
+              <li>
+                <b>Artifacts</b> are the AI-generated outputs you want to preserve
+                and share
+              </li>
+              <li>
+                <b>Crates</b> are these artifacts packaged with metadata, making
+                them easy to discover, share, and use
+              </li>
+              <li>
+                <b>Like a shipping crate</b>, they can be transported across
+                systems and opened anywhere
+              </li>
+            </ul>
+            <p className="text-xs text-gray-500 mt-2">
+              <i>
+                Looking for more details? Run{" "}
+                <code>npx mcp-remote --help</code> for CLI information.
+              </i>
+            </p>
+          </div>
+
           <p className="text-gray-600">
             MCPH is built on the{" "}
             <a
