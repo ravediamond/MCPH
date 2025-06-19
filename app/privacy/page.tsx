@@ -10,7 +10,24 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Privacy Policy
           </h1>
-          <p className="text-gray-600">Last updated: May 7, 2025</p>
+          <p className="text-gray-600">Last updated: June 19, 2025</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            TL;DR: The Short Version
+          </h2>
+          <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
+            <li>
+              We collect minimal technical information (like your IP address for
+              security) and keep it for 7 days.
+            </li>
+            <li>
+              Crates you upload are automatically deleted after an expiration
+              time you set (the default is 30 days).
+            </li>
+            <li>We do not track you or sell your data.</li>
+          </ul>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
@@ -20,9 +37,9 @@ export default function PrivacyPage() {
           <p className="text-gray-600 mb-6">
             MCPH is committed to protecting your privacy. This Privacy Policy
             explains how we collect, use, and safeguard your information when
-            you use our file-sharing service. We've designed our service with
+            you use our crate-sharing service. We've designed our service with
             privacy as a core principle, minimizing data collection and ensuring
-            all files are automatically deleted after their expiration period.
+            all crates are automatically deleted after their expiration period.
           </p>
 
           <p className="text-gray-600">
@@ -38,20 +55,20 @@ export default function PrivacyPage() {
 
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-primary-500 mb-3">
-              Files and Content
+              Crates and Content
             </h3>
             <p className="text-gray-600 mb-3">
               When you upload crates to MCPH, we temporarily store:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
               <li>
-                The file itself (encrypted at rest in Google Cloud Storage)
+                The crate itself (encrypted at rest in Google Cloud Storage)
               </li>
               <li>Basic metadata such as filename, file type, and size</li>
-              <li>Expiration time as set by you (default: 1 hour)</li>
+              <li>Expiration time as set by you (default: 30 days)</li>
             </ul>
             <p className="text-gray-600 font-medium">
-              All files and associated metadata are automatically and
+              All crates and associated metadata are automatically and
               permanently deleted after the expiration period.
             </p>
           </div>
@@ -87,8 +104,8 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-6 text-gray-600 space-y-3">
             <li>
-              To provide the file-sharing service (storing and making your files
-              available for download)
+              To provide the crate-sharing service (storing and making your
+              crates available for download)
             </li>
             <li>
               To enforce expiration times and automatically delete expired
@@ -111,19 +128,19 @@ export default function PrivacyPage() {
           </h2>
 
           <p className="text-gray-600 mb-4">
-            Files are stored in Google Cloud Storage with the following security
-            measures:
+            Crates are stored in Google Cloud Storage with the following
+            security measures:
           </p>
           <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
             <li>Encryption at rest using Google-managed encryption keys</li>
             <li>Transport encryption (TLS/HTTPS) for all data in transit</li>
-            <li>Access controls limiting who can access stored files</li>
+            <li>Access controls limiting who can access stored crates</li>
             <li>Physical security measures at Google's data centers</li>
           </ul>
 
           <p className="text-gray-600 mb-4">
             Metadata is stored in Upstash Redis with automatic time-based
-            expiration to match file TTLs.
+            expiration to match crate TTLs.
           </p>
 
           <p className="text-gray-600 font-medium">
@@ -157,7 +174,7 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc pl-6 text-gray-600 space-y-3">
             <li>
-              <strong>Google Cloud Storage</strong> - For file storage
+              <strong>Google Cloud Storage</strong> - For crate storage
             </li>
             <li>
               <strong>Upstash Redis</strong> - For metadata and rate limiting
