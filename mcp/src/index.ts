@@ -90,8 +90,8 @@ app.use(bodyParser.json());
 // In-memory IP-based request throttling
 // Map of IP addresses to {count, timestamp}
 const ipThrottleMap = new Map<string, { count: number; timestamp: number }>();
-const MAX_REQUESTS_PER_WINDOW = 50; // Maximum requests per window
-const THROTTLE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
+const MAX_REQUESTS_PER_WINDOW = 60; // Maximum requests per window
+const THROTTLE_WINDOW_MS = 60 * 1000; // 1 minute in milliseconds
 
 // Create a typed IP throttling middleware
 const ipThrottlingMiddleware = function (
@@ -140,7 +140,7 @@ const ipThrottlingMiddleware = function (
   next();
 };
 
-// Clean up the throttle map every 5 minutes
+// Clean up the throttle map every minute
 setInterval(() => {
   const now = Date.now();
   for (const [ip, data] of ipThrottleMap.entries()) {

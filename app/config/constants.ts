@@ -3,7 +3,7 @@ export const API = {
     BASE_PATH: "/api",
     VERSION: "v1",
     MAX_UPLOAD_SIZE: 10 * 1024 * 1024,
-    DEFAULT_RATE_LIMIT: 30,
+    DEFAULT_RATE_LIMIT: 60,
   },
 
   INTERNAL: {
