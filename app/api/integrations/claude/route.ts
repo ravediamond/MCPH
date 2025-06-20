@@ -42,8 +42,8 @@ async function requireUser(req: NextRequest): Promise<string | null> {
 async function fetchOrCreateClaudeKey(userId: string): Promise<string> {
   // First, look for an existing key with the "claude" scope
   const existingKeys = await listApiKeys(userId);
-  const claudeKey = existingKeys.find(key => key.name === "claude");
-  
+  const claudeKey = existingKeys.find((key) => key.name === "claude");
+
   if (claudeKey) {
     // If we found a matching key, we need to fetch the plain API key
     // Since we can't retrieve the original key, we need to create a new one
@@ -85,10 +85,10 @@ export async function GET(req: NextRequest) {
             "--header",
             `Authorization: Bearer ${apiKey}`,
             "--transport",
-            "http-only"
-          ]
-        }
-      }
+            "http-only",
+          ],
+        },
+      },
     };
 
     // Return the JSON content with appropriate Content-Type
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
     console.error("[Claude Integration] Error generating API key:", error);
     return NextResponse.json(
       { error: "Failed to generate API key" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

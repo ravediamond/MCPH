@@ -39,26 +39,44 @@ ACCESS_TOKEN=""
 # Attempt to get access token
 if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
     echo "Using GOOGLE_APPLICATION_CREDENTIALS environment variable for authentication..."
-    TEMP_CRED_FILE="temp_gcp_creds.json"
-    echo "$GOOGLE_APPLICATION_CREDENTIALS" > "$TEMP_CRED_FILE"
-
-    if [ ! -s "$TEMP_CRED_FILE" ]; then
-        echo "Error: Failed to write GOOGLE_APPLICATION_CREDENTIALS to temporary file."
-        rm -f "$TEMP_CRED_FILE"
-    else
-        export GOOGLE_APPLICATION_CREDENTIALS="$TEMP_CRED_FILE"
-        # === NEW: Also activate this service account for gcloud ===
-        gcloud auth activate-service-account --key-file="$TEMP_CRED_FILE"
-
+    
+    # Check if GOOGLE_APPLICATION_CREDENTIALS is a path to a file or the content itself
+    if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+        # It's a path to a file
+        echo "GOOGLE_APPLICATION_CREDENTIALS is a path to a credentials file"
+        CRED_FILE="$GOOGLE_APPLICATION_CREDENTIALS"
+        
+        # === Activate this service account for gcloud ===
+        gcloud auth activate-service-account --key-file="$CRED_FILE"
+        
         ACCESS_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null)
-
-        unset GOOGLE_APPLICATION_CREDENTIALS
-        rm "$TEMP_CRED_FILE"
-
+        
         if [ -n "$ACCESS_TOKEN" ]; then
-            echo "Access token obtained using GOOGLE_APPLICATION_CREDENTIALS."
+            echo "Access token obtained using GOOGLE_APPLICATION_CREDENTIALS file."
         else
-            echo "Warning: Failed to obtain access token using GOOGLE_APPLICATION_CREDENTIALS."
+            echo "Warning: Failed to obtain access token using GOOGLE_APPLICATION_CREDENTIALS file."
+        fi
+    else
+        # It might be the content of the credentials
+        TEMP_CRED_FILE="temp_gcp_creds.json"
+        echo "$GOOGLE_APPLICATION_CREDENTIALS" > "$TEMP_CRED_FILE"
+        
+        if [ ! -s "$TEMP_CRED_FILE" ] || ! jq empty "$TEMP_CRED_FILE" 2>/dev/null; then
+            echo "Error: GOOGLE_APPLICATION_CREDENTIALS does not contain valid JSON credentials."
+            rm -f "$TEMP_CRED_FILE"
+        else
+            # === Activate this service account for gcloud ===
+            gcloud auth activate-service-account --key-file="$TEMP_CRED_FILE"
+            
+            ACCESS_TOKEN=$(gcloud auth application-default print-access-token 2>/dev/null)
+            
+            rm -f "$TEMP_CRED_FILE"
+            
+            if [ -n "$ACCESS_TOKEN" ]; then
+                echo "Access token obtained using GOOGLE_APPLICATION_CREDENTIALS content."
+            else
+                echo "Warning: Failed to obtain access token using GOOGLE_APPLICATION_CREDENTIALS content."
+            fi
         fi
     fi
 fi
@@ -180,6 +198,12 @@ gcloud firestore indexes composite create \
   --field-config="field-path=status,order=ASCENDING" \
   --field-config="field-path=timestamp,order=DESCENDING"
 
+echo "--- Creating composite index for waitingList (createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="waitingList" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
@@ -190,4 +214,5 @@ echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
 echo "- apiKeys: For API key management"
 echo "- feedback: For storing user feedback submissions"
+echo "- waitingList: For Pro version waiting list subscribers"
 echo ""
