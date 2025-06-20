@@ -59,7 +59,10 @@ if (!getApps().length) {
             "Using parsed JSON credentials from environment variable",
           );
         } catch (error) {
-          console.error("Error parsing credentials JSON:", error);
+          console.error(
+            "Error processing Firebase service account credentials:",
+            error,
+          );
           throw new Error("Failed to parse service account credentials JSON.");
         }
       } else {
@@ -470,8 +473,22 @@ export async function getUserStorageUsage(
 ): Promise<{ used: number; limit: number; remaining: number }> {
   const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
   try {
-    const crates = await getUserCrates(userId);
-    const used = crates.reduce((sum, crate) => sum + (crate.size || 0), 0);
+    // For storage calculation, we need all crates, so we'll use a direct query
+    // instead of the paginated getUserCrates function
+    const querySnapshot = await db
+      .collection(CRATES_COLLECTION)
+      .where("ownerId", "==", userId)
+      .get();
+
+    if (querySnapshot.empty) {
+      return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
+    }
+
+    const used = querySnapshot.docs.reduce(
+      (sum, doc) => sum + (doc.data().size || 0),
+      0,
+    );
+
     return {
       used,
       limit: STORAGE_LIMIT,
@@ -565,27 +582,65 @@ export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
   }
 }
 
-export async function getUserCrates(userId: string): Promise<Crate[]> {
+export async function getUserCrates(
+  userId: string,
+  limit = 20,
+  startAfter?: string,
+): Promise<{ crates: Crate[]; lastCrateId: string | null; hasMore: boolean }> {
   try {
-    const querySnapshot = await db
+    // Start with the base query
+    let query = db
       .collection(CRATES_COLLECTION)
       .where("ownerId", "==", userId)
       .orderBy("createdAt", "desc")
-      .get();
+      .limit(limit + 1); // Fetch one extra to check if there are more
 
-    if (querySnapshot.empty) {
-      return [];
+    // If we have a startAfter cursor, add it to the query
+    if (startAfter) {
+      try {
+        const startAfterDoc = await db
+          .collection(CRATES_COLLECTION)
+          .doc(startAfter)
+          .get();
+        if (startAfterDoc.exists) {
+          query = query.startAfter(startAfterDoc);
+        }
+      } catch (cursorError) {
+        console.error(`Error setting cursor for user ${userId}:`, cursorError);
+        // Continue without cursor if there was an error
+      }
     }
 
-    return querySnapshot.docs.map(
+    const querySnapshot = await query.get();
+
+    if (querySnapshot.empty) {
+      return { crates: [], lastCrateId: null, hasMore: false };
+    }
+
+    // Check if we have more results
+    const hasMore = querySnapshot.docs.length > limit;
+    // Remove the extra document if we fetched more than the limit
+    const docsToProcess = hasMore
+      ? querySnapshot.docs.slice(0, limit)
+      : querySnapshot.docs;
+
+    const crates = docsToProcess.map(
       (doc: QueryDocumentSnapshot) => fromFirestoreData(doc.data()) as Crate,
     );
+
+    // Get the ID of the last document for pagination
+    const lastCrateId =
+      docsToProcess.length > 0
+        ? docsToProcess[docsToProcess.length - 1].id
+        : null;
+
+    return { crates, lastCrateId, hasMore };
   } catch (error) {
     console.error(
       `Error getting crates for user ${userId} from Firestore:`,
       error,
     );
-    return [];
+    return { crates: [], lastCrateId: null, hasMore: false };
   }
 }
 

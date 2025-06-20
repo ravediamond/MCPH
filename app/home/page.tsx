@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { FileMetadata } from "../../services/storageService";
+import React, { useEffect, useState } from "  const [files, setFiles] = useState<FileMetadataExtended[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastCrateId, setLastCrateId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [userQuota, setUserQuota] = useState<{
+    count: number;
+    remaining: number;
+  } | null>(null);ort { FileMetadata } from "../../services/storageService";
 import { useAuth } from "../../contexts/AuthContext";
 import Link from "next/link";
 import {
@@ -59,6 +71,9 @@ export default function HomePage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [files, setFiles] = useState<CrateExtended[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastCrateId, setLastCrateId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -87,44 +102,83 @@ export default function HomePage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
+  // Function to fetch crates with pagination
+  const fetchCrates = async (isLoadMore = false) => {
+    if (!user) return;
+    
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+    
+    try {
+      // Build URL with pagination parameters
+      // Default page size of 20 items
+      const pageSize = 20;
+      let url = `/api/user/${user.uid}/crates?limit=${pageSize}`;
+      
+      // Add cursor-based pagination parameter if loading more
+      if (isLoadMore && lastCrateId) {
+        url += `&startAfter=${encodeURIComponent(lastCrateId)}`;
+      }
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch crates");
+      }
+      
+      const data = await response.json();
+      
+      // Process crates to add any additional metadata
+      const processedCrates = data.crates.map((crate: Crate) => {
+        // Add any computed properties to the crate objects
+        return {
+          ...crate,
+          // These were used for TTL expiry which is no longer supported
+          isExpiringSoon: false,
+          daysTillExpiry: 0,
+        };
+      });
+      
+      // Update pagination state
+      setLastCrateId(data.lastCrateId);
+      setHasMore(data.hasMore);
+      
+      // If loading more, append to existing files, otherwise replace them
+      if (isLoadMore) {
+        setFiles(prevFiles => [...prevFiles, ...processedCrates]);
+      } else {
+        setFiles(processedCrates);
+      }
+      
+      // If we got fewer items than requested and this isn't the first page,
+      // we've likely reached the end
+      if (isLoadMore && processedCrates.length < pageSize) {
+        setHasMore(false);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
+    } finally {
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Initial load of crates
   useEffect(() => {
     if (user) {
-      const fetchFiles = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await fetch(`/api/user/${user.uid}/crates`);
-          if (!response.ok) {
-            throw new Error("Failed to fetch crates");
-          }
-          const data = await response.json();
-
-          // Process crates to add expiry metadata
-          const processedCrates = data.map((crate: Crate) => {
-            // TTL expiry logic removed as ttlDays is no longer supported
-            const expiryDate = null;
-            const now = new Date();
-            const daysDiff = 0;
-            return {
-              ...crate,
-              isExpiringSoon: daysDiff <= 3 && daysDiff > 0,
-              daysTillExpiry: daysDiff,
-            };
-          });
-
-          setFiles(processedCrates);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "An unknown error occurred",
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchFiles();
+      fetchCrates();
     } else {
       setFiles([]);
+      setLastCrateId(null);
+      setHasMore(true);
       setLoading(false);
     }
   }, [user]);
@@ -828,6 +882,29 @@ export default function HomePage() {
                 filteredFiles.reduce((sum, file) => sum + file.size, 0),
               )}
             </span>
+          </div>
+        )}
+        
+        {/* Load More Button */}
+        {!loading && !searchResults && hasMore && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => fetchCrates(true)}
+              disabled={loadingMore}
+              className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors disabled:opacity-50"
+            >
+              {loadingMore ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading...
+                </span>
+              ) : (
+                "Load More"
+              )}
+            </button>
           </div>
         )}
       </div>

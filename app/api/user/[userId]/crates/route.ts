@@ -7,8 +7,16 @@ export async function GET(
 ) {
   try {
     const { userId } = await context.params;
-    const crates = await getUserCrates(userId);
-    return NextResponse.json(crates);
+
+    // Get pagination parameters from query string
+    const searchParams = req.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get("limit") || "20", 10);
+    const startAfter = searchParams.get("startAfter") || undefined;
+
+    // Get paginated crates
+    const result = await getUserCrates(userId, limit, startAfter);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching user crates:", error);
     return NextResponse.json(

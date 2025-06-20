@@ -169,7 +169,10 @@ app.use(function (req: Request, res: Response, next: NextFunction): void {
 });
 
 // Zod schemas for tool arguments
-const ListCratesParams = z.object({});
+const ListCratesParams = z.object({
+  limit: z.number().int().min(1).max(100).optional(),
+  startAfter: z.string().optional(),
+});
 const GetCrateParams = z.object({
   id: z.string(),
 });
@@ -354,72 +357,121 @@ function getServer(req?: AuthenticatedRequest) {
   // crates/list
   server.tool(
     "crates_list",
-    {},
+    ListCratesParams.shape,
     {
       description:
         "Lists all your crates (metadata, IDs, titles, descriptions, categories, tags, expiration). Crates are stored for 30 days.\n\n" +
+        "Pagination support:\n" +
+        "• limit: Number of crates to return per page (default: 20, max: 100)\n" +
+        "• startAfter: Cursor-based pagination token (ID of last crate from previous page)\n" +
+        "• Response includes lastCrateId and hasMore flags for pagination\n\n" +
         "AI usage examples:\n" +
-        "• “list my crates”\n" +
-        "• “show my recent crates”",
+        '• "list my crates"\n' +
+        '• "show my recent crates"\n' +
+        '• "show next page of my crates" (use startAfter from previous response)\n' +
+        '• "list my first 10 crates" (use limit parameter)\n' +
+        '• "show more crates after {lastCrateId}" (use startAfter parameter)',
     },
-    async (_: unknown, extra?: any) => {
-      const snapshot = await db
-        .collection(CRATES_COLLECTION)
-        .where(
-          "createdAt",
-          ">",
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        ) // Filter to last 30 days
-        .orderBy("createdAt", "desc")
-        .limit(100)
-        .get();
+    async (
+      params: { limit?: number; startAfter?: string } = {},
+      extra?: any,
+    ) => {
+      try {
+        // Set default limit or use provided limit, capped at 100
+        const limit = Math.min(params.limit || 20, 100);
 
-      const crates: Array<
-        Partial<Crate> & {
-          id: string;
-          expiresAt: string | null;
-          contentType?: string;
-          category?: CrateCategory;
+        // Start with base query
+        let query = db
+          .collection(CRATES_COLLECTION)
+          .where(
+            "createdAt",
+            ">",
+            new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          ) // Filter to last 30 days
+          .orderBy("createdAt", "desc");
+
+        // Add cursor-based pagination if startAfter is provided
+        if (params.startAfter) {
+          try {
+            const startAfterDoc = await db
+              .collection(CRATES_COLLECTION)
+              .doc(params.startAfter)
+              .get();
+
+            if (startAfterDoc.exists) {
+              query = query.startAfter(startAfterDoc);
+            } else {
+              console.warn(
+                `StartAfter document ${params.startAfter} not found`,
+              );
+            }
+          } catch (error) {
+            console.error("Error getting startAfter document:", error);
+            // Continue without cursor if there was an error
+          }
         }
-      > = snapshot.docs.map((doc: AnyDoc) => {
-        // Get document data properly
-        const data = doc.data() as any;
-        const id = doc.id;
 
-        // Filter out unwanted properties using safe type casting
-        const { embedding, searchField, gcsPath, ...filteredData } = data;
+        // Get one extra document to determine if there are more results
+        const snapshot = await query.limit(limit + 1).get();
 
-        // Access potentially undefined properties safely
-        const mimeType = data.mimeType;
-        const category = data.category;
+        // Check if there are more results
+        const hasMore = snapshot.docs.length > limit;
+        // Remove the extra document if we have more results
+        const docs = hasMore ? snapshot.docs.slice(0, limit) : snapshot.docs;
+
+        const crates: Array<
+          Partial<Crate> & {
+            id: string;
+            expiresAt: string | null;
+            contentType?: string;
+            category?: CrateCategory;
+          }
+        > = docs.map((doc: AnyDoc) => {
+          // Get document data properly
+          const data = doc.data() as any;
+          const id = doc.id;
+
+          // Filter out unwanted properties using safe type casting
+          const { embedding, searchField, gcsPath, ...filteredData } = data;
+
+          // Access potentially undefined properties safely
+          const mimeType = data.mimeType;
+          const category = data.category;
+
+          return {
+            id: doc.id,
+            ...filteredData,
+            contentType: mimeType, // Add contentType
+            category: category, // Add category
+            expiresAt: null, // ttlDays is no longer supported
+          };
+        });
 
         return {
-          id: doc.id,
-          ...filteredData,
-          contentType: mimeType, // Add contentType
-          category: category, // Add category
-          expiresAt: null, // ttlDays is no longer supported
+          crates,
+          lastCrateId:
+            hasMore && docs.length > 0 ? docs[docs.length - 1].id : null,
+          hasMore,
+          content: [
+            {
+              type: "text",
+              text: crates
+                .map(
+                  (c) =>
+                    `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
+                    `Description: ${c.description || "No description"}\n` +
+                    `Category: ${c.category || "N/A"}\n` +
+                    `Content Type: ${c.contentType || "N/A"}\n` +
+                    `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
+                )
+                .join("\n---\n"),
+            },
+          ],
         };
-      });
-
-      return {
-        crates,
-        content: [
-          {
-            type: "text",
-            text: crates
-              .map(
-                (c) =>
-                  `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
-                  `Description: ${c.description || "No description"}\n` +
-                  `Category: ${c.category || "N/A"}\n` +
-                  `Content Type: ${c.contentType || "N/A"}\n` +
-                  `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
-              )
-              .join("\n---\n"),
-          },
-        ],
-      };
+      } catch (error) {
+        console.error("Error listing crates:", error);
+        throw new Error("Failed to retrieve crates");
+      }
     },
   );
 
@@ -594,7 +646,11 @@ function getServer(req?: AuthenticatedRequest) {
     SearchParams.shape,
     {
       description:
-        "Searches your crates by text (title, description, tags). Returns matching crates.\n\n" +
+        "Searches your crates using a hybrid approach combining embedding-based semantic search and text search. The search covers title, description, tags, and metadata fields. Results are merged and deduplicated for the most relevant matches.\n\n" +
+        "The search uses:\n" +
+        "• Vector embeddings (768-dimensional) for semantic understanding of content\n" +
+        "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +
+        "• Results are ranked by relevance and deduplicated\n\n" +
         "AI usage example:\n" +
         "• “search my crates for ‘report’”",
     },
