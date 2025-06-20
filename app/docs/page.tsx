@@ -513,8 +513,8 @@ Response:
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via SSE:</b> Use{" "}
-              <code>npx mcp-remote https://mcp.mcph.io/mcp</code> or configure your
-              client to use the endpoint.
+              <code>npx mcp-remote https://mcp.mcph.io/mcp</code> or configure
+              your client to use the endpoint.
             </li>
             <li>
               <b>Authentication:</b> Pass your API key as a Bearer token in the{" "}
