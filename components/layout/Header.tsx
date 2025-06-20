@@ -9,6 +9,7 @@ import {
   FaUserCircle,
   FaUpload,
   FaHome,
+  FaPuzzlePiece,
 } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,6 +79,12 @@ export default function Header() {
                   className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/upload") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
                 >
                   <FaUpload className="mr-1 h-4 w-4" /> Upload
+                </Link>
+                <Link
+                  href="/integrations"
+                  className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/integrations") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+                >
+                  <FaPuzzlePiece className="mr-1 h-4 w-4" /> Integrations
                 </Link>
               </>
             )}
@@ -166,6 +173,13 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <FaUpload className="mr-2 h-4 w-4" /> Upload
+                  </Link>
+                  <Link
+                    href="/integrations"
+                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/integrations") ? "bg-gray-100 text-gray-900" : ""}`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FaPuzzlePiece className="mr-2 h-4 w-4" /> Integrations
                   </Link>
                 </>
               )}
