@@ -181,7 +181,7 @@ export default function DocsPage() {
                 </a>
               </li>
               <li>
-                <b>API Endpoint:</b> <code>https://mcp.mcph.io/</code>
+                <b>API Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
               </li>
               <li>
                 <b>View Shared Content:</b>{" "}
@@ -230,7 +230,7 @@ export default function DocsPage() {
             <li>
               <b>Connect to MCPH with your API key:</b>
               <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npx mcp-remote https://mcp.mcph.io/ --header "Authorization:
+                npx mcp-remote https://mcp.mcph.io/mcp --header "Authorization:
                 Bearer YOUR_API_KEY"
               </pre>
               <p className="text-sm text-gray-600">
@@ -251,7 +251,7 @@ export default function DocsPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   In ChatGPT Plus or Enterprise, use the "Configure Custom
                   Actions" feature and add MCPH as a new action with the
-                  endpoint <code>https://mcp.mcph.io/</code>
+                  endpoint <code>https://mcp.mcph.io/mcp</code>
                 </p>
               </div>
 
@@ -260,7 +260,7 @@ export default function DocsPage() {
                 <p className="text-sm text-gray-600 mb-2">
                   In Claude Pro or Enterprise, navigate to Settings {`>`} File &
                   Storage and add MCPH as a remote MCP server with the URL{" "}
-                  <code>https://mcp.mcph.io/</code>
+                  <code>https://mcp.mcph.io/mcp</code>
                 </p>
               </div>
 
@@ -277,7 +277,7 @@ export default function DocsPage() {
       "command": "npx",
       "args": [
         "mcp-remote", 
-        "https://mcp.mcph.io/",
+        "https://mcp.mcph.io/mcp",
         "--header",
         "Authorization: Bearer YOUR_API_KEY"
       ]
@@ -513,7 +513,7 @@ Response:
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via SSE:</b> Use{" "}
-              <code>npx mcp-remote https://mcp.mcph.io/</code> or configure your
+              <code>npx mcp-remote https://mcp.mcph.io/mcp</code> or configure your
               client to use the endpoint.
             </li>
             <li>
@@ -625,7 +625,7 @@ Response:
               href="#sse"
               className="block text-primary-500 hover:text-primary-600 py-1"
             >
-              SSE Endpoint: mcp.mcph.io/
+              MCP Endpoint: mcp.mcph.io/mcp
             </a>
           </nav>
         </div>

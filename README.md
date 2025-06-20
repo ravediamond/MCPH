@@ -23,7 +23,7 @@ MCPH is a public remote crate server for the Model Context Protocol (MCP). It su
 
 ## Quick Start
 
-- **SSE Endpoint:** `https://mcp.mcph.io/`
+- **MCP Endpoint:** `https://mcp.mcph.io/mcp`
 - **Web UI:** [mcph.io](https://mcph.io)
 - **Crate Page:** `https://mcph.io/crate/[id]`
 
@@ -58,7 +58,7 @@ npm run build:mcp
 ### Connect with mcp-remote
 
 ```sh
-npx mcp-remote https://mcp.mcph.io/
+npx mcp-remote https://mcp.mcph.io/mcp
 ```
 
 Or configure your client:
@@ -68,7 +68,7 @@ Or configure your client:
   "mcpServers": {
     "mcphub": {
       "command": "npx",
-      "args": ["mcp-remote", "https://mcp.mcph.io/"]
+      "args": ["mcp-remote", "https://mcp.mcph.io/mcp"]
     }
   }
 }
@@ -98,7 +98,7 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 
 ## How the SSE Endpoint Works
 
-- Connect via SSE: `npx mcp-remote https://mcp.mcph.io/`
+- Connect via SSE: `npx mcp-remote https://mcp.mcph.io/mcp`
 - On connect, you receive an `endpoint` event with your session URL. All JSON-RPC requests must include your `sessionId` as a query parameter.
 - Send JSON-RPC requests to the endpoint. Example for `crates/list`:
 

@@ -993,7 +993,7 @@ function getServer(req?: AuthenticatedRequest) {
 
 // Stateless MCP endpoint (modern Streamable HTTP, stateless)
 app.post(
-  "/",
+  "/mcp",
   (req: Request, res: Response, next: NextFunction): void => {
     // Allow unauthenticated access to crates_get only
     if (req.body?.method === "crates_get") {
@@ -1006,7 +1006,7 @@ app.post(
     const authReq = req as unknown as AuthenticatedRequest;
 
     console.log(
-      `[${new Date().toISOString()}] Incoming POST / from ${authReq.socket?.remoteAddress || "unknown"}`,
+      `[${new Date().toISOString()}] Incoming POST /mcp from ${authReq.socket?.remoteAddress || "unknown"}`,
     );
     console.log("Request body:", JSON.stringify(authReq.body));
     try {
@@ -1060,7 +1060,11 @@ app.post(
 );
 
 // Optionally, reject GET/DELETE on / for clarity
-app.get("/", (req: Request, res: Response) => {
+// Health check endpoint
+app.get("/healthz", (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok" });
+});
+app.get("/mcp", (req: Request, res: Response) => {
   res.status(405).json({
     jsonrpc: "2.0",
     error: {
@@ -1070,7 +1074,7 @@ app.get("/", (req: Request, res: Response) => {
     id: null,
   });
 });
-app.delete("/", (req: Request, res: Response) => {
+app.delete("/mcp", (req: Request, res: Response) => {
   res.status(405).json({
     jsonrpc: "2.0",
     error: {
