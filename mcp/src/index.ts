@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { IncomingMessage } from "http";
+import helmet from "helmet";
 
 // Use any for Firebase types to avoid complicated type issues
 type AnyDoc = any;
@@ -65,6 +66,24 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
+
+// Configure and use helmet for security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'", "https://mcph.io"],
+      },
+    },
+    frameguard: {
+      action: "deny",
+    },
+    referrerPolicy: {
+      policy: "strict-origin-when-cross-origin",
+    },
+  }),
+);
+
 // Use body-parser middleware for JSON
 app.use(bodyParser.json());
 
