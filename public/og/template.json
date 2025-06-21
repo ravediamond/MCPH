@@ -1,0 +1,53 @@
+{
+  "style": {
+    "width": "1200px",
+    "height": "630px",
+    "display": "flex",
+    "flexDirection": "column",
+    "justifyContent": "center",
+    "alignItems": "center",
+    "backgroundColor": "#FFFBF0",
+    "fontFamily": "Inter, sans-serif"
+  },
+  "elements": [
+    {
+      "type": "image",
+      "src": "/icons/usb.svg",
+      "style": {
+        "width": "120px",
+        "height": "120px",
+        "marginBottom": "24px"
+      }
+    },
+    {
+      "type": "text",
+      "content": "MCPH",
+      "style": {
+        "fontSize": "64px",
+        "fontWeight": "bold",
+        "color": "#000000",
+        "marginBottom": "12px"
+      }
+    },
+    {
+      "type": "text",
+      "content": "The USB stick for AI tools.",
+      "style": {
+        "fontSize": "36px",
+        "fontWeight": "medium",
+        "color": "#FF9900",
+        "marginBottom": "36px"
+      }
+    },
+    {
+      "type": "text",
+      "content": "Store, share, and auto-expire prompts, files, & model outputs with a single chat command.",
+      "style": {
+        "fontSize": "24px",
+        "color": "#666666",
+        "maxWidth": "700px",
+        "textAlign": "center"
+      }
+    }
+  ]
+}

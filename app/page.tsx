@@ -24,15 +24,18 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-800 mb-3">
-              One link for humans & AI agents
-            </h1>
+            <h1 className="text-5xl font-bold">The USB stick for AI tools.</h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Share AI outputs instantly. No sign-up needed.
+              Plug in any file, share the link, auto-expires in 24 h.
             </p>
-            <p className="text-sm text-gray-500 max-w-xl mx-auto mt-2">
-              A crate = one file. Upload, share, and access with ease.
-            </p>
+            <div className="mt-6">
+              <Link
+                href="/upload"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Get your AI USB stick →
+              </Link>
+            </div>
           </div>
 
           {/* File Upload Hero Component */}

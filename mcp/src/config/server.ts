@@ -9,7 +9,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
   const server = new McpServer({
     name: "MCPH-mcp-server",
     description:
-      "MCPH server for handling crates and tools.\n" +
+      "MCPH - the USB stick for AI tools. Store, share, and auto-expire crates.\n\n" +
       "Features:\n" +
       "- Crate management: upload, list, get, search, share, unshare, delete\n" +
       "- Google OAuth flow for authentication\n" +
