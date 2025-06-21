@@ -73,6 +73,31 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'", "https://mcph.io"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://mcph.io",
+          "https://apis.google.com",
+          "https://*.googleapis.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://mcph.io"],
+        connectSrc: [
+          "'self'",
+          "https://mcph.io",
+          "https://*.googleapis.com",
+          "https://securetoken.googleapis.com",
+          "https://firestore.googleapis.com",
+          "https://identitytoolkit.googleapis.com",
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://mcph.io",
+          "https://*.googleapis.com",
+        ],
+        fontSrc: ["'self'", "data:", "https://mcph.io"],
+        frameSrc: ["'self'", "https://mcph.io", "https://*.googleapis.com"],
       },
     },
     frameguard: {
