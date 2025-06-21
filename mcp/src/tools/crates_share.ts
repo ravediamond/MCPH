@@ -8,14 +8,15 @@ import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
  * Register the crates_share tool with the server
  */
 export function registerCratesShareTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_share",
-    ShareCrateParams._def.schema._def.shape(),
     {
+      title: "Share Crate",
       description:
         "Updates a crate's sharing settings (public/private, password protection).\n\n" +
         "AI usage example:\n" +
         '• "share crate 12345 publicly"',
+      inputSchema: ShareCrateParams._def.schema._def.shape(),
     },
     async (args: z.infer<typeof ShareCrateParams>, extra: any) => {
       const { id, public: isPublic, passwordProtected } = args;

@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
-    "@modelcontextprotocol/sdk": "^1.11.4",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "dotenv": "^16.5.0",

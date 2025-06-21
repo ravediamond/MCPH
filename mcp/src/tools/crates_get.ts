@@ -11,15 +11,16 @@ import { CrateCategory } from "../../../shared/types/crate";
  * Register the crates_get tool with the server
  */
 export function registerCratesGetTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_get",
-    GetCrateParams.shape,
     {
+      title: "Get Crate",
       description:
         "Retrieves a crate's contents by its ID (text, images, or download link for binaries).\n\n" +
         "AI usage examples:\n" +
         '• "show crate with ID 12345"\n' +
         '• "get my crate 12345"',
+      inputSchema: GetCrateParams.shape,
     },
     async ({ id }: { id: string }, extra: any) => {
       const meta = await getCrateMetadata(id);
