@@ -249,8 +249,8 @@ export default function DocsPage() {
               <div className="mt-2 mb-3">
                 <p className="font-medium text-gray-700 mb-1">ChatGPT</p>
                 <p className="text-sm text-gray-600 mb-2">
-                  In ChatGPT Plus or Enterprise, use the "Configure Custom
-                  Actions" feature and add MCPH as a new action with the
+                  In ChatGPT Teams or Enterprise, use the "Configure Custom
+                  Integration" feature and add MCPH as a new action with the
                   endpoint <code>https://mcp.mcph.io/mcp</code>
                 </p>
               </div>
@@ -496,23 +496,22 @@ Response:
           </h2>
           <p className="text-gray-600 mb-3">
             Use the <b>crates/delete</b> tool via MCP, or the REST API{" "}
-            <code>DELETE /api/uploads/:id</code> if you are authorized.
           </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">
-            How the SSE Endpoint Works
+            How the MCP Endpoint Works
           </h2>
           <p className="text-gray-600 mb-3">
-            The <b>SSE endpoint</b> (<code>/api/sse</code>) is the only
+            The <b>MCP endpoint</b> (<code>/api/mcp</code>) is the only
             supported way to interact with MCPH programmatically. It uses the
-            Model Context Protocol (MCP) over Server-Sent Events for real-time,
+            Model Context Protocol (MCP) over Streamable HTTP for real-time,
             bidirectional communication.
           </p>
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
-              <b>Connect via SSE:</b> Use{" "}
+              <b>Connect via Streamable HTTP:</b> Use{" "}
               <code>npx mcp-remote https://mcp.mcph.io/mcp</code> or configure
               your client to use the endpoint.
             </li>
@@ -521,9 +520,9 @@ Response:
               <code>Authorization</code> header.
             </li>
             <li>
-              <b>Session:</b> On connect, you receive an <code>endpoint</code>{" "}
-              event with your session URL. All JSON-RPC requests must include
-              your <code>sessionId</code> as a query parameter.
+              <b>Session:</b> On connect, you receive a session ID in the <code>MCP-Session-ID</code>{" "}
+              response header. All subsequent requests must include this ID in the{" "}
+              <code>MCP-Session-ID</code> header.
             </li>
             <li>
               <b>Calling Tools:</b> Send JSON-RPC requests to the endpoint.
@@ -540,8 +539,7 @@ Response:
 }
 `}</pre>
               <span className="text-xs text-gray-500">
-                The response will be streamed as an SSE <code>message</code>{" "}
-                event with the result.
+                The response will be streamed using Streamable HTTP, with content delivered as chunks in the HTTP response.
               </span>
             </li>
           </ol>
@@ -620,13 +618,12 @@ Response:
               className="block text-primary-500 hover:text-primary-600 py-1"
             >
               Limits & Errors
-            </a>
-            <a
-              href="#sse"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              MCP Endpoint: mcp.mcph.io/mcp
-            </a>
+            </a>              <a
+                href="#mcp"
+                className="block text-primary-500 hover:text-primary-600 py-1"
+              >
+                MCP Endpoint: mcp.mcph.io/mcp
+              </a>
           </nav>
         </div>
       </div>
