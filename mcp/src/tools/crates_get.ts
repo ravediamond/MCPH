@@ -1,0 +1,131 @@
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { GetCrateParams } from "../config/schemas";
+import { getCrateMetadata } from "../../../services/firebaseService";
+import {
+  getSignedDownloadUrl,
+  getCrateContent,
+} from "../../../services/storageService";
+import { CrateCategory } from "../../../shared/types/crate";
+
+/**
+ * Register the crates_get tool with the server
+ */
+export function registerCratesGetTool(server: McpServer): void {
+  server.tool(
+    "crates_get",
+    GetCrateParams.shape,
+    {
+      description:
+        "Retrieves a crate's contents by its ID (text, images, or download link for binaries).\n\n" +
+        "AI usage examples:\n" +
+        '• "show crate with ID 12345"\n' +
+        '• "get my crate 12345"',
+    },
+    async ({ id }: { id: string }, extra: any) => {
+      const meta = await getCrateMetadata(id);
+      if (!meta) {
+        throw new Error("Crate not found");
+      }
+
+      // Default expiration time (5 minutes)
+      const exp = 300;
+
+      // Special handling for BINARY category - direct user to use crates_get_download_link instead
+      if (meta.category === CrateCategory.BINARY) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `This crate contains ${meta.category.toLowerCase()} content. Please use the 'crates_get_download_link' tool to get a download link for this content.\n\nExample: { "id": "${meta.id}" }`,
+            },
+          ],
+        };
+      }
+
+      // Get pre-signed URL regardless of type
+      const url = await getSignedDownloadUrl(
+        meta.id,
+        meta.title,
+        Math.ceil(exp / 60),
+      );
+
+      // Handle images differently with image content type
+      if (meta.category === CrateCategory.IMAGE) {
+        try {
+          // Fetch the image content
+          const result = await getCrateContent(meta.id);
+
+          // Convert to base64
+          const base64 = result.buffer.toString("base64");
+
+          // Determine the correct MIME type or default to image/png
+          const mimeType = meta.mimeType || "image/png";
+
+          return {
+            content: [
+              {
+                type: "image",
+                data: base64,
+                mimeType: mimeType,
+              },
+            ],
+          };
+        } catch (error) {
+          console.error(`Error fetching image content for crate ${id}:`, error);
+          // Fallback to URL if fetching content fails
+          return {
+            content: [
+              {
+                type: "text",
+                text: `![${meta.title || "Image"}](${url})`,
+              },
+            ],
+          };
+        }
+      }
+      // For text-based categories like CODE, JSON, MARKDOWN, etc., return the actual content
+      else {
+        try {
+          // Fetch the content
+          const result = await getCrateContent(meta.id);
+
+          // Convert buffer to text
+          const textContent = result.buffer.toString("utf-8");
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: textContent,
+              },
+            ],
+          };
+        } catch (error) {
+          console.error(`Error fetching content for crate ${id}:`, error);
+          // Fallback to URL if fetching content fails
+          return {
+            resources: [
+              {
+                uri: `crate://${meta.id}`,
+                contents: [
+                  {
+                    uri: url,
+                    title: meta.title,
+                    description: meta.description,
+                    contentType: meta.mimeType,
+                  },
+                ],
+              },
+            ],
+            content: [
+              {
+                type: "text",
+                text: `Crate "${meta.title}" is available at crate://${meta.id}`,
+              },
+            ],
+          };
+        }
+      }
+    },
+  );
+}

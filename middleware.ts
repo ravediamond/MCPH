@@ -36,10 +36,16 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Add security headers to the response
-  // Content Security Policy - only allow loading resources from same origin and mcph.io
+  // Content Security Policy - allows necessary resources for the application
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self' https://mcph.io",
+    "default-src 'self' https://mcph.io; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mcph.io https://apis.google.com https://*.googleapis.com; " +
+      "style-src 'self' 'unsafe-inline' https://mcph.io; " +
+      "connect-src 'self' https://mcph.io https://*.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com; " +
+      "img-src 'self' data: https://mcph.io https://*.googleapis.com; " +
+      "font-src 'self' data: https://mcph.io; " +
+      "frame-src 'self' https://mcph.io https://*.googleapis.com;",
   );
 
   // Prevent click-jacking
