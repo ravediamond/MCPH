@@ -63,7 +63,7 @@ export default function ContentTypesPage() {
             <div className="border border-gray-200 rounded-lg p-3">
               <h4 className="font-medium text-gray-800 mb-1">Binary Files</h4>
               <p className="text-sm text-gray-600">
-                Upload and share generic binary files up to 50MB. Perfect for
+                Upload and share generic binary files up to 10MB. Perfect for
                 documents, archives, and other file types that need to be shared
                 directly.
               </p>

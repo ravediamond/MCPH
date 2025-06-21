@@ -72,7 +72,7 @@ export default function UploadPage() {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
-                      <span>Single file upload up to 50MB per file</span>
+                      <span>Single file upload up to 10MB per file</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
