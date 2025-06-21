@@ -535,7 +535,7 @@ export default function FileUpload({
               <strong>Simple Crate Sharing</strong>
             </p>
             <p className="mt-2">
-              Upload a single crate (up to 50MB) to quickly share with others.
+              Upload a single crate (up to 10MB) to quickly share with others.
               Your crate will be automatically categorized based on its type and
               will be accessible via a simple link.
             </p>

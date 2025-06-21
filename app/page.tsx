@@ -5,6 +5,8 @@ import { FaCheck, FaCopy, FaUpload } from "react-icons/fa";
 import { useAuthRedirect } from "../contexts/useAuthRedirect";
 import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import HeroUpload from "../components/HeroUpload";
+import WaitingListModal from "../components/WaitingListModal";
+import { useState } from "react";
 
 export default function Home() {
   // Redirect authenticated users to their dashboard if needed
@@ -12,6 +14,9 @@ export default function Home() {
 
   // Handle migration of anonymous uploads when a user logs in
   useAnonymousUploadTransition();
+
+  // State for waiting list modal
+  const [waitingListModalOpen, setWaitingListModalOpen] = useState(false);
 
   return (
     <div className="bg-gradient-to-b from-white to-beige-50 min-h-screen">
@@ -660,15 +665,17 @@ export default function Home() {
             {/* Pro Tier */}
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 shadow-md border border-orange-200 relative hover:shadow-lg transition-all duration-300">
               <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-semibold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                POPULAR
+                COMING SOON
               </div>
 
               <div className="text-center mb-6">
                 <h3 className="text-xl font-semibold text-gray-800">Pro</h3>
                 <p className="text-3xl font-bold text-gray-800 mt-4">
-                  $9<span className="text-lg font-normal">/mo</span>
+                  Coming Soon
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Billed annually</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Be the first to know
+                </p>
               </div>
 
               <ul className="space-y-3 mb-8">
@@ -769,17 +776,23 @@ export default function Home() {
               </ul>
 
               <div className="text-center">
-                <Link
-                  href="/login"
+                <button
+                  onClick={() => setWaitingListModalOpen(true)}
                   className="inline-block w-full px-6 py-3 text-center font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
-                  Upgrade to Pro
-                </Link>
+                  Join Waiting List
+                </button>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Waiting List Modal */}
+      <WaitingListModal
+        isOpen={waitingListModalOpen}
+        onClose={() => setWaitingListModalOpen(false)}
+      />
 
       {/* Call to Action */}
       <section className="py-16 px-4 text-center">

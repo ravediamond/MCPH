@@ -11,6 +11,7 @@ interface AdminStats {
   totalDownloads?: number;
   totalViews?: number;
   totalMcpCalls?: number;
+  totalWaitingList?: number;
 }
 
 const AdminDashboardPage: React.FC = () => {
@@ -42,12 +43,17 @@ const AdminDashboardPage: React.FC = () => {
 
           const headers = { Authorization: `Bearer ${token}` };
 
-          const [cratesResponse, usersResponse, mcpCallsResponse] =
-            await Promise.all([
-              fetch("/api/admin/stats/crates", { headers }),
-              fetch("/api/admin/stats/users", { headers }),
-              fetch("/api/admin/stats/mcp-calls", { headers }),
-            ]);
+          const [
+            cratesResponse,
+            usersResponse,
+            mcpCallsResponse,
+            waitingListResponse,
+          ] = await Promise.all([
+            fetch("/api/admin/stats/crates", { headers }),
+            fetch("/api/admin/stats/users", { headers }),
+            fetch("/api/admin/stats/mcp-calls", { headers }),
+            fetch("/api/admin/waiting-list", { headers }),
+          ]);
 
           if (!cratesResponse.ok) {
             const errorData = await cratesResponse.json();
@@ -66,12 +72,18 @@ const AdminDashboardPage: React.FC = () => {
             mcpCallsData = await mcpCallsResponse.json();
           }
 
+          let waitingListData = { waitingList: [] };
+          if (waitingListResponse.ok) {
+            waitingListData = await waitingListResponse.json();
+          }
+
           setStats({
             totalCrates: cratesData.count,
             totalUsers: usersData.count,
             totalDownloads: cratesData.totalDownloads || 0,
             totalViews: cratesData.totalViews || 0,
             totalMcpCalls: mcpCallsData.totalCalls || 0,
+            totalWaitingList: waitingListData.waitingList?.length || 0,
           });
         } catch (err) {
           setError(
@@ -160,6 +172,25 @@ const AdminDashboardPage: React.FC = () => {
             </svg>
             Manage Crates
           </Link>
+          <Link
+            href="/admin/waiting-list"
+            className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="mr-2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Pro Waiting List
+          </Link>
         </div>
       </div>
 
@@ -209,6 +240,22 @@ const AdminDashboardPage: React.FC = () => {
                 </p>
                 <div className="mt-2 text-xs text-gray-600">
                   Lifetime MCP API calls
+                </div>
+              </div>
+              <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-5 border-l-4 border-orange-500">
+                <h3 className="text-gray-600 text-sm font-medium mb-1">
+                  Pro Waiting List
+                </h3>
+                <p className="text-3xl font-bold text-orange-700">
+                  {stats.totalWaitingList?.toLocaleString() ?? "N/A"}
+                </p>
+                <div className="mt-2 text-xs text-gray-600">
+                  <Link
+                    href="/admin/waiting-list"
+                    className="text-orange-600 hover:underline"
+                  >
+                    View subscribers
+                  </Link>
                 </div>
               </div>
             </div>
