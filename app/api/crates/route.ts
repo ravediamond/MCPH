@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
 import { CrateCategory, CrateSharing } from "@/shared/types/crate";
+import bcrypt from "bcrypt";
 import { auth } from "@/lib/firebaseAdmin";
 
 function getClientIp(req: NextRequest): string {
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     // Parse sharing settings
     const isPublic = formData.get("public") === "true";
-    const passwordProtected = formData.get("password") ? true : false;
+    const passwordStr = formData.get("password")?.toString();
     // Simplified for v1: No per-user sharing lists
     // const sharedWithStr = formData.get("sharedWith")?.toString();
     // const sharedWith = sharedWithStr
@@ -125,8 +126,7 @@ export async function POST(req: NextRequest) {
 
     const sharing: CrateSharing = {
       public: isPublic,
-      passwordProtected,
-      // Simplified for v1: No per-user sharing lists
+      ...(passwordStr ? { passwordHash: await bcrypt.hash(passwordStr, 10) } : {}),
     };
 
     // Parse metadata if provided (expects JSON string or array of key-value pairs)

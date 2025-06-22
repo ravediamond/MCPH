@@ -453,8 +453,8 @@ Output (text): { crate, message }`}</code>
                 protection).
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, public?: boolean, passwordProtected?: boolean }
-Output: { id, isShared, passwordProtected, shareUrl, message }`}</code>
+                <code>{`Input: { id: string, password?: string }
+Output: { id, isShared, shareUrl, message }`}</code>
               </pre>
             </div>
             <div>

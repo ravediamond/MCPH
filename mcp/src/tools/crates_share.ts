@@ -1,6 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ShareCrateParams } from "../config/schemas";
 import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
+import { FieldValue } from "firebase-admin/firestore";
+import bcrypt from "bcrypt";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 
@@ -19,7 +21,7 @@ export function registerCratesShareTool(server: McpServer): void {
       inputSchema: ShareCrateParams._def.schema._def.shape(),
     },
     async (args: z.infer<typeof ShareCrateParams>, extra: any) => {
-      const { id, public: isPublic, passwordProtected } = args;
+      const { id, password } = args;
       const crateRef = db.collection(CRATES_COLLECTION).doc(id);
 
       // Get current crate to validate ownership
@@ -40,12 +42,12 @@ export function registerCratesShareTool(server: McpServer): void {
       }
 
       // Update sharing settings
-      const sharingUpdate: any = {};
-      if (typeof isPublic === "boolean")
-        sharingUpdate["shared.public"] = isPublic;
-      // Removed for v1 simplification: per-user sharing
-      if (typeof passwordProtected === "boolean")
-        sharingUpdate["shared.passwordProtected"] = passwordProtected;
+      const sharingUpdate: any = { "shared.public": true };
+      if (password) {
+        sharingUpdate["shared.passwordHash"] = await bcrypt.hash(password, 10);
+      } else {
+        sharingUpdate["shared.passwordHash"] = FieldValue.delete();
+      }
 
       await crateRef.update(sharingUpdate);
 
@@ -55,12 +57,10 @@ export function registerCratesShareTool(server: McpServer): void {
         content: [
           {
             type: "text",
-            text: `Crate ${id} sharing settings updated. ${isPublic ? "Public link" : "Private link"}: ${shareUrl}`,
+            text: `Crate ${id} sharing settings updated. Link: ${shareUrl}`,
           },
         ],
         id,
-        isPublic,
-        passwordProtected,
         shareUrl,
         crateLink: `mcph.io/crate/${id}`,
       };

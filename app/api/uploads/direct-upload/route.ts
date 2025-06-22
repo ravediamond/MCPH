@@ -7,7 +7,7 @@ import {
   getUserStorageUsage,
 } from "@/services/firebaseService";
 import { CrateCategory, CrateSharing } from "@/shared/types/crate";
-import crypto from "crypto"; // Import crypto module
+import bcrypt from "bcrypt";
 
 /**
  * API route to handle direct file uploads
@@ -41,27 +41,20 @@ export async function POST(req: NextRequest) {
     const fileType = fileTypeParam || undefined; // Convert null to undefined
 
     // New: Read sharing options from formData
-    const isSharedStr = formData.get("isShared") as string | null;
-    const passwordStr = formData.get("password") as string | null;
+  const isSharedStr = formData.get("isShared") as string | null;
+  const passwordStr = formData.get("password") as string | null;
 
-    const isPublic = isSharedStr === "true";
-    let passwordHash: string | null = null;
-    let passwordSalt: string | null = null;
+  const isPublic = isSharedStr === "true";
+  let passwordHash: string | null = null;
 
-    if (isPublic && passwordStr && passwordStr.length > 0) {
-      passwordSalt = crypto.randomBytes(16).toString("hex");
-      passwordHash = crypto
-        .pbkdf2Sync(passwordStr, passwordSalt, 1000, 64, "sha512")
-        .toString("hex");
-    }
+  if (isPublic && passwordStr && passwordStr.length > 0) {
+    passwordHash = await bcrypt.hash(passwordStr, 10);
+  }
 
-    const sharingOptions: CrateSharing = {
-      public: isPublic,
-      passwordProtected: Boolean(passwordHash), // True if passwordHash is set
-      passwordHash, // Use null instead of undefined
-      passwordSalt, // Use null instead of undefined
-      // sharedWith is not handled by this form, so it remains undefined or handled by defaults in uploadCrate
-    };
+  const sharingOptions: CrateSharing = {
+    public: isPublic,
+    ...(passwordHash ? { passwordHash } : {}),
+  };
 
     // Validate that title is provided
     if (!title || !title.trim()) {

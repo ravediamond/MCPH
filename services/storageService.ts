@@ -113,14 +113,10 @@ export async function uploadCrate(
     // Create default sharing config if not provided
     const sharing: CrateSharing = crateData.shared || {
       public: false,
-      passwordProtected: false, // Ensure this is explicitly false if not set
     };
 
-    // If passwordHash and passwordSalt are provided in crateData.shared, use them
-    if (crateData.shared?.passwordHash && crateData.shared?.passwordSalt) {
+    if (crateData.shared?.passwordHash) {
       sharing.passwordHash = crateData.shared.passwordHash;
-      sharing.passwordSalt = crateData.shared.passwordSalt;
-      sharing.passwordProtected = true; // Ensure this is true if hash/salt are present
     }
 
     // Create the complete crate metadata

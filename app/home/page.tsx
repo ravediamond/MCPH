@@ -781,7 +781,7 @@ export default function HomePage() {
                         </span>
                       )}
 
-                      {file.shared?.passwordProtected && (
+                      {file.shared?.passwordHash && (
                         <span className="inline-flex items-center ml-2 text-amber-600">
                           <svg
                             className="w-3 h-3 mr-1"

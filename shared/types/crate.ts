@@ -8,9 +8,7 @@ export enum CrateCategory {
 
 export interface CrateSharing {
   public: boolean;
-  passwordProtected?: boolean;
   passwordHash?: string | null;
-  passwordSalt?: string | null;
 }
 
 export interface Crate {

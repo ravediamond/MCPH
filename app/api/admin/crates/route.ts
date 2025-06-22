@@ -90,9 +90,8 @@ export async function GET(request: Request) {
         accessCount: data.downloadCount || data.accessCount || 0,
         // Map shared.public to isPublic if available
         isPublic: data.shared?.public || data.isPublic || false,
-        // Map shared.passwordProtected to isProtected if available
-        isProtected:
-          data.shared?.passwordProtected || data.isProtected || false,
+        // Determine protection based on passwordHash presence
+        isProtected: Boolean(data.shared?.passwordHash || data.isProtected),
         tags: data.tags || [],
         featured: data.featured || false,
       };
