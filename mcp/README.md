@@ -6,6 +6,16 @@ This is the Model Context Protocol server for MCPHub, the USB stick for AI tools
 
 MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts in one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly "plug in" and store/share content via simple API calls, functioning like a virtual USB stick for AI outputs.
 
+## Authentication Flow
+
+The MCP server uses a middleware chain to authenticate requests:
+
+1. `apiKeyAuthMiddleware`: Validates API keys and sets `req.user` with the authenticated user info
+2. `mapUserToAuth`: Maps `req.user` to `req.auth` format expected by the MCP SDK
+3. MCP SDK's `StreamableHTTPServerTransport`: Forwards `req.auth` to tool handlers as `extra.authInfo`
+
+Tools should access the authenticated user via `extra.authInfo?.clientId` with fallback to `req.user.userId` for backward compatibility.
+
 ## Development
 
 To run the MCP server in development mode:

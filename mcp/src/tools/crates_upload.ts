@@ -101,22 +101,26 @@ export function registerCratesUploadTool(server: McpServer): void {
       }
 
       // Create the partial crate data
-      // Cast extra.req to AuthenticatedRequest for proper typing and access to user object
+      // Get authentication info from extra (supplied by the SDK)
       const req = extra?.req as AuthenticatedRequest | undefined;
-      const userId = req?.user?.userId;
+      const authInfo = extra?.authInfo;
+
+      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
+      const ownerId = authInfo?.clientId ?? req?.user?.userId ?? "anonymous";
 
       // Debug logging to verify authentication
       console.log("[crates_upload] Authentication debug:", {
-        hasReq: !!req,
-        hasUser: !!req?.user,
-        userId: userId || "not provided",
+        extraHasReq: !!extra?.req,
+        extraUserId: req?.user?.userId,
+        authInfo: authInfo ? { clientId: authInfo.clientId } : undefined,
+        chosenOwnerId: ownerId,
         clientName: req?.clientName || "unknown",
       });
 
       const partialCrate: Partial<Crate> = {
         title: title || effectiveFileName, // Use original title, or fallback to effectiveFileName
         description,
-        ownerId: userId || "anonymous",
+        ownerId,
         shared: {
           public: isPublic,
           passwordProtected: !!password,
