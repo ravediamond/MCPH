@@ -89,6 +89,19 @@ export default function Home() {
             How It Works: 3 Simple Steps
           </h2>
 
+          <div className="mb-8 flex justify-center">
+            <img
+              src="/assets/claude-quickstart.gif"
+              alt="Quick-start: How to use with Claude AI"
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                borderRadius: "0.5rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
