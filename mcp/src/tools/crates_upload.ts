@@ -6,6 +6,7 @@ import {
   uploadCrate,
 } from "../../../services/storageService";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
+import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
@@ -100,10 +101,22 @@ export function registerCratesUploadTool(server: McpServer): void {
       }
 
       // Create the partial crate data
+      // Cast extra.req to AuthenticatedRequest for proper typing and access to user object
+      const req = extra?.req as AuthenticatedRequest | undefined;
+      const userId = req?.user?.userId;
+
+      // Debug logging to verify authentication
+      console.log("[crates_upload] Authentication debug:", {
+        hasReq: !!req,
+        hasUser: !!req?.user,
+        userId: userId || "not provided",
+        clientName: req?.clientName || "unknown",
+      });
+
       const partialCrate: Partial<Crate> = {
         title: title || effectiveFileName, // Use original title, or fallback to effectiveFileName
         description,
-        ownerId: extra?.req?.user?.userId || "anonymous",
+        ownerId: userId || "anonymous",
         shared: {
           public: isPublic,
           passwordProtected: !!password,
