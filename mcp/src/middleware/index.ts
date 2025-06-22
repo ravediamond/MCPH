@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ipThrottlingMiddleware, startThrottleCleanup } from "./throttling";
+import { mapUserToAuth } from "./mapUserToAuth";
 
 /**
  * Middleware for CORS headers
@@ -23,4 +24,4 @@ export function corsMiddleware(
 }
 
 // Export all middleware for easy import
-export { ipThrottlingMiddleware, startThrottleCleanup };
+export { ipThrottlingMiddleware, startThrottleCleanup, mapUserToAuth };

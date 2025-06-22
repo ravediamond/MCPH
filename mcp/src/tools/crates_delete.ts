@@ -29,9 +29,13 @@ export function registerCratesDeleteTool(server: McpServer): void {
         }
 
         const req = extra?.req as AuthenticatedRequest | undefined;
+        const authInfo = extra?.authInfo;
+
+        // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
+        const userId = authInfo?.clientId ?? req?.user?.userId;
 
         // Check if the user has permission to delete this crate
-        if (req?.user?.userId && crate.ownerId !== req.user.userId) {
+        if (userId && crate.ownerId !== userId) {
           throw new Error("You don't have permission to delete this crate");
         }
 
@@ -67,7 +71,7 @@ export function registerCratesDeleteTool(server: McpServer): void {
         }
 
         // User confirmed, proceed with deletion
-        const result = await deleteCrate(id, req?.user?.userId);
+        const result = await deleteCrate(id, userId);
 
         if (!result) {
           throw new Error("Failed to delete crate");

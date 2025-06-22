@@ -30,8 +30,12 @@ export function registerCratesShareTool(server: McpServer): void {
 
       const crateData = crateDoc.data();
       const req = extra?.req as AuthenticatedRequest | undefined;
+      const authInfo = extra?.authInfo;
 
-      if (req?.user?.userId && crateData?.ownerId !== req.user.userId) {
+      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
+      const userId = authInfo?.clientId ?? req?.user?.userId;
+
+      if (userId && crateData?.ownerId !== userId) {
         throw new Error("You don't have permission to share this crate");
       }
 
