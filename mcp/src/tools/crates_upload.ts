@@ -13,14 +13,15 @@ import { z } from "zod";
  * Register the crates_upload tool with the server
  */
 export function registerCratesUploadTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_upload",
-    UploadCrateParams._def.schema._def.shape(),
     {
+      title: "Upload Crate",
       description:
         "Uploads a new crate. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
         "AI usage example:\n" +
         "• \"upload this file as a crate titled 'notes'\"",
+      inputSchema: UploadCrateParams._def.schema._def.shape(),
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
       const {

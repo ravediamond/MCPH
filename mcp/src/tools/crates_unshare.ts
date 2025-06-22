@@ -7,14 +7,15 @@ import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
  * Register the crates_unshare tool with the server
  */
 export function registerCratesUnshareTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_unshare",
-    UnshareCrateParams.shape,
     {
+      title: "Make Crate Private",
       description:
         "Makes a crate private by removing all sharing settings.\n\n" +
         "AI usage example:\n" +
         '• "make crate 12345 private"',
+      inputSchema: UnshareCrateParams.shape,
     },
     async (args: { id: string }, extra: any) => {
       const { id } = args;

@@ -10,6 +10,10 @@
 
 # MCPH: Model Context Protocol (MCP) Server
 
+## 🗜️ MCPH — a USB stick for your AI
+
+![MCPH Demo](https://mcph.io/assets/demo.gif)
+
 MCPH is a public remote crate server for the Model Context Protocol (MCP). It supports real-time crate management and sharing via the MCP protocol over Server-Sent Events (SSE).
 
 ## Features at a Glance

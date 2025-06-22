@@ -1,6 +1,10 @@
 # MCP Server
 
-This is the Model Context Protocol server for MCPHub. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services.
+This is the Model Context Protocol server for MCPHub, the USB stick for AI tools. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services for storing, sharing, and auto-expiring files and outputs.
+
+## What is MCPH?
+
+MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts in one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly "plug in" and store/share content via simple API calls, functioning like a virtual USB stick for AI outputs.
 
 ## Development
 

@@ -7,10 +7,10 @@ import { Crate, CrateCategory } from "../../../shared/types/crate";
  * Register the crates_search tool with the server
  */
 export function registerCratesSearchTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_search",
-    SearchParams.shape,
     {
+      title: "Search Crates",
       description:
         "Searches your crates using a hybrid approach combining embedding-based semantic search and text search. The search covers title, description, tags, and metadata fields. Results are merged and deduplicated for the most relevant matches.\n\n" +
         "The search uses:\n" +
@@ -19,6 +19,7 @@ export function registerCratesSearchTool(server: McpServer): void {
         "• Results are ranked by relevance and deduplicated\n\n" +
         "AI usage example:\n" +
         "• \"search my crates for 'report'\"",
+      inputSchema: SearchParams.shape,
     },
     async ({ query }: { query: string }) => {
       // Simplified for v1 - text search only (no vector search)

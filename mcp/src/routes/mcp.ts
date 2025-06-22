@@ -49,6 +49,9 @@ export function configureMcpRoutes(router: Router): void {
           authReq.clientName = clientName;
         }
 
+        // Set MCP-Protocol-Version header for all responses
+        res.setHeader("MCP-Protocol-Version", "2025-06-18");
+
         // Create a new server instance for this request
         const server = createMcpServer(authReq);
 

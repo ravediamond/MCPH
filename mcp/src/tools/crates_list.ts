@@ -7,10 +7,10 @@ import { Crate, CrateCategory } from "../../../shared/types/crate";
  * Register the crates_list tool with the server
  */
 export function registerCratesListTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_list",
-    ListCratesParams.shape,
     {
+      title: "List Crates",
       description:
         "Lists all your crates (metadata, IDs, titles, descriptions, categories, tags, expiration). Crates are stored for 30 days.\n\n" +
         "Pagination support:\n" +
@@ -23,6 +23,7 @@ export function registerCratesListTool(server: McpServer): void {
         '• "show next page of my crates" (use startAfter from previous response)\n' +
         '• "list my first 10 crates" (use limit parameter)\n' +
         '• "show more crates after {lastCrateId}" (use startAfter parameter)',
+      inputSchema: ListCratesParams.shape,
     },
     async (
       params: { limit?: number; startAfter?: string } = {},

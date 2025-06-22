@@ -24,15 +24,18 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-800 mb-3">
-              One link for humans & AI agents
-            </h1>
+            <h1 className="text-5xl font-bold">The USB stick for AI tools.</h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Share AI outputs instantly. No sign-up needed.
+              Plug in any file, share the link, auto-expires in 24 h.
             </p>
-            <p className="text-sm text-gray-500 max-w-xl mx-auto mt-2">
-              A crate = one file. Upload, share, and access with ease.
-            </p>
+            <div className="mt-6">
+              <Link
+                href="/upload"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              >
+                Get your AI USB stick →
+              </Link>
+            </div>
           </div>
 
           {/* File Upload Hero Component */}
@@ -85,6 +88,19 @@ export default function Home() {
           <h2 className="text-xl md:text-2xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
             How It Works: 3 Simple Steps
           </h2>
+
+          <div className="mb-8 flex justify-center">
+            <img
+              src="/assets/claude-quickstart.gif"
+              alt="Quick-start: How to use with Claude AI"
+              style={{
+                maxWidth: "100%",
+                height: "auto",
+                borderRadius: "0.5rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">

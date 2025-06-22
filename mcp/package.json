@@ -1,6 +1,7 @@
 {
   "name": "mcph-mcp-api",
   "version": "1.0.0",
+  "description": "MCP server implementation for MCPH - the USB stick for AI tools",
   "main": "dist/index.js",
   "license": "MIT",
   "type": "module",
@@ -12,7 +13,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.7.0",
-    "@modelcontextprotocol/sdk": "^1.11.4",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.0",
     "dotenv": "^16.5.0",

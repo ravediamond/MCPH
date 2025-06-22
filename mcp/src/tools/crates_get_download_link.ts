@@ -7,14 +7,15 @@ import { getSignedDownloadUrl } from "../../../services/storageService";
  * Register the crates_get_download_link tool with the server
  */
 export function registerCratesGetDownloadLinkTool(server: McpServer): void {
-  server.tool(
+  server.registerTool(
     "crates_get_download_link",
-    GetCrateDownloadLinkParams.shape,
     {
+      title: "Get Download Link",
       description:
         "Generates a pre-signed download URL for a crate, especially for binaries or large files. Download links expire in 24 hours. Response includes expiry info.\n\n" +
         "AI usage example:\n" +
         '• "get download link for crate 12345"',
+      inputSchema: GetCrateDownloadLinkParams.shape,
     },
     async (
       { id, expiresInSeconds }: { id: string; expiresInSeconds?: number },

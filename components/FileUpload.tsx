@@ -562,7 +562,7 @@ export default function FileUpload({
                     Drag & drop a crate here, or click to select
                   </p>
                   <p className="text-xs text-gray-500">
-                    Maximum crate size: 50MB
+                    Maximum crate size: 10MB
                   </p>
                 </>
               )}
