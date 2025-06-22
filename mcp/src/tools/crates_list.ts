@@ -113,6 +113,7 @@ export function registerCratesListTool(server: McpServer): void {
                   (c) =>
                     `ID: ${c.id}\nTitle: ${c.title || "Untitled"}\n` +
                     `Description: ${c.description || "No description"}\n` +
+                    `Owner: ${c.ownerId || "anonymous"}\n` +
                     `Category: ${c.category || "N/A"}\n` +
                     `Content Type: ${c.contentType || "N/A"}\n` +
                     `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
