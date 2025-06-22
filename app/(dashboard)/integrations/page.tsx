@@ -434,7 +434,7 @@ export default function IntegrationsPage() {
             </div>
 
             <a
-              href="https://github.com/features/copilot"
+              href="https://docs.github.com/fr/copilot/customizing-copilot/using-model-context-protocol/extending-copilot-chat-with-mcp"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center px-4 py-3 bg-gray-900 text-white rounded-md hover:bg-black focus:outline-none focus:ring-2 focus:ring-gray-800 focus:ring-offset-2 transition-colors"

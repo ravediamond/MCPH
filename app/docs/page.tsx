@@ -387,116 +387,98 @@ export default function DocsPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <div className="font-semibold text-gray-800">crates/list</div>
+              <div className="font-semibold text-gray-800">crates_list</div>
               <div className="text-gray-600">
-                List all available crates you have access to.
+                List all your crates (metadata, IDs, titles, descriptions,
+                categories, tags, expiration). Supports pagination with{" "}
+                <code>limit</code> and <code>startAfter</code>.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output:
-{
-  crates: [ { id, fileName, ... }, ... ],
-  content: [ { type: 'text', text: 'IDs: ...' } ]
-}`}</code>
+                <code>{`Input: { limit?: number, startAfter?: string }
+Output: { crates: [...], lastCrateId, hasMore }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">crates/get</div>
+              <div className="font-semibold text-gray-800">crates_get</div>
               <div className="text-gray-600">
-                Get the raw crate data for a specific crate by id.
+                Retrieve a crate's contents by its ID (text, images, or download
+                link for binaries).
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output:
-{
-  crate: { ...meta },
-  content: [ { type: 'text', text: '...' } ]
-}
-// For binary files, returns a temporary download link; for text, returns the content directly.`}</code>
+                <code>{`Input: { id: string }
+Output: { crate: { ...meta }, content: [ ... ] }`}</code>
               </pre>
             </div>
             <div>
               <div className="font-semibold text-gray-800">
-                crates/get_metadata
+                crates_get_download_link
               </div>
               <div className="text-gray-600">
-                Get all metadata fields as text for a specific crate by id.
+                Generate a pre-signed download URL for a crate (especially for
+                binaries or large files). Download links expire in 24 hours by
+                default.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output:
-{
-  crate: { ...meta },
-  content: [ { type: 'text', text: 'key: value\n...' } ]
-}`}</code>
+                <code>{`Input: { id: string, expiresInSeconds?: number }
+Output: { url: string, validForSeconds: number }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">crates/search</div>
+              <div className="font-semibold text-gray-800">crates_search</div>
               <div className="text-gray-600">
-                Search for crates by query string in fileName or description.
+                Search your crates using hybrid semantic and text search (title,
+                description, tags, metadata).
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output:
-{
-  crates: [ ... ],
-  content: [ { type: 'text', text: 'IDs: ...' } ]
-}`}</code>
+                <code>{`Input: { query: string }
+Output: { crates: [...], content: [ ... ] }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">crates/upload</div>
+              <div className="font-semibold text-gray-800">crates_upload</div>
               <div className="text-gray-600">
-                Upload a new crate. For binary files, returns a presigned upload
-                URL. For text, uploads directly.
+                Upload a new crate. Small text content is uploaded directly;
+                large/binary files return a pre-signed URL.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Output (binary):
-{
-  uploadUrl, fileId, gcsPath, message
-}
-Output (text):
-{
-  crate, message
-}`}</code>
+                <code>{`Input: { fileName, contentType, data, ... }
+Output (binary): { uploadUrl, fileId, gcsPath, message }
+Output (text): { crate, message }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                crates/[id]/share
-              </div>
+              <div className="font-semibold text-gray-800">crates_share</div>
               <div className="text-gray-600">
-                Update a crate's sharing settings, including visibility,
-                password protection, and access control. This endpoint replaces
-                the legacy sharing mechanism with a unified approach.
+                Update a crate's sharing settings (public/private, password
+                protection).
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Request:
-POST /api/crates/{id}/share
-{
-  "public": boolean,           // Whether the crate is publicly accessible
-  "passwordProtected": boolean, // Whether password protection is enabled
-  "password": string,          // Optional: Set a new password
-  "removePassword": boolean    // Optional: Remove existing password
-}
-
-Response:
-{
-  "id": string,
-  "isShared": boolean,
-  "passwordProtected": boolean,
-  "shareUrl": string,
-  "message": string
-}`}</code>
+                <code>{`Input: { id: string, public?: boolean, passwordProtected?: boolean }
+Output: { id, isShared, passwordProtected, shareUrl, message }`}</code>
+              </pre>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-800">crates_unshare</div>
+              <div className="text-gray-600">
+                Make a crate private by removing all sharing settings.
+              </div>
+              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
+                <code>{`Input: { id: string }
+Output: { message, ... }`}</code>
+              </pre>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-800">crates_delete</div>
+              <div className="text-gray-600">
+                Permanently delete a crate's data and metadata. Requires
+                confirmation.
+              </div>
+              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
+                <code>{`Input: { id: string }
+Output: { message }`}</code>
               </pre>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            How to Remove an MCP (Delete crates)
-          </h2>
-          <p className="text-gray-600 mb-3">
-            Use the <b>crates/delete</b> tool via MCP, or the REST API{" "}
-          </p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
