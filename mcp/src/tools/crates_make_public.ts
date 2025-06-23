@@ -19,35 +19,38 @@ export function registerCratesMakePublicTool(server: McpServer): void {
       // we'll just create a new request to the crates_share functionality
       try {
         // Import the necessary functions from firebaseService and other dependencies
-        const { db, CRATES_COLLECTION } = await import("../../../services/firebaseService");
+        const { db, CRATES_COLLECTION } = await import(
+          "../../../services/firebaseService"
+        );
         const admin = await import("firebase-admin");
-        
+
         // Replicate the crates_share functionality
         const crateRef = db.collection(CRATES_COLLECTION).doc(id);
-        
+
         // Get current crate to validate ownership
         const crateDoc = await crateRef.get();
         if (!crateDoc.exists) {
           throw new Error("Crate not found");
         }
-        
+
         const crateData = crateDoc.data();
         const req = extra?.req;
         const authInfo = extra?.authInfo;
-        
+
         // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
         const userId = authInfo?.clientId ?? req?.user?.userId;
-        
+
         if (userId && crateData?.ownerId !== userId) {
           throw new Error("You don't have permission to share this crate");
         }
-        
+
         // Update sharing settings
         const sharingUpdate: any = { "shared.public": true };
-        sharingUpdate["shared.passwordHash"] = admin.firestore.FieldValue.delete();
-        
+        sharingUpdate["shared.passwordHash"] =
+          admin.firestore.FieldValue.delete();
+
         await crateRef.update(sharingUpdate);
-        
+
         // Return the shareable link and status
         const shareUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://mcph.io"}/crate/${id}`;
         return {
