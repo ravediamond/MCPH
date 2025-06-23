@@ -41,20 +41,20 @@ export async function POST(req: NextRequest) {
     const fileType = fileTypeParam || undefined; // Convert null to undefined
 
     // New: Read sharing options from formData
-  const isSharedStr = formData.get("isShared") as string | null;
-  const passwordStr = formData.get("password") as string | null;
+    const isSharedStr = formData.get("isShared") as string | null;
+    const passwordStr = formData.get("password") as string | null;
 
-  const isPublic = isSharedStr === "true";
-  let passwordHash: string | null = null;
+    const isPublic = isSharedStr === "true";
+    let passwordHash: string | null = null;
 
-  if (isPublic && passwordStr && passwordStr.length > 0) {
-    passwordHash = await bcrypt.hash(passwordStr, 10);
-  }
+    if (isPublic && passwordStr && passwordStr.length > 0) {
+      passwordHash = await bcrypt.hash(passwordStr, 10);
+    }
 
-  const sharingOptions: CrateSharing = {
-    public: isPublic,
-    ...(passwordHash ? { passwordHash } : {}),
-  };
+    const sharingOptions: CrateSharing = {
+      public: isPublic,
+      ...(passwordHash ? { passwordHash } : {}),
+    };
 
     // Validate that title is provided
     if (!title || !title.trim()) {

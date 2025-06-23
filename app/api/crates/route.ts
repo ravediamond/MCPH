@@ -126,7 +126,9 @@ export async function POST(req: NextRequest) {
 
     const sharing: CrateSharing = {
       public: isPublic,
-      ...(passwordStr ? { passwordHash: await bcrypt.hash(passwordStr, 10) } : {}),
+      ...(passwordStr
+        ? { passwordHash: await bcrypt.hash(passwordStr, 10) }
+        : {}),
     };
 
     // Parse metadata if provided (expects JSON string or array of key-value pairs)

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { ShareCrateParams } from "../config/schemas";
 import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
-import { FieldValue } from "firebase-admin/firestore";
+import admin from "firebase-admin";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
@@ -18,7 +18,7 @@ export function registerCratesShareTool(server: McpServer): void {
         "Updates a crate's sharing settings (public/private, password protection).\n\n" +
         "AI usage example:\n" +
         '• "share crate 12345 publicly"',
-      inputSchema: ShareCrateParams._def.schema._def.shape(),
+      inputSchema: ShareCrateParams.shape,
     },
     async (args: z.infer<typeof ShareCrateParams>, extra: any) => {
       const { id, password } = args;
@@ -46,7 +46,8 @@ export function registerCratesShareTool(server: McpServer): void {
       if (password) {
         sharingUpdate["shared.passwordHash"] = await bcrypt.hash(password, 10);
       } else {
-        sharingUpdate["shared.passwordHash"] = FieldValue.delete();
+        sharingUpdate["shared.passwordHash"] =
+          admin.firestore.FieldValue.delete();
       }
 
       await crateRef.update(sharingUpdate);

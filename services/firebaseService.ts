@@ -753,7 +753,10 @@ export async function updateCrateSharing(
 
     const updateData: any = { shared: updatedSharing };
 
-    if (sharingSettings.hasOwnProperty("passwordHash") && !sharingSettings.passwordHash) {
+    if (
+      sharingSettings.hasOwnProperty("passwordHash") &&
+      !sharingSettings.passwordHash
+    ) {
       updateData["shared.passwordHash"] = FieldValue.delete();
       delete updatedSharing.passwordHash;
     }

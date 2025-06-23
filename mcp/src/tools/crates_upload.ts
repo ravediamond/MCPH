@@ -123,7 +123,9 @@ export function registerCratesUploadTool(server: McpServer): void {
         ownerId,
         shared: {
           public: isPublic,
-          ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}),
+          ...(password
+            ? { passwordHash: await bcrypt.hash(password, 10) }
+            : {}),
         },
       };
 

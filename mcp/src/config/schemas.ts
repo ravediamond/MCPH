@@ -40,11 +40,10 @@ export const UploadCrateParams = z
     path: ["isPublic", "password"],
   });
 
-export const ShareCrateParams = z
-  .object({
-    id: z.string(),
-    password: z.string().optional(),
-  });
+export const ShareCrateParams = z.object({
+  id: z.string(),
+  password: z.string().optional(),
+});
 
 export const UnshareCrateParams = z.object({
   id: z.string(),
