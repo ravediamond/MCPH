@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCrateMetadata } from "@/services/firebaseService";
-import crypto from "crypto";
+import bcrypt from "bcrypt";
 
 export async function POST(
   req: NextRequest,
@@ -23,29 +23,16 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    if (!crate.shared.passwordProtected) {
-      // Should not happen if UI is correct, but good to check
+    if (!crate.shared.passwordHash) {
       return NextResponse.json(
         { error: "Crate is not password protected" },
         { status: 400 },
       );
     }
 
-    if (!crate.shared.passwordHash || !crate.shared.passwordSalt) {
-      console.error(
-        `Crate ${crateId} is password protected but missing hash or salt.`,
-      );
-      return NextResponse.json(
-        { error: "Password data is missing for this crate" },
-        { status: 500 },
-      );
-    }
+    const match = await bcrypt.compare(password, crate.shared.passwordHash);
 
-    const currentHash = crypto
-      .pbkdf2Sync(password, crate.shared.passwordSalt, 1000, 64, "sha512")
-      .toString("hex");
-
-    if (currentHash === crate.shared.passwordHash) {
+    if (match) {
       // Passwords match
       // In a real scenario, you might issue a short-lived token here
       // for the client to use for the actual download/access.

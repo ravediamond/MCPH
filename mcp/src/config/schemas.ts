@@ -40,18 +40,10 @@ export const UploadCrateParams = z
     path: ["isPublic", "password"],
   });
 
-export const ShareCrateParams = z
-  .object({
-    id: z.string(),
-    public: z.boolean().optional(),
-    // Removed for v1 simplification:
-    // sharedWith: z.array(z.string()).optional(),
-    passwordProtected: z.boolean().optional(),
-  })
-  .refine((data) => !(data.public && data.passwordProtected), {
-    message: "A crate cannot be both public and password-protected",
-    path: ["public", "passwordProtected"],
-  });
+export const ShareCrateParams = z.object({
+  id: z.string(),
+  password: z.string().optional(),
+});
 
 export const UnshareCrateParams = z.object({
   id: z.string(),

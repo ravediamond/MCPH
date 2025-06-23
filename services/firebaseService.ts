@@ -749,12 +749,20 @@ export async function updateCrateSharing(
     const updatedSharing = {
       ...crate.shared,
       ...sharingSettings,
-    };
+    } as any;
+
+    const updateData: any = { shared: updatedSharing };
+
+    if (
+      sharingSettings.hasOwnProperty("passwordHash") &&
+      !sharingSettings.passwordHash
+    ) {
+      updateData["shared.passwordHash"] = FieldValue.delete();
+      delete updatedSharing.passwordHash;
+    }
 
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
-    await docRef.update({
-      shared: updatedSharing,
-    });
+    await docRef.update(updateData);
 
     return { success: true };
   } catch (error) {

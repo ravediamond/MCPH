@@ -5,6 +5,7 @@ import { registerCratesGetDownloadLinkTool } from "./crates_get_download_link";
 import { registerCratesSearchTool } from "./crates_search";
 import { registerCratesUploadTool } from "./crates_upload";
 import { registerCratesShareTool } from "./crates_share";
+import { registerCratesMakePublicTool } from "./crates_make_public";
 import { registerCratesUnshareTool } from "./crates_unshare";
 import { registerCratesDeleteTool } from "./crates_delete";
 
@@ -18,6 +19,7 @@ export function registerAllTools(server: McpServer): void {
   registerCratesSearchTool(server);
   registerCratesUploadTool(server);
   registerCratesShareTool(server);
+  registerCratesMakePublicTool(server);
   registerCratesUnshareTool(server);
   registerCratesDeleteTool(server);
 }

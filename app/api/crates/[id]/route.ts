@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCrateMetadata, logEvent } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
+import bcrypt from "bcrypt";
 
 /**
  * API endpoint to get a crate by ID
@@ -47,9 +48,14 @@ export async function GET(
     // Simplified for v1: No per-user sharing, only public/private
     const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    // If the crate is public, password-protected, and the user is not the owner,
-    // require a password to view.
-    if (isPublic && crate.shared.passwordProtected && !isOwner) {
+    if (!isOwner && !isPublic) {
+      return NextResponse.json(
+        { error: "You don't have permission to access this crate" },
+        { status: 403 },
+      );
+    }
+
+    if (!isOwner && crate.shared.passwordHash) {
       return NextResponse.json(
         {
           error: "Password required to view this crate",
@@ -78,7 +84,7 @@ export async function GET(
       // ttlDays and expiresAt removed as they're no longer used
       downloadCount: crate.downloadCount,
       isPublic: crate.shared.public,
-      isPasswordProtected: crate.shared.passwordProtected,
+      isPasswordProtected: Boolean(crate.shared.passwordHash),
       isOwner,
       metadata: crate.metadata,
       tags: crate.tags,
@@ -139,23 +145,27 @@ export async function POST(
     // Simplified for v1: No per-user sharing, only public/private
     const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    // Check password if required and not the owner
-    if (!isOwner && crate.shared.passwordProtected) {
-      // In a real implementation, you would compare hashed passwords
-      // This is a simplified example - you should use proper password hashing
+    if (!isOwner && !isPublic) {
+      return NextResponse.json(
+        { error: "You don't have permission to access this crate" },
+        { status: 403 },
+      );
+    }
+
+    if (!isOwner && crate.shared.passwordHash) {
       if (!password) {
         return NextResponse.json(
           { error: "This crate requires a password" },
           { status: 401 },
         );
       }
-    }
-
-    if (!isOwner && !isPublic && !isSharedWithUser) {
-      return NextResponse.json(
-        { error: "You don't have permission to access this crate" },
-        { status: 403 },
-      );
+      const match = await bcrypt.compare(password, crate.shared.passwordHash);
+      if (!match) {
+        return NextResponse.json(
+          { error: "Invalid password" },
+          { status: 401 },
+        );
+      }
     }
 
     // Get crate content based on its category

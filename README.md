@@ -95,8 +95,8 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 - **crates/upload**: Upload a new crate. For binary files, returns a presigned upload URL. For text, uploads directly.
   - Output: `{ uploadUrl, fileId, gcsPath, message }` (binary) or `{ crate, message }` (text)
 - **crates/[id]/share**: Update a crate's sharing settings with unified link management.
-  - Input: `{ public: boolean, passwordProtected: boolean, password?: string, removePassword?: boolean }`
-  - Output: `{ id, isShared, passwordProtected, shareUrl, message }`
+  - Input: `{ password?: string }`
+  - Output: `{ id, isShared, shareUrl, message }`
 - **crates/[id]/content**: Optimized endpoint for content retrieval with caching and direct access.
   - Supports both GET (with optional URL params) and POST (with JSON body for password)
 

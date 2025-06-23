@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { UnshareCrateParams } from "../config/schemas";
 import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
+import { FieldValue } from "firebase-admin/firestore";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 
 /**
@@ -41,10 +42,7 @@ export function registerCratesUnshareTool(server: McpServer): void {
       // Update sharing settings to remove all sharing
       const sharingUpdate = {
         "shared.public": false,
-        // Removed for v1 simplification: per-user sharing
-        "shared.passwordProtected": false,
-        // Optionally, clear the password if it's stored directly and not hashed
-        // 'shared.password': null, // orFieldValue.delete() if you want to remove the field
+        "shared.passwordHash": FieldValue.delete(),
       };
 
       await crateRef.update(sharingUpdate);

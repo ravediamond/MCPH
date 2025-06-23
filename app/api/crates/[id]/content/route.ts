@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCrateMetadata } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
+import bcrypt from "bcrypt";
 
 // Define the type for params
 type RouteParams = Promise<{ id: string }>;
@@ -110,21 +111,28 @@ export async function GET(
       `[Content Route] Current user ID: ${userId}, Crate owner ID: ${crate.ownerId}`,
     );
 
-    // If the crate is public, password-protected, and the user is not the owner,
-    // require a password to view.
-    if (isPublic && crate.shared.passwordProtected && !isOwner) {
-      console.log(
-        `[Content Route] Crate is password protected and user is not owner`,
-      );
-      // For GET requests, we can't easily pass a password
-      // So we'll just return a 401 and let the client redirect to a password entry form
+    if (!isOwner && !crate.shared.public) {
       return NextResponse.json(
-        {
-          error: "Password required to view this crate",
-          passwordRequired: true,
-        },
-        { status: 401 },
+        { error: "You don't have permission to access this crate" },
+        { status: 403 },
       );
+    }
+
+    if (!isOwner && crate.shared.passwordHash) {
+      const supplied = req.headers.get("x-crate-pass");
+      if (!supplied) {
+        return NextResponse.json(
+          { error: "Password required to view this crate" },
+          { status: 401 },
+        );
+      }
+      const match = await bcrypt.compare(supplied, crate.shared.passwordHash);
+      if (!match) {
+        return NextResponse.json(
+          { error: "Invalid password" },
+          { status: 401 },
+        );
+      }
     }
 
     if (!isOwner && !isPublic && !isSharedWithUser) {
@@ -220,21 +228,27 @@ export async function POST(
     // Simplified for v1: No per-user sharing, only public/private
     const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    // Check password if required and not the owner
-    if (!isOwner && crate.shared.passwordProtected) {
+    if (!isOwner && !isPublic) {
+      return NextResponse.json(
+        { error: "You don't have permission to access this crate" },
+        { status: 403 },
+      );
+    }
+
+    if (!isOwner && crate.shared.passwordHash) {
       if (!password) {
         return NextResponse.json(
           { error: "This crate requires a password" },
           { status: 401 },
         );
       }
-    }
-
-    if (!isOwner && !isPublic && !isSharedWithUser) {
-      return NextResponse.json(
-        { error: "You don't have permission to access this crate" },
-        { status: 403 },
-      );
+      const match = await bcrypt.compare(password, crate.shared.passwordHash);
+      if (!match) {
+        return NextResponse.json(
+          { error: "Invalid password" },
+          { status: 401 },
+        );
+      }
     }
 
     // Get crate content based on its category

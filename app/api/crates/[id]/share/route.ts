@@ -5,6 +5,7 @@ import {
   logEvent,
   updateCrateSharing,
 } from "@/services/firebaseService";
+import bcrypt from "bcrypt";
 
 /**
  * API endpoint to update sharing settings for a crate
@@ -17,15 +18,8 @@ export async function POST(
   try {
     // Handle params as a Promise in Next.js 15+
     const { id } = await context.params;
-    const {
-      public: isPublic,
-      passwordProtected,
-      password,
-      removePassword,
-      // Simplified for v1: No per-user sharing
-      // sharedWith,
-      generateLink = true,
-    } = await req.json();
+    const { password } = await req.json();
+    const generateLink = true;
 
     // Check authentication
     const authHeader = req.headers.get("authorization");
@@ -85,32 +79,12 @@ export async function POST(
     }
 
     // Prepare sharing settings update
-    const sharingSettings: any = {};
+    const sharingSettings: any = { public: true };
 
-    // Update public sharing status if provided
-    if (typeof isPublic === "boolean") {
-      sharingSettings.public = isPublic;
-    }
-
-    // Update password protection status
-    if (typeof passwordProtected === "boolean") {
-      sharingSettings.passwordProtected = passwordProtected;
-    }
-
-    // Handle password updates (if we want to implement password hashing, do it here)
-    if (password) {
-      // In a real implementation, you would hash the password here
-      // For this example, we're storing the password directly
-      sharingSettings.passwordHash = password;
-      sharingSettings.passwordSalt = null; // Not using salt for simplicity
-      sharingSettings.passwordProtected = true;
-    }
-
-    // Handle password removal
-    if (removePassword) {
+    if (password && password.length > 0) {
+      sharingSettings.passwordHash = await bcrypt.hash(password, 10);
+    } else {
       sharingSettings.passwordHash = null;
-      sharingSettings.passwordSalt = null;
-      sharingSettings.passwordProtected = false;
     }
 
     // Simplified for v1: No per-user sharing
@@ -132,8 +106,7 @@ export async function POST(
     // Log the sharing event
     await logEvent("crate_share_update", id, undefined, {
       userId,
-      isPublic: sharingSettings.public,
-      passwordProtected: sharingSettings.passwordProtected,
+      isPublic: true,
     });
 
     // Generate response with share URL
@@ -143,9 +116,7 @@ export async function POST(
     // Return the updated sharing information
     return NextResponse.json({
       id,
-      isShared: sharingSettings.public ?? crate.shared.public,
-      passwordProtected:
-        sharingSettings.passwordProtected ?? crate.shared.passwordProtected,
+      isShared: true,
       shareUrl,
       message: "Sharing settings updated successfully",
     });
