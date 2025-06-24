@@ -155,6 +155,32 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 
 The response will be streamed as an SSE `message` event with the result.
 
+## Using MCPH with AI Assistants
+
+MCPH integrates seamlessly with AI assistants like Claude and ChatGPT, enabling natural language file management without learning complex commands.
+
+### Natural Language Commands
+
+- **Managing Files**: "Show me my files", "Save this document", "Delete that old file"
+- **Sharing Content**: "Make this public", "Give me a shareable link", "Make this private again"
+- **Viewing Content**: "Show me that document", "What's in that file?"
+
+### Key Benefits
+
+- **No learning curve** - talk about files naturally
+- **Persistent storage** - files remain accessible across sessions for 30 days
+- **Smart search** - AI finds files using keywords and context
+- **Instant sharing** - generate public links with simple requests
+- **Cross-session continuity** - reference files from previous conversations
+
+### Getting Started with AI Assistants
+
+1. **Connect MCPH to your AI assistant** using your API key
+2. **Use natural language commands** to manage your files
+3. **Share content instantly** by simply asking your AI to make content public
+
+For detailed instructions and examples, visit our [documentation](https://mcph.io/docs).
+
 ## REST API (advanced)
 
 > For most users, use the SSE endpoint above. REST endpoints are for advanced/manual use only.

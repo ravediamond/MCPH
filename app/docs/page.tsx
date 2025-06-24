@@ -664,6 +664,177 @@ Output: { message }`}</code>
             </a>
           </nav>
         </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Using MCPH with AI Assistants
+          </h2>
+          <p className="text-gray-600 mb-3">
+            MCPH tools integrate with AI assistants like Claude and ChatGPT to
+            provide seamless file management through natural conversation. You
+            can manage your files without learning commands or APIs—just speak
+            naturally about what you want to do.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Natural Language Commands
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-gray-700">Managing Files:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me my files" / "List what I have stored"</li>
+                    <li>
+                      "Find my report about sales" / "Search for meeting notes"
+                    </li>
+                    <li>"Save this document" / "Store this analysis for me"</li>
+                    <li>"Delete that old file" / "Remove the draft version"</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Sharing & Access:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Make this public" / "Share this with others"</li>
+                    <li>
+                      "Give me a shareable link" / "I want to share this
+                      document"
+                    </li>
+                    <li>
+                      "Make this private again" / "Stop sharing this file"
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Viewing Content:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me that document" / "Open my project notes"</li>
+                    <li>"What's in that file?" / "Display the contract"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Contextual Understanding
+              </h3>
+              <p className="text-gray-600 mb-2">
+                The AI remembers what you're working on within conversations:
+              </p>
+              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Write a meeting
+                  summary"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> [Creates summary]
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Save it"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "I've saved your
+                  meeting summary to your files"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Actually, share it
+                  with the team"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "Made it public.
+                  Here's the link: https://mcph.io/crate/..."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-lg font-medium text-gray-800 mb-3">
+            Getting Started with AI Assistants
+          </h3>
+          <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
+            <li>
+              <b>Connect MCPH to Your AI Assistant</b>
+              <p className="text-gray-600 mt-1 mb-2">
+                Follow the setup instructions for your specific AI assistant to
+                connect it with your MCPH account using the API key.
+              </p>
+            </li>
+
+            <li>
+              <b>Use Natural Language Commands</b>
+              <p className="text-gray-600 mt-1 mb-2">
+                Interact with your AI assistant using simple language - no need
+                to learn special commands.
+              </p>
+              <div className="bg-gray-100 p-3 rounded-lg mb-2 text-gray-700 text-sm">
+                "Show my files", "Search for reports", "Share this document",
+                "Delete old files", etc.
+              </div>
+            </li>
+
+            <li>
+              <b>Manage Files Seamlessly</b>
+              <p className="text-gray-600 mt-1 mb-2">
+                Your AI assistant will handle file management tasks using MCPH,
+                such as storing, sharing, and organizing files.
+              </p>
+            </li>
+          </ol>
+
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Key Benefits
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>No learning curve</b> - talk about files naturally
+                </li>
+                <li>
+                  <b>Persistent storage</b> - files remain accessible across
+                  sessions for 30 days
+                </li>
+                <li>
+                  <b>Smart search</b> - AI finds files using keywords and
+                  context
+                </li>
+              </ul>
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>Instant sharing</b> - generate public links with simple
+                  requests
+                </li>
+                <li>
+                  <b>Cross-session continuity</b> - reference files from
+                  previous conversations
+                </li>
+                <li>
+                  <b>Automatic organization</b> - files are tagged with metadata
+                  for easy retrieval
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Tips for Using MCPH with AI Assistants
+            </h3>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>
+                <b>Be specific</b> with your commands for better accuracy.
+              </li>
+              <li>
+                Use <b>natural language</b>, no need to learn special commands.
+              </li>
+              <li>
+                Remember that files are stored for <b>30 days</b> by default.
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
