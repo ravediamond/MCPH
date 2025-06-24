@@ -33,9 +33,51 @@ export function registerCratesListTool(server: McpServer): void {
         // Set default limit or use provided limit, capped at 100
         const limit = Math.min(params.limit || 20, 100);
 
+        // Implementation of the fix according to the ticket
+        // The ctxUser might be in extra.req.auth or extra.authInfo depending on flow
+        let uid = "__nobody__"; // sentinel that never matches "" in DB
+
+        // Check for auth info in various possible locations
+        const authInfo = extra?.authInfo;
+        const reqAuth = extra?.req?.auth;
+
+        // Debug the auth structure
+        console.log("[crates_list] Auth Debug:", {
+          hasExtra: !!extra,
+          hasAuthInfo: !!authInfo,
+          authInfoKeys: authInfo ? Object.keys(authInfo) : [],
+          hasReqAuth: !!reqAuth,
+          reqAuthKeys: reqAuth ? Object.keys(reqAuth) : [],
+          extraKeys: extra ? Object.keys(extra) : [],
+          authInfoDetails: authInfo,
+          reqAuthDetails: reqAuth,
+        });
+
+        // If we have a valid UID from client ID in either source, use it
+        if (authInfo && authInfo.clientId && authInfo.clientId !== "") {
+          uid = authInfo.clientId; // real end-user filter from authInfo
+        } else if (reqAuth && reqAuth.clientId && reqAuth.clientId !== "") {
+          uid = reqAuth.clientId; // real end-user filter from req.auth
+        }
+
+        // Ensure we have a valid value for the query
+        if (!uid || uid === undefined) {
+          uid = "__nobody__"; // Fallback to sentinel if somehow uid is undefined
+        }
+
+        console.log("[crates_list] Using UID for query:", uid);
+
+        // Log service account usage for metrics
+        if (uid === "__nobody__") {
+          console.log(
+            "[crates_list] Service account (API key only) access detected",
+          );
+        }
+
         // Start with base query
         let query = db
           .collection(CRATES_COLLECTION)
+          .where("ownerId", "==", uid) // Apply owner filter
           .where(
             "createdAt",
             ">",
@@ -67,10 +109,13 @@ export function registerCratesListTool(server: McpServer): void {
         // Get one extra document to determine if there are more results
         const snapshot = await query.limit(limit + 1).get();
 
+        // No need to post-filter since we're using the sentinel value approach
+        const docs = snapshot.docs;
+
         // Check if there are more results
-        const hasMore = snapshot.docs.length > limit;
+        const hasMore = docs.length > limit;
         // Remove the extra document if we have more results
-        const docs = hasMore ? snapshot.docs.slice(0, limit) : snapshot.docs;
+        const docsToUse = hasMore ? docs.slice(0, limit) : docs;
 
         const crates: Array<
           Partial<Crate> & {
@@ -79,7 +124,7 @@ export function registerCratesListTool(server: McpServer): void {
             contentType?: string;
             category?: CrateCategory;
           }
-        > = docs.map((doc: any) => {
+        > = docsToUse.map((doc: any) => {
           // Get document data properly
           const data = doc.data() as any;
           const id = doc.id;
@@ -103,7 +148,9 @@ export function registerCratesListTool(server: McpServer): void {
         return {
           crates,
           lastCrateId:
-            hasMore && docs.length > 0 ? docs[docs.length - 1].id : null,
+            hasMore && docsToUse.length > 0
+              ? docsToUse[docsToUse.length - 1].id
+              : null,
           hasMore,
           content: [
             {
