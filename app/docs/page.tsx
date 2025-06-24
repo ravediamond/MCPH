@@ -511,22 +511,6 @@ Output: { id, isShared, shareUrl, message }`}</code>
               </pre>
             </div>
             <div>
-              <div className="font-semibold text-gray-800">
-                crates_make_public
-              </div>
-              <div className="text-gray-600">
-                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">
-                  Deprecated
-                </span>{" "}
-                Alias for crates_share that makes a crate public (removing
-                password protection).
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { id, isShared, shareUrl, message }`}</code>
-              </pre>
-            </div>
-            <div>
               <div className="font-semibold text-gray-800">crates_unshare</div>
               <div className="text-gray-600">
                 Make a crate private by removing all sharing settings.

@@ -60,12 +60,6 @@ MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts
   - Output: Confirmation message
   - Permissions: Owner only
 
-- **crates_make_public**: Deprecated alias for crates_share.
-  - Input: `{ id: string }`
-  - Output: Same as crates_share
-  - Permissions: Owner only
-  - Note: Use crates_share instead
-
 ## Authentication Flow
 
 The MCP server uses a middleware chain to authenticate requests:

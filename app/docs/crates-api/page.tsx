@@ -87,9 +87,6 @@ export default function CratesApiPage() {
                   <li>
                     <code>crates_unshare</code>
                   </li>
-                  <li>
-                    <code>crates_make_public</code> (deprecated)
-                  </li>
                 </ul>
               </div>
             </div>
@@ -937,57 +934,6 @@ export default function CratesApiPage() {
               </p>
             </div>
           </div>
-
-          {/* crates_make_public (deprecated) */}
-          <div className="mb-10">
-            <h3 className="text-lg font-medium text-gray-800 mb-3">
-              crates_make_public
-              <span className="ml-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">
-                Deprecated
-              </span>
-            </h3>
-            <p className="text-gray-600 mb-3">
-              This is a deprecated alias for crates_share that makes a crate
-              public by removing password protection. Use crates_share instead
-              for all sharing operations.
-            </p>
-
-            <div className="mb-4">
-              <h4 className="font-medium text-gray-700 mb-2">
-                Input Parameters
-              </h4>
-              <div className="bg-gray-50 p-4 rounded-md">
-                <p>
-                  <code className="font-mono text-blue-600">id</code>{" "}
-                  <span className="text-gray-500">(required)</span>: The unique
-                  identifier of the crate to make public.
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <h4 className="font-medium text-gray-700 mb-2">Output</h4>
-              <div className="bg-gray-50 p-4 rounded-md">
-                <p>Same as crates_share.</p>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Migration Path</h4>
-              <p className="text-gray-600">
-                To replace this deprecated tool, use <code>crates_share</code>{" "}
-                without a password parameter:
-                <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                  {`{
-  "name": "crates_share",
-  "arguments": { 
-    "id": "def456"
-  }
-}`}
-                </pre>
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="bg-beige-100 border border-amber-200 rounded-lg p-6 mb-8">
@@ -1017,12 +963,6 @@ export default function CratesApiPage() {
               <span className="font-medium">Retention:</span> Crates are
               automatically deleted after 30 days. Download links expire after
               24 hours by default.
-            </li>
-            <li>
-              <span className="font-medium">Deprecated Tools:</span>{" "}
-              <code>crates_make_public</code> is deprecated and will be removed
-              in a future version. Use <code>crates_share</code> without a
-              password parameter for the same functionality.
             </li>
             <li>
               <span className="font-medium">Error Handling:</span> All tools
