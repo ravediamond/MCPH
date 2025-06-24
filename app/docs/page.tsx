@@ -531,6 +531,17 @@ Output: { message, ... }`}</code>
 Output: { message }`}</code>
               </pre>
             </div>
+            <div>
+              <div className="font-semibold text-gray-800">crates_copy</div>
+              <div className="text-gray-600">
+                Copy an existing crate to your collection. Only works with
+                public crates.
+              </div>
+              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
+                <code>{`Input: { id: string }
+Output: { crate, message }`}</code>
+              </pre>
+            </div>
           </div>
         </div>
 

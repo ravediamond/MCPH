@@ -135,6 +135,13 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Removes both the crate content and metadata
   - Permission: Only the owner can delete their crates
 
+- **crates_copy**: Copy a crate to your collection.
+  - Input: `{ id: string }`
+  - Output: `{ crate, message }`
+  - Creates a new private copy of a public crate in your collection
+  - Permission: Requires authentication; can only copy public crates or anonymous uploads
+  - Note: If you already own the crate, it will not be copied again
+
 ## How the SSE Endpoint Works
 
 - Connect via SSE: `npx mcp-remote https://mcp.mcph.io/mcp`

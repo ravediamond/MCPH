@@ -76,6 +76,9 @@ export default function CratesApiPage() {
                   <li>
                     <code>crates_delete</code>
                   </li>
+                  <li>
+                    <code>crates_copy</code>
+                  </li>
                 </ul>
               </div>
               <div className="bg-white p-2 rounded border border-amber-100">
@@ -931,6 +934,100 @@ export default function CratesApiPage() {
               <h4 className="font-medium text-gray-700 mb-2">Authentication</h4>
               <p className="text-gray-600">
                 Requires authentication. Only the owner can delete a crate.
+              </p>
+            </div>
+          </div>
+
+          {/* crates_copy */}
+          <div className="mb-10 border-b border-gray-200 pb-8">
+            <h3 className="text-lg font-medium text-gray-800 mb-3">
+              crates_copy
+            </h3>
+            <p className="text-gray-600 mb-3">
+              Copies an existing crate to the user's collection. If the crate is
+              already owned by the user, it will not be copied. The new copy
+              will be private by default.
+            </p>
+
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-700 mb-2">
+                Input Parameters
+              </h4>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <p>
+                  <code className="font-mono text-blue-600">id</code>{" "}
+                  <span className="text-gray-500">(required)</span>: The unique
+                  identifier of the crate to copy.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-700 mb-2">Output</h4>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  <li>
+                    <code className="font-mono text-blue-600">crate</code>: The
+                    new crate object with complete metadata
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="font-medium text-gray-700 mb-2">Example</h4>
+              <pre className="bg-gray-900 text-green-400 p-4 rounded-md overflow-x-auto">
+                {`// Request
+{
+  "jsonrpc": "2.0",
+  "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "crates_copy",
+    "arguments": { 
+      "id": "abc123"
+    }
+  }
+}
+
+// Response
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Crate copied successfully to your collection. New crate ID: def456"
+    }
+  ],
+  "crate": {
+    "id": "def456",
+    "title": "Copy of Example Crate",
+    "description": "This is an example crate",
+    "category": "markdown",
+    "createdAt": "2025-06-24T12:34:56.789Z",
+    "mimeType": "text/markdown",
+    "size": 1024,
+    "tags": ["example", "documentation"],
+    "isPublic": false,
+    "isPasswordProtected": false
+  }
+}`}
+              </pre>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Authentication</h4>
+              <p className="text-gray-600">
+                Requires authentication. Anonymous users cannot copy crates.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Access Rules</h4>
+              <p className="text-gray-600">
+                Users can only copy crates that are public or owned by anonymous
+                users. Private crates cannot be copied unless the user is the
+                owner, in which case copying is not needed as they already own
+                the crate.
               </p>
             </div>
           </div>
