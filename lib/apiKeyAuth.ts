@@ -144,3 +144,53 @@ export function apiKeyAuthMiddleware(
       });
     });
 }
+
+/**
+ * Extracts user information from a request by checking the Authorization header
+ * This handles both Firebase authentication tokens and API keys
+ * @param req The Next.js request object
+ * @returns User info object or null if not authenticated
+ */
+export async function getUserFromRequest(
+  req: NextRequest,
+): Promise<{ uid: string } | null> {
+  try {
+    // First try Firebase auth token
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "").trim();
+
+      try {
+        // Import Firebase Admin auth
+        const { auth } = await import("../lib/firebaseAdmin");
+        const decodedToken = await auth.verifyIdToken(token);
+        return { uid: decodedToken.uid };
+      } catch (firebaseError) {
+        // If Firebase token verification fails, try API key
+        console.log(
+          "[getUserFromRequest] Not a valid Firebase token, trying API key",
+        );
+      }
+    }
+
+    // Then try API key
+    const apiKeyHeader = req.headers.get("x-authorization") || authHeader;
+    if (
+      apiKeyHeader &&
+      typeof apiKeyHeader === "string" &&
+      apiKeyHeader.startsWith("Bearer ")
+    ) {
+      const apiKey = apiKeyHeader.replace("Bearer ", "").trim();
+      const apiKeyRecord = await findUserByApiKey(apiKey);
+
+      if (apiKeyRecord) {
+        return { uid: apiKeyRecord.userId };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[getUserFromRequest] Error:", error);
+    return null;
+  }
+}

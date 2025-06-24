@@ -46,7 +46,8 @@ export const useUploadService = () => {
         category: options.category || detectCrateCategory(file),
         password: options.password || "",
         tags: options.tags || [],
-        sharing: options.sharing || { public: true },
+        // For anonymous uploads (when user is not logged in), make public by default
+        sharing: options.sharing || { public: !user ? true : false },
       };
 
       // Create form data for the API call

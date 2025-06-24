@@ -6,6 +6,7 @@ import {
   getCrateContent,
 } from "../../../services/storageService";
 import { CrateCategory } from "../../../shared/types/crate";
+import * as bcrypt from "bcrypt";
 
 /**
  * Register the crates_get tool with the server
@@ -22,14 +23,80 @@ export function registerCratesGetTool(server: McpServer): void {
         '• "get my crate 12345"',
       inputSchema: GetCrateParams.shape,
     },
-    async ({ id }: { id: string }, extra: any) => {
+    async ({ id, password }: { id: string; password?: string }, extra: any) => {
       const meta = await getCrateMetadata(id);
       if (!meta) {
         throw new Error("Crate not found");
       }
 
+      // Log the metadata for debugging
+      console.log(
+        "Crate metadata for debugging:",
+        JSON.stringify(
+          {
+            id: meta.id,
+            ownerId: meta.ownerId,
+            shared: meta.shared,
+            isAnonymous: meta.ownerId === "anonymous",
+          },
+          null,
+          2,
+        ),
+      );
+
       // Default expiration time (5 minutes)
       const exp = 300;
+
+      // Get authentication context
+      let userUid = "";
+      if (extra?.req?.auth?.clientId) {
+        userUid = extra.req.auth.clientId;
+      } else if (extra?.authInfo?.clientId) {
+        userUid = extra.authInfo.clientId;
+      }
+
+      // Check access permissions
+      const isOwner = userUid && userUid === meta.ownerId;
+      const isShared = meta.shared?.public === true;
+      const isAnonymous = meta.ownerId === "anonymous";
+
+      // Log permissions for debugging
+      console.log("Permission check:", {
+        isOwner,
+        isShared,
+        isAnonymous,
+        userUid,
+        ownerId: meta.ownerId,
+        shared: meta.shared,
+      });
+
+      // Apply access rules:
+      // 1. Owner can always access
+      // 2. If shared.public is true, anyone can access (anonymous uploads are public by default)
+      // 3. Anonymous uploads should be public (fail-safe)
+      // 4. If shared.passwordHash exists and caller is not owner, require password
+      if (!isOwner && !isShared && !isAnonymous) {
+        throw new Error("You don't have permission to access this crate");
+      }
+
+      // Password gate for non-owners (skip for anonymous uploads)
+      if (
+        !isOwner &&
+        meta.shared?.passwordHash &&
+        meta.ownerId !== "anonymous"
+      ) {
+        if (!password) {
+          throw new Error("Password required to access this crate");
+        }
+
+        const passwordMatch = await bcrypt.compare(
+          password,
+          meta.shared.passwordHash,
+        );
+        if (!passwordMatch) {
+          throw new Error("Invalid password");
+        }
+      }
 
       // Special handling for BINARY category - direct user to use crates_get_download_link instead
       if (meta.category === CrateCategory.BINARY) {

@@ -9,6 +9,7 @@ export const ListCratesParams = z.object({
 
 export const GetCrateParams = z.object({
   id: z.string(),
+  password: z.string().optional(),
 });
 
 export const GetCrateDownloadLinkParams = z.object({

@@ -6,6 +6,60 @@ This is the Model Context Protocol server for MCPHub, the USB stick for AI tools
 
 MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts in one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly "plug in" and store/share content via simple API calls, functioning like a virtual USB stick for AI outputs.
 
+## Core MCP Tools
+
+### Fetching Crate Data
+
+- **crates_list**: List crates owned by the authenticated user.
+  - Input: `{ limit?: number, startAfter?: string }`
+  - Output: Paginated list of crates with metadata
+  - Permissions: Requires authentication
+
+- **crates_get**: Get the content of a crate by ID.
+  - Input: `{ id: string, password?: string }`
+  - Output: Content of the crate (text, image, or download info)
+  - Permissions:
+    - Owner can always access
+    - Anonymous uploads are public by default
+    - Password-protected crates require a password
+
+- **crates_get_download_link**: Generate a pre-signed download URL for a crate.
+  - Input: `{ id: string, expiresInSeconds?: number }`
+  - Output: `{ url: string, validForSeconds: number, expiresAt: string }`
+  - Permissions: Same as crates_get
+  - Note: Default expiration is 24 hours
+
+- **crates_search**: Search for crates by query.
+  - Input: `{ query: string }`
+  - Output: List of matching crates
+  - Permissions: Requires authentication
+
+### Creating & Managing Crates
+
+- **crates_upload**: Upload a new crate.
+  - Input: `{ fileName: string, contentType: string, data?: string, ... }`
+  - Output (text): `{ crate: object }`
+  - Output (binary): `{ uploadUrl: string, crateId: string }`
+  - Permissions: Requires authentication (except anonymous uploads)
+
+- **crates_delete**: Delete a crate permanently.
+  - Input: `{ id: string }`
+  - Output: Confirmation message
+  - Permissions: Owner only
+  - Note: Requires user confirmation via elicitation
+
+### Sharing Controls
+
+- **crates_share**: Make a crate public or password-protected.
+  - Input: `{ id: string, password?: string }`
+  - Output: `{ id: string, shareUrl: string }`
+  - Permissions: Owner only
+
+- **crates_unshare**: Make a crate private.
+  - Input: `{ id: string }`
+  - Output: Confirmation message
+  - Permissions: Owner only
+
 ## Authentication Flow
 
 The MCP server uses a middleware chain to authenticate requests:

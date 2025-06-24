@@ -110,9 +110,13 @@ export async function uploadCrate(
       .join(" ")
       .toLowerCase();
 
+    // Determine if this is an anonymous upload
+    const isAnonymousUpload = crateData.ownerId === "anonymous";
+
     // Create default sharing config if not provided
+    // Make anonymous uploads public by default
     const sharing: CrateSharing = crateData.shared || {
-      public: false,
+      public: isAnonymousUpload ? true : false,
     };
 
     if (crateData.shared?.passwordHash) {

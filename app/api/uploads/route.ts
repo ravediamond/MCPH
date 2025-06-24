@@ -118,6 +118,9 @@ export async function POST(req: NextRequest) {
       metadata,
       category: fileType ? (fileType as any) : undefined,
       tags: tags, // Add the parsed tags
+      // Set anonymous uploads to public by default
+      ownerId: "anonymous", // Ensure it's marked as anonymous
+      shared: { public: true }, // Make sure it's public
     });
 
     // Generate crate page URL

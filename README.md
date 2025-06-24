@@ -84,21 +84,56 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 
 ## Available MCP Tools (via SSE)
 
-- **crates/list**: List all available crates.
-  - Output: `{ crates: [ { id, fileName, ... }, ... ], content: [ { type: 'text', text: 'IDs: ...' } ] }`
-- **crates/get**: Get the raw crate data for a specific crate by id.
-  - Output: `{ crate: { ...meta }, content: [ { type: 'text', text: '...' } ] }` (binary files return a download link)
-- **crates/get_metadata**: Get all metadata fields as text for a specific crate by id.
-  - Output: `{ crate: { ...meta }, content: [ { type: 'text', text: 'key: value\n...' } ] }`
-- **crates/search**: Search for crates by query string in fileName or description.
-  - Output: `{ crates: [ ... ], content: [ { type: 'text', text: 'IDs: ...' } ] }`
-- **crates/upload**: Upload a new crate. For binary files, returns a presigned upload URL. For text, uploads directly.
-  - Output: `{ uploadUrl, fileId, gcsPath, message }` (binary) or `{ crate, message }` (text)
-- **crates/[id]/share**: Update a crate's sharing settings with unified link management.
-  - Input: `{ password?: string }`
+- **crates_list**: List all available crates owned by the authenticated user.
+  - Input: `{ limit?: number, startAfter?: string }`
+  - Output: `{ crates: [ { id, title, description, category, ... }, ... ], lastCrateId, hasMore }`
+  - Pagination: Use `limit` (default: 20, max: 100) and `startAfter` (ID of the last crate from the previous page)
+  - Permission: Requires authentication to list user's crates
+  - Sort: Most recent crates first
+
+- **crates_get**: Get the content of a specific crate by ID.
+  - Input: `{ id: string, password?: string }`
+  - Output: `{ content: [ { type: 'text|image', text|data, mimeType? }, ... ] }`
+  - Permission:
+    - Owner can always access their crates
+    - Anonymous uploads are public by default
+    - Password-protected crates require the password parameter
+    - For binary files, directs to use `crates_get_download_link` instead
+
+- **crates_get_download_link**: Generate a pre-signed download URL for a crate.
+  - Input: `{ id: string, expiresInSeconds?: number }`
+  - Output: `{ url: string, validForSeconds: number }`
+  - Useful for: Binary files, large files, or direct downloads
+  - Default expiration: 24 hours (can be customized with `expiresInSeconds`)
+
+- **crates_search**: Search for crates by query text.
+  - Input: `{ query: string }`
+  - Output: `{ crates: [ { id, title, description, category, ... }, ... ] }`
+  - Search covers: title, description, tags, and metadata
+  - Permission: Requires authentication to search user's crates
+  - Results: Ranked by relevance, limited to 10 most relevant matches
+
+- **crates_upload**: Upload a new crate.
+  - Input: `{ fileName: string, contentType: string, data: string, ... }`
+  - Output (binary): `{ uploadUrl, fileId, gcsPath, message }`
+  - Output (text): `{ crate, message }`
+  - Small text content is uploaded directly; large/binary files return a pre-signed upload URL
+
+- **crates_share**: Update a crate's sharing settings.
+  - Input: `{ id: string, password?: string }`
   - Output: `{ id, isShared, shareUrl, message }`
-- **crates/[id]/content**: Optimized endpoint for content retrieval with caching and direct access.
-  - Supports both GET (with optional URL params) and POST (with JSON body for password)
+  - Options: Make public or password-protected
+
+- **crates_unshare**: Make a crate private by removing all sharing settings.
+  - Input: `{ id: string }`
+  - Output: `{ message, ... }`
+  - Removes public access and password protection
+
+- **crates_delete**: Permanently delete a crate.
+  - Input: `{ id: string }`
+  - Output: `{ message }`
+  - Removes both the crate content and metadata
+  - Permission: Only the owner can delete their crates
 
 ## How the SSE Endpoint Works
 
@@ -119,6 +154,32 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
 ```
 
 The response will be streamed as an SSE `message` event with the result.
+
+## Using MCPH with AI Assistants
+
+MCPH integrates seamlessly with AI assistants like Claude and ChatGPT, enabling natural language file management without learning complex commands.
+
+### Natural Language Commands
+
+- **Managing Files**: "Show me my files", "Save this document", "Delete that old file"
+- **Sharing Content**: "Make this public", "Give me a shareable link", "Make this private again"
+- **Viewing Content**: "Show me that document", "What's in that file?"
+
+### Key Benefits
+
+- **No learning curve** - talk about files naturally
+- **Persistent storage** - files remain accessible across sessions for 30 days
+- **Smart search** - AI finds files using keywords and context
+- **Instant sharing** - generate public links with simple requests
+- **Cross-session continuity** - reference files from previous conversations
+
+### Getting Started with AI Assistants
+
+1. **Connect MCPH to your AI assistant** using your API key
+2. **Use natural language commands** to manage your files
+3. **Share content instantly** by simply asking your AI to make content public
+
+For detailed instructions and examples, visit our [documentation](https://mcph.io/docs).
 
 ## REST API (advanced)
 
