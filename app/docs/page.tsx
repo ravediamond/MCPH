@@ -395,18 +395,40 @@ export default function DocsPage() {
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Input: { limit?: number, startAfter?: string }
-Output: { crates: [...], lastCrateId, hasMore }`}</code>
+Output: { 
+  crates: [{ 
+    id: string, 
+    title: string, 
+    description?: string, 
+    category: "markdown" | "code" | "image" | "json" | "binary",
+    createdAt: string, 
+    mimeType: string,
+    size: number,
+    tags: string[],
+    isPublic: boolean,
+    isPasswordProtected: boolean
+  }, ...],
+  lastCrateId: string,
+  hasMore: boolean 
+}`}</code>
               </pre>
             </div>
             <div>
               <div className="font-semibold text-gray-800">crates_get</div>
               <div className="text-gray-600">
                 Retrieve a crate's contents by its ID (text, images, or download
-                link for binaries).
+                link for binaries). Anonymous uploads are public by default.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { crate: { ...meta }, content: [ ... ] }`}</code>
+                <code>{`Input: { id: string, password?: string }
+Output: { 
+  content: [{ 
+    type: "text" | "image", 
+    text?: string,          // For text content
+    data?: string,          // For image content (base64)
+    mimeType?: string       // For images
+  }, ...]
+}`}</code>
               </pre>
             </div>
             <div>
@@ -427,13 +449,44 @@ Output: { url: string, validForSeconds: number }`}</code>
               <div className="font-semibold text-gray-800">crates_search</div>
               <div className="text-gray-600">
                 Search your crates using hybrid semantic and text search (title,
-                description, tags, metadata).
+                description, tags, metadata). Results are ranked by relevance.
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Input: { query: string }
-Output: { crates: [...], content: [ ... ] }`}</code>
+Output: { 
+  crates: [{ 
+    id: string, 
+    title: string, 
+    description?: string, 
+    category: "markdown" | "code" | "image" | "json" | "binary",
+    createdAt: string, 
+    mimeType: string,
+    size: number,
+    tags: string[],
+    isPublic: boolean,
+    isPasswordProtected: boolean
+  }, ...]
+}`}</code>
               </pre>
             </div>
+
+            {/* Link to detailed Crates API documentation */}
+            <div className="mt-6 bg-beige-100 border border-amber-200 rounded-lg p-4">
+              <h3 className="font-medium text-amber-800 mb-2">
+                Detailed Crates API Documentation
+              </h3>
+              <p className="text-gray-700 mb-2">
+                For comprehensive documentation on listing, searching, and
+                retrieving crates, see our dedicated Crates API documentation.
+              </p>
+              <Link
+                href="/docs/crates-api"
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                View Crates API Documentation →
+              </Link>
+            </div>
+
             <div>
               <div className="font-semibold text-gray-800">crates_upload</div>
               <div className="text-gray-600">
@@ -454,6 +507,22 @@ Output (text): { crate, message }`}</code>
               </div>
               <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
                 <code>{`Input: { id: string, password?: string }
+Output: { id, isShared, shareUrl, message }`}</code>
+              </pre>
+            </div>
+            <div>
+              <div className="font-semibold text-gray-800">
+                crates_make_public
+              </div>
+              <div className="text-gray-600">
+                <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded">
+                  Deprecated
+                </span>{" "}
+                Alias for crates_share that makes a crate public (removing
+                password protection).
+              </div>
+              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
+                <code>{`Input: { id: string }
 Output: { id, isShared, shareUrl, message }`}</code>
               </pre>
             </div>
