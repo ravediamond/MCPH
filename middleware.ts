@@ -40,12 +40,12 @@ export function middleware(request: NextRequest) {
   response.headers.set(
     "Content-Security-Policy",
     "default-src 'self' https://mcph.io; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mcph.io https://apis.google.com https://*.googleapis.com; " +
-      "style-src 'self' 'unsafe-inline' https://mcph.io; " +
-      "connect-src 'self' https://mcph.io https://*.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com; " +
-      "img-src 'self' data: https://mcph.io https://*.googleapis.com; " +
-      "font-src 'self' data: https://mcph.io; " +
-      "frame-src 'self' https://mcph.io https://*.googleapis.com;",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://mcph.io https://apis.google.com https://*.googleapis.com https://www.gstatic.com https://accounts.google.com; " +
+      "style-src 'self' 'unsafe-inline' https://mcph.io https://www.gstatic.com; " +
+      "connect-src 'self' https://mcph.io https://*.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://firebasestorage.googleapis.com; " +
+      "img-src 'self' data: https://mcph.io https://*.googleapis.com https://www.gstatic.com; " +
+      "font-src 'self' data: https://mcph.io https://www.gstatic.com; " +
+      "frame-src 'self' https://mcph.io https://*.googleapis.com https://accounts.google.com https://*.firebaseapp.com;",
   );
 
   // Prevent click-jacking
