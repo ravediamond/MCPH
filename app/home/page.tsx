@@ -25,6 +25,7 @@ import {
   FaKey,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
+import RecentlyClaimedCrates from "../../components/RecentlyClaimedCrates";
 import { Crate, CrateSharing, CrateCategory } from "../../shared/types/crate";
 
 type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
@@ -526,6 +527,9 @@ export default function HomePage() {
             <FaTimesCircle className="mr-2" /> {error}
           </div>
         )}
+
+        {/* Recently Claimed Crates */}
+        {user && <RecentlyClaimedCrates />}
 
         {/* File Grid */}
         <div>

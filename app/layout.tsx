@@ -2,6 +2,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import Layout from "components/layout/Layout";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "../contexts/AuthContext";
+import { AnonymousUploadTransitionProvider } from "../contexts/AnonymousUploadTransitionProvider";
 import "./globals.css";
 
 // Load fonts
@@ -90,7 +91,9 @@ export default function RootLayout({
           }}
         />
         <AuthProvider>
-          <Layout>{children}</Layout>
+          <AnonymousUploadTransitionProvider>
+            <Layout>{children}</Layout>
+          </AnonymousUploadTransitionProvider>
         </AuthProvider>
       </body>
     </html>

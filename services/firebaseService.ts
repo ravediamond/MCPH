@@ -770,3 +770,82 @@ export async function updateCrateSharing(
     return { success: false, error: "Failed to update crate sharing settings" };
   }
 }
+
+/**
+ * Update the owner of a crate
+ * @param crateId The ID of the crate to update
+ * @param newOwnerId The new owner's user ID
+ * @returns A promise that resolves to a success/error object
+ */
+export async function updateCrateOwner(
+  crateId: string,
+  newOwnerId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const crate = await getCrateMetadata(crateId);
+    if (!crate) {
+      return { success: false, error: "Crate not found" };
+    }
+
+    // Only allow transferring ownership of anonymous uploads
+    if (crate.ownerId !== "anonymous") {
+      return {
+        success: false,
+        error: "Only anonymous uploads can be transferred",
+      };
+    }
+
+    // Update the owner ID
+    await db.collection(CRATES_COLLECTION).doc(crateId).update({
+      ownerId: newOwnerId,
+    });
+
+    // Log the transfer event
+    await logEvent("crate_ownership_transfer", crateId, undefined, {
+      newOwnerId,
+      previousOwnerId: crate.ownerId,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating crate owner:", error);
+    return { success: false, error: "Failed to update crate owner" };
+  }
+}
+
+/**
+ * Bulk transfer ownership of multiple crates
+ * @param crateIds Array of crate IDs to transfer
+ * @param newOwnerId The new owner's user ID
+ * @returns A promise that resolves to a success object with results for each crate
+ */
+export async function bulkTransferCrateOwnership(
+  crateIds: string[],
+  newOwnerId: string,
+): Promise<{
+  success: boolean;
+  results: { id: string; success: boolean; error?: string }[];
+  successCount: number;
+}> {
+  const results = [];
+  let successCount = 0;
+
+  for (const crateId of crateIds) {
+    const result = await updateCrateOwner(crateId, newOwnerId);
+    results.push({
+      id: crateId,
+      success: result.success,
+      error: result.error,
+    });
+
+    if (result.success) {
+      successCount++;
+    }
+  }
+
+  return {
+    success: successCount > 0,
+    results,
+    successCount,
+  };
+}

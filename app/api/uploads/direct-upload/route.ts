@@ -7,6 +7,7 @@ import {
   getUserStorageUsage,
 } from "@/services/firebaseService";
 import { CrateCategory, CrateSharing } from "@/shared/types/crate";
+import { getUserFromRequest } from "@/lib/apiKeyAuth";
 import bcrypt from "bcrypt";
 
 /**
@@ -14,6 +15,9 @@ import bcrypt from "bcrypt";
  */
 export async function POST(req: NextRequest) {
   try {
+    // Check for authenticated user
+    const userInfo = await getUserFromRequest(req);
+
     const formData = await req.formData();
 
     // Extract file from formData
@@ -36,9 +40,12 @@ export async function POST(req: NextRequest) {
     // Get additional form fields
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const userId = formData.get("userId") as string;
+    const formUserId = formData.get("userId") as string;
     const fileTypeParam = formData.get("fileType") as string | null;
     const fileType = fileTypeParam || undefined; // Convert null to undefined
+
+    // Use authenticated user ID if available, otherwise use form userId or "anonymous"
+    const userId = userInfo?.uid || formUserId || "anonymous";
 
     // New: Read sharing options from formData
     const isSharedStr = formData.get("isShared") as string | null;
@@ -125,7 +132,7 @@ export async function POST(req: NextRequest) {
       title,
       description,
       category: fileType as CrateCategory,
-      ownerId: userId || "anonymous",
+      ownerId: userId,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
       tags, // Add the parsed tags

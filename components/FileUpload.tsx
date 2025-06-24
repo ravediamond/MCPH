@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
+import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { CrateCategory } from "../shared/types/crate";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -99,6 +100,8 @@ export default function FileUpload({
 }: FileUploadProps) {
   // Get current user from auth context
   const { user } = useAuth();
+  // Get anonymous upload transition hook
+  const { storeTempCrateId, transferModal } = useAnonymousUploadTransition();
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
@@ -339,6 +342,11 @@ export default function FileUpload({
 
       toast.success("Your file has been uploaded successfully!");
 
+      // If user is not logged in, store the crate ID for later transfer
+      if (!user && uploadedFileData.fileId) {
+        storeTempCrateId(uploadedFileData.fileId);
+      }
+
       // Call the onUploadSuccess callback if provided
       if (onUploadSuccess) {
         onUploadSuccess({
@@ -391,6 +399,7 @@ export default function FileUpload({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {transferModal}
       {uploadedFile ? (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
