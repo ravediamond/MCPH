@@ -6,6 +6,7 @@ import {
   getCrateContent,
 } from "../../../services/storageService";
 import { CrateCategory } from "../../../shared/types/crate";
+import * as bcrypt from "bcrypt";
 
 /**
  * Register the crates_get tool with the server
@@ -22,7 +23,7 @@ export function registerCratesGetTool(server: McpServer): void {
         '• "get my crate 12345"',
       inputSchema: GetCrateParams.shape,
     },
-    async ({ id }: { id: string }, extra: any) => {
+    async ({ id, password }: { id: string; password?: string }, extra: any) => {
       const meta = await getCrateMetadata(id);
       if (!meta) {
         throw new Error("Crate not found");
@@ -30,6 +31,41 @@ export function registerCratesGetTool(server: McpServer): void {
 
       // Default expiration time (5 minutes)
       const exp = 300;
+
+      // Get authentication context
+      let userUid = "";
+      if (extra?.req?.auth?.clientId) {
+        userUid = extra.req.auth.clientId;
+      } else if (extra?.authInfo?.clientId) {
+        userUid = extra.authInfo.clientId;
+      }
+
+      // Check access permissions
+      const isOwner = userUid && userUid === meta.ownerId;
+      const isShared = meta.shared?.public === true;
+
+      // Apply access rules:
+      // 1. Owner can always access
+      // 2. If shared.public is true, anyone can access
+      // 3. If shared.passwordHash exists and caller is not owner, require password
+      if (!isOwner && !isShared) {
+        throw new Error("You don't have permission to access this crate");
+      }
+
+      // Password gate for non-owners
+      if (!isOwner && meta.shared?.passwordHash) {
+        if (!password) {
+          throw new Error("Password required to access this crate");
+        }
+
+        const passwordMatch = await bcrypt.compare(
+          password,
+          meta.shared.passwordHash,
+        );
+        if (!passwordMatch) {
+          throw new Error("Invalid password");
+        }
+      }
 
       // Special handling for BINARY category - direct user to use crates_get_download_link instead
       if (meta.category === CrateCategory.BINARY) {

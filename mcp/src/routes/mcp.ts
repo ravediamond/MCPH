@@ -22,7 +22,7 @@ export function configureMcpRoutes(router: Router): void {
       }
       apiKeyAuthMiddleware(req, res, next);
     },
-    mapUserToAuth(), // NEW: Map req.user to req.auth for SDK compatibility
+    mapUserToAuth(), // Map req.user to req.auth for SDK compatibility
     async (req: Request, res: Response) => {
       // Safely use the request as AuthenticatedRequest after middleware has processed it
       const authReq = req as unknown as AuthenticatedRequest;
