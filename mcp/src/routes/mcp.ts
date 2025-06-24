@@ -18,6 +18,10 @@ export function configureMcpRoutes(router: Router): void {
     (req: Request, res: Response, next: NextFunction): void => {
       // Allow unauthenticated access to crates_get only
       if (req.body?.method === "crates_get") {
+        console.log("Allowing unauthenticated access for crates_get", {
+          method: req.body.method,
+          params: req.body.params,
+        });
         return next();
       }
       apiKeyAuthMiddleware(req, res, next);
