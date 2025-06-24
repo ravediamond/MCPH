@@ -54,6 +54,10 @@ export const DeleteCrateParams = z.object({
   id: z.string(),
 });
 
+export const CopyCrateParams = z.object({
+  id: z.string(),
+});
+
 export const SearchParams = z.object({
   query: z.string(),
 });
