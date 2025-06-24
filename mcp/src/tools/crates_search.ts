@@ -21,17 +21,61 @@ export function registerCratesSearchTool(server: McpServer): void {
         "• \"search my crates for 'report'\"",
       inputSchema: SearchParams.shape,
     },
-    async ({ query }: { query: string }) => {
+    async ({ query }: { query: string }, extra?: any) => {
+      // Implementation of the fix according to the ticket
+      // The ctxUser might be in extra.req.auth or extra.authInfo depending on flow
+      let uid = "__nobody__"; // sentinel that never matches "" in DB
+
+      // Check for auth info in various possible locations
+      const authInfo = extra?.authInfo;
+      const reqAuth = extra?.req?.auth;
+
+      // Debug the auth structure
+      console.log("[crates_search] Auth Debug:", {
+        hasExtra: !!extra,
+        hasAuthInfo: !!authInfo,
+        authInfoKeys: authInfo ? Object.keys(authInfo) : [],
+        hasReqAuth: !!reqAuth,
+        reqAuthKeys: reqAuth ? Object.keys(reqAuth) : [],
+        extraKeys: extra ? Object.keys(extra) : [],
+        authInfoDetails: authInfo,
+        reqAuthDetails: reqAuth,
+      });
+
+      // If we have a valid UID from client ID in either source, use it
+      if (authInfo && authInfo.clientId && authInfo.clientId !== "") {
+        uid = authInfo.clientId; // real end-user filter from authInfo
+      } else if (reqAuth && reqAuth.clientId && reqAuth.clientId !== "") {
+        uid = reqAuth.clientId; // real end-user filter from req.auth
+      }
+
+      // Ensure we have a valid value for the query
+      if (!uid || uid === undefined) {
+        uid = "__nobody__"; // Fallback to sentinel if somehow uid is undefined
+      }
+
+      console.log("[crates_search] Using UID for query:", uid);
+
+      // Log service account usage for metrics
+      if (uid === "__nobody__") {
+        console.log(
+          "[crates_search] Service account (API key only) access detected",
+        );
+      }
+
       // Simplified for v1 - text search only (no vector search)
       let topK = 10;
       const cratesRef = db.collection(CRATES_COLLECTION);
-      // Text-based search only (searchField prefix, case-insensitive)
+
+      // Build query with owner filter
       const textQuery = query.toLowerCase();
       const classicalSnapshot = await cratesRef
+        .where("ownerId", "==", uid) // Apply owner filter
         .where("searchField", ">=", textQuery)
         .where("searchField", "<=", textQuery + "\uf8ff")
         .limit(topK)
         .get();
+
       const allCrates = classicalSnapshot.docs.map((doc: any) => ({
         id: doc.id,
         ...doc.data(),
