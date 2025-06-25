@@ -795,9 +795,10 @@ export async function updateCrateOwner(
       };
     }
 
-    // Update the owner ID
+    // Update the owner ID and remove the expiration date
     await db.collection(CRATES_COLLECTION).doc(crateId).update({
       ownerId: newOwnerId,
+      expiresAt: FieldValue.delete(), // Remove expiration date when claimed
     });
 
     // Log the transfer event

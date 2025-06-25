@@ -97,7 +97,7 @@ export default function HeroUpload() {
 
           // Anonymous user success message
           toast.success(
-            "Link generated! Download link expires in 24 hours. Crate available for 30 days. Need titles, tags, or bigger crates? Create a free account →",
+            "Link generated! Anonymous uploads expire after 30 days. Sign in to keep your crates permanently and access more features →",
             {
               duration: 5000,
               icon: "🔗",

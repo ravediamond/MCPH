@@ -143,6 +143,13 @@ export function registerCratesUploadTool(server: McpServer): void {
         partialCrate.category = category;
       }
 
+      // Add expiration date for anonymous uploads (30 days from now)
+      if (ownerId === "anonymous") {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+        partialCrate.expiresAt = expiresAt;
+      }
+
       // Determine if we should return a presigned URL or directly upload
       const isBinaryCategory = category === CrateCategory.BINARY;
       const isBinaryContentType =

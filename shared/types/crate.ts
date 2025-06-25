@@ -26,6 +26,7 @@ export interface Crate {
   size: number; // File size in bytes
   downloadCount: number; // Number of times the crate was downloaded
   fileName: string; // Original filename of the uploaded file
+  expiresAt?: Date; // Optional expiration date, used for anonymous uploads (30 days)
 
   // Optional metadata
   metadata?: Record<string, string>; // Key-value user metadata

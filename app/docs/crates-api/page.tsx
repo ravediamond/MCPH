@@ -1057,9 +1057,10 @@ export default function CratesApiPage() {
               receive a pre-signed URL to upload the content separately.
             </li>
             <li>
-              <span className="font-medium">Retention:</span> Crates are
-              automatically deleted after 30 days. Download links expire after
-              24 hours by default.
+              <span className="font-medium">Retention:</span> Anonymous uploads
+              are automatically deleted after 30 days, while authenticated user
+              uploads have no expiration. Download links expire after 24 hours
+              by default.
             </li>
             <li>
               <span className="font-medium">Error Handling:</span> All tools

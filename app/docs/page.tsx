@@ -208,9 +208,10 @@ export default function DocsPage() {
           </h3>
           <p className="text-gray-600 mb-3">
             MCPH works with any AI tool that supports the Model Context
-            Protocol. Crates are stored for 30 days and all generated download
-            links expires in 24 hours. The simplest way to connect is using the{" "}
-            <code>mcp-remote</code> CLI tool:
+            Protocol. Anonymous uploads are stored for 30 days, while
+            authenticated user uploads have no expiration. All generated
+            download links expires in 24 hours. The simplest way to connect is
+            using the <code>mcp-remote</code> CLI tool:
           </p>
 
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
@@ -805,7 +806,8 @@ Output: { crate, message }`}</code>
                 </li>
                 <li>
                   <b>Persistent storage</b> - files remain accessible across
-                  sessions for 30 days
+                  sessions indefinitely for authenticated users, 30 days for
+                  anonymous uploads
                 </li>
                 <li>
                   <b>Smart search</b> - AI finds files using keywords and
@@ -841,7 +843,8 @@ Output: { crate, message }`}</code>
                 Use <b>natural language</b>, no need to learn special commands.
               </li>
               <li>
-                Remember that files are stored for <b>30 days</b> by default.
+                Remember that anonymous uploads are stored for <b>30 days</b> by
+                default, while authenticated user uploads have no expiration.
               </li>
             </ul>
           </div>

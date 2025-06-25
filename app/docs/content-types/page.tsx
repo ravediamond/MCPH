@@ -125,9 +125,10 @@ export default function ContentTypesPage() {
                   Automatic Expiration
                 </p>
                 <p className="text-sm text-gray-600">
-                  All crates have an automatic expiration date of 30 days. After
-                  expiration, the content is automatically deleted from our
-                  servers.
+                  Anonymous uploads have an automatic expiration date of 30
+                  days. After expiration, the content is automatically deleted
+                  from our servers. Crates uploaded by authenticated users have
+                  no expiration date.
                 </p>
               </div>
             </div>

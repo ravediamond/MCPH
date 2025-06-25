@@ -106,7 +106,7 @@ export function registerCratesSearchTool(server: McpServer): void {
           ...filteredData,
           contentType: mimeType, // Use safely extracted mimeType
           category: category, // Use safely extracted category
-          expiresAt: null, // ttlDays is no longer supported
+          expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null, // Include actual expiration date if set
         };
       });
 

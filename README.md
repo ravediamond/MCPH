@@ -20,7 +20,7 @@ MCPH is a public remote crate server for the Model Context Protocol (MCP). It su
 
 - **Direct AI Integration**: Connect ChatGPT, Claude, and other MCP-compatible AI tools directly to share content
 - **Multiple Content Types**: Share markdown, code, images, JSON, and binary files
-- **Security Features**: Password protection and automatic 30-day expiration for all content
+- **Security Features**: Password protection and automatic 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Simple Sharing**: Generate shareable links that anyone can access - no login required to view content
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
 - **MCP Protocol Support**: Built on the standardized Model Context Protocol for AI interoperability
@@ -96,7 +96,7 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Output: `{ content: [ { type: 'text|image', text|data, mimeType? }, ... ] }`
   - Permission:
     - Owner can always access their crates
-    - Anonymous uploads are public by default
+    - Anonymous uploads are public by default (expire after 30 days)
     - Password-protected crates require the password parameter
     - For binary files, directs to use `crates_get_download_link` instead
 
@@ -118,6 +118,7 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Output (binary): `{ uploadUrl, fileId, gcsPath, message }`
   - Output (text): `{ crate, message }`
   - Small text content is uploaded directly; large/binary files return a pre-signed upload URL
+  - Note: Anonymous uploads expire after 30 days, authenticated user uploads have no expiration
 
 - **crates_share**: Update a crate's sharing settings.
   - Input: `{ id: string, password?: string }`
@@ -141,6 +142,7 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Creates a new private copy of a public crate in your collection
   - Permission: Requires authentication; can only copy public crates or anonymous uploads
   - Note: If you already own the crate, it will not be copied again
+  - Note: When an authenticated user copies an anonymous crate, the expiration is removed
 
 ## How the SSE Endpoint Works
 
@@ -175,7 +177,7 @@ MCPH integrates seamlessly with AI assistants like Claude and ChatGPT, enabling 
 ### Key Benefits
 
 - **No learning curve** - talk about files naturally
-- **Persistent storage** - files remain accessible across sessions for 30 days
+- **Persistent storage** - files remain accessible across sessions indefinitely for authenticated users, 30 days for anonymous uploads
 - **Smart search** - AI finds files using keywords and context
 - **Instant sharing** - generate public links with simple requests
 - **Cross-session continuity** - reference files from previous conversations
