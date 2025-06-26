@@ -24,9 +24,12 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold">One memory for every AI tool.</h1>
+            <h1 className="text-5xl font-bold">
+              One memory for every AI tool.
+            </h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Crates stores and shares every artifact your AIs create—permanent for you, self-erasing for guests.
+              Crates stores and shares every artifact your AIs create—permanent
+              for you, self-erasing for guests.
             </p>
             <div className="mt-6">
               <Link
@@ -501,7 +504,9 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-gray-600">Stored until you delete them (logged in users)</span>
+                  <span className="text-gray-600">
+                    Stored until you delete them (logged in users)
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg

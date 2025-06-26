@@ -714,8 +714,8 @@ export default function FileUpload({
               </>
             ) : (
               <>
-                Your crates are stored until you delete them. Download links expire after
-                24 hours.
+                Your crates are stored until you delete them. Download links
+                expire after 24 hours.
               </>
             )}
           </p>

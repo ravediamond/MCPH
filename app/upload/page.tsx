@@ -84,7 +84,9 @@ export default function UploadPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
-                      <span>Stored until you delete them (logged-in users)</span>
+                      <span>
+                        Stored until you delete them (logged-in users)
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>

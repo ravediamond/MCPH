@@ -23,8 +23,9 @@ export default function PrivacyPage() {
               security) and keep it for 7 days.
             </li>
             <li>
-              For guest users, crates you upload are automatically deleted after 30 days.
-              For logged-in users, crates are stored until you delete them.
+              For guest users, crates you upload are automatically deleted after
+              30 days. For logged-in users, crates are stored until you delete
+              them.
             </li>
             <li>We do not track you or sell your data.</li>
           </ul>
@@ -39,8 +40,9 @@ export default function PrivacyPage() {
             explains how we collect, use, and safeguard your information when
             you use our crate-sharing service. We've designed our service with
             privacy as a core principle, minimizing data collection and ensuring
-            guest uploads are automatically deleted after 30 days, while logged-in users can 
-            store their crates until they choose to delete them.
+            guest uploads are automatically deleted after 30 days, while
+            logged-in users can store their crates until they choose to delete
+            them.
           </p>
 
           <p className="text-gray-600">
@@ -70,7 +72,8 @@ export default function PrivacyPage() {
             </ul>
             <p className="text-gray-600 font-medium">
               Guest crates and associated metadata are automatically and
-              permanently deleted after 30 days. Crates uploaded by logged-in users are stored until the user deletes them.
+              permanently deleted after 30 days. Crates uploaded by logged-in
+              users are stored until the user deletes them.
             </p>
           </div>
 

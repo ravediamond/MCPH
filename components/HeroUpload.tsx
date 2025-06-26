@@ -251,8 +251,11 @@ export default function HeroUpload() {
                         or paste Markdown / JSON
                       </p>
                       <span className="inline-block mt-3 md:mt-4 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        10 MB max • {user ? "Stored until you delete them" : "Auto-delete after 30 days"} • Download
-                        links expire in 24 hours
+                        10 MB max •{" "}
+                        {user
+                          ? "Stored until you delete them"
+                          : "Auto-delete after 30 days"}{" "}
+                        • Download links expire in 24 hours
                       </span>
                     </div>
                   </>
@@ -330,7 +333,10 @@ export default function HeroUpload() {
             <div className="text-center mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 rounded-lg">
               {!user ? (
                 <p className="text-xs md:text-sm text-blue-700">
-                  Download link expires in 24 hours. {user ? "Your crates are stored until you delete them." : "Crate auto-deletes after 30 days."}{" "}
+                  Download link expires in 24 hours.{" "}
+                  {user
+                    ? "Your crates are stored until you delete them."
+                    : "Crate auto-deletes after 30 days."}{" "}
                   <a href="/login" className="font-medium underline">
                     Create an account
                   </a>{" "}
@@ -339,7 +345,9 @@ export default function HeroUpload() {
               ) : (
                 <div className="space-y-2">
                   <p className="text-xs md:text-sm text-blue-700">
-                    Download link expires in 24 hours. Your crates are stored until you delete them. Need more options? Use the advanced uploader.
+                    Download link expires in 24 hours. Your crates are stored
+                    until you delete them. Need more options? Use the advanced
+                    uploader.
                   </p>
                   <Link
                     href="/upload"
