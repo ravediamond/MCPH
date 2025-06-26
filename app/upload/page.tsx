@@ -80,7 +80,11 @@ export default function UploadPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
-                      <span>Files are stored for 30 days</span>
+                      <span>Auto-delete after 30 days (guest users)</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>Stored until you delete them (logged-in users)</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>

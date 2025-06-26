@@ -24,16 +24,16 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold">The USB stick for AI tools.</h1>
+            <h1 className="text-5xl font-bold">One memory for every AI tool.</h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Plug in any file, share the link, auto-expires in 24 h.
+              Crates stores and shares every artifact your AIs create—permanent for you, self-erasing for guests.
             </p>
             <div className="mt-6">
               <Link
                 href="/upload"
                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
               >
-                Get your AI USB stick →
+                Get started →
               </Link>
             </div>
           </div>
@@ -501,7 +501,7 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-gray-600">30-day link expiry</span>
+                  <span className="text-gray-600">Stored until you delete them (logged in users)</span>
                 </li>
                 <li className="flex items-start">
                   <svg

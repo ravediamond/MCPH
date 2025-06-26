@@ -17,7 +17,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +
       "- Streamable HTTP transport\n" +
-      "- Anonymous crates expire after 30 days. Authenticated crates never expire. Download links expire in 24 hours\n\n" +
+      "- Guest crates auto-delete after 30 days. Logged-in users' crates are stored until deleted. Download links expire in 24 hours\n\n" +
       "Natural-language AI commands:\n" +
       '• "list my crates" → crates_list\n' +
       '• "show crate with ID 12345" → crates_get\n' +

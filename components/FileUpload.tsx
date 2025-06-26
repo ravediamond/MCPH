@@ -709,12 +709,12 @@ export default function FileUpload({
           <p className="text-xs text-gray-500 text-center mt-4">
             {!user ? (
               <>
-                Anonymous crates expire after 30 days. Sign in to keep your
+                Anonymous crates auto-delete after 30 days. Sign in to keep your
                 crates permanently. Download links expire after 24 hours.
               </>
             ) : (
               <>
-                Your crates are stored permanently. Download links expire after
+                Your crates are stored until you delete them. Download links expire after
                 24 hours.
               </>
             )}
