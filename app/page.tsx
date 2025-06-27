@@ -24,12 +24,10 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold">
-              One memory for every AI tool.
-            </h1>
+            <h1 className="text-5xl font-bold">One vault for every AI tool.</h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Crates stores and shares every artifact your AIs create—permanent
-              for you, self-erasing for guests.
+              Permanent for you, self-erasing for guests—securely store, find,
+              and share any artifact across Claude, ChatGPT, or your own agents.
             </p>
             <div className="mt-6">
               <Link
@@ -53,14 +51,14 @@ export default function Home() {
             </span>
             <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> 30-day
-              auto-expiry
+              auto-expiry (guests)
             </span>
             <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Up to 10 MB
             </span>
             <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" />{" "}
-              Password-optional
+              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Permanent
+              storage (logged in)
             </span>
           </div>
         </div>
@@ -92,19 +90,6 @@ export default function Home() {
             How It Works: 3 Simple Steps
           </h2>
 
-          <div className="mb-8 flex justify-center">
-            <img
-              src="/assets/claude-quickstart.gif"
-              alt="Quick-start: How to use with Claude AI"
-              style={{
-                maxWidth: "100%",
-                height: "auto",
-                borderRadius: "0.5rem",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
-            />
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
@@ -114,7 +99,7 @@ export default function Home() {
                 Upload
               </h3>
               <p className="text-gray-600 text-center text-sm md:text-base">
-                Drag & drop. Get a link. Done.
+                Securely vault your AI artifacts with ease.
               </p>
             </div>
 
@@ -149,7 +134,7 @@ export default function Home() {
       <section className="py-12 px-4 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            Connect AI with Humans Seamlessly
+            Bridge AI to Humans with Secure Vaults
           </h2>
 
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-4 py-6">
@@ -173,7 +158,7 @@ export default function Home() {
               </div>
               <h3 className="font-medium text-gray-800 mb-2">AI Assistant</h3>
               <p className="text-sm text-gray-600">
-                Creates content for sharing
+                Creates artifacts for secure storage
               </p>
             </div>
 
@@ -229,8 +214,10 @@ export default function Home() {
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">MCPH</h3>
-              <p className="text-sm text-gray-600">Generates shareable link</p>
+              <h3 className="font-medium text-gray-800 mb-2">AI Vault</h3>
+              <p className="text-sm text-gray-600">
+                Securely stores and generates shareable link
+              </p>
             </div>
 
             {/* Arrow from MCPH to Viewer */}
@@ -298,43 +285,10 @@ export default function Home() {
 
           <div className="mt-8 text-center">
             <p className="text-gray-600 max-w-xl mx-auto">
-              Share AI-generated content with a single link that works for both
-              humans and AI agents. No authentication required for viewing.
+              Share AI-generated artifacts from your secure vault with a single
+              link that works for both humans and AI agents. No authentication
+              required for viewing.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Developer Section */}
-      <section className="py-10 md:py-12 px-4 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-center text-gray-800">
-            For Developers
-          </h2>
-          <div className="bg-gray-900 text-white p-3 md:p-5 rounded-xl font-mono text-xs md:text-sm overflow-x-auto shadow-lg mb-4">
-            <code>curl -F file=@report.md https://mcph.io/upload</code>
-          </div>
-          <div className="mt-4 text-center">
-            <Link
-              href="/docs"
-              className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
-            >
-              <span>View full API documentation</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 ml-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
           </div>
         </div>
       </section>
@@ -505,7 +459,7 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-600">
-                    Stored until you delete them (logged in users)
+                    Securely vaulted until you delete them (logged in users)
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -521,7 +475,9 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-gray-600">Password protection</span>
+                  <span className="text-gray-600">
+                    30-day expiry for guest uploads
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -686,10 +642,11 @@ export default function Home() {
       <section className="py-16 px-4 text-center">
         <div className="max-w-3xl mx-auto bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200 shadow-sm">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-            Ready to streamline your AI content sharing?
+            Ready to secure your AI artifacts in one vault?
           </h2>
           <p className="text-gray-700 mb-8 text-lg">
-            Upload now (no login) or create an account for more features.
+            Upload now (no login) or create an account for enhanced vault
+            features.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
@@ -711,9 +668,6 @@ export default function Home() {
       {/* Footer Info */}
       <section className="py-8 px-4 border-t border-gray-200 bg-gray-50">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <p className="text-gray-600">Drag & drop. Get a link. Done.</p>
-          </div>
           <div className="border-t border-gray-200 pt-6 mt-2">
             <div className="flex flex-wrap justify-center gap-8">
               <Link

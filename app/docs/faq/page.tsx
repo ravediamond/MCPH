@@ -48,6 +48,7 @@ export default function FAQPage() {
                   "Windsurf",
                   "GitHub Copilot",
                   "Mistral Le Chat",
+                  "Perplexity AI",
                   "LangGraph",
                   "CrewAI",
                   "LlamaIndex",

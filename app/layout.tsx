@@ -22,7 +22,7 @@ export const metadata = {
   metadataBase: new URL("https://mcph.io"),
   title: "MCPH | Secure, Simple Crate Sharing",
   description:
-    "MCPH – the USB stick for AI tools. Store, share, and auto-expire prompts, files, & model outputs with a single chat command.",
+    "MCPH – One vault for every AI tool. Securely store, share, and manage AI artifacts with permanent storage for you and auto-expiry for guests.",
   keywords: [
     "crate sharing",
     "temporary crates",
@@ -34,7 +34,7 @@ export const metadata = {
   openGraph: {
     title: "MCPH | Secure, Simple Crate Sharing",
     description:
-      "MCPH – the USB stick for AI tools. Store, share, and auto-expire prompts, files, & model outputs with a single chat command.",
+      "MCPH – One vault for every AI tool. Securely store, share, and manage AI artifacts with permanent storage for you and auto-expiry for guests.",
     url: "https://mcph.io",
     siteName: "MCPH",
     images: [

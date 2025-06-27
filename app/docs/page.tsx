@@ -22,9 +22,10 @@ export default function DocsPage() {
             What is MCPH?
           </h2>
           <p className="text-gray-600 mb-3">
-            <b>MCPH</b> is a modern USB key for AI agents—store, share, and
-            auto-expire artifacts in one command. It works with ChatGPT, Claude,
-            and other AI tools that support the Model Context Protocol (MCP).
+            <b>MCPH</b> is one vault for every AI tool—securely store, share,
+            and manage artifacts with permanent storage for you and auto-expiry
+            for guests. It works with ChatGPT, Claude, and other AI tools that
+            support the Model Context Protocol (MCP).
           </p>
           <p className="text-gray-600 mb-3">With MCPH, you can:</p>
           <ul className="list-disc pl-5 text-gray-600 space-y-2 mb-3">

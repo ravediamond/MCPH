@@ -8,7 +8,8 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-gray-600 text-sm">
-              MCPH — Secure, simple crate sharing with auto-expiration.
+              MCPH — One secure vault for every AI artifact, permanent for you,
+              self-erasing for guests.
             </p>
           </div>
 
