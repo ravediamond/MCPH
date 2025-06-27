@@ -11,43 +11,9 @@ export default function IntegrationsPage() {
   const [isCopying, setIsCopying] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Function to fetch Claude JSON config and copy to clipboard
-  const handleCopyClaudeConfig = async () => {
-    if (!user) {
-      // Redirect to login page if not authenticated
-      window.location.href = "/login?next=/integrations";
-      return;
-    }
-    setIsCopying(true);
-    try {
-      // Fetch the Claude integration config (which also rotates the API key)
-      const token = await user.getIdToken();
-      const response = await fetch("/api/integrations/claude", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to get Claude configuration");
-      }
-      const configData = await response.json();
-      // Convert the config to JSON format
-      const jsonConfig = JSON.stringify(configData, null, 2);
-      // Copy to clipboard
-      try {
-        await navigator.clipboard.writeText(jsonConfig);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 3000);
-        // Show success toast
-        toast.success("Config copied as JSON – paste into Claude → reload");
-      } catch (clipboardError) {
-        console.error("Error accessing clipboard:", clipboardError);
-        toast.error("Failed to copy: Clipboard access denied");
-      }
-    } catch (error) {
-      console.error("Error copying Claude config:", error);
-      toast.error("Failed to copy configuration");
-    } finally {
-      setIsCopying(false);
-    }
+  // Function to redirect to Claude documentation
+  const handleClaudeDocRedirect = () => {
+    window.open("https://modelcontextprotocol.io/quickstart/user", "_blank");
   };
 
   // Shared function to render integration cards
@@ -106,7 +72,7 @@ export default function IntegrationsPage() {
                   1
                 </div>
                 <span className="text-gray-700">
-                  Copy configuration with secure API key
+                  Get your API key from the "My API keys" section
                 </span>
               </div>
               <div className="flex items-center">
@@ -114,63 +80,46 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Paste into Claude AI settings
+                  Follow the setup guide in the Claude documentation
                 </span>
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 flex-shrink-0">
                   3
                 </div>
-                <span className="text-gray-700">Reload Claude</span>
+                <span className="text-gray-700">
+                  Use https://mcp.mcph.io/mcp as your MCP server URL
+                </span>
               </div>
-            </div>
-
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md mb-6">
-              <p className="text-amber-700 text-sm">
-                <strong>Security note:</strong> Each time you click the button
-                below, your API key will be rotated for security.
-              </p>
             </div>
           </div>
 
-          {user ? (
-            <button
-              onClick={handleCopyClaudeConfig}
-              disabled={isCopying}
-              className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {isCopying ? (
-                <FaSpinner className="animate-spin mr-2" />
-              ) : copied ? (
-                <FaCheck className="mr-2" />
-              ) : (
-                <FaCopy className="mr-2" />
-              )}
-              {isCopying
-                ? "Processing..."
-                : copied
-                  ? "Copied!"
-                  : "Copy Configuration"}
-            </button>
-          ) : (
-            <a
-              href="/login"
-              className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-            >
-              Log in to use this integration
-            </a>
-          )}
-          <p className="text-xs text-gray-500 mt-2 text-center">
-            Your API key appears in "My API keys" section
-          </p>
           <a
             href="https://modelcontextprotocol.io/quickstart/user"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-indigo-600 hover:text-indigo-800 mt-2 block text-center"
+            className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+            onClick={handleClaudeDocRedirect}
           >
-            Learn more about setting up Claude with MCP
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              ></path>
+            </svg>
+            View Setup Guide
           </a>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Your API key can be found in the "My API keys" section
+          </p>
         </div>
       </Card>
 
