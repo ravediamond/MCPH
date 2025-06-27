@@ -13,7 +13,11 @@ export default function IntegrationsPage() {
 
   // Function to fetch Claude JSON config and copy to clipboard
   const handleCopyClaudeConfig = async () => {
-    if (!user) return;
+    if (!user) {
+      // Redirect to login page if not authenticated
+      window.location.href = "/login?next=/integrations";
+      return;
+    }
     setIsCopying(true);
     try {
       // Fetch the Claude integration config (which also rotates the API key)

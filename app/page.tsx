@@ -54,11 +54,11 @@ export default function Home() {
               auto-expiry (guests)
             </span>
             <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Up to 10 MB
-            </span>
-            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Permanent
               storage (logged in)
+            </span>
+            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
+              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Up to 10 MB
             </span>
           </div>
         </div>

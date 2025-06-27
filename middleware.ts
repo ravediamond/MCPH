@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/", "/login"];
+// Adding /integrations to the list of paths that should be publicly accessible
+const PUBLIC_DASHBOARD_PATHS = ["/integrations"];
 const PROTECTED_PATHS = ["/home", "/api-keys", "/upload", "/admin"];
 const ADMIN_PATHS = ["/admin"];
 
@@ -23,7 +25,10 @@ export function middleware(request: NextRequest) {
 
   if (
     PROTECTED_PATHS.some((path) => pathname.startsWith(path)) &&
-    !isAuthenticated
+    !isAuthenticated &&
+    // Exclude the /integrations path from the authentication check
+    !pathname.startsWith("/(dashboard)/integrations") &&
+    !pathname.includes("/integrations")
   ) {
     return NextResponse.redirect(new URL("/", request.url));
   }

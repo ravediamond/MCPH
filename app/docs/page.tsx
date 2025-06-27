@@ -96,18 +96,202 @@ export default function DocsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
-          <ul className="list-disc pl-5 text-gray-600 space-y-2">
-            <li>
-              <Link
-                href="/docs/search"
-                className="text-blue-500 hover:underline"
-              >
-                Hybrid Search
-              </Link>
-              <p className="text-sm text-gray-500">
-                Combine keyword and semantic search for more relevant results.
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Using MCPH with AI Assistants
+          </h2>
+          <p className="text-gray-600 mb-3">
+            MCPH tools integrate with AI assistants like Claude and ChatGPT to
+            provide seamless file management through natural conversation. You
+            can manage your files without learning commands or APIs—just speak
+            naturally about what you want to do.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Natural Language Commands
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-gray-700">Managing Files:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me my files" / "List what I have stored"</li>
+                    <li>
+                      "Find my report about sales" / "Search for meeting notes"
+                    </li>
+                    <li>"Save this document" / "Store this analysis for me"</li>
+                    <li>"Delete that old file" / "Remove the draft version"</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Sharing & Access:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Make this public" / "Share this with others"</li>
+                    <li>
+                      "Give me a shareable link" / "I want to share this
+                      document"
+                    </li>
+                    <li>
+                      "Make this private again" / "Stop sharing this file"
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Viewing Content:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me that document" / "Open my project notes"</li>
+                    <li>"What's in that file?" / "Display the contract"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Contextual Understanding
+              </h3>
+              <p className="text-gray-600 mb-2">
+                The AI remembers what you're working on within conversations:
               </p>
+              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Write a meeting
+                  summary"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> [Creates summary]
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Save it"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "I've saved your
+                  meeting summary to your files"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Actually, share it
+                  with the team"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "Made it public.
+                  Here's the link: https://mcph.io/crate/..."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Key Benefits
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>No learning curve</b> - talk about files naturally
+                </li>
+                <li>
+                  <b>Persistent storage</b> - files remain accessible across
+                  sessions indefinitely for authenticated users, 30 days for
+                  anonymous uploads
+                </li>
+                <li>
+                  <b>Smart search</b> - AI finds files using keywords and
+                  context
+                </li>
+              </ul>
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>Instant sharing</b> - generate public links with simple
+                  requests
+                </li>
+                <li>
+                  <b>Cross-session continuity</b> - reference files from
+                  previous conversations
+                </li>
+                <li>
+                  <b>Automatic organization</b> - files are tagged with metadata
+                  for easy retrieval
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
+          <ul className="list-disc pl-5 text-gray-600 space-y-4">
+            <li>
+              <span className="font-medium">Content Type Support</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Store and share multiple content types in a standardized format:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Markdown</b> - documentation, notes, and formatted text
+                </li>
+                <li>
+                  <b>Code</b> - source code with syntax highlighting
+                </li>
+                <li>
+                  <b>JSON</b> - structured data for easy parsing
+                </li>
+                <li>
+                  <b>Images</b> - diagrams, screenshots, and visual content
+                </li>
+                <li>
+                  <b>Binary files</b> - PDFs, spreadsheets, and other documents
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <span className="font-medium">Security & Privacy</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Control who can access your content:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Private by default</b> - content is only visible to you
+                  unless explicitly shared
+                </li>
+                <li>
+                  <b>Password protection</b> - add an extra layer of security
+                  for sensitive content
+                </li>
+                <li>
+                  <b>Temporary access</b> - anonymous uploads expire after 30
+                  days
+                </li>
+                <li>
+                  <b>Permanent personal storage</b> - authenticated users get
+                  persistent storage
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <span className="font-medium">AI Integration</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Seamlessly work with AI assistants:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Natural language interface</b> - manage files through
+                  simple conversation
+                </li>
+                <li>
+                  <b>Context awareness</b> - AI understands what files you're
+                  working with
+                </li>
+                <li>
+                  <b>Cross-session continuity</b> - reference your content
+                  across multiple AI sessions
+                </li>
+                <li>
+                  <b>Direct generation & storage</b> - create and save content
+                  in one step
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -203,6 +387,37 @@ export default function DocsPage() {
             API Keys section to generate your personal API key. You'll need this
             to connect AI tools to your MCPH account.
           </p>
+
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              For Non-Logged In Users
+            </h3>
+            <p className="text-gray-700 mb-2">
+              You can use MCPH without creating an account, but with some
+              limitations:
+            </p>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>
+                <b>Anonymous uploads</b> are available through AI assistants
+                that support MCP
+              </li>
+              <li>
+                <b>30-day expiration</b> - your content will be automatically
+                deleted after 30 days
+              </li>
+              <li>
+                <b>Limited management</b> - you can't search, organize, or
+                manage your files
+              </li>
+              <li>
+                <b>No API access</b> - you can't use the API directly without an
+                account
+              </li>
+            </ul>
+            <p className="text-gray-700 mt-2">
+              To get the most out of MCPH, we recommend creating a free account.
+            </p>
+          </div>
 
           <h3 className="text-lg font-medium text-gray-800 mb-3">
             Step 2: Connect Your AI Tool
@@ -319,37 +534,7 @@ export default function DocsPage() {
 
           <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p className="text-gray-700 font-medium mb-2">Next Steps</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link
-                href="/docs/content-types"
-                className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300"
-              >
-                <div className="text-blue-600 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">
-                    Content Types & Features
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Learn about all the content types and security features
-                  </p>
-                </div>
-              </Link>
-
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <Link
                 href="/upload"
                 className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300"
@@ -387,163 +572,71 @@ export default function DocsPage() {
           <h2 className="text-xl font-medium text-gray-800 mb-4">
             Available MCP Tools
           </h2>
-          <div className="space-y-4">
-            <div>
-              <div className="font-semibold text-gray-800">crates_list</div>
-              <div className="text-gray-600">
-                List all your crates (metadata, IDs, titles, descriptions,
-                categories, tags, expiration). Supports pagination with{" "}
-                <code>limit</code> and <code>startAfter</code>.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { limit?: number, startAfter?: string }
-Output: { 
-  crates: [{ 
-    id: string, 
-    title: string, 
-    description?: string, 
-    category: "markdown" | "code" | "image" | "json" | "binary",
-    createdAt: string, 
-    mimeType: string,
-    size: number,
-    tags: string[],
-    isPublic: boolean,
-    isPasswordProtected: boolean
-  }, ...],
-  lastCrateId: string,
-  hasMore: boolean 
-}`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_get</div>
-              <div className="text-gray-600">
-                Retrieve a crate's contents by its ID (text, images, or download
-                link for binaries). Anonymous uploads are public by default.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, password?: string }
-Output: { 
-  content: [{ 
-    type: "text" | "image", 
-    text?: string,          // For text content
-    data?: string,          // For image content (base64)
-    mimeType?: string       // For images
-  }, ...]
-}`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">
-                crates_get_download_link
-              </div>
-              <div className="text-gray-600">
-                Generate a pre-signed download URL for a crate (especially for
-                binaries or large files). Download links expire in 24 hours by
-                default.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, expiresInSeconds?: number }
-Output: { url: string, validForSeconds: number }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_search</div>
-              <div className="text-gray-600">
-                Search your crates using hybrid semantic and text search (title,
-                description, tags, metadata). Results are ranked by relevance.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { query: string }
-Output: { 
-  crates: [{ 
-    id: string, 
-    title: string, 
-    description?: string, 
-    category: "markdown" | "code" | "image" | "json" | "binary",
-    createdAt: string, 
-    mimeType: string,
-    size: number,
-    tags: string[],
-    isPublic: boolean,
-    isPasswordProtected: boolean
-  }, ...]
-}`}</code>
-              </pre>
-            </div>
+          <p className="text-gray-600 mb-4">
+            MCPH provides a set of powerful tools that enable you to manage your
+            content through the Model Context Protocol (MCP). These tools can be
+            used programmatically or through AI assistants using natural
+            language.
+          </p>
 
-            {/* Link to detailed Crates API documentation */}
-            <div className="mt-6 bg-beige-100 border border-amber-200 rounded-lg p-4">
-              <h3 className="font-medium text-amber-800 mb-2">
-                Detailed Crates API Documentation
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Content Management
               </h3>
-              <p className="text-gray-700 mb-2">
-                For comprehensive documentation on listing, searching, and
-                retrieving crates, see our dedicated Crates API documentation.
-              </p>
-              <Link
-                href="/docs/crates-api"
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                View Crates API Documentation →
-              </Link>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                <li>
+                  <b>crates_list</b> - View all your stored crates
+                </li>
+                <li>
+                  <b>crates_get</b> - Retrieve a crate's contents
+                </li>
+                <li>
+                  <b>crates_upload</b> - Create and store new content
+                </li>
+                <li>
+                  <b>crates_delete</b> - Remove unwanted crates
+                </li>
+              </ul>
             </div>
 
-            <div>
-              <div className="font-semibold text-gray-800">crates_upload</div>
-              <div className="text-gray-600">
-                Upload a new crate. Small text content is uploaded directly;
-                large/binary files return a pre-signed URL.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { fileName, contentType, data, ... }
-Output (binary): { uploadUrl, fileId, gcsPath, message }
-Output (text): { crate, message }`}</code>
-              </pre>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Sharing & Access
+              </h3>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                <li>
+                  <b>crates_share</b> - Make content accessible to others
+                </li>
+                <li>
+                  <b>crates_unshare</b> - Restrict access to private
+                </li>
+                <li>
+                  <b>crates_get_download_link</b> - Create shareable links
+                </li>
+                <li>
+                  <b>crates_copy</b> - Save others' public crates to your
+                  collection
+                </li>
+              </ul>
             </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_share</div>
-              <div className="text-gray-600">
-                Update a crate's sharing settings (public/private, password
-                protection).
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, password?: string }
-Output: { id, isShared, shareUrl, message }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_unshare</div>
-              <div className="text-gray-600">
-                Make a crate private by removing all sharing settings.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { message, ... }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_delete</div>
-              <div className="text-gray-600">
-                Permanently delete a crate's data and metadata. Requires
-                confirmation.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { message }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_copy</div>
-              <div className="text-gray-600">
-                Copy an existing crate to your collection. Only works with
-                public crates.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { crate, message }`}</code>
-              </pre>
-            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+            <h3 className="font-medium text-gray-800 mb-2">
+              Search & Discovery
+            </h3>
+            <ul className="list-disc pl-5 text-gray-600 space-y-1">
+              <li>
+                <b>crates_search</b> - Find your content using hybrid search
+                technology
+              </li>
+            </ul>
+            <p className="text-sm text-gray-600 mt-2">
+              Combines vector embeddings for semantic understanding with
+              text-based search across titles, descriptions, and tags. Results
+              are ranked by relevance for the most useful matches.
+            </p>
           </div>
         </div>
 
@@ -640,215 +733,6 @@ Output: { crate, message }`}</code>
               </a>
             </li>
           </ul>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-4 sticky top-20">
-          <h3 className="font-medium text-gray-800 mb-3">Contents</h3>
-          <nav className="space-y-1 text-sm">
-            <a
-              href="#mcp"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              MCP Overview
-            </a>
-            <a
-              href="#tools"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              Available Tools
-            </a>
-            <a
-              href="#api"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              API Usage
-            </a>
-            <a
-              href="#limits"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              Limits & Errors
-            </a>{" "}
-            <a
-              href="#mcp"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              MCP Endpoint: mcp.mcph.io/mcp
-            </a>
-          </nav>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Using MCPH with AI Assistants
-          </h2>
-          <p className="text-gray-600 mb-3">
-            MCPH tools integrate with AI assistants like Claude and ChatGPT to
-            provide seamless file management through natural conversation. You
-            can manage your files without learning commands or APIs—just speak
-            naturally about what you want to do.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
-                Natural Language Commands
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="font-medium text-gray-700">Managing Files:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Show me my files" / "List what I have stored"</li>
-                    <li>
-                      "Find my report about sales" / "Search for meeting notes"
-                    </li>
-                    <li>"Save this document" / "Store this analysis for me"</li>
-                    <li>"Delete that old file" / "Remove the draft version"</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Sharing & Access:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Make this public" / "Share this with others"</li>
-                    <li>
-                      "Give me a shareable link" / "I want to share this
-                      document"
-                    </li>
-                    <li>
-                      "Make this private again" / "Stop sharing this file"
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Viewing Content:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Show me that document" / "Open my project notes"</li>
-                    <li>"What's in that file?" / "Display the contract"</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
-                Contextual Understanding
-              </h3>
-              <p className="text-gray-600 mb-2">
-                The AI remembers what you're working on within conversations:
-              </p>
-              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Write a meeting
-                  summary"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> [Creates summary]
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Save it"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> "I've saved your
-                  meeting summary to your files"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Actually, share it
-                  with the team"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> "Made it public.
-                  Here's the link: https://mcph.io/crate/..."
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-lg font-medium text-gray-800 mb-3">
-            Getting Started with AI Assistants
-          </h3>
-          <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
-            <li>
-              <b>Connect MCPH to Your AI Assistant</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Follow the setup instructions for your specific AI assistant to
-                connect it with your MCPH account using the API key.
-              </p>
-            </li>
-
-            <li>
-              <b>Use Natural Language Commands</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Interact with your AI assistant using simple language - no need
-                to learn special commands.
-              </p>
-              <div className="bg-gray-100 p-3 rounded-lg mb-2 text-gray-700 text-sm">
-                "Show my files", "Search for reports", "Share this document",
-                "Delete old files", etc.
-              </div>
-            </li>
-
-            <li>
-              <b>Manage Files Seamlessly</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Your AI assistant will handle file management tasks using MCPH,
-                such as storing, sharing, and organizing files.
-              </p>
-            </li>
-          </ol>
-
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
-              Key Benefits
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                <li>
-                  <b>No learning curve</b> - talk about files naturally
-                </li>
-                <li>
-                  <b>Persistent storage</b> - files remain accessible across
-                  sessions indefinitely for authenticated users, 30 days for
-                  anonymous uploads
-                </li>
-                <li>
-                  <b>Smart search</b> - AI finds files using keywords and
-                  context
-                </li>
-              </ul>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                <li>
-                  <b>Instant sharing</b> - generate public links with simple
-                  requests
-                </li>
-                <li>
-                  <b>Cross-session continuity</b> - reference files from
-                  previous conversations
-                </li>
-                <li>
-                  <b>Automatic organization</b> - files are tagged with metadata
-                  for easy retrieval
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
-              Tips for Using MCPH with AI Assistants
-            </h3>
-            <ul className="list-disc pl-5 text-gray-700 space-y-1">
-              <li>
-                <b>Be specific</b> with your commands for better accuracy.
-              </li>
-              <li>
-                Use <b>natural language</b>, no need to learn special commands.
-              </li>
-              <li>
-                Remember that anonymous uploads are stored for <b>30 days</b> by
-                default, while authenticated user uploads have no expiration.
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
