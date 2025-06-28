@@ -1,10 +1,10 @@
 # MCP Server
 
-This is the Model Context Protocol server for MCPHub, the USB stick for AI tools. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services for storing, sharing, and managing files and outputs. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
+This is the Model Context Protocol server for MCPHub, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
 
 ## What is MCPH?
 
-MCPH is a modern USB key for AI agents—store, share, and manage artifacts in one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly "plug in" and store/share content via simple API calls, functioning like a virtual USB stick for AI outputs. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
+MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
 ## Core MCP Tools
 

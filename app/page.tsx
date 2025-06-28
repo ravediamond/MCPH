@@ -24,10 +24,13 @@ export default function Home() {
       <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold">One vault for every AI tool.</h1>
+            <h1 className="text-5xl font-bold">
+              AI Artifact Storage & Sharing System
+            </h1>
             <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Permanent for you, self-erasing for guests—securely store, find,
-              and share any artifact across Claude, ChatGPT, or your own agents.
+              Store and share AI-generated artifacts in crates—permanent for
+              you, self-erasing for guests—across Claude, ChatGPT, or your own
+              agents.
             </p>
             <div className="mt-6">
               <Link
@@ -99,7 +102,7 @@ export default function Home() {
                 Upload
               </h3>
               <p className="text-gray-600 text-center text-sm md:text-base">
-                Securely vault your AI artifacts with ease.
+                Store and share your AI artifacts in crates.
               </p>
             </div>
 
@@ -134,7 +137,7 @@ export default function Home() {
       <section className="py-12 px-4 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            Bridge AI to Humans with Secure Vaults
+            Bridge AI to Humans with Artifact Storage
           </h2>
 
           <div className="relative flex flex-col md:flex-row items-center justify-between gap-4 py-6">
@@ -214,7 +217,9 @@ export default function Home() {
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">AI Vault</h3>
+              <h3 className="font-medium text-gray-800 mb-2">
+                AI Artifact Storage
+              </h3>
               <p className="text-sm text-gray-600">
                 Securely stores and generates shareable link
               </p>
@@ -285,7 +290,7 @@ export default function Home() {
 
           <div className="mt-8 text-center">
             <p className="text-gray-600 max-w-xl mx-auto">
-              Share AI-generated artifacts from your secure vault with a single
+              Share AI-generated artifacts from your crate storage with a single
               link that works for both humans and AI agents. No authentication
               required for viewing.
             </p>
@@ -459,7 +464,7 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-600">
-                    Securely vaulted until you delete them (logged in users)
+                    Securely stored until you delete them (logged in users)
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -642,10 +647,10 @@ export default function Home() {
       <section className="py-16 px-4 text-center">
         <div className="max-w-3xl mx-auto bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200 shadow-sm">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-            Ready to secure your AI artifacts in one vault?
+            Ready to store your AI artifacts in crates?
           </h2>
           <p className="text-gray-700 mb-8 text-lg">
-            Upload now (no login) or create an account for enhanced vault
+            Upload now (no login) or create an account for enhanced storage
             features.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">

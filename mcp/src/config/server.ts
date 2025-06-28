@@ -9,7 +9,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
   const server = new McpServer({
     name: "MCPH-mcp-server",
     description:
-      `MCPH - the USB stick for AI tools. Store, share, and auto-expire crates.\n\n` +
+      `MCPH - AI artifact storage & sharing system. Store, share, and auto-expire crates.\n\n` +
       `You are logged in as: ${req?.user?.userId ? `USER (${req.user.userId}) using API key` : "ANONYMOUS (no API key)"}\n\n` +
       "Features:\n" +
       "- Crate management: upload, list, get, search, share, unshare, delete\n" +

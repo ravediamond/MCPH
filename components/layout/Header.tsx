@@ -62,7 +62,7 @@ export default function Header() {
               <div className="flex items-center">
                 <Image src="/icon.png" alt="Logo" width={180} height={180} />
                 <span className="hidden sm:inline-block ml-2 text-sm text-gray-600 font-medium">
-                  One vault for every AI tool
+                  Package, store, and share your AI artifacts
                 </span>
               </div>
             </Link>

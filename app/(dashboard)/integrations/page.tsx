@@ -187,7 +187,7 @@ export default function IntegrationsPage() {
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
               Connect MCPHub to ChatGPT as a custom connector to access your
-              specialized tools and data directly in your chat.
+              stored artifacts and crates directly in your chat.
             </p>
 
             <div className="space-y-4 mb-6">
@@ -285,8 +285,8 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPHub to VS Code with MCP support to leverage your
-              contexts and tools directly in your development environment.
+              Connect MCPHub to VS Code with MCP support to access your stored
+              artifacts and crates directly in your development environment.
             </p>
 
             <div className="space-y-4 mb-6">

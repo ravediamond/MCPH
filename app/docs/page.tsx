@@ -22,9 +22,10 @@ export default function DocsPage() {
             What is MCPH?
           </h2>
           <p className="text-gray-600 mb-3">
-            <b>MCPH</b> is one vault for every AI tool—securely store, share,
-            and manage artifacts with permanent storage for you and auto-expiry
-            for guests. It works with ChatGPT, Claude, and other AI tools that
+            <b>MCPH</b> is an AI artifact storage and sharing system that lets
+            you package your AI-generated content in crates. It provides
+            permanent storage for your artifacts and auto-expiry for guest
+            uploads. It works with ChatGPT, Claude, and other AI tools that
             support the Model Context Protocol (MCP).
           </p>
           <p className="text-gray-600 mb-3">With MCPH, you can:</p>
