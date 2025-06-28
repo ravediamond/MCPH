@@ -61,10 +61,10 @@ const MermaidDiagram = dynamic(
 );
 
 // Interface for the API response (extends Crate with additional view-specific fields)
-interface CrateResponse extends Partial<Crate> {
+interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   id: string;
   title: string;
-  expiresAt: string;
+  expiresAt?: string;
   isPublic: boolean;
   isPasswordProtected: boolean;
   isOwner: boolean;
