@@ -210,167 +210,217 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Visual Flow Diagram Section */}
+      {/* Feature Grid Section */}
       <section className="py-12 px-4 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            Bridge AI to Humans with Artifact Storage
+            Why devs & agents choose MCPH
           </h2>
 
-          <div className="relative flex flex-col md:flex-row items-center justify-between gap-4 py-6">
-            {/* ChatGPT/Agent Node */}
-            <div className="bg-green-50 border border-green-200 rounded-xl p-5 shadow-sm w-full md:w-64 text-center">
-              <div className="bg-green-100 text-green-600 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-7 w-7"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Context Engineering Hub */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
                 >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M12 16v-4"></path>
-                  <path d="M12 8h.01"></path>
-                </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                </span>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">AI Assistant</h3>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Context Engineering Hub
+              </h4>
               <p className="text-sm text-gray-600">
-                Creates artifacts for secure storage
+                Serve each Agent everything it needs to complete its tasks.
               </p>
             </div>
 
-            {/* Arrow from AI to MCPH */}
-            <div className="hidden md:block text-gray-400 transform rotate-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14"></path>
-                <path d="M12 5l7 7-7 7"></path>
-              </svg>
-            </div>
-
-            {/* Mobile down arrow */}
-            <div className="block md:hidden text-gray-400 my-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 5v14"></path>
-                <path d="M19 12l-7 7-7-7"></path>
-              </svg>
-            </div>
-
-            {/* MCPH Node */}
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-5 shadow-sm w-full md:w-64 text-center relative z-10">
-              <div className="bg-orange-100 text-orange-600 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-7 w-7"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            {/* Persistent Artifact Storage */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
                 >
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"></path>
+                    <circle cx="17" cy="17" r="3"></circle>
+                    <path d="M17 14v6"></path>
+                  </svg>
+                </span>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">
-                AI Artifact Storage
-              </h3>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Persistent Artifact Storage
+              </h4>
               <p className="text-sm text-gray-600">
-                Securely stores and generates shareable link
+                Every artifact, safe and searchable.
               </p>
             </div>
 
-            {/* Arrow from MCPH to Viewer */}
-            <div className="hidden md:block text-gray-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14"></path>
-                <path d="M12 5l7 7-7 7"></path>
-              </svg>
-            </div>
-
-            {/* Mobile down arrow */}
-            <div className="block md:hidden text-gray-400 my-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 5v14"></path>
-                <path d="M19 12l-7 7-7-7"></path>
-              </svg>
-            </div>
-
-            {/* Viewer Node */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 shadow-sm w-full md:w-64 text-center">
-              <div className="bg-blue-100 text-blue-600 h-14 w-14 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-7 w-7"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            {/* Seamless Share Links */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
                 >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+                </span>
               </div>
-              <h3 className="font-medium text-gray-800 mb-2">Human Viewers</h3>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Seamless Share Links
+              </h4>
               <p className="text-sm text-gray-600">
-                Access content without login
+                One short link opens for humans and AI tools—no copy-paste pain.
               </p>
             </div>
 
-            {/* Connecting Lines (decorative) */}
-            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-200 hidden md:block z-0"></div>
-          </div>
+            {/* Multi-Agent Relay */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect
+                      x="2"
+                      y="2"
+                      width="20"
+                      height="8"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <rect
+                      x="2"
+                      y="14"
+                      width="20"
+                      height="8"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Multi-Agent Relay
+              </h4>
+              <p className="text-sm text-gray-600">
+                All AI tools—Claude, ChatGPT, Gemini—can write and access the
+                same artifacts.
+              </p>
+            </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-600 max-w-xl mx-auto text-base md:text-lg">
-              Share AI-generated artifacts from your crate storage with a single
-              link that works for both humans and AI agents. Create and share
-              with no account required.
-            </p>
+            {/* Native MCP Integration */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M9 14l2 2 4-4"></path>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Native MCP Integration
+              </h4>
+              <p className="text-sm text-gray-600">
+                Fully integrated with compatible AI tools and usable directly by
+                them.
+              </p>
+            </div>
+
+            {/* Multi-Agent Context Pool */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 4-3 4-6 0-1.5-.5-3-2-4"></path>
+                    <path d="M12 14c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                    <path d="M12 8c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                    <path d="M4 17c0 3 1 6 4 6 1.25 0 2.5-1.06 4-1.06 1.5 0 2.75 1.06 4 1.06-1.5-5-6-4.94-6-8.94 0-1-.25-1.94-1-2.94-1 1-1 1.94-1 2.94 0 4-4.5 3.94-6 8.94-1.25 0-2.5-1.06-4-1.06"></path>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Multi-Agent Context Pool
+              </h4>
+              <p className="text-sm text-gray-600">
+                Shared context pool — agents dump state, others pull when
+                needed.
+              </p>
+            </div>
           </div>
         </div>
       </section>
