@@ -406,6 +406,29 @@ export default function Home() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
+                  <path d="M4 6l16 0"></path>
+                  <path d="M4 12l16 0"></path>
+                  <path d="M4 18l12 0"></path>
+                </svg>
+              </div>
+              <p className="font-medium text-gray-800">YAML</p>
+              <span className="inline-block mt-2 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                New!
+              </span>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-orange-500 mb-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                   <path d="M16 13H8" />

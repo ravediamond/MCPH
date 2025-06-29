@@ -59,6 +59,9 @@ export function registerCratesUploadTool(server: McpServer): void {
             case CrateCategory.JSON:
               extension = ".json";
               break;
+            case CrateCategory.YAML:
+              extension = ".yaml";
+              break;
             case CrateCategory.IMAGE:
               extension = ".png";
               break;
@@ -76,6 +79,12 @@ export function registerCratesUploadTool(server: McpServer): void {
           }
         } else if (contentType) {
           if (contentType === "application/json") extension = ".json";
+          else if (
+            contentType === "application/yaml" ||
+            contentType === "text/yaml" ||
+            contentType === "text/x-yaml"
+          )
+            extension = ".yaml";
           else if (contentType === "image/jpeg" || contentType === "image/jpg")
             extension = ".jpg";
           else if (contentType === "image/png") extension = ".png";

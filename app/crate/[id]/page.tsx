@@ -207,7 +207,7 @@ export default function CratePage() {
         case CrateCategory.MARKDOWN:
         case CrateCategory.CODE:
         case CrateCategory.JSON:
-        case CrateCategory.JSON:
+        case CrateCategory.YAML:
           return true;
         default:
           return false;
@@ -590,6 +590,8 @@ export default function CratePage() {
         return <FaFileImage className="text-blue-500" />;
       case CrateCategory.JSON:
         return <FaFileCode className="text-orange-500" />;
+      case CrateCategory.YAML:
+        return <FaFileCode className="text-green-500" />;
       case CrateCategory.BINARY:
       default:
         // Fallback to mime type checking for legacy or unknown types
@@ -614,6 +616,9 @@ export default function CratePage() {
     } else if (crateInfo.category === CrateCategory.JSON) {
       // Check if it's JSON
       return "json";
+    } else if (crateInfo.category === CrateCategory.YAML) {
+      // YAML files
+      return "yaml";
     } else if (crateInfo.category === CrateCategory.CODE) {
       // Try to determine the language from the mime type or file extension
       const mimeType = crateInfo.mimeType?.toLowerCase() || "";
@@ -729,6 +734,38 @@ export default function CratePage() {
             </div>
           );
         }
+
+      case CrateCategory.YAML: // Enhanced YAML rendering
+        return (
+          <div className="text-sm">
+            <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
+              <span className="text-gray-700 font-medium">YAML Preview</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    window.open(`/api/crates/${crateId}/content`, "_blank")
+                  }
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaExternalLinkAlt className="inline mr-1" />
+                  Open Raw
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaDownload className="inline mr-1" />
+                  Download
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[500px] rounded border border-gray-200">
+              <SyntaxHighlighter language="yaml" showLineNumbers>
+                {crateContent}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        );
 
       case CrateCategory.MARKDOWN: // Enhanced markdown rendering
         return (
@@ -863,6 +900,15 @@ export default function CratePage() {
         );
 
       case CrateCategory.JSON: // Added JSON category
+        return (
+          <div className="text-sm">
+            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              {crateContent}
+            </SyntaxHighlighter>
+          </div>
+        );
+
+      case CrateCategory.YAML: // Added YAML category
         return (
           <div className="text-sm">
             <SyntaxHighlighter language={getLanguage()} showLineNumbers>
@@ -1259,6 +1305,7 @@ export default function CratePage() {
               {(crateInfo.category === CrateCategory.MARKDOWN ||
                 crateInfo.category === CrateCategory.CODE ||
                 crateInfo.category === CrateCategory.JSON ||
+                crateInfo.category === CrateCategory.YAML ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}

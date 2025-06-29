@@ -30,7 +30,15 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text"];
+const TEXT_FILE_EXTENSIONS = [
+  ".txt",
+  ".md",
+  ".markdown",
+  ".json",
+  ".yaml",
+  ".yml",
+  ".text",
+];
 
 // Available crate categories that users can select (simplified for v1)
 const CRATE_CATEGORIES = [
@@ -39,6 +47,7 @@ const CRATE_CATEGORIES = [
   { value: CrateCategory.MARKDOWN, label: "Markdown" },
   { value: CrateCategory.CODE, label: "Code" },
   { value: CrateCategory.JSON, label: "JSON" },
+  { value: CrateCategory.YAML, label: "YAML" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -51,6 +60,10 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
   "application/json": CrateCategory.JSON,
+  "application/yaml": CrateCategory.YAML,
+  "text/yaml": CrateCategory.YAML,
+  "text/x-yaml": CrateCategory.YAML,
+  "application/x-yaml": CrateCategory.YAML,
   "text/plain": CrateCategory.CODE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
@@ -69,6 +82,8 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
   ".json": CrateCategory.JSON,
+  ".yaml": CrateCategory.YAML,
+  ".yml": CrateCategory.YAML,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
