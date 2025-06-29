@@ -93,14 +93,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3-Step Explainer Section */}
+      {/* How It Works: 3 Simple Steps Section */}
       <section className="py-10 md:py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
-            How It Works: 3 Simple Steps
+            How It Works: 4 Simple Steps
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <FaUpload className="text-lg md:text-xl" />
@@ -111,18 +111,80 @@ export default function Home() {
               <p className="text-gray-600 text-center text-base md:text-lg">
                 Instantly store AI artifacts with no account required.
               </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
-                <FaCopy className="text-lg md:text-xl" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
               </div>
               <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
-                Get Link
+                Search
               </h3>
               <p className="text-gray-600 text-center text-base md:text-lg">
-                Instantly receive a shareable link that works anywhere.
+                Find your content with powerful semantic search.
               </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
+                Retrieve
+              </h3>
+              <p className="text-gray-600 text-center text-base md:text-lg">
+                Access your artifacts instantly when needed.
+              </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
@@ -133,8 +195,16 @@ export default function Home() {
                 Share
               </h3>
               <p className="text-gray-600 text-center text-base md:text-lg">
-                Share with anyone - no login required to view.
+                Share with humans and AI - no login required.
               </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -309,7 +379,7 @@ export default function Home() {
       <section className="py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            What Can You Share?
+            What Can You Store and Share?
           </h2>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
