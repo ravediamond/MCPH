@@ -31,7 +31,7 @@
     },
     {
       "type": "text",
-      "content": "The USB stick for AI tools.",
+      "content": "AI artifact storage & sharing system.",
       "style": {
         "fontSize": "36px",
         "fontWeight": "medium",

@@ -141,7 +141,7 @@ export function registerCratesListTool(server: McpServer): void {
             ...filteredData,
             contentType: mimeType, // Add contentType
             category: category, // Add category
-            expiresAt: null, // ttlDays is no longer supported
+            expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null, // Include actual expiration date if set
           };
         });
 

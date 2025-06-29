@@ -26,6 +26,11 @@ export function registerCratesGetDownloadLinkTool(server: McpServer): void {
         throw new Error("Crate not found");
       }
 
+      // Check if the crate has expired
+      if (meta.expiresAt && new Date() > new Date(meta.expiresAt)) {
+        throw new Error("This crate has expired");
+      }
+
       // Default expiration time (24 hours) if not specified
       const exp =
         typeof expiresInSeconds === "number"

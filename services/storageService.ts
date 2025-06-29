@@ -143,6 +143,13 @@ export async function uploadCrate(
       // No compression metadata - compression is disabled
     };
 
+    // Add expiration date for anonymous uploads (30 days from now)
+    if (completeCrate.ownerId === "anonymous") {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+      completeCrate.expiresAt = expiresAt;
+    }
+
     // Store metadata in Firestore
     await saveCrateMetadata(completeCrate);
 

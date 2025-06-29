@@ -84,6 +84,13 @@ export async function POST(req: NextRequest) {
         // Added check for .json extension
         category = CrateCategory.JSON;
       } else if (
+        file.type.includes("yaml") ||
+        file.name.endsWith(".yaml") ||
+        file.name.endsWith(".yml")
+      ) {
+        // Added check for YAML files
+        category = CrateCategory.YAML;
+      } else if (
         file.type.includes("text") || // Broader check for text-based files
         file.name.endsWith(".txt") ||
         file.name.endsWith(".js") ||

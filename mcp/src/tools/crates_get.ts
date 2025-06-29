@@ -29,6 +29,11 @@ export function registerCratesGetTool(server: McpServer): void {
         throw new Error("Crate not found");
       }
 
+      // Check if the crate has expired
+      if (meta.expiresAt && new Date() > new Date(meta.expiresAt)) {
+        throw new Error("This crate has expired");
+      }
+
       // Log the metadata for debugging
       console.log(
         "Crate metadata for debugging:",

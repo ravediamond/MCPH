@@ -1,7 +1,7 @@
 {
   "name": "mcph-mcp-api",
   "version": "1.0.0",
-  "description": "MCP server implementation for MCPH - the USB stick for AI tools",
+  "description": "MCP server implementation for MCPH - AI artifact storage & sharing system",
   "main": "dist/index.js",
   "license": "MIT",
   "type": "module",

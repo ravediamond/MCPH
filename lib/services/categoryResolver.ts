@@ -24,6 +24,12 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/x-json": CrateCategory.JSON,
   "application/x-json": CrateCategory.JSON,
 
+  // YAML
+  "application/yaml": CrateCategory.YAML,
+  "text/yaml": CrateCategory.YAML,
+  "text/x-yaml": CrateCategory.YAML,
+  "application/x-yaml": CrateCategory.YAML,
+
   // Code
   "text/csv": CrateCategory.CODE,
   "text/plain": CrateCategory.CODE,
@@ -55,6 +61,10 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
 
   // JSON
   ".json": CrateCategory.JSON,
+
+  // YAML
+  ".yaml": CrateCategory.YAML,
+  ".yml": CrateCategory.YAML,
 
   // Code
   ".csv": CrateCategory.CODE,

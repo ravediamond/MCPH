@@ -2,17 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/", "/login"];
+// Adding /integrations to the list of paths that should be publicly accessible
+const PUBLIC_DASHBOARD_PATHS = ["/integrations"];
 const PROTECTED_PATHS = ["/home", "/api-keys", "/upload", "/admin"];
 const ADMIN_PATHS = ["/admin"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Add redirect rule for /mcphub/* to /mcph/* (302 temporary redirect for one release cycle)
-  if (pathname.startsWith("/mcphub/")) {
-    const newPath = pathname.replace("/mcphub/", "/mcph/");
-    return NextResponse.redirect(new URL(newPath, request.url), 302);
-  }
 
   const session = request.cookies.get("session")?.value;
   const isAuthenticated = !!session;
@@ -23,7 +19,10 @@ export function middleware(request: NextRequest) {
 
   if (
     PROTECTED_PATHS.some((path) => pathname.startsWith(path)) &&
-    !isAuthenticated
+    !isAuthenticated &&
+    // Exclude the /integrations path from the authentication check
+    !pathname.startsWith("/(dashboard)/integrations") &&
+    !pathname.includes("/integrations")
   ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
@@ -71,7 +70,5 @@ export const config = {
   matcher: [
     // Match all paths
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
-    // Make sure to catch old mcphub paths
-    "/mcphub/:path*",
   ],
 };

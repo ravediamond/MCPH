@@ -22,9 +22,11 @@ export default function DocsPage() {
             What is MCPH?
           </h2>
           <p className="text-gray-600 mb-3">
-            <b>MCPH</b> is a modern USB key for AI agents—store, share, and
-            auto-expire artifacts in one command. It works with ChatGPT, Claude,
-            and other AI tools that support the Model Context Protocol (MCP).
+            <b>MCPH</b> is an AI artifact storage and sharing system that lets
+            you package your AI-generated content in crates. It provides
+            permanent storage for your artifacts and auto-expiry for guest
+            uploads. It works with ChatGPT, Claude, and other AI tools that
+            support the Model Context Protocol (MCP).
           </p>
           <p className="text-gray-600 mb-3">With MCPH, you can:</p>
           <ul className="list-disc pl-5 text-gray-600 space-y-2 mb-3">
@@ -95,18 +97,628 @@ export default function DocsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
-          <ul className="list-disc pl-5 text-gray-600 space-y-2">
-            <li>
-              <Link
-                href="/docs/search"
-                className="text-blue-500 hover:underline"
-              >
-                Hybrid Search
-              </Link>
-              <p className="text-sm text-gray-500">
-                Combine keyword and semantic search for more relevant results.
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Using MCPH with AI Assistants
+          </h2>
+          <p className="text-gray-600 mb-3">
+            MCPH tools integrate with AI assistants like Claude and ChatGPT to
+            provide seamless file management through natural conversation. You
+            can manage your files without learning commands or APIs—just speak
+            naturally about what you want to do.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Natural Language Commands
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="font-medium text-gray-700">Managing Files:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me my files" / "List what I have stored"</li>
+                    <li>
+                      "Find my report about sales" / "Search for meeting notes"
+                    </li>
+                    <li>"Save this document" / "Store this analysis for me"</li>
+                    <li>"Delete that old file" / "Remove the draft version"</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Sharing & Access:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Make this public" / "Share this with others"</li>
+                    <li>
+                      "Give me a shareable link" / "I want to share this
+                      document"
+                    </li>
+                    <li>
+                      "Make this private again" / "Stop sharing this file"
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-700">Viewing Content:</p>
+                  <ul className="list-disc pl-5 text-gray-600 text-sm">
+                    <li>"Show me that document" / "Open my project notes"</li>
+                    <li>"What's in that file?" / "Display the contract"</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Contextual Understanding
+              </h3>
+              <p className="text-gray-600 mb-2">
+                The AI remembers what you're working on within conversations:
               </p>
+              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Write a meeting
+                  summary"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> [Creates summary]
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Save it"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "I've saved your
+                  meeting summary to your files"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">User:</span> "Actually, share it
+                  with the team"
+                </p>
+                <p className="text-gray-700">
+                  <span className="font-medium">AI:</span> "Made it public.
+                  Here's the link: https://mcph.io/crate/..."
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              Key Benefits
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>No learning curve</b> - talk about files naturally
+                </li>
+                <li>
+                  <b>Persistent storage</b> - files remain accessible across
+                  sessions indefinitely for authenticated users, 30 days for
+                  anonymous uploads
+                </li>
+                <li>
+                  <b>Smart search</b> - AI finds files using keywords and
+                  context
+                </li>
+              </ul>
+              <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                <li>
+                  <b>Instant sharing</b> - generate public links with simple
+                  requests
+                </li>
+                <li>
+                  <b>Cross-session continuity</b> - reference files from
+                  previous conversations
+                </li>
+                <li>
+                  <b>Automatic organization</b> - files are tagged with metadata
+                  for easy retrieval
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Core Platform Features
+          </h2>
+
+          {/* Context Engineering Hub */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Context Engineering Hub
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Serve each model everything it needs to complete its tasks.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                While MCPH doesn't currently offer a dedicated UI for context
+                engineering, its MCP-based infrastructure provides the essential
+                foundation for creating and managing AI context. The platform's
+                storage capabilities enable you to build your own context
+                engineering workflows.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Store structured context data as Markdown, JSON, or YAML in a
+                  searchable format
+                </li>
+                <li>
+                  Access saved context across different AI tools through the
+                  shared MCP layer
+                </li>
+                <li>
+                  Organize artifacts with metadata to facilitate context
+                  retrieval
+                </li>
+                <li>
+                  Enable AI tools to search and retrieve precisely the context
+                  pieces they need
+                </li>
+                <li>
+                  Maintain version history of your context data through the
+                  artifact storage system
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store your company style guide, product specifications, and
+                  brand voice as separate artifacts in MCPH. AI tools can then
+                  selectively access these through MCP when needed for content
+                  generation, ensuring consistency across different models.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Persistent Artifact Storage */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"></path>
+                  <circle cx="17" cy="17" r="3"></circle>
+                  <path d="M17 14v6"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Persistent Artifact Storage
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Every artifact, safe and searchable.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Never lose an AI-generated artifact again. Our storage system
+                preserves your valuable AI outputs with powerful organization
+                and retrieval capabilities.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Preservation of all AI outputs—from text to code to images
+                </li>
+                <li>Automatic versioning to track changes over time</li>
+                <li>Rich metadata tagging for better organization</li>
+                <li>Powerful semantic search for instant retrieval</li>
+                <li>
+                  30-day storage for guest users; permanent storage for
+                  registered users
+                </li>
+                <li>
+                  Support for various file formats including markdown, code,
+                  JSON, images, and binary files
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store all AI-generated code snippets with proper tagging and
+                  search capabilities, allowing your team to build a searchable
+                  knowledge base of solutions that grows over time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Seamless Share Links */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Seamless Share Links
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  One short link opens for humans and AI tools—no copy-paste
+                  pain.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Share your AI artifacts with a single, universal link that works
+                for both humans and AI systems, eliminating friction in your
+                workflows.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Generate short, memorable URLs for any artifact</li>
+                <li>Links open directly in browsers for human viewers</li>
+                <li>
+                  Same links can be referenced by AI tools through our API
+                </li>
+                <li>No authentication required to view shared content</li>
+                <li>Optional password protection for sensitive information</li>
+                <li>
+                  Customizable privacy settings (public, private, or
+                  password-protected)
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Generate a complex data visualization with AI, then share it
+                  with both your analytics team (who will view it in a browser)
+                  and your reporting AI (which will extract insights directly
+                  via API)—all using the same link.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-Agent Relay */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                  <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                  <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Multi-Agent Relay
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  All AI tools—Claude, ChatGPT, Gemini—can write and access the
+                  same artifacts.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                MCPH provides the foundation for AI collaboration through shared
+                artifacts. While not directly orchestrating multi-agent
+                workflows, the platform enables different AI systems to access
+                the same content through standardized MCP connections.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Universal artifact access by any MCP-compatible AI tool</li>
+                <li>
+                  Consistent data format and accessibility across different AI
+                  providers
+                </li>
+                <li>
+                  Shared storage layer that maintains artifact integrity between
+                  different model interactions
+                </li>
+                <li>
+                  Support for major AI platforms that implement the MCP standard
+                </li>
+                <li>
+                  Persistent artifacts that remain accessible across sessions
+                  and different AI tools
+                </li>
+                <li>
+                  API-based access that enables programmatic multi-agent
+                  workflows
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store a complex data analysis in MCPH using Claude, then share
+                  the artifact link with a ChatGPT instance that can access and
+                  build upon the same content—creating an asynchronous
+                  collaboration between different AI systems without data
+                  transfer friction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Native MCP Integration */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path d="M9 14l2 2 4-4"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Native MCP Integration
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Fully integrated with compatible AI tools and usable directly
+                  by them.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Built on the Model Context Protocol (MCP) standard, our platform
+                is designed for direct integration with AI systems without
+                requiring custom code or workarounds.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Direct integration with MCP-compatible AI systems</li>
+                <li>No custom code or workarounds required</li>
+                <li>Models can autonomously store and retrieve information</li>
+                <li>
+                  Standardized API for consistent interaction across different
+                  tools
+                </li>
+                <li>Forward compatibility with future MCP enhancements</li>
+                <li>Support for emerging AI capabilities as they develop</li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Create an autonomous research assistant that can store its
+                  findings, retrieve them when needed, and share them with other
+                  tools—all without requiring human intervention for the storage
+                  and retrieval processes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-Agent Context Pool */}
+          <div className="mb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 4-3 4-6 0-1.5-.5-3-2-4"></path>
+                  <path d="M12 14c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                  <path d="M12 8c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                  <path d="M4 17c0 3 1 6 4 6 1.25 0 2.5-1.06 4-1.06 1.5 0 2.75 1.06 4 1.06-1.5-5-6-4.94-6-8.94 0-1-.25-1.94-1-2.94-1 1-1 1.94-1 2.94 0 4-4.5 3.94-6 8.94-1.25 0-2.5-1.06-4-1.06"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Multi-Agent Context Pool
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Shared context pool—agents dump state, others pull only what
+                  they need.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                MCPH provides the underlying infrastructure for a shared context
+                repository. While not implementing a dedicated context
+                management layer, the platform's storage capabilities enable
+                developers to build context-sharing systems between AI agents.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Store structured context data as JSON or Markdown with
+                  metadata
+                </li>
+                <li>
+                  Provide consistent access points for different AI agents
+                  through the same storage layer
+                </li>
+                <li>
+                  Enable selective artifact retrieval through search and
+                  filtering
+                </li>
+                <li>Maintain metadata that helps organize context pieces</li>
+                <li>Support versioning of context artifacts as they evolve</li>
+                <li>
+                  Programmatic API access for custom context management
+                  workflows
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Design a workflow where one AI agent creates structured
+                  reports in MCPH, and different specialized agents can
+                  selectively access specific sections of those reports as
+                  needed—reducing context duplication while maintaining focused
+                  access to relevant information.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
+          <ul className="list-disc pl-5 text-gray-600 space-y-4">
+            <li>
+              <span className="font-medium">Content Type Support</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Store and share multiple content types in a standardized format:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Markdown</b> - documentation, notes, and formatted text
+                </li>
+                <li>
+                  <b>Code</b> - source code with syntax highlighting
+                </li>
+                <li>
+                  <b>JSON</b> - structured data for easy parsing
+                </li>
+                <li>
+                  <b>Images</b> - diagrams, screenshots, and visual content
+                </li>
+                <li>
+                  <b>Binary files</b> - PDFs, spreadsheets, and other documents
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <span className="font-medium">Security & Privacy</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Control who can access your content:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Private by default</b> - content is only visible to you
+                  unless explicitly shared
+                </li>
+                <li>
+                  <b>Password protection</b> - add an extra layer of security
+                  for sensitive content
+                </li>
+                <li>
+                  <b>Temporary access</b> - anonymous uploads expire after 30
+                  days
+                </li>
+                <li>
+                  <b>Permanent personal storage</b> - authenticated users get
+                  persistent storage
+                </li>
+              </ul>
+            </li>
+
+            <li>
+              <span className="font-medium">AI Integration</span>
+              <p className="text-sm text-gray-600 mt-1">
+                Seamlessly work with AI assistants:
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+                <li>
+                  <b>Natural language interface</b> - manage files through
+                  simple conversation
+                </li>
+                <li>
+                  <b>Context awareness</b> - AI understands what files you're
+                  working with
+                </li>
+                <li>
+                  <b>Cross-session continuity</b> - reference your content
+                  across multiple AI sessions
+                </li>
+                <li>
+                  <b>Direct generation & storage</b> - create and save content
+                  in one step
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -203,14 +815,46 @@ export default function DocsPage() {
             to connect AI tools to your MCPH account.
           </p>
 
+          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
+            <h3 className="text-lg font-medium text-amber-800 mb-2">
+              For Non-Logged In Users
+            </h3>
+            <p className="text-gray-700 mb-2">
+              You can use MCPH without creating an account, but with some
+              limitations:
+            </p>
+            <ul className="list-disc pl-5 text-gray-700 space-y-1">
+              <li>
+                <b>Anonymous uploads</b> are available through AI assistants
+                that support MCP
+              </li>
+              <li>
+                <b>30-day expiration</b> - your content will be automatically
+                deleted after 30 days
+              </li>
+              <li>
+                <b>Limited management</b> - you can't search, organize, or
+                manage your files
+              </li>
+              <li>
+                <b>No API access</b> - you can't use the API directly without an
+                account
+              </li>
+            </ul>
+            <p className="text-gray-700 mt-2">
+              To get the most out of MCPH, we recommend creating a free account.
+            </p>
+          </div>
+
           <h3 className="text-lg font-medium text-gray-800 mb-3">
             Step 2: Connect Your AI Tool
           </h3>
           <p className="text-gray-600 mb-3">
             MCPH works with any AI tool that supports the Model Context
-            Protocol. Crates are stored for 30 days and all generated download
-            links expires in 24 hours. The simplest way to connect is using the{" "}
-            <code>mcp-remote</code> CLI tool:
+            Protocol. Anonymous uploads are stored for 30 days, while
+            authenticated user uploads have no expiration. All generated
+            download links expires in 24 hours. The simplest way to connect is
+            using the <code>mcp-remote</code> CLI tool:
           </p>
 
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
@@ -317,37 +961,7 @@ export default function DocsPage() {
 
           <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
             <p className="text-gray-700 font-medium mb-2">Next Steps</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link
-                href="/docs/content-types"
-                className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300"
-              >
-                <div className="text-blue-600 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">
-                    Content Types & Features
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Learn about all the content types and security features
-                  </p>
-                </div>
-              </Link>
-
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <Link
                 href="/upload"
                 className="flex items-center p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300"
@@ -385,163 +999,71 @@ export default function DocsPage() {
           <h2 className="text-xl font-medium text-gray-800 mb-4">
             Available MCP Tools
           </h2>
-          <div className="space-y-4">
-            <div>
-              <div className="font-semibold text-gray-800">crates_list</div>
-              <div className="text-gray-600">
-                List all your crates (metadata, IDs, titles, descriptions,
-                categories, tags, expiration). Supports pagination with{" "}
-                <code>limit</code> and <code>startAfter</code>.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { limit?: number, startAfter?: string }
-Output: { 
-  crates: [{ 
-    id: string, 
-    title: string, 
-    description?: string, 
-    category: "markdown" | "code" | "image" | "json" | "binary",
-    createdAt: string, 
-    mimeType: string,
-    size: number,
-    tags: string[],
-    isPublic: boolean,
-    isPasswordProtected: boolean
-  }, ...],
-  lastCrateId: string,
-  hasMore: boolean 
-}`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_get</div>
-              <div className="text-gray-600">
-                Retrieve a crate's contents by its ID (text, images, or download
-                link for binaries). Anonymous uploads are public by default.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, password?: string }
-Output: { 
-  content: [{ 
-    type: "text" | "image", 
-    text?: string,          // For text content
-    data?: string,          // For image content (base64)
-    mimeType?: string       // For images
-  }, ...]
-}`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">
-                crates_get_download_link
-              </div>
-              <div className="text-gray-600">
-                Generate a pre-signed download URL for a crate (especially for
-                binaries or large files). Download links expire in 24 hours by
-                default.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, expiresInSeconds?: number }
-Output: { url: string, validForSeconds: number }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_search</div>
-              <div className="text-gray-600">
-                Search your crates using hybrid semantic and text search (title,
-                description, tags, metadata). Results are ranked by relevance.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { query: string }
-Output: { 
-  crates: [{ 
-    id: string, 
-    title: string, 
-    description?: string, 
-    category: "markdown" | "code" | "image" | "json" | "binary",
-    createdAt: string, 
-    mimeType: string,
-    size: number,
-    tags: string[],
-    isPublic: boolean,
-    isPasswordProtected: boolean
-  }, ...]
-}`}</code>
-              </pre>
-            </div>
+          <p className="text-gray-600 mb-4">
+            MCPH provides a set of powerful tools that enable you to manage your
+            content through the Model Context Protocol (MCP). These tools can be
+            used programmatically or through AI assistants using natural
+            language.
+          </p>
 
-            {/* Link to detailed Crates API documentation */}
-            <div className="mt-6 bg-beige-100 border border-amber-200 rounded-lg p-4">
-              <h3 className="font-medium text-amber-800 mb-2">
-                Detailed Crates API Documentation
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Content Management
               </h3>
-              <p className="text-gray-700 mb-2">
-                For comprehensive documentation on listing, searching, and
-                retrieving crates, see our dedicated Crates API documentation.
-              </p>
-              <Link
-                href="/docs/crates-api"
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                View Crates API Documentation →
-              </Link>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                <li>
+                  <b>crates_list</b> - View all your stored crates
+                </li>
+                <li>
+                  <b>crates_get</b> - Retrieve a crate's contents
+                </li>
+                <li>
+                  <b>crates_upload</b> - Create and store new content
+                </li>
+                <li>
+                  <b>crates_delete</b> - Remove unwanted crates
+                </li>
+              </ul>
             </div>
 
-            <div>
-              <div className="font-semibold text-gray-800">crates_upload</div>
-              <div className="text-gray-600">
-                Upload a new crate. Small text content is uploaded directly;
-                large/binary files return a pre-signed URL.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { fileName, contentType, data, ... }
-Output (binary): { uploadUrl, fileId, gcsPath, message }
-Output (text): { crate, message }`}</code>
-              </pre>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-2">
+                Sharing & Access
+              </h3>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                <li>
+                  <b>crates_share</b> - Make content accessible to others
+                </li>
+                <li>
+                  <b>crates_unshare</b> - Restrict access to private
+                </li>
+                <li>
+                  <b>crates_get_download_link</b> - Create shareable links
+                </li>
+                <li>
+                  <b>crates_copy</b> - Save others' public crates to your
+                  collection
+                </li>
+              </ul>
             </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_share</div>
-              <div className="text-gray-600">
-                Update a crate's sharing settings (public/private, password
-                protection).
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string, password?: string }
-Output: { id, isShared, shareUrl, message }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_unshare</div>
-              <div className="text-gray-600">
-                Make a crate private by removing all sharing settings.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { message, ... }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_delete</div>
-              <div className="text-gray-600">
-                Permanently delete a crate's data and metadata. Requires
-                confirmation.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { message }`}</code>
-              </pre>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-800">crates_copy</div>
-              <div className="text-gray-600">
-                Copy an existing crate to your collection. Only works with
-                public crates.
-              </div>
-              <pre className="bg-gray-100 text-xs rounded p-2 mt-1 overflow-x-auto">
-                <code>{`Input: { id: string }
-Output: { crate, message }`}</code>
-              </pre>
-            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+            <h3 className="font-medium text-gray-800 mb-2">
+              Search & Discovery
+            </h3>
+            <ul className="list-disc pl-5 text-gray-600 space-y-1">
+              <li>
+                <b>crates_search</b> - Find your content using hybrid search
+                technology
+              </li>
+            </ul>
+            <p className="text-sm text-gray-600 mt-2">
+              Combines vector embeddings for semantic understanding with
+              text-based search across titles, descriptions, and tags. Results
+              are ranked by relevance for the most useful matches.
+            </p>
           </div>
         </div>
 
@@ -638,213 +1160,6 @@ Output: { crate, message }`}</code>
               </a>
             </li>
           </ul>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-4 sticky top-20">
-          <h3 className="font-medium text-gray-800 mb-3">Contents</h3>
-          <nav className="space-y-1 text-sm">
-            <a
-              href="#mcp"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              MCP Overview
-            </a>
-            <a
-              href="#tools"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              Available Tools
-            </a>
-            <a
-              href="#api"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              API Usage
-            </a>
-            <a
-              href="#limits"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              Limits & Errors
-            </a>{" "}
-            <a
-              href="#mcp"
-              className="block text-primary-500 hover:text-primary-600 py-1"
-            >
-              MCP Endpoint: mcp.mcph.io/mcp
-            </a>
-          </nav>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Using MCPH with AI Assistants
-          </h2>
-          <p className="text-gray-600 mb-3">
-            MCPH tools integrate with AI assistants like Claude and ChatGPT to
-            provide seamless file management through natural conversation. You
-            can manage your files without learning commands or APIs—just speak
-            naturally about what you want to do.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
-                Natural Language Commands
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="font-medium text-gray-700">Managing Files:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Show me my files" / "List what I have stored"</li>
-                    <li>
-                      "Find my report about sales" / "Search for meeting notes"
-                    </li>
-                    <li>"Save this document" / "Store this analysis for me"</li>
-                    <li>"Delete that old file" / "Remove the draft version"</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Sharing & Access:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Make this public" / "Share this with others"</li>
-                    <li>
-                      "Give me a shareable link" / "I want to share this
-                      document"
-                    </li>
-                    <li>
-                      "Make this private again" / "Stop sharing this file"
-                    </li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-700">Viewing Content:</p>
-                  <ul className="list-disc pl-5 text-gray-600 text-sm">
-                    <li>"Show me that document" / "Open my project notes"</li>
-                    <li>"What's in that file?" / "Display the contract"</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
-                Contextual Understanding
-              </h3>
-              <p className="text-gray-600 mb-2">
-                The AI remembers what you're working on within conversations:
-              </p>
-              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Write a meeting
-                  summary"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> [Creates summary]
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Save it"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> "I've saved your
-                  meeting summary to your files"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">User:</span> "Actually, share it
-                  with the team"
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-medium">AI:</span> "Made it public.
-                  Here's the link: https://mcph.io/crate/..."
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-lg font-medium text-gray-800 mb-3">
-            Getting Started with AI Assistants
-          </h3>
-          <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
-            <li>
-              <b>Connect MCPH to Your AI Assistant</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Follow the setup instructions for your specific AI assistant to
-                connect it with your MCPH account using the API key.
-              </p>
-            </li>
-
-            <li>
-              <b>Use Natural Language Commands</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Interact with your AI assistant using simple language - no need
-                to learn special commands.
-              </p>
-              <div className="bg-gray-100 p-3 rounded-lg mb-2 text-gray-700 text-sm">
-                "Show my files", "Search for reports", "Share this document",
-                "Delete old files", etc.
-              </div>
-            </li>
-
-            <li>
-              <b>Manage Files Seamlessly</b>
-              <p className="text-gray-600 mt-1 mb-2">
-                Your AI assistant will handle file management tasks using MCPH,
-                such as storing, sharing, and organizing files.
-              </p>
-            </li>
-          </ol>
-
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
-              Key Benefits
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                <li>
-                  <b>No learning curve</b> - talk about files naturally
-                </li>
-                <li>
-                  <b>Persistent storage</b> - files remain accessible across
-                  sessions for 30 days
-                </li>
-                <li>
-                  <b>Smart search</b> - AI finds files using keywords and
-                  context
-                </li>
-              </ul>
-              <ul className="list-disc pl-5 text-gray-700 space-y-1">
-                <li>
-                  <b>Instant sharing</b> - generate public links with simple
-                  requests
-                </li>
-                <li>
-                  <b>Cross-session continuity</b> - reference files from
-                  previous conversations
-                </li>
-                <li>
-                  <b>Automatic organization</b> - files are tagged with metadata
-                  for easy retrieval
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
-              Tips for Using MCPH with AI Assistants
-            </h3>
-            <ul className="list-disc pl-5 text-gray-700 space-y-1">
-              <li>
-                <b>Be specific</b> with your commands for better accuracy.
-              </li>
-              <li>
-                Use <b>natural language</b>, no need to learn special commands.
-              </li>
-              <li>
-                Remember that files are stored for <b>30 days</b> by default.
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>

@@ -124,7 +124,9 @@ export default function TermsPage() {
           <p className="text-gray-600 mb-4">
             You retain all ownership rights to the crates you upload. By
             uploading crates to MCPH, you grant us a limited license to store
-            and make your crates available for download until their expiration.
+            and make your crates available for download. For guest users, crates
+            will be automatically deleted after 30 days. For logged-in users,
+            crates are stored until you delete them.
           </p>
 
           <p className="text-gray-600 mb-4">

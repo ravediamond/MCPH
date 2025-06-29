@@ -62,7 +62,7 @@ export default function Header() {
               <div className="flex items-center">
                 <Image src="/icon.png" alt="Logo" width={180} height={180} />
                 <span className="hidden sm:inline-block ml-2 text-sm text-gray-600 font-medium">
-                  Modern USB key for AI
+                  Package, store, and share your AI artifacts
                 </span>
               </div>
             </Link>
@@ -85,15 +85,15 @@ export default function Header() {
                 >
                   <FaUpload className="mr-1 h-4 w-4" /> Upload
                 </Link>
-                <Link
-                  href="/integrations"
-                  className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/integrations") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
-                >
-                  <FaPuzzlePiece className="mr-1 h-4 w-4" /> Integrations
-                </Link>
               </>
             )}
-            {/* Always show Documentation */}
+            {/* Always show Integrations and Documentation */}
+            <Link
+              href="/integrations"
+              className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/integrations") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+            >
+              <FaPuzzlePiece className="mr-1 h-4 w-4" /> Integrations
+            </Link>
             <Link
               href="/docs"
               className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/docs") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
@@ -179,16 +179,16 @@ export default function Header() {
                   >
                     <FaUpload className="mr-2 h-4 w-4" /> Upload
                   </Link>
-                  <Link
-                    href="/integrations"
-                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/integrations") ? "bg-gray-100 text-gray-900" : ""}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FaPuzzlePiece className="mr-2 h-4 w-4" /> Integrations
-                  </Link>
                 </>
               )}
-              {/* Always show Documentation */}
+              {/* Always show Integrations and Documentation */}
+              <Link
+                href="/integrations"
+                className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/integrations") ? "bg-gray-100 text-gray-900" : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <FaPuzzlePiece className="mr-2 h-4 w-4" /> Integrations
+              </Link>
               <Link
                 href="/docs"
                 className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/docs") ? "bg-gray-100 text-gray-900" : ""}`}
