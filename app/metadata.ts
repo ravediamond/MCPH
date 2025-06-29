@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-const title = "MCP Hub | AI Artifact Storage & Sharing System";
+const title = "MCPH | AI Artifact Storage & Sharing System";
 const description =
-  "MCP Hub is an artifact storage and sharing system for AI-generated content. Package your AI outputs in crates for easy storage and sharing.";
+  "MCPH is an artifact storage and sharing system for AI-generated content. Package your AI outputs in crates for easy storage and sharing.";
 const keywords = [
   "AI artifact storage",
   "crate sharing",
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    url: "https://mcphub.com",
-    siteName: "MCP Hub",
+    url: "https://mcph.com",
+    siteName: "MCPH",
     images: [
       {
-        url: "https://mcphub.com/og-image.png",
+        url: "https://mcph.com/og-image.png",
         width: 1200,
         height: 630,
-        alt: "MCP Hub | AI Artifact Storage & Sharing System",
+        alt: "MCPH | AI Artifact Storage & Sharing System",
       },
     ],
   },
@@ -33,6 +33,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["https://mcphub.com/twitter-image.png"],
+    images: ["https://mcph.com/twitter-image.png"],
   },
 };

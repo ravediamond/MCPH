@@ -27,10 +27,13 @@ export default function Home() {
             <h1 className="text-5xl font-bold">
               AI Artifact Storage & Sharing System
             </h1>
-            <p className="text-lg text-gray-600 max-w-xl mx-auto mt-4">
-              Store and share AI-generated artifacts in crates—permanent for
-              you, self-erasing for guests—across Claude, ChatGPT, or your own
-              agents.
+            <p className="text-xl text-gray-600 max-w-xl mx-auto mt-4">
+              Your personal hub for AI-generated content—store, search, and
+              seamlessly share artifacts between Claude, ChatGPT, and custom
+              agents. Access your AI creations anytime, anywhere.
+            </p>
+            <p className="text-base text-gray-500 max-w-xl mx-auto mt-2">
+              No account required—upload instantly and get started right away.
             </p>
             <div className="mt-6">
               <Link
@@ -49,18 +52,22 @@ export default function Home() {
 
           {/* Benefits Tag Line */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-6">
-            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Free
             </span>
-            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
+              <FaCheck className="text-green-500 mr-1.5 text-xs" /> No account
+              needed
+            </span>
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> 30-day
-              auto-expiry (guests)
+              storage (no account)
             </span>
-            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Permanent
-              storage (logged in)
+              storage (with account)
             </span>
-            <span className="inline-flex items-center px-2 md:px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-xs md:text-sm text-gray-700">
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Up to 10 MB
             </span>
           </div>
@@ -89,7 +96,7 @@ export default function Home() {
       {/* 3-Step Explainer Section */}
       <section className="py-10 md:py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-xl md:text-2xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
             How It Works: 3 Simple Steps
           </h2>
 
@@ -98,11 +105,11 @@ export default function Home() {
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <FaUpload className="text-lg md:text-xl" />
               </div>
-              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-base md:text-lg">
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
                 Upload
               </h3>
-              <p className="text-gray-600 text-center text-sm md:text-base">
-                Store and share your AI artifacts in crates.
+              <p className="text-gray-600 text-center text-base md:text-lg">
+                Instantly store AI artifacts with no account required.
               </p>
             </div>
 
@@ -110,10 +117,10 @@ export default function Home() {
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <FaCopy className="text-lg md:text-xl" />
               </div>
-              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-base md:text-lg">
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
                 Get Link
               </h3>
-              <p className="text-gray-600 text-center text-sm md:text-base">
+              <p className="text-gray-600 text-center text-base md:text-lg">
                 Instantly receive a shareable link that works anywhere.
               </p>
             </div>
@@ -122,10 +129,10 @@ export default function Home() {
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <span className="text-lg md:text-xl">🔗</span>
               </div>
-              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-base md:text-lg">
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
                 Share
               </h3>
-              <p className="text-gray-600 text-center text-sm md:text-base">
+              <p className="text-gray-600 text-center text-base md:text-lg">
                 Share with anyone - no login required to view.
               </p>
             </div>
@@ -289,10 +296,10 @@ export default function Home() {
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-gray-600 max-w-xl mx-auto">
+            <p className="text-gray-600 max-w-xl mx-auto text-base md:text-lg">
               Share AI-generated artifacts from your crate storage with a single
-              link that works for both humans and AI agents. No authentication
-              required for viewing.
+              link that works for both humans and AI agents. Create and share
+              with no account required.
             </p>
           </div>
         </div>
@@ -646,19 +653,19 @@ export default function Home() {
       {/* Call to Action */}
       <section className="py-16 px-4 text-center">
         <div className="max-w-3xl mx-auto bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200 shadow-sm">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800">
             Ready to store your AI artifacts in crates?
           </h2>
-          <p className="text-gray-700 mb-8 text-lg">
-            Upload now (no login) or create an account for enhanced storage
-            features.
+          <p className="text-gray-700 mb-8 text-xl">
+            Upload now with no account required, or sign up for permanent
+            storage.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
               href="/upload"
               className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-orange-500 rounded-lg shadow hover:bg-orange-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
             >
-              Upload (no login)
+              Start Uploading Now
             </Link>
             <Link
               href="/login"

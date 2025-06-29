@@ -126,7 +126,7 @@ export default function IntegrationsPage() {
               <strong>Important:</strong> MCP integration with simplified setup
               is only available in Claude Pro and Enterprise plans. Without
               these plans, you won't be able to use the MCP feature that allows
-              direct integration with MCPHub.
+              direct integration with MCPH.
               <br />
               <br />
               The configuration file is located at:
@@ -186,7 +186,7 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPHub to ChatGPT as a custom connector to access your
+              Connect MCPH to ChatGPT as a custom connector to access your
               stored artifacts and crates directly in your chat.
             </p>
 
@@ -204,7 +204,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Add MCPHub as a Model Context Protocol (MCP) connector
+                  Add MCPH as a Model Context Protocol (MCP) connector
                 </span>
               </div>
               <div className="flex items-center">
@@ -212,8 +212,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Use Deep Research to leverage your MCPHub data in
-                  conversations
+                  Use Deep Research to leverage your MCPH data in conversations
                 </span>
               </div>
             </div>
@@ -285,7 +284,7 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPHub to VS Code with MCP support to access your stored
+              Connect MCPH to VS Code with MCP support to access your stored
               artifacts and crates directly in your development environment.
             </p>
 
@@ -303,7 +302,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Add MCPHub as a server in your workspace or user settings
+                  Add MCPH as a server in your workspace or user settings
                 </span>
               </div>
               <div className="flex items-center">
@@ -311,7 +310,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Use Agent mode in Copilot Chat to access your MCPHub contexts
+                  Use Agent mode in Copilot Chat to access your MCPH contexts
                 </span>
               </div>
             </div>
@@ -340,7 +339,7 @@ export default function IntegrationsPage() {
             Get Extension
           </a>
           <p className="text-xs text-gray-500 mt-2 text-center">
-            MCP for VS Code works with all MCPHub contexts
+            MCP for VS Code works with all MCPH contexts
           </p>
         </div>
       </Card>
@@ -379,7 +378,7 @@ export default function IntegrationsPage() {
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
               Use GitHub Copilot with Model Context Protocol support to access
-              your MCPHub contexts through VS Code integration.
+              your MCPH contexts through VS Code integration.
             </p>
 
             <div className="space-y-4 mb-6">
@@ -404,14 +403,14 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Configure MCPHub as an MCP server in VS Code
+                  Configure MCPH as an MCP server in VS Code
                 </span>
               </div>
             </div>
 
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-6">
               <p className="text-blue-700 text-sm">
-                <strong>Note:</strong> GitHub Copilot integrates with MCPHub
+                <strong>Note:</strong> GitHub Copilot integrates with MCPH
                 through VS Code's MCP support.
               </p>
             </div>
@@ -487,7 +486,7 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPHub with Cursor to enhance your AI-powered coding
+              Connect MCPH with Cursor to enhance your AI-powered coding
               experience with custom contexts and tools.
             </p>
 
@@ -506,8 +505,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Set up MCPHub as a server with your API key in the
-                  configuration
+                  Set up MCPH as a server with your API key in the configuration
                 </span>
               </div>
               <div className="flex items-center">
@@ -515,7 +513,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Access your MCPHub contexts directly through Cursor's Composer
+                  Access your MCPH contexts directly through Cursor's Composer
                   Agent
                 </span>
               </div>
@@ -587,7 +585,7 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Integrate MCPHub with Windsurf's Cascade AI assistant using the
+              Integrate MCPH with Windsurf's Cascade AI assistant using the
               Model Context Protocol to enhance your browsing experience.
             </p>
 
@@ -606,7 +604,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Add MCPHub as a server with your API key in the configuration
+                  Add MCPH as a server with your API key in the configuration
                 </span>
               </div>
               <div className="flex items-center">
@@ -614,7 +612,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Refresh to enable MCPHub tools in Cascade
+                  Refresh to enable MCPH tools in Cascade
                 </span>
               </div>
             </div>
@@ -687,7 +685,7 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Integrate MCPHub with LangGraph to build sophisticated AI agents
+              Integrate MCPH with LangGraph to build sophisticated AI agents
               that can access your custom tools and contexts.
             </p>
 
@@ -705,7 +703,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Configure MCPHub as a server with{" "}
+                  Configure MCPH as a server with{" "}
                   <code>MultiServerMCPClient</code>
                 </span>
               </div>
@@ -714,7 +712,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Create agents that use tools from your MCPHub contexts
+                  Create agents that use tools from your MCPH contexts
                 </span>
               </div>
             </div>
@@ -722,7 +720,7 @@ export default function IntegrationsPage() {
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-md mb-6">
               <p className="text-purple-700 text-sm">
                 <strong>Note:</strong> Works with LangGraph's agent framework to
-                enable tool usage from MCPHub.
+                enable tool usage from MCPH.
               </p>
             </div>
           </div>
@@ -781,8 +779,8 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPHub with Perplexity AI to enhance your AI experience
-              with access to your custom tools and data.
+              Connect MCPH with Perplexity AI to enhance your AI experience with
+              access to your custom tools and data.
             </p>
 
             <div className="space-y-4 mb-6">
@@ -799,7 +797,7 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Add MCPHub as a server with your API key
+                  Add MCPH as a server with your API key
                 </span>
               </div>
               <div className="flex items-center">
@@ -807,7 +805,7 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Start using MCPHub tools directly in your Perplexity
+                  Start using MCPH tools directly in your Perplexity
                   conversations
                 </span>
               </div>
@@ -851,9 +849,9 @@ export default function IntegrationsPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">MCPHub Integrations</h1>
+        <h1 className="text-3xl font-bold mb-2">MCPH Integrations</h1>
         <p className="text-gray-600">
-          Connect your MCPHub content with popular AI platforms using the Model
+          Connect your MCPH content with popular AI platforms using the Model
           Context Protocol.
         </p>
       </div>

@@ -1,6 +1,6 @@
 # MCP Server
 
-This is the Model Context Protocol server for MCPHub, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
+This is the Model Context Protocol server for MCPH, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPH services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
 
 ## What is MCPH?
 
@@ -109,7 +109,7 @@ The MCP server is deployed to Google Cloud Run. The deployment is automated thro
 
 ## Shared Code
 
-The MCP server shares code with the main MCPHub application:
+The MCP server shares code with the main MCPH application:
 
 - `/lib`: Common utility functions and helpers
 - `/services`: Shared services for Firebase, storage, etc.

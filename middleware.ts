@@ -10,12 +10,6 @@ const ADMIN_PATHS = ["/admin"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Add redirect rule for /mcphub/* to /mcph/* (302 temporary redirect for one release cycle)
-  if (pathname.startsWith("/mcphub/")) {
-    const newPath = pathname.replace("/mcphub/", "/mcph/");
-    return NextResponse.redirect(new URL(newPath, request.url), 302);
-  }
-
   const session = request.cookies.get("session")?.value;
   const isAuthenticated = !!session;
 
@@ -76,7 +70,5 @@ export const config = {
   matcher: [
     // Match all paths
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
-    // Make sure to catch old mcphub paths
-    "/mcphub/:path*",
   ],
 };

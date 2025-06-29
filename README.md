@@ -70,7 +70,7 @@ Or configure your client:
 ```json
 {
   "mcpServers": {
-    "mcphub": {
+    "MCPH": {
       "command": "npx",
       "args": ["mcp-remote", "https://mcp.mcph.io/mcp"]
     }
@@ -206,4 +206,4 @@ For detailed instructions and examples, visit our [documentation](https://mcph.i
 
 ---
 
-MCPHub is open for public use. For questions or feedback, visit [mcph.io](https://mcph.io).
+MCPH is open for public use. For questions or feedback, visit [mcph.io](https://mcph.io).

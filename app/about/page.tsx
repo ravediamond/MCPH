@@ -25,9 +25,9 @@ export default function AboutPage() {
             What is MCPH?
           </h2>
           <p className="text-gray-600 mb-4">
-            MCPH stands for <strong>Model Context Protocol Hub</strong>, where
-            the "H" represents a harbor where boats (AI tools and models) come
-            to store, leave, and share their crates (packaged artifacts).
+            MCPH stands for <strong>Model Context Protocol Harbor</strong>,
+            where the "H" represents a harbor where boats (AI tools and models)
+            come to store, leave, and share their crates (packaged artifacts).
           </p>
 
           <div className="flex items-center justify-center my-6">
