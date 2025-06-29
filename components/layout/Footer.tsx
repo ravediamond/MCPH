@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="mb-4 md:mb-0">
             <p className="text-gray-600 text-sm">
               MCPH — AI artifact storage & sharing system, package your AI
-              outputs in crates, permanent for you, self-erasing for guests.
+              artifacts in crates.
             </p>
           </div>
 

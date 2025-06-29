@@ -417,8 +417,8 @@ export default function Home() {
                 Multi-Agent Context Pool
               </h4>
               <p className="text-sm text-gray-600">
-                Shared context pool — agents dump state, others pull when
-                needed.
+                Shared context pool — agents store data, others retrieve what's
+                relevant.
               </p>
             </div>
           </div>

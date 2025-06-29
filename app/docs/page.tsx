@@ -219,6 +219,432 @@ export default function DocsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Core Platform Features
+          </h2>
+
+          {/* Context Engineering Hub */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Context Engineering Hub
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Serve each model everything it needs to complete its tasks.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                While MCPH doesn't currently offer a dedicated UI for context
+                engineering, its MCP-based infrastructure provides the essential
+                foundation for creating and managing AI context. The platform's
+                storage capabilities enable you to build your own context
+                engineering workflows.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Store structured context data as Markdown, JSON, or YAML in a
+                  searchable format
+                </li>
+                <li>
+                  Access saved context across different AI tools through the
+                  shared MCP layer
+                </li>
+                <li>
+                  Organize artifacts with metadata to facilitate context
+                  retrieval
+                </li>
+                <li>
+                  Enable AI tools to search and retrieve precisely the context
+                  pieces they need
+                </li>
+                <li>
+                  Maintain version history of your context data through the
+                  artifact storage system
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store your company style guide, product specifications, and
+                  brand voice as separate artifacts in MCPH. AI tools can then
+                  selectively access these through MCP when needed for content
+                  generation, ensuring consistency across different models.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Persistent Artifact Storage */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"></path>
+                  <circle cx="17" cy="17" r="3"></circle>
+                  <path d="M17 14v6"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Persistent Artifact Storage
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Every artifact, safe and searchable.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Never lose an AI-generated artifact again. Our storage system
+                preserves your valuable AI outputs with powerful organization
+                and retrieval capabilities.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Preservation of all AI outputs—from text to code to images
+                </li>
+                <li>Automatic versioning to track changes over time</li>
+                <li>Rich metadata tagging for better organization</li>
+                <li>Powerful semantic search for instant retrieval</li>
+                <li>
+                  30-day storage for guest users; permanent storage for
+                  registered users
+                </li>
+                <li>
+                  Support for various file formats including markdown, code,
+                  JSON, images, and binary files
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store all AI-generated code snippets with proper tagging and
+                  search capabilities, allowing your team to build a searchable
+                  knowledge base of solutions that grows over time.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Seamless Share Links */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Seamless Share Links
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  One short link opens for humans and AI tools—no copy-paste
+                  pain.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Share your AI artifacts with a single, universal link that works
+                for both humans and AI systems, eliminating friction in your
+                workflows.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Generate short, memorable URLs for any artifact</li>
+                <li>Links open directly in browsers for human viewers</li>
+                <li>
+                  Same links can be referenced by AI tools through our API
+                </li>
+                <li>No authentication required to view shared content</li>
+                <li>Optional password protection for sensitive information</li>
+                <li>
+                  Customizable privacy settings (public, private, or
+                  password-protected)
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Generate a complex data visualization with AI, then share it
+                  with both your analytics team (who will view it in a browser)
+                  and your reporting AI (which will extract insights directly
+                  via API)—all using the same link.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-Agent Relay */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                  <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                  <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Multi-Agent Relay
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  All AI tools—Claude, ChatGPT, Gemini—can write and access the
+                  same artifacts.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                MCPH provides the foundation for AI collaboration through shared
+                artifacts. While not directly orchestrating multi-agent
+                workflows, the platform enables different AI systems to access
+                the same content through standardized MCP connections.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Universal artifact access by any MCP-compatible AI tool</li>
+                <li>
+                  Consistent data format and accessibility across different AI
+                  providers
+                </li>
+                <li>
+                  Shared storage layer that maintains artifact integrity between
+                  different model interactions
+                </li>
+                <li>
+                  Support for major AI platforms that implement the MCP standard
+                </li>
+                <li>
+                  Persistent artifacts that remain accessible across sessions
+                  and different AI tools
+                </li>
+                <li>
+                  API-based access that enables programmatic multi-agent
+                  workflows
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Store a complex data analysis in MCPH using Claude, then share
+                  the artifact link with a ChatGPT instance that can access and
+                  build upon the same content—creating an asynchronous
+                  collaboration between different AI systems without data
+                  transfer friction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Native MCP Integration */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path d="M9 14l2 2 4-4"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Native MCP Integration
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Fully integrated with compatible AI tools and usable directly
+                  by them.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Built on the Model Context Protocol (MCP) standard, our platform
+                is designed for direct integration with AI systems without
+                requiring custom code or workarounds.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Key capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>Direct integration with MCP-compatible AI systems</li>
+                <li>No custom code or workarounds required</li>
+                <li>Models can autonomously store and retrieve information</li>
+                <li>
+                  Standardized API for consistent interaction across different
+                  tools
+                </li>
+                <li>Forward compatibility with future MCP enhancements</li>
+                <li>Support for emerging AI capabilities as they develop</li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Create an autonomous research assistant that can store its
+                  findings, retrieve them when needed, and share them with other
+                  tools—all without requiring human intervention for the storage
+                  and retrieval processes.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Multi-Agent Context Pool */}
+          <div className="mb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 4-3 4-6 0-1.5-.5-3-2-4"></path>
+                  <path d="M12 14c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                  <path d="M12 8c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
+                  <path d="M4 17c0 3 1 6 4 6 1.25 0 2.5-1.06 4-1.06 1.5 0 2.75 1.06 4 1.06-1.5-5-6-4.94-6-8.94 0-1-.25-1.94-1-2.94-1 1-1 1.94-1 2.94 0 4-4.5 3.94-6 8.94-1.25 0-2.5-1.06-4-1.06"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Multi-Agent Context Pool
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Shared context pool—agents dump state, others pull only what
+                  they need.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                MCPH provides the underlying infrastructure for a shared context
+                repository. While not implementing a dedicated context
+                management layer, the platform's storage capabilities enable
+                developers to build context-sharing systems between AI agents.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Current capabilities:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Store structured context data as JSON or Markdown with
+                  metadata
+                </li>
+                <li>
+                  Provide consistent access points for different AI agents
+                  through the same storage layer
+                </li>
+                <li>
+                  Enable selective artifact retrieval through search and
+                  filtering
+                </li>
+                <li>Maintain metadata that helps organize context pieces</li>
+                <li>Support versioning of context artifacts as they evolve</li>
+                <li>
+                  Programmatic API access for custom context management
+                  workflows
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Use case example
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Design a workflow where one AI agent creates structured
+                  reports in MCPH, and different specialized agents can
+                  selectively access specific sections of those reports as
+                  needed—reducing context duplication while maintaining focused
+                  access to relevant information.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
           <ul className="list-disc pl-5 text-gray-600 space-y-4">
             <li>
