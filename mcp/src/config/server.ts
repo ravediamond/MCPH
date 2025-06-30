@@ -9,15 +9,16 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
   const server = new McpServer({
     name: "MCPH-mcp-server",
     description:
-      `MCPH - the USB stick for AI tools. Store, share, and auto-expire crates.\n\n` +
+      `MCPH - AI artifact storage & sharing system. Store, share, and auto-expire crates.\n\n` +
       `You are logged in as: ${req?.user?.userId ? `USER (${req.user.userId}) using API key` : "ANONYMOUS (no API key)"}\n\n` +
       "Features:\n" +
       "- Crate management: upload, list, get, search, share, unshare, delete\n" +
+      "- Support for multiple content types: markdown, code, images, JSON, YAML, and binary files\n" +
       "- Google OAuth flow for authentication\n" +
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +
       "- Streamable HTTP transport\n" +
-      "- Crates are stored for 30 days. Download links expire in 24 hours\n\n" +
+      "- Guest crates auto-delete after 30 days. Logged-in users' crates are stored until deleted. Download links expire in 24 hours\n\n" +
       "Natural-language AI commands:\n" +
       '• "list my crates" → crates_list\n' +
       '• "show crate with ID 12345" → crates_get\n' +

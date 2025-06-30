@@ -30,7 +30,15 @@ const TEXT_CONTENT_TYPES = [
 ];
 
 // File extensions to store in Firestore
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".markdown", ".json", ".text"];
+const TEXT_FILE_EXTENSIONS = [
+  ".txt",
+  ".md",
+  ".markdown",
+  ".json",
+  ".yaml",
+  ".yml",
+  ".text",
+];
 
 // Available crate categories that users can select (simplified for v1)
 const CRATE_CATEGORIES = [
@@ -39,6 +47,7 @@ const CRATE_CATEGORIES = [
   { value: CrateCategory.MARKDOWN, label: "Markdown" },
   { value: CrateCategory.CODE, label: "Code" },
   { value: CrateCategory.JSON, label: "JSON" },
+  { value: CrateCategory.YAML, label: "YAML" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -51,6 +60,10 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/markdown": CrateCategory.MARKDOWN,
   "text/x-markdown": CrateCategory.MARKDOWN,
   "application/json": CrateCategory.JSON,
+  "application/yaml": CrateCategory.YAML,
+  "text/yaml": CrateCategory.YAML,
+  "text/x-yaml": CrateCategory.YAML,
+  "application/x-yaml": CrateCategory.YAML,
   "text/plain": CrateCategory.CODE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
@@ -69,6 +82,8 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".md": CrateCategory.MARKDOWN,
   ".markdown": CrateCategory.MARKDOWN,
   ".json": CrateCategory.JSON,
+  ".yaml": CrateCategory.YAML,
+  ".yml": CrateCategory.YAML,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
@@ -524,7 +539,8 @@ export default function FileUpload({
               Give this link to an agent or teammate—no login needed.
               <br />
               <span className="text-xs text-amber-600">
-                Download link expires in 24 hours. Crate available for 30 days.
+                Download link expires in 24 hours.{" "}
+                {!user && "Anonymous crates expire after 30 days."}
               </span>
             </p>
           </div>
@@ -706,8 +722,17 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            Crates are automatically removed after 30 days. Download links
-            expire after 24 hours.
+            {!user ? (
+              <>
+                Anonymous crates auto-delete after 30 days. Sign in to keep your
+                crates permanently. Download links expire after 24 hours.
+              </>
+            ) : (
+              <>
+                Your crates are stored until you delete them. Download links
+                expire after 24 hours.
+              </>
+            )}
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
             By uploading a crate, you agree to our Terms of Service and Privacy

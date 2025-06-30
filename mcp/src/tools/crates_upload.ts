@@ -59,6 +59,9 @@ export function registerCratesUploadTool(server: McpServer): void {
             case CrateCategory.JSON:
               extension = ".json";
               break;
+            case CrateCategory.YAML:
+              extension = ".yaml";
+              break;
             case CrateCategory.IMAGE:
               extension = ".png";
               break;
@@ -76,6 +79,12 @@ export function registerCratesUploadTool(server: McpServer): void {
           }
         } else if (contentType) {
           if (contentType === "application/json") extension = ".json";
+          else if (
+            contentType === "application/yaml" ||
+            contentType === "text/yaml" ||
+            contentType === "text/x-yaml"
+          )
+            extension = ".yaml";
           else if (contentType === "image/jpeg" || contentType === "image/jpg")
             extension = ".jpg";
           else if (contentType === "image/png") extension = ".png";
@@ -141,6 +150,13 @@ export function registerCratesUploadTool(server: McpServer): void {
 
       if (category) {
         partialCrate.category = category;
+      }
+
+      // Add expiration date for anonymous uploads (30 days from now)
+      if (ownerId === "anonymous") {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30);
+        partialCrate.expiresAt = expiresAt;
       }
 
       // Determine if we should return a presigned URL or directly upload

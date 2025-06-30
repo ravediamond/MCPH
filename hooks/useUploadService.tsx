@@ -147,6 +147,18 @@ export const useUploadService = () => {
       return CrateCategory.JSON;
     }
 
+    // YAML detection
+    if (
+      mimeType === "application/yaml" ||
+      mimeType === "text/yaml" ||
+      mimeType === "text/x-yaml" ||
+      mimeType === "application/x-yaml" ||
+      fileName.endsWith(".yaml") ||
+      fileName.endsWith(".yml")
+    ) {
+      return CrateCategory.YAML;
+    }
+
     // Code detection (simplistic)
     if (
       [

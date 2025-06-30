@@ -1,10 +1,10 @@
 # MCP Server
 
-This is the Model Context Protocol server for MCPHub, the USB stick for AI tools. It provides the MCP API endpoints that allow AI models to interact with the MCPHub services for storing, sharing, and auto-expiring files and outputs.
+This is the Model Context Protocol server for MCPH, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPH services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
 
 ## What is MCPH?
 
-MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts in one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly "plug in" and store/share content via simple API calls, functioning like a virtual USB stick for AI outputs.
+MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
 ## Core MCP Tools
 
@@ -12,7 +12,7 @@ MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts
 
 - **crates_list**: List crates owned by the authenticated user.
   - Input: `{ limit?: number, startAfter?: string }`
-  - Output: Paginated list of crates with metadata
+  - Output: Paginated list of crates with metadata (including expiration dates for anonymous uploads)
   - Permissions: Requires authentication
 
 - **crates_get**: Get the content of a crate by ID.
@@ -20,18 +20,20 @@ MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts
   - Output: Content of the crate (text, image, or download info)
   - Permissions:
     - Owner can always access
-    - Anonymous uploads are public by default
+    - Anonymous uploads are public by default (expire after 30 days)
     - Password-protected crates require a password
+  - Note: Will return an error if the crate has expired
 
 - **crates_get_download_link**: Generate a pre-signed download URL for a crate.
   - Input: `{ id: string, expiresInSeconds?: number }`
   - Output: `{ url: string, validForSeconds: number, expiresAt: string }`
   - Permissions: Same as crates_get
-  - Note: Default expiration is 24 hours
+  - Note: Default expiration is 24 hours for the download link
+  - Note: Will return an error if the crate has expired
 
 - **crates_search**: Search for crates by query.
   - Input: `{ query: string }`
-  - Output: List of matching crates
+  - Output: List of matching crates (including expiration dates for anonymous uploads)
   - Permissions: Requires authentication
 
 ### Creating & Managing Crates
@@ -41,6 +43,7 @@ MCPH is a modern USB key for AI agents—store, share, and auto-expire artifacts
   - Output (text): `{ crate: object }`
   - Output (binary): `{ uploadUrl: string, crateId: string }`
   - Permissions: Requires authentication (except anonymous uploads)
+  - Note: Anonymous uploads expire after 30 days, authenticated user uploads have no expiration
 
 - **crates_delete**: Delete a crate permanently.
   - Input: `{ id: string }`
@@ -106,7 +109,7 @@ The MCP server is deployed to Google Cloud Run. The deployment is automated thro
 
 ## Shared Code
 
-The MCP server shares code with the main MCPHub application:
+The MCP server shares code with the main MCPH application:
 
 - `/lib`: Common utility functions and helpers
 - `/services`: Shared services for Firebase, storage, etc.

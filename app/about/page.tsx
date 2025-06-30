@@ -13,7 +13,81 @@ export default function AboutPage() {
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">About MCPH</h1>
           <p className="text-gray-600 text-lg">
-            Secure, ephemeral crate-sharing made simple
+            AI artifact storage and sharing made simple
+          </p>
+          <p className="text-gray-500 mt-2">
+            Where AI tools come to store, package, and share their artifacts
+          </p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            What is MCPH?
+          </h2>
+          <p className="text-gray-600 mb-4">
+            MCPH stands for <strong>Model Context Protocol Harbor</strong>,
+            where the "H" represents a harbor where boats (AI tools and models)
+            come to store, leave, and share their crates (packaged artifacts).
+          </p>
+
+          <div className="flex items-center justify-center my-6">
+            <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 max-w-3xl">
+              <h3 className="text-xl font-semibold text-primary-500 mb-3 flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                The Harbor Metaphor
+              </h3>
+              <p className="text-gray-600 mb-3">
+                Think of MCPH as a digital harbor where:
+              </p>
+              <ul className="list-disc pl-6 text-gray-600 space-y-2">
+                <li>
+                  <strong>The Harbor (Hub)</strong> - A central place where
+                  different vessels can dock, exchange cargo, and continue their
+                  journey
+                </li>
+                <li>
+                  <strong>Boats</strong> - Various AI tools and models that
+                  visit the harbor
+                </li>
+                <li>
+                  <strong>Crates</strong> - Standardized packages containing AI
+                  artifacts (outputs, models, data) that can be easily loaded,
+                  unloaded, and transported
+                </li>
+                <li>
+                  <strong>Loading/Unloading</strong> - The process of storing
+                  and retrieving artifacts from the system
+                </li>
+                <li>
+                  <strong>Shipping Routes</strong> - The pathways through which
+                  artifacts are shared between different tools and users
+                </li>
+              </ul>
+              <p className="text-gray-600 mt-3">
+                Just as a harbor provides a standardized way for boats of all
+                sizes to dock and exchange cargo in crates, MCPH provides a
+                standardized way for AI tools to store and share their artifacts
+                in a consistent format.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-gray-600">
+            This metaphor reflects our core philosophy: creating a universal
+            system where AI artifacts can be packaged, stored, shared, and
+            transported between different tools and platforms with minimal
+            friction.
           </p>
         </div>
 
@@ -22,39 +96,43 @@ export default function AboutPage() {
             Our Mission
           </h2>
           <p className="text-gray-600 mb-6">
-            MCPH was built with a simple mission: to make secure crate sharing
-            effortless while prioritizing privacy through ephemeral storage. We
-            believe that crate sharing should be simple, secure, and respect
-            your privacy by default.
+            MCPH was built with a simple mission: to make storing and sharing
+            AI-generated artifacts effortless while prioritizing privacy through
+            smart storage management. We believe that packaging artifacts in
+            standardized crates should be simple, secure, and respect your
+            privacy by default.
           </p>
 
           <p className="text-gray-600 mb-6">
             Our service is designed for those moments when you need to quickly
-            share crates without the overhead of creating accounts or managing
-            complex permissions. Crates are automatically deleted after their
-            expiration time, ensuring that your data doesn't persist longer than
+            store and share artifacts created by AI tools without the overhead
+            of creating accounts or managing complex permissions. Like shipping
+            containers in a harbor, our crates are standardized, secure, and
+            temporary. Guest crates are automatically deleted after their
+            expiration time, ensuring that data doesn't persist longer than
             needed.
           </p>
 
           <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">
-            Key Principles
+            Harbor Principles
           </h3>
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>
-              <strong>Privacy by Default</strong> - All crates automatically
-              expire and are completely purged from our systems.
+              <strong>Transient Storage</strong> - All crates automatically
+              expire and are completely purged from our harbor when their time
+              is up.
             </li>
             <li>
-              <strong>No Authentication Required</strong> - We don't track users
-              or require account creation.
+              <strong>Open Harbor Policy</strong> - We don't track visitors or
+              require registration to dock at our harbor.
             </li>
             <li>
-              <strong>Simplicity First</strong> - Upload, share, done. No
-              unnecessary complexity.
+              <strong>Streamlined Operations</strong> - Upload, share, done. No
+              unnecessary complexity in our loading procedures.
             </li>
             <li>
-              <strong>AI Integration</strong> - Built-in API for AI systems to
-              use with SSE endpoints.
+              <strong>AI-Friendly Port</strong> - Built-in API for AI systems to
+              use with SSE endpoints, allowing easy docking for all AI tools.
             </li>
           </ul>
         </div>
@@ -66,11 +144,11 @@ export default function AboutPage() {
 
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-primary-500 mb-3">
-              Technical Architecture
+              Harbor Infrastructure
             </h3>
             <p className="text-gray-600 mb-4">
-              MCPH is built using modern technologies to ensure reliability,
-              security, and performance:
+              Our digital harbor (MCPH) is built using modern technologies to
+              ensure reliability, security, and performance:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2">
               <li>
@@ -98,22 +176,27 @@ export default function AboutPage() {
 
           <div>
             <h3 className="text-xl font-semibold text-primary-500 mb-3">
-              Security &amp; Privacy
+              Harbor Security &amp; Privacy
             </h3>
             <p className="text-gray-600 mb-4">
-              We've designed MCPH with security and privacy as core principles:
+              We've designed our harbor with security and privacy as core
+              principles:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-2">
               <li>
-                Files are stored with encryption at rest in Google Cloud Storage
+                Crates are stored with encryption at rest in our secure storage
+                facilities
               </li>
-              <li>All transfers are encrypted via HTTPS</li>
+              <li>All shipping routes (transfers) are encrypted via HTTPS</li>
               <li>
-                We maintain minimal logs (IP addresses for abuse prevention
-                only, with short retention)
+                We maintain minimal harbor logs (IP addresses for abuse
+                prevention only, with short retention)
               </li>
-              <li>File metadata is completely purged when files expire</li>
-              <li>No tracking cookies or user profiling</li>
+              <li>
+                Cargo manifests (file metadata) are completely purged when
+                crates expire
+              </li>
+              <li>No tracking or profiling of ships that dock at our harbor</li>
             </ul>
           </div>
         </div>
@@ -137,10 +220,11 @@ export default function AboutPage() {
               <strong>Encryption at Rest:</strong> Your files are stored on
               Google Cloud Storage, which automatically encrypts all data at
               rest.
-            </li>
+            </li>{" "}
             <li>
-              <strong>Ephemeral by Design:</strong> Crates are automatically and
-              permanently deleted after their expiration time.
+              <strong>Ephemeral by Design:</strong> Like cargo that doesn't stay
+              in port forever, our crates are automatically and permanently
+              deleted after their expiration time.
             </li>
             <li>
               <strong>No User Tracking:</strong> We do not require accounts or
@@ -151,10 +235,11 @@ export default function AboutPage() {
 
         <div className="text-center mt-12">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Get Started
+            Dock at Our Harbor
           </h2>
           <p className="text-gray-600 mb-6">
-            Ready to experience simple, secure crate sharing?{" "}
+            Ready to bring your AI tools into our harbor and experience simple,
+            secure crate sharing?{" "}
             <Link href="/get-started" passHref>
               <Button variant="primary">Get Started Now</Button>
             </Link>

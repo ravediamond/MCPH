@@ -48,10 +48,10 @@ type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
   tags?: string[]; // Add tags property to match CrateExtended
 };
 
-interface CrateExtended extends Crate {
+interface CrateExtended extends Omit<Crate, "expiresAt"> {
   isExpiringSoon?: boolean;
   daysTillExpiry?: number;
-  expiresAt?: string; // Add expiresAt as optional
+  expiresAt?: string; // Override expiresAt as string since it comes from API
   fileName: string; // Changed from optional to mandatory to match Crate interface
   shared: CrateSharing; // Ensure shared is part of the type
 }
