@@ -34,7 +34,7 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
 - **crates_search**: Search for crates with advanced filtering.
   - Input: `{ query: string, tags?: string[], scope?: string, limit?: number }`
   - Output: List of matching crates with relevance scores
-  - Features: 
+  - Features:
     - Text search across all crate metadata
     - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
     - Project scoping for faster, focused searches (e.g., `scope: "project:mobile-app"`)
