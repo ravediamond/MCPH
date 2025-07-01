@@ -980,14 +980,21 @@ export default function DocsPage() {
             </h3>
             <ul className="list-disc pl-5 text-gray-600 space-y-1">
               <li>
-                <b>crates_search</b> - Find your content using hybrid search
-                technology
+                <b>crates_search</b> - Find your content using advanced hybrid search
+                with structured filtering
               </li>
             </ul>
             <p className="text-sm text-gray-600 mt-2">
               Combines vector embeddings for semantic understanding with
-              text-based search across titles, descriptions, and tags. Results
-              are ranked by relevance for the most useful matches.
+              text-based search across titles, descriptions, and tags. Features structured
+              tag filtering, project scoping, and tag hierarchy understanding.
+              Results are ranked by relevance with boosting for conventional tag patterns.
+            </p>
+            <p className="text-sm bg-gray-50 p-2 rounded border border-gray-200 mt-2">
+              <span className="font-semibold">Advanced Search Tips:</span><br/>
+              • Use <code>tags: ["project:website", "status:final"]</code> for precise filtering<br/>
+              • Use <code>scope: "project:mobile-app"</code> for focused project searches<br/>
+              • Conventional tags like <code>project:</code>, <code>type:</code>, <code>status:</code> receive relevance boosting
             </p>
           </div>
         </div>

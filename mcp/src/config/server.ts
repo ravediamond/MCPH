@@ -24,6 +24,8 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       '• "show crate with ID 12345" → crates_get\n' +
       '• "get download link for crate 12345" → crates_get_download_link\n' +
       "• \"search my crates for 'report'\" → crates_search\n" +
+      "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\" → crates_search\n" +
+      "• \"search my crates in scope 'project:mobile-app' for 'api'\" → crates_search\n" +
       "• \"upload this file as a crate titled 'notes'\" → crates_upload\n" +
       '• "share crate 12345 publicly" → crates_share\n' +
       '• "make crate 12345 private" → crates_unshare\n' +

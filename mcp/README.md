@@ -31,9 +31,14 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Note: Default expiration is 24 hours for the download link
   - Note: Will return an error if the crate has expired
 
-- **crates_search**: Search for crates by query.
-  - Input: `{ query: string }`
-  - Output: List of matching crates (including expiration dates for anonymous uploads)
+- **crates_search**: Search for crates with advanced filtering.
+  - Input: `{ query: string, tags?: string[], scope?: string, limit?: number }`
+  - Output: List of matching crates with relevance scores
+  - Features: 
+    - Text search across all crate metadata
+    - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
+    - Project scoping for faster, focused searches (e.g., `scope: "project:mobile-app"`)
+    - Tag hierarchy understanding with relevance boosting for conventional tags
   - Permissions: Requires authentication
 
 ### Creating & Managing Crates

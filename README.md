@@ -106,12 +106,16 @@ Pass your API key as a Bearer token in the `Authorization` header if required.
   - Useful for: Binary files, large files, or direct downloads
   - Default expiration: 24 hours (can be customized with `expiresInSeconds`)
 
-- **crates_search**: Search for crates by query text.
-  - Input: `{ query: string }`
-  - Output: `{ crates: [ { id, title, description, category, ... }, ... ] }`
-  - Search covers: title, description, tags, and metadata
+- **crates_search**: Search for crates with advanced filtering.
+  - Input: `{ query: string, tags?: string[], scope?: string, limit?: number }`
+  - Output: `{ crates: [ { id, title, description, category, relevanceScore, ... }, ... ], searchMetadata: { ... } }`
+  - Features:
+    - Text search across all crate metadata
+    - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
+    - Project scoping for faster, focused searches (e.g., `scope: "project:mobile-app"`)
+    - Tag hierarchy understanding with relevance boosting for conventional tags
   - Permission: Requires authentication to search user's crates
-  - Results: Ranked by relevance, limited to 10 most relevant matches
+  - Results: Ranked by relevance, limited to specified limit (default: 10)
 
 - **crates_upload**: Upload a new crate.
   - Input: `{ fileName: string, contentType: string, data: string, ... }`
