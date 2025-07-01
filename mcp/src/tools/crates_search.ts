@@ -12,7 +12,12 @@ export function registerCratesSearchTool(server: McpServer): void {
     {
       title: "Search Crates",
       description:
-        "Searches your crates using a hybrid approach combining embedding-based semantic search and text search. The search covers title, description, tags, and metadata fields. Results are merged and deduplicated for the most relevant matches.\n\n" +
+        "Searches your crates using hybrid semantic + text search across title, description, tags, and metadata.\n\n" +
+        "SEARCH TIPS for AI tools:\n" +
+        "• Search by project: 'project:website-redesign'\n" +
+        "• Combine tags: 'project:chatbot type:code'\n" +
+        "• Find by context: 'context:user-research'\n" +
+        "• Search workflow: 'status:final priority:high'\n\n" +
         "The search uses:\n" +
         "• Vector embeddings (768-dimensional) for semantic understanding of content\n" +
         "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +

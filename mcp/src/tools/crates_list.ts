@@ -12,7 +12,8 @@ export function registerCratesListTool(server: McpServer): void {
     {
       title: "List Crates",
       description:
-        "Lists all your crates (metadata, IDs, titles, descriptions, categories, tags, expiration). Crates are stored for 30 days.\n\n" +
+        "Lists all your crates with metadata, IDs, titles, descriptions, categories, and tags. Use this to discover existing organizational patterns and tag conventions in your crates before uploading new content.\n\n" +
+        "AI USAGE: Review existing tags to maintain consistent project/type/context naming conventions.\n\n" +
         "Pagination support:\n" +
         "• limit: Number of crates to return per page (default: 20, max: 100)\n" +
         "• startAfter: Cursor-based pagination token (ID of last crate from previous page)\n" +

@@ -13,7 +13,8 @@ export function registerCratesDeleteTool(server: McpServer): void {
     {
       title: "Delete Crate",
       description:
-        "Permanently deletes a crate's data and metadata.\n\n" +
+        "Permanently deletes a crate's data and metadata. Use with caution.\n\n" +
+        "AI USAGE: Clean up outdated project files, but consider updating tags (e.g., 'status:archived') instead of deletion to preserve project history.\n\n" +
         "AI usage example:\n" +
         '• "delete crate 12345"',
       inputSchema: DeleteCrateParams.shape,
