@@ -21,16 +21,19 @@ export default function Home() {
   return (
     <div className="bg-gradient-to-b from-white to-beige-50 min-h-screen">
       {/* Hero Section - Focused on File Upload */}
-      <section className="relative isolate overflow-hidden py-10 md:py-16 px-4">
+      <section className="relative isolate overflow-hidden py-8 md:py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <h1 className="text-5xl font-bold">
               AI Artifact Storage & Sharing System
             </h1>
+            <p className="text-xs text-gray-400 mt-1">
+              Test it without creating an account.
+            </p>
             <p className="text-xl text-gray-600 max-w-xl mx-auto mt-4">
               Your personal hub for AI-generated content—store, search, and
               seamlessly share artifacts between Claude, ChatGPT, and custom
-              agents. Access your AI creations anytime, anywhere.
+              agents. Access your AI artifacts anytime, anywhere.
             </p>
             <p className="text-base text-gray-500 max-w-xl mx-auto mt-2">
               No account required—upload instantly and get started right away.
@@ -46,29 +49,41 @@ export default function Home() {
           </div>
 
           {/* File Upload Hero Component */}
-          <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-6 relative overflow-hidden hover:shadow-lg transition-shadow duration-300">
+          <div className="w-full bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-6 relative overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <HeroUpload />
           </div>
 
-          {/* Benefits Tag Line */}
-          <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-6">
-            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
+          {/* Integration logo bar */}
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center justify-center gap-4 mb-6">
+            <span className="text-sm text-gray-500">Works with:</span>
+            <span className="font-medium">Claude</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">ChatGPT</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">VS Code</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">GitHub Copilot</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">Cursor</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">Windsurf</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">LangGraph</span>
+            <span className="text-gray-300 hidden sm:block">·</span>
+            <span className="font-medium">Perplexity</span>
+          </div>
+
+          {/* Benefits Tag Line - simplified */}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4">
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm text-gray-700">
               <FaCheck className="text-green-500 mr-1.5 text-xs" /> Free
             </span>
-            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" /> No account
-              needed
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm text-gray-700">
+              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Secure
             </span>
-            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" /> 30-day
-              storage (no account)
-            </span>
-            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Permanent
-              storage (with account)
-            </span>
-            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm md:text-base text-gray-700">
-              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Up to 10 MB
+            <span className="inline-flex items-center px-3 md:px-4 py-1.5 rounded-full border border-orange-200 bg-orange-50 text-sm text-gray-700">
+              <FaCheck className="text-green-500 mr-1.5 text-xs" /> Only MCP
+              setup required
             </span>
           </div>
         </div>
@@ -93,11 +108,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works: 3 Simple Steps Section */}
+      {/* Workflow Steps Section */}
       <section className="py-10 md:py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
-            How It Works: 4 Simple Steps
+            Complete Workflow in 4 Steps
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -214,42 +229,11 @@ export default function Home() {
       <section className="py-12 px-4 bg-white border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            Why devs & agents choose MCPH
+            Why devs choose MCPH
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Context Engineering Hub */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-              <div className="flex items-center mb-4">
-                <span
-                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
-                  aria-hidden="true"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                  </svg>
-                </span>
-              </div>
-              <h4 className="text-lg font-medium text-gray-800 mb-2">
-                Context Engineering Hub
-              </h4>
-              <p className="text-sm text-gray-600">
-                Serve each Agent everything it needs to complete its tasks.
-              </p>
-            </div>
-
-            {/* Persistent Artifact Storage */}
+            {/* 1. Persistent Artifact Storage */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="flex items-center mb-4">
                 <span
@@ -280,7 +264,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Seamless Share Links */}
+            {/* 2. Seamless Share Links */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="flex items-center mb-4">
                 <span
@@ -310,7 +294,70 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Multi-Agent Relay */}
+            {/* 3. Native MCP Integration */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M9 14l2 2 4-4"></path>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Native MCP Integration
+              </h4>
+              <p className="text-sm text-gray-600">
+                Fully integrated with compatible AI tools and usable directly by
+                them.
+              </p>
+            </div>
+
+            {/* 4. Context Engineering Hub */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Context Engineering Hub
+              </h4>
+              <p className="text-sm text-gray-600">
+                Serve each Agent everything it needs to complete its tasks.
+              </p>
+            </div>
+
+            {/* 5. Multi-Agent Relay */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="flex items-center mb-4">
                 <span
@@ -356,71 +403,16 @@ export default function Home() {
                 same artifacts.
               </p>
             </div>
+          </div>
 
-            {/* Native MCP Integration */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-              <div className="flex items-center mb-4">
-                <span
-                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
-                  aria-hidden="true"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                    <path d="M9 14l2 2 4-4"></path>
-                  </svg>
-                </span>
-              </div>
-              <h4 className="text-lg font-medium text-gray-800 mb-2">
-                Native MCP Integration
-              </h4>
-              <p className="text-sm text-gray-600">
-                Fully integrated with compatible AI tools and usable directly by
-                them.
-              </p>
-            </div>
-
-            {/* Multi-Agent Context Pool */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
-              <div className="flex items-center mb-4">
-                <span
-                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
-                  aria-hidden="true"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 4-3 4-6 0-1.5-.5-3-2-4"></path>
-                    <path d="M12 14c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
-                    <path d="M12 8c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
-                    <path d="M4 17c0 3 1 6 4 6 1.25 0 2.5-1.06 4-1.06 1.5 0 2.75 1.06 4 1.06-1.5-5-6-4.94-6-8.94 0-1-.25-1.94-1-2.94-1 1-1 1.94-1 2.94 0 4-4.5 3.94-6 8.94-1.25 0-2.5-1.06-4-1.06"></path>
-                  </svg>
-                </span>
-              </div>
-              <h4 className="text-lg font-medium text-gray-800 mb-2">
-                Multi-Agent Context Pool
-              </h4>
-              <p className="text-sm text-gray-600">
-                Shared context pool — agents store data, others retrieve what's
-                relevant.
-              </p>
-            </div>
+          {/* Repeated CTA Button */}
+          <div className="mt-10 text-center">
+            <Link
+              href="/upload"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              Get started →
+            </Link>
           </div>
         </div>
       </section>
@@ -432,7 +424,8 @@ export default function Home() {
             What Can You Store and Share?
           </h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {/* First row - 3 blocks */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-orange-500 mb-3">
                 <svg
@@ -492,7 +485,10 @@ export default function Home() {
               </div>
               <p className="font-medium text-gray-800">Images</p>
             </div>
+          </div>
 
+          {/* Second row - 3 blocks */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-orange-500 mb-3">
                 <svg
@@ -532,9 +528,6 @@ export default function Home() {
                 </svg>
               </div>
               <p className="font-medium text-gray-800">YAML</p>
-              <span className="inline-block mt-2 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
-                New!
-              </span>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
@@ -557,14 +550,97 @@ export default function Home() {
                 </svg>
               </div>
               <p className="font-medium text-gray-800">Binary Files</p>
-              <span className="inline-block mt-2 text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
-                New!
-              </span>
               <p className="text-xs text-gray-500 mt-1">
                 PDFs, images, and more
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Guest vs Logged-in Users Comparison (Accordion) */}
+      <section className="py-8 px-4 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <details className="bg-white rounded-xl p-4 shadow-sm border border-gray-200 group">
+            <summary className="list-none flex justify-between items-center cursor-pointer font-medium text-gray-700">
+              <span className="flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5 mr-2 text-orange-500"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+                  />
+                </svg>
+                Guest vs Logged-in Features
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 transform group-open:rotate-180 transition-transform"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                />
+              </svg>
+            </summary>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="p-2 font-medium">Feature</th>
+                    <th className="p-2 font-medium">Guest Users</th>
+                    <th className="p-2 font-medium">Logged-in Users</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">File Uploads</td>
+                    <td className="p-2 text-green-600">✓ (10MB max)</td>
+                    <td className="p-2 text-green-600">✓ (10MB max)</td>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">Download Links</td>
+                    <td className="p-2">24-hour expiry</td>
+                    <td className="p-2">24-hour expiry</td>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">Storage Duration</td>
+                    <td className="p-2">30-day auto-delete</td>
+                    <td className="p-2 text-green-600">
+                      Permanent (until deleted)
+                    </td>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">File Management</td>
+                    <td className="p-2 text-red-600">✗</td>
+                    <td className="p-2 text-green-600">✓</td>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">Semantic Search</td>
+                    <td className="p-2 text-red-600">✗</td>
+                    <td className="p-2 text-green-600">✓</td>
+                  </tr>
+                  <tr className="border-t border-gray-100">
+                    <td className="p-2">API Access</td>
+                    <td className="p-2 text-red-600">✗</td>
+                    <td className="p-2 text-green-600">✓</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -838,7 +914,7 @@ export default function Home() {
                 Status
               </Link>
               <Link
-                href="https://github.com/yourgithub/mcph"
+                href="https://github.com/ravediamond/mcph"
                 className="text-gray-500 hover:text-orange-600 text-sm"
               >
                 GitHub
