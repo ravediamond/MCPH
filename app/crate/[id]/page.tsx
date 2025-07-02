@@ -874,6 +874,38 @@ export default function CratePage() {
           </div>
         );
 
+      case CrateCategory.TEXT: // Enhanced text rendering
+        return (
+          <div className="text-sm">
+            <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
+              <span className="text-gray-700 font-medium">Text Preview</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    window.open(`/api/crates/${crateId}/content`, "_blank")
+                  }
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaExternalLinkAlt className="inline mr-1" />
+                  Open Raw
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaDownload className="inline mr-1" />
+                  Download
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[500px] rounded border border-gray-200 p-4 bg-white">
+              <pre className="whitespace-pre-wrap font-mono text-gray-800">
+                {crateContent}
+              </pre>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="p-4 text-gray-600 text-center">
@@ -1322,6 +1354,7 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.CODE ||
                 crateInfo.category === CrateCategory.JSON ||
                 crateInfo.category === CrateCategory.YAML ||
+                crateInfo.category === CrateCategory.TEXT ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
