@@ -61,9 +61,6 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-2 px-2 py-1">
               <div className="flex items-center">
                 <Image src="/icon.png" alt="Logo" width={180} height={180} />
-                <span className="hidden sm:inline-block ml-2 text-sm text-gray-600 font-medium">
-                  Package, store, and share your AI artifacts
-                </span>
               </div>
             </Link>
           </div>
