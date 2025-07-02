@@ -1316,24 +1316,6 @@ export default function CratePage() {
             {/* Tags */}
             {renderTags(crateInfo.tags)}
 
-            {/* Debug tags info */}
-            <div className="mb-2 p-2 bg-yellow-50 text-xs border border-yellow-200 rounded">
-              <div className="font-semibold">Tags Debug:</div>
-              <div>
-                Has tags property:{" "}
-                {crateInfo.hasOwnProperty("tags") ? "Yes" : "No"}
-              </div>
-              <div>Tags type: {typeof crateInfo.tags}</div>
-              <div>
-                Is array: {Array.isArray(crateInfo.tags) ? "Yes" : "No"}
-              </div>
-              <div>
-                Length:{" "}
-                {Array.isArray(crateInfo.tags) ? crateInfo.tags.length : "N/A"}
-              </div>
-              <div>Raw value: {JSON.stringify(crateInfo.tags)}</div>
-            </div>
-
             {/* Metadata display */}
             {renderMetadata(crateInfo.metadata)}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { FileMetadata } from "../../services/storageService";
 import { useAuth } from "../../contexts/AuthContext";
 import Link from "next/link";
@@ -26,68 +26,46 @@ import {
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
 import RecentlyClaimedCrates from "../../components/RecentlyClaimedCrates";
-import { Crate, CrateSharing, CrateCategory } from "../../shared/types/crate";
+import { Crate } from "@/app/types/crate";
 
-type FileMetadataExtended = Omit<FileMetadata, "uploadedAt" | "expiresAt"> & {
-  id: string;
-  fileName: string;
-  title?: string;
-  description?: string;
-  contentType: string;
-  size: number;
-  uploadedAt?: Date;
-  expiresAt?: Date;
-  downloadCount?: number;
-  metadata?: Record<string, string>;
-  isExpiringSoon?: boolean;
-  daysTillExpiry?: number;
-  shared?: CrateSharing; // Add shared property
-  gcsPath?: string; // ensure gcsPath is part of the type, as it's used in crateToFileMetadata
-  category?: CrateCategory; // Add category property from CrateCategory enum
-  createdAt?: string | Date; // Add createdAt property to match CrateExtended
-  tags?: string[]; // Add tags property to match CrateExtended
-};
+interface UserQuota {
+  remaining: number;
+}
 
-interface CrateExtended extends Omit<Crate, "expiresAt"> {
-  isExpiringSoon?: boolean;
-  daysTillExpiry?: number;
-  expiresAt?: string; // Override expiresAt as string since it comes from API
-  fileName: string; // Changed from optional to mandatory to match Crate interface
-  shared: CrateSharing; // Ensure shared is part of the type
+interface UserStorage {
+  used: number;
+  limit: number;
+  remaining: number;
+}
+
+interface UserSharedCrates {
+  count: number;
+  limit: number;
+  remaining: number;
 }
 
 export default function HomePage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
-  const [files, setFiles] = useState<CrateExtended[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [lastCrateId, setLastCrateId] = useState<string | null>(null);
+  const [userQuota, setUserQuota] = useState<UserQuota | null>(null);
+  const [userStorage, setUserStorage] = useState<UserStorage | null>(null);
+  const [userSharedCrates, setUserSharedCrates] =
+    useState<UserSharedCrates | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(true);
+  const [files, setFiles] = useState<Crate[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
-  const [userQuota, setUserQuota] = useState<{
-    count: number;
-    remaining: number;
-  } | null>(null);
-  const [quotaLoading, setQuotaLoading] = useState(false);
-  const [userStorage, setUserStorage] = useState<{
-    used: number;
-    limit: number;
-    remaining: number;
-  } | null>(null);
-  const [userSharedCrates, setUserSharedCrates] = useState<{
-    count: number;
-    limit: number;
-    remaining: number;
-  } | null>(null);
-
-  // Advanced search state
+  const [actionSuccess, setActionSuccess] = useState<string | null>("");
+  const [searchResults, setSearchResults] = useState<Crate[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [isAdvancedSearch, setIsAdvancedSearch] = useState(false);
-  const [advancedSearchParams, setAdvancedSearchParams] = useState({
-    title: "",
+  const [advancedSearchFields, setAdvancedSearchFields] = useState({
+    fileName: "",
     tags: "",
     type: "",
     project: "",
@@ -96,15 +74,14 @@ export default function HomePage() {
     context: "",
   });
 
-  // View mode state
-  const [viewMode] = useState<"list">("list");
-
   // --- Embedding-based search state ---
-  const [searchResults, setSearchResults] = useState<
-    FileMetadataExtended[] | null
+  const [embeddingSearchResults, setEmbeddingSearchResults] = useState<
+    Crate[] | null
   >(null);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [embeddingSearchLoading, setEmbeddingSearchLoading] = useState(false);
+  const [embeddingSearchError, setEmbeddingSearchError] = useState<
+    string | null
+  >(null);
 
   // Function to fetch crates with pagination
   const fetchCrates = async (isLoadMore = false) => {
@@ -124,8 +101,8 @@ export default function HomePage() {
       let url = `/api/user/${user.uid}/crates?limit=${pageSize}`;
 
       // Add cursor-based pagination parameter if loading more
-      if (isLoadMore && lastCrateId) {
-        url += `&startAfter=${encodeURIComponent(lastCrateId)}`;
+      if (isLoadMore && lastVisible) {
+        url += `&startAfter=${encodeURIComponent(lastVisible)}`;
       }
 
       const response = await fetch(url);
@@ -147,7 +124,7 @@ export default function HomePage() {
       });
 
       // Update pagination state
-      setLastCrateId(data.lastCrateId);
+      setLastVisible(data.lastCrateId);
       setHasMore(data.hasMore);
 
       // If loading more, append to existing files, otherwise replace them
@@ -181,15 +158,15 @@ export default function HomePage() {
       fetchCrates();
     } else {
       setFiles([]);
-      setLastCrateId(null);
+      setLastVisible(null);
       setHasMore(true);
       setLoading(false);
     }
   }, [user]);
 
+  // Quota and storage info
   useEffect(() => {
     if (user) {
-      setQuotaLoading(true);
       fetch(`/api/user/${user.uid}/quota`)
         .then((res) => res.json())
         .then((data) => {
@@ -201,8 +178,7 @@ export default function HomePage() {
           setUserQuota(null);
           setUserStorage(null);
           setUserSharedCrates(null);
-        })
-        .finally(() => setQuotaLoading(false));
+        });
     } else {
       setUserQuota(null);
       setUserStorage(null);
@@ -270,7 +246,7 @@ export default function HomePage() {
         <ul className="list-disc ml-4">
           {Object.entries(metadata).map(([key, value]) => (
             <li key={key}>
-              <span className="font-medium">{key}:</span> {value}
+              <span className="font-medium">{key}:</span> {String(value)}
             </li>
           ))}
         </ul>
@@ -279,9 +255,9 @@ export default function HomePage() {
   };
 
   // Get file type icon with proper styling
-  const getFileIcon = (file: FileMetadataExtended) => {
-    const contentType = file.contentType.toLowerCase();
-    const fileName = file.fileName.toLowerCase();
+  const getFileIcon = (file: Crate) => {
+    const contentType = file.mimeType?.toLowerCase() || "";
+    const fileName = file.title?.toLowerCase() || "";
 
     if (contentType.includes("image")) {
       return <FaFileImage size={18} className="text-blue-500" />;
@@ -328,7 +304,8 @@ export default function HomePage() {
   ) => {
     if (e.key === "Enter" && searchQuery.trim()) {
       setSearchLoading(true);
-      setSearchError(null);
+      setSearchResults(null);
+      setError(null);
       try {
         const res = await fetch("/api/search", {
           method: "POST",
@@ -370,7 +347,7 @@ export default function HomePage() {
 
         setSearchResults(results);
       } catch (err: any) {
-        setSearchError(err.message || "Search failed");
+        setError(err.message || "Search failed");
         setSearchResults([]);
       } finally {
         setSearchLoading(false);
@@ -381,20 +358,22 @@ export default function HomePage() {
   // Handle advanced search
   const handleAdvancedSearch = async () => {
     setSearchLoading(true);
-    setSearchError(null);
+    setSearchResults(null);
+    setError(null);
 
     // Build search query from advanced parameters
     let query = "";
-    if (advancedSearchParams.title) query += advancedSearchParams.title + " ";
-    if (advancedSearchParams.tags) query += advancedSearchParams.tags + " ";
-    if (advancedSearchParams.project)
-      query += advancedSearchParams.project + " ";
-    if (advancedSearchParams.type) query += advancedSearchParams.type + " ";
-    if (advancedSearchParams.status) query += advancedSearchParams.status + " ";
-    if (advancedSearchParams.priority)
-      query += advancedSearchParams.priority + " ";
-    if (advancedSearchParams.context)
-      query += advancedSearchParams.context + " ";
+    if (advancedSearchFields.fileName)
+      query += advancedSearchFields.fileName + " ";
+    if (advancedSearchFields.tags) query += advancedSearchFields.tags + " ";
+    if (advancedSearchFields.project)
+      query += advancedSearchFields.project + " ";
+    if (advancedSearchFields.type) query += advancedSearchFields.type + " ";
+    if (advancedSearchFields.status) query += advancedSearchFields.status + " ";
+    if (advancedSearchFields.priority)
+      query += advancedSearchFields.priority + " ";
+    if (advancedSearchFields.context)
+      query += advancedSearchFields.context + " ";
 
     // Trim and ensure we have a query
     query = query.trim();
@@ -450,7 +429,7 @@ export default function HomePage() {
       // Also update the simple search query to match
       setSearchQuery(query);
     } catch (err: any) {
-      setSearchError(err.message || "Search failed");
+      setError(err.message || "Search failed");
       setSearchResults([]);
     } finally {
       setSearchLoading(false);
@@ -458,32 +437,18 @@ export default function HomePage() {
   };
 
   // Utility to map CrateExtended to FileMetadataExtended
-  function crateToFileMetadata(crate: CrateExtended): FileMetadataExtended {
+  function crateToFileMetadata(crate: Crate): Crate {
     return {
-      id: crate.id,
-      fileName: crate.title || crate.id, // fallback to id if title is missing
-      title: crate.title,
-      description: crate.description,
-      contentType: crate.mimeType,
-      size: crate.size,
-      gcsPath: crate.gcsPath || "", // Added to match FileMetadata
-      uploadedAt: crate.createdAt ? new Date(crate.createdAt) : new Date(),
-      expiresAt: crate.expiresAt ? new Date(crate.expiresAt) : undefined,
-      downloadCount: crate.downloadCount,
-      metadata: crate.metadata,
-      isExpiringSoon: crate.isExpiringSoon,
-      daysTillExpiry: crate.daysTillExpiry,
-      shared: crate.shared, // Map shared property
-      category: crate.category, // Map the category property
-      createdAt: crate.createdAt, // Map the createdAt property
-      tags: crate.tags, // Map the tags property
+      ...crate,
+      isExpiringSoon: false, // Add this property
+      daysTillExpiry: 0, // Add this property
     };
   }
 
   // Group files by project for project view
   const groupedByProject = React.useMemo(() => {
     const files = filteredFiles || [];
-    const groups: Record<string, FileMetadataExtended[]> = {
+    const groups: Record<string, Crate[]> = {
       "No Project": [],
     };
 
@@ -498,11 +463,7 @@ export default function HomePage() {
             if (!groups[projectName]) {
               groups[projectName] = [];
             }
-            groups[projectName].push(
-              "contentType" in file
-                ? (file as FileMetadataExtended)
-                : crateToFileMetadata(file as CrateExtended),
-            );
+            groups[projectName].push(crateToFileMetadata(file));
             assigned = true;
             break;
           }
@@ -511,11 +472,7 @@ export default function HomePage() {
 
       // If no project tag found, add to "No Project" group
       if (!assigned) {
-        groups["No Project"].push(
-          "contentType" in file
-            ? (file as FileMetadataExtended)
-            : crateToFileMetadata(file as CrateExtended),
-        );
+        groups["No Project"].push(crateToFileMetadata(file));
       }
     });
 
@@ -709,11 +666,11 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="Search by title"
-                          value={advancedSearchParams.title}
+                          value={advancedSearchFields.fileName}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
-                              title: e.target.value,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
+                              fileName: e.target.value,
                             })
                           }
                           className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
@@ -726,10 +683,10 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="Any tag"
-                          value={advancedSearchParams.tags}
+                          value={advancedSearchFields.tags}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
                               tags: e.target.value,
                             })
                           }
@@ -743,10 +700,10 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="project:name"
-                          value={advancedSearchParams.project}
+                          value={advancedSearchFields.project}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
                               project: e.target.value,
                             })
                           }
@@ -760,10 +717,10 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="type:name"
-                          value={advancedSearchParams.type}
+                          value={advancedSearchFields.type}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
                               type: e.target.value,
                             })
                           }
@@ -777,10 +734,10 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="status:name"
-                          value={advancedSearchParams.status}
+                          value={advancedSearchFields.status}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
                               status: e.target.value,
                             })
                           }
@@ -794,10 +751,10 @@ export default function HomePage() {
                         <input
                           type="text"
                           placeholder="priority:level"
-                          value={advancedSearchParams.priority}
+                          value={advancedSearchFields.priority}
                           onChange={(e) =>
-                            setAdvancedSearchParams({
-                              ...advancedSearchParams,
+                            setAdvancedSearchFields({
+                              ...advancedSearchFields,
                               priority: e.target.value,
                             })
                           }
@@ -855,11 +812,7 @@ export default function HomePage() {
 
             {/* View mode toggle and quick tag filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between max-w-4xl mx-auto mb-4">
-              <div className="flex space-x-2 mb-3 md:mb-0">
-                {/* List view is now the only option */}
-              </div>
-
-              {/* Quick tag filters removed */}
+              <div className="flex space-x-2 mb-3 md:mb-0"></div>
             </div>
           </div>
         </div>
@@ -897,27 +850,23 @@ export default function HomePage() {
                 <p className="text-gray-500">No matching crates found</p>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 {searchResults.map((file) => (
                   <Card
                     key={file.id}
                     hoverable
-                    className="transition-all overflow-hidden h-full"
+                    className="transition-all overflow-hidden"
                   >
                     {/* ...existing file card rendering... */}
-                    <div className="p-6">
+                    <div className="p-3">
                       <div className="flex items-start space-x-3">
-                        <div className="mt-0.5 mr-3">
-                          {getFileIcon(
-                            "contentType" in file
-                              ? (file as FileMetadataExtended)
-                              : crateToFileMetadata(file as CrateExtended),
-                          )}
+                        <div className="mt-0.5">
+                          {getFileIcon(crateToFileMetadata(file as Crate))}
                         </div>
                         <div className="flex-grow min-w-0">
                           <Link href={`/crate/${file.id}`} className="block">
                             <h3
-                              className="font-medium text-base text-gray-800 hover:text-primary-600 transition-colors truncate"
+                              className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
                               title={file.fileName}
                             >
                               {file.title || file.fileName}
@@ -927,7 +876,7 @@ export default function HomePage() {
                           {/* File Description - improved snippet */}
                           {file.description && (
                             <p
-                              className="text-sm text-gray-600 mt-2 mb-3 line-clamp-3"
+                              className="text-xs text-gray-600 mt-1 line-clamp-2"
                               title={file.description}
                             >
                               {file.description}
@@ -946,34 +895,32 @@ export default function HomePage() {
 
                           {/* Tags - if available */}
                           {file.tags && file.tags.length > 0 && (
-                            <div className="my-5 pb-1">
-                              <div className="text-xs text-gray-500 mb-3">Tags:</div>
-                              <div className="flex flex-wrap gap-3">
-                                {file.tags.map((tag, index) => {
-                                  // Determine tag type/color based on prefix
-                                  let tagClass = "bg-gray-100 text-gray-600"; // default style
-                                  if (tag.startsWith("project:")) {
-                                    tagClass = "bg-blue-100 text-blue-700";
-                                  } else if (tag.startsWith("type:")) {
-                                    tagClass = "bg-green-100 text-green-700";
-                                  } else if (tag.startsWith("status:")) {
-                                    tagClass = "bg-purple-100 text-purple-700";
-                                  } else if (tag.startsWith("priority:")) {
-                                    tagClass = "bg-red-100 text-red-700";
-                                  } else if (tag.startsWith("context:")) {
-                                    tagClass = "bg-yellow-100 text-yellow-700";
-                                  }
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {file.tags.map((tag: string, index: number) => {
+                                // Determine tag type/color based on prefix
+                                let tagClass = "bg-gray-100 text-gray-600"; // default style
+                                if (tag.startsWith("project:")) {
+                                  tagClass = "bg-blue-100 text-blue-700";
+                                } else if (tag.startsWith("type:")) {
+                                  tagClass = "bg-green-100 text-green-700";
+                                } else if (tag.startsWith("status:")) {
+                                  tagClass = "bg-purple-100 text-purple-700";
+                                } else if (tag.startsWith("priority:")) {
+                                  tagClass = "bg-red-100 text-red-700";
+                                } else if (tag.startsWith("context:")) {
+                                  tagClass = "bg-yellow-100 text-yellow-700";
+                                }
 
-                                  return (
-                                    <span
-                                      key={index}
-                                      className={`inline-block ${tagClass} text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 shadow-sm`}
-                                      onClick={() => setSearchQuery(tag)}
-                                      title={`Search for ${tag}`}
-                                    >
-                                      {tag}
-                                    </span>
-                                  );
+                                return (
+                                  <span
+                                    key={index}
+                                    className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
+                                    onClick={() => setSearchQuery(tag)}
+                                    title={`Search for ${tag}`}
+                                  >
+                                    {tag}
+                                  </span>
+                                );
                               })}
                             </div>
                           )}
@@ -991,20 +938,20 @@ export default function HomePage() {
                           {renderMetadata(file.metadata)}
                         </div>
                       </div>
-                      <div className="flex justify-end mt-3 space-x-2">
+                      <div className="flex justify-end mt-2 space-x-1">
                         <button
                           onClick={() => copyShareLink(file.id)}
-                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="Copy link"
                         >
-                          <FaShareAlt size={14} />
+                          <FaShareAlt size={12} />
                         </button>
                         <Link
                           href={`/crate/${file.id}`}
-                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="View details"
                         >
-                          <FaEye size={14} />
+                          <FaEye size={12} />
                         </Link>
                       </div>
                     </div>
@@ -1036,28 +983,24 @@ export default function HomePage() {
                 </Link>
               )}
             </Card>
-          ) : (              
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredFiles.map((file) => (
                 <Card
                   key={file.id}
                   hoverable
-                  className="transition-all overflow-hidden h-full"
+                  className="transition-all overflow-hidden"
                 >
-                  <div className="p-6">
+                  <div className="p-4">
                     {/* File Header with Icon and Title */}
                     <div className="flex items-start mb-3">
                       <div className="mt-0.5 mr-3">
-                        {getFileIcon(
-                          "contentType" in file
-                            ? (file as FileMetadataExtended)
-                            : crateToFileMetadata(file as CrateExtended),
-                        )}
+                        {getFileIcon(crateToFileMetadata(file as Crate))}
                       </div>
                       <div className="flex-grow min-w-0">
                         <Link href={`/crate/${file.id}`} className="block">
                           <h3
-                            className="font-medium text-lg text-gray-800 hover:text-primary-600 transition-colors truncate"
+                            className="font-medium text-base text-gray-800 hover:text-primary-600 transition-colors truncate"
                             title={file.fileName}
                           >
                             {file.title || file.fileName}
@@ -1067,7 +1010,7 @@ export default function HomePage() {
                         {/* File Description - improved with truncation */}
                         {file.description && (
                           <p
-                            className="text-sm text-gray-600 mt-2 mb-3 line-clamp-3"
+                            className="text-xs text-gray-600 mt-1 line-clamp-2"
                             title={file.description}
                           >
                             {file.description}
@@ -1136,10 +1079,9 @@ export default function HomePage() {
 
                     {/* Tags - if available */}
                     {file.tags && file.tags.length > 0 && (
-                      <div className="my-5 pb-1">
-                        <div className="text-xs text-gray-500 mb-3">Tags:</div>
-                        <div className="flex flex-wrap gap-3">
-                          {file.tags.map((tag, index) => {
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {file.tags.map((tag: string, index: number) => {
                             // Determine tag type/color based on prefix
                             let tagClass = "bg-gray-100 text-gray-600"; // default style
                             if (tag.startsWith("project:")) {
@@ -1157,7 +1099,7 @@ export default function HomePage() {
                             return (
                               <span
                                 key={index}
-                                className={`inline-block ${tagClass} text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 shadow-sm`}
+                                className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
                                 onClick={() => setSearchQuery(tag)}
                                 title={`Search for ${tag}`}
                               >
@@ -1235,7 +1177,7 @@ export default function HomePage() {
                           {Object.entries(file.metadata).map(([key, value]) => (
                             <div key={key} className="flex">
                               <span className="font-medium mr-1">{key}:</span>
-                              <span className="truncate">{value}</span>
+                              <span className="truncate">{String(value)}</span>
                             </div>
                           ))}
                         </div>
@@ -1244,9 +1186,8 @@ export default function HomePage() {
 
                     {/* Action Buttons - Quick Actions */}
                     <div className="flex justify-between mt-3 pt-2 border-t border-gray-100">
-                      {/* Empty div to maintain spacing */}
-                      <div className="flex space-x-1">
-                      </div>
+                      {/* Quick tag buttons */}
+                      <div className="flex space-x-1"></div>
 
                       {/* Main action buttons */}
                       <div className="flex space-x-2">
