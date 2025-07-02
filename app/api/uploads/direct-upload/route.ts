@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
     const description = formData.get("description") as string;
     const formUserId = formData.get("userId") as string;
     const fileTypeParam = formData.get("fileType") as string | null;
-    const fileType = fileTypeParam || undefined; // Convert null to undefined
+    const categoryParam = formData.get("category") as string | null;
+
+    // If a category is explicitly provided, use it; otherwise, fall back to fileType or undefined
+    const fileType = categoryParam || fileTypeParam || undefined;
 
     // Use authenticated user ID if available, otherwise use form userId or "anonymous"
     const userId = userInfo?.uid || formUserId || "anonymous";

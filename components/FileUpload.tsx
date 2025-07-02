@@ -300,6 +300,7 @@ export default function FileUpload({
       formData.append("title", title);
       formData.append("description", description);
       formData.append("fileType", fileType);
+      formData.append("category", fileType); // Explicitly add the selected category
       formData.append("isShared", isShared ? "true" : "false");
 
       // Add tags if present
@@ -344,7 +345,7 @@ export default function FileUpload({
         title: title,
         description: description,
         contentType: file.type || "application/octet-stream",
-        category: fileType,
+        category: fileType, // Use the selected category
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
@@ -598,8 +599,9 @@ export default function FileUpload({
             </p>
             <p className="mt-2">
               Upload a single crate (up to 10MB) to quickly share with others.
-              Your crate will be automatically categorized based on its type and
-              will be accessible via a simple link.
+              Your crate will be automatically categorized based on its type,
+              but you can also manually select a different category if needed.
+              Your crate will be accessible via a simple link.
             </p>
           </div>
 
@@ -669,9 +671,33 @@ export default function FileUpload({
                     </div>
                   )}
                 </div>
+                <div className="ml-4 mr-2">
+                  <label
+                    htmlFor="category"
+                    className="text-xs text-gray-500 mb-1 block"
+                  >
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    className="text-sm border border-gray-300 rounded-md py-1 px-2 bg-white focus:ring-2 focus:ring-[#ff7a32] focus:border-[#ff7a32] min-w-[120px]"
+                    value={fileType}
+                    onChange={(e) =>
+                      setFileType(e.target.value as CrateCategory)
+                    }
+                    disabled={isUploading}
+                    aria-label="Select crate category"
+                  >
+                    {CRATE_CATEGORIES.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   type="button"
-                  className="ml-auto text-gray-400 hover:text-red-500"
+                  className="text-gray-400 hover:text-red-500"
                   onClick={() => setFile(null)}
                   aria-label="Remove crate"
                   disabled={isUploading}
