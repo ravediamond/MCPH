@@ -84,6 +84,21 @@ export default function HomePage() {
     remaining: number;
   } | null>(null);
 
+  // Advanced search state
+  const [isAdvancedSearch, setIsAdvancedSearch] = useState(false);
+  const [advancedSearchParams, setAdvancedSearchParams] = useState({
+    title: "",
+    tags: "",
+    type: "",
+    project: "",
+    status: "",
+    priority: "",
+    context: "",
+  });
+
+  // View mode state
+  const [viewMode, setViewMode] = useState<"list" | "project">("list");
+
   // --- Embedding-based search state ---
   const [searchResults, setSearchResults] = useState<
     FileMetadataExtended[] | null
@@ -363,6 +378,85 @@ export default function HomePage() {
     }
   };
 
+  // Handle advanced search
+  const handleAdvancedSearch = async () => {
+    setSearchLoading(true);
+    setSearchError(null);
+
+    // Build search query from advanced parameters
+    let query = "";
+    if (advancedSearchParams.title) query += advancedSearchParams.title + " ";
+    if (advancedSearchParams.tags) query += advancedSearchParams.tags + " ";
+    if (advancedSearchParams.project)
+      query += advancedSearchParams.project + " ";
+    if (advancedSearchParams.type) query += advancedSearchParams.type + " ";
+    if (advancedSearchParams.status) query += advancedSearchParams.status + " ";
+    if (advancedSearchParams.priority)
+      query += advancedSearchParams.priority + " ";
+    if (advancedSearchParams.context)
+      query += advancedSearchParams.context + " ";
+
+    // Trim and ensure we have a query
+    query = query.trim();
+    if (!query) {
+      setSearchLoading(false);
+      setSearchResults(null);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      if (!res.ok) throw new Error("Search failed");
+      const data = await res.json();
+
+      // Map Firestore search results to our application format
+      const results = (data.results || [])
+        .map((doc: any) => {
+          // We only need to handle the Firestore API response format
+          const fields = doc.fields || {};
+          return {
+            id: doc.name?.split("/")?.pop() || "",
+            fileName: fields.fileName?.stringValue || "",
+            title: fields.title?.stringValue || "",
+            description: fields.description?.stringValue || "",
+            contentType: fields.contentType?.stringValue || "",
+            size: fields.size?.integerValue
+              ? parseInt(fields.size.integerValue)
+              : 0,
+            uploadedAt: fields.uploadedAt?.timestampValue || "",
+            expiresAt: fields.expiresAt?.timestampValue || "",
+            downloadCount: fields.downloadCount?.integerValue
+              ? parseInt(fields.downloadCount.integerValue)
+              : 0,
+            metadata: fields.metadata?.mapValue?.fields
+              ? Object.fromEntries(
+                  Object.entries(fields.metadata.mapValue.fields).map(
+                    ([k, v]: any) => [k, v.stringValue],
+                  ),
+                )
+              : undefined,
+            tags: fields.tags?.arrayValue?.values
+              ? fields.tags.arrayValue.values.map((v: any) => v.stringValue)
+              : [],
+          };
+        })
+        .filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
+
+      setSearchResults(results);
+      // Also update the simple search query to match
+      setSearchQuery(query);
+    } catch (err: any) {
+      setSearchError(err.message || "Search failed");
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   // Utility to map CrateExtended to FileMetadataExtended
   function crateToFileMetadata(crate: CrateExtended): FileMetadataExtended {
     return {
@@ -385,6 +479,93 @@ export default function HomePage() {
       tags: crate.tags, // Map the tags property
     };
   }
+
+  // Group files by project for project view
+  const groupedByProject = React.useMemo(() => {
+    const files = filteredFiles || [];
+    const groups: Record<string, FileMetadataExtended[]> = {
+      "No Project": [],
+    };
+
+    files.forEach((file) => {
+      let assigned = false;
+
+      // Check if file has tags and look for project tags
+      if (file.tags && file.tags.length > 0) {
+        for (const tag of file.tags) {
+          if (tag.startsWith("project:")) {
+            const projectName = tag.substring(8); // Remove "project:" prefix
+            if (!groups[projectName]) {
+              groups[projectName] = [];
+            }
+            groups[projectName].push(
+              "contentType" in file
+                ? (file as FileMetadataExtended)
+                : crateToFileMetadata(file as CrateExtended),
+            );
+            assigned = true;
+            break;
+          }
+        }
+      }
+
+      // If no project tag found, add to "No Project" group
+      if (!assigned) {
+        groups["No Project"].push(
+          "contentType" in file
+            ? (file as FileMetadataExtended)
+            : crateToFileMetadata(file as CrateExtended),
+        );
+      }
+    });
+
+    // Remove empty groups
+    Object.keys(groups).forEach((key) => {
+      if (groups[key].length === 0) {
+        delete groups[key];
+      }
+    });
+
+    return groups;
+  }, [filteredFiles]);
+
+  // Function to add a tag to a crate
+  const addTag = async (crateId: string, tag: string) => {
+    try {
+      const response = await fetch(`/api/crate/${crateId}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add tag");
+      }
+
+      // Update the file in our local state
+      setFiles((prevFiles) =>
+        prevFiles.map((file) => {
+          if (file.id === crateId) {
+            // Add the tag if it doesn't exist already
+            const tags = file.tags || [];
+            if (!tags.includes(tag)) {
+              return {
+                ...file,
+                tags: [...tags, tag],
+              };
+            }
+          }
+          return file;
+        }),
+      );
+
+      setActionSuccess(`Added tag: ${tag}`);
+      setTimeout(() => setActionSuccess(null), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to add tag");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -500,17 +681,256 @@ export default function HomePage() {
         {/* Header with search */}
         <div className="flex flex-col items-center justify-center mb-8 mt-4">
           <h1 className="text-2xl font-medium text-gray-800 mb-4">My crates</h1>
-          <div className="w-full flex justify-center">
-            <div className="relative w-full max-w-xl">
-              <input
-                type="text"
-                placeholder="Search crates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                className="py-3 px-4 pl-10 border border-gray-200 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-200"
-              />
-              <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+
+          {/* Search and filters container */}
+          <div className="w-full">
+            {/* Search bar and toggle */}
+            <div className="flex justify-center mb-3">
+              <div className="relative w-full max-w-xl">
+                {!isAdvancedSearch ? (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Search crates..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={handleSearchKeyDown}
+                      className="py-3 px-4 pl-10 border border-gray-200 rounded-lg w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-200"
+                    />
+                    <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
+                  </>
+                ) : (
+                  <div className="bg-white border border-gray-200 rounded-lg w-full shadow-sm p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Search by title"
+                          value={advancedSearchParams.title}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              title: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Tags
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Any tag"
+                          value={advancedSearchParams.tags}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              tags: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Project
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="project:name"
+                          value={advancedSearchParams.project}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              project: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Type
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="type:name"
+                          value={advancedSearchParams.type}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              type: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Status
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="status:name"
+                          value={advancedSearchParams.status}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              status: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Priority
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="priority:level"
+                          value={advancedSearchParams.priority}
+                          onChange={(e) =>
+                            setAdvancedSearchParams({
+                              ...advancedSearchParams,
+                              priority: e.target.value,
+                            })
+                          }
+                          className="py-2 px-3 border border-gray-200 rounded w-full text-sm focus:outline-none focus:ring-1 focus:ring-primary-200"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={handleAdvancedSearch}
+                        className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors text-sm"
+                      >
+                        Search
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setIsAdvancedSearch(!isAdvancedSearch)}
+                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  title={isAdvancedSearch ? "Simple search" : "Advanced search"}
+                >
+                  {isAdvancedSearch ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* View mode toggle and quick tag filters */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between max-w-4xl mx-auto mb-4">
+              <div className="flex space-x-2 mb-3 md:mb-0">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-1.5 rounded-full text-sm flex items-center ${
+                    viewMode === "list"
+                      ? "bg-primary-100 text-primary-700 border-primary-200 border"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  List View
+                </button>
+                <button
+                  onClick={() => setViewMode("project")}
+                  className={`px-3 py-1.5 rounded-full text-sm flex items-center ${
+                    viewMode === "project"
+                      ? "bg-primary-100 text-primary-700 border-primary-200 border"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                  </svg>
+                  Project View
+                </button>
+              </div>
+
+              {/* Quick tag filters */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSearchQuery("project:")}
+                  className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200"
+                >
+                  Project Tags
+                </button>
+                <button
+                  onClick={() => setSearchQuery("type:")}
+                  className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200"
+                >
+                  Type Tags
+                </button>
+                <button
+                  onClick={() => setSearchQuery("status:")}
+                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200"
+                >
+                  Status Tags
+                </button>
+                <button
+                  onClick={() => setSearchQuery("priority:")}
+                  className="px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200"
+                >
+                  Priority Tags
+                </button>
+                <button
+                  onClick={() => setSearchQuery("context:")}
+                  className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200"
+                >
+                  Context Tags
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -574,6 +994,17 @@ export default function HomePage() {
                               {file.title || file.fileName}
                             </h3>
                           </Link>
+
+                          {/* File Description - improved snippet */}
+                          {file.description && (
+                            <p
+                              className="text-xs text-gray-600 mt-1 line-clamp-2"
+                              title={file.description}
+                            >
+                              {file.description}
+                            </p>
+                          )}
+
                           <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
                             <div className="truncate mr-2">
                               {formatFileSize(file.size)}
@@ -583,6 +1014,39 @@ export default function HomePage() {
                               {file.downloadCount || 0}
                             </div>
                           </div>
+
+                          {/* Tags - if available */}
+                          {file.tags && file.tags.length > 0 && (
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {file.tags.map((tag, index) => {
+                                // Determine tag type/color based on prefix
+                                let tagClass = "bg-gray-100 text-gray-600"; // default style
+                                if (tag.startsWith("project:")) {
+                                  tagClass = "bg-blue-100 text-blue-700";
+                                } else if (tag.startsWith("type:")) {
+                                  tagClass = "bg-green-100 text-green-700";
+                                } else if (tag.startsWith("status:")) {
+                                  tagClass = "bg-purple-100 text-purple-700";
+                                } else if (tag.startsWith("priority:")) {
+                                  tagClass = "bg-red-100 text-red-700";
+                                } else if (tag.startsWith("context:")) {
+                                  tagClass = "bg-yellow-100 text-yellow-700";
+                                }
+
+                                return (
+                                  <span
+                                    key={index}
+                                    className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
+                                    onClick={() => setSearchQuery(tag)}
+                                    title={`Search for ${tag}`}
+                                  >
+                                    {tag}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
+
                           {/* Shared status indicator */}
                           <div className="mt-1 text-xs">
                             {file.shared?.public ? (
@@ -641,7 +1105,7 @@ export default function HomePage() {
                 </Link>
               )}
             </Card>
-          ) : (
+          ) : viewMode === "list" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredFiles.map((file) => (
                 <Card
@@ -669,7 +1133,7 @@ export default function HomePage() {
                           </h3>
                         </Link>
 
-                        {/* File Description - if available */}
+                        {/* File Description - improved with truncation */}
                         {file.description && (
                           <p
                             className="text-xs text-gray-600 mt-1 line-clamp-2"
@@ -713,12 +1177,19 @@ export default function HomePage() {
                         </span>
                       </div>
 
-                      {/* Created Date */}
+                      {/* Created Date - with better formatting */}
                       <div className="text-xs">
                         <span className="text-gray-500 mr-1">Created:</span>
                         <span className="font-medium text-gray-700">
                           {file.createdAt
-                            ? formatDate(file.createdAt)
+                            ? new Date(file.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
                             : "Unknown"}
                         </span>
                       </div>
@@ -736,14 +1207,32 @@ export default function HomePage() {
                     {file.tags && file.tags.length > 0 && (
                       <div className="mb-3">
                         <div className="flex flex-wrap gap-1">
-                          {file.tags.map((tag, index) => (
-                            <span
-                              key={index}
-                              className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                          {file.tags.map((tag, index) => {
+                            // Determine tag type/color based on prefix
+                            let tagClass = "bg-gray-100 text-gray-600"; // default style
+                            if (tag.startsWith("project:")) {
+                              tagClass = "bg-blue-100 text-blue-700";
+                            } else if (tag.startsWith("type:")) {
+                              tagClass = "bg-green-100 text-green-700";
+                            } else if (tag.startsWith("status:")) {
+                              tagClass = "bg-purple-100 text-purple-700";
+                            } else if (tag.startsWith("priority:")) {
+                              tagClass = "bg-red-100 text-red-700";
+                            } else if (tag.startsWith("context:")) {
+                              tagClass = "bg-yellow-100 text-yellow-700";
+                            }
+
+                            return (
+                              <span
+                                key={index}
+                                className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
+                                onClick={() => setSearchQuery(tag)}
+                                title={`Search for ${tag}`}
+                              >
+                                {tag}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -821,45 +1310,224 @@ export default function HomePage() {
                       </div>
                     )}
 
-                    {/* Action Buttons */}
-                    <div className="flex justify-end space-x-2 mt-3 pt-2 border-t border-gray-100">
-                      <button
-                        onClick={() => copyShareLink(file.id)}
-                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                        title="Copy link"
-                      >
-                        <FaShareAlt size={14} />
-                      </button>
+                    {/* Action Buttons - Quick Actions */}
+                    <div className="flex justify-between mt-3 pt-2 border-t border-gray-100">
+                      {/* Quick tag buttons */}
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => addTag(file.id, "project:default")}
+                          className="p-1.5 hover:bg-blue-50 rounded text-blue-500 hover:text-blue-700 transition-colors text-xs"
+                          title="Add to default project"
+                        >
+                          <span className="flex items-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-3.5 w-3.5 mr-1"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
+                            </svg>
+                            Project
+                          </span>
+                        </button>
+                      </div>
 
-                      <Link
-                        href={`/crate/${file.id}`}
-                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                        title="View details"
-                      >
-                        <FaEye size={14} />
-                      </Link>
+                      {/* Main action buttons */}
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => copyShareLink(file.id)}
+                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                          title="Copy link"
+                        >
+                          <FaShareAlt size={14} />
+                        </button>
 
-                      <Link
-                        href={`/download/${file.id}`}
-                        className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                        title="Download"
-                      >
-                        <FaDownload size={14} />
-                      </Link>
+                        <Link
+                          href={`/crate/${file.id}`}
+                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                          title="View details"
+                        >
+                          <FaEye size={14} />
+                        </Link>
 
-                      <button
-                        onClick={() => {
-                          setFileToDelete(file.id);
-                          setDeleteModalVisible(true);
-                        }}
-                        className="p-1.5 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors"
-                        title="Delete"
-                      >
-                        <FaTrash size={14} />
-                      </button>
+                        <Link
+                          href={`/download/${file.id}`}
+                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                          title="Download"
+                        >
+                          <FaDownload size={14} />
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setFileToDelete(file.id);
+                            setDeleteModalVisible(true);
+                          }}
+                          className="p-1.5 hover:bg-red-50 rounded text-gray-500 hover:text-red-500 transition-colors"
+                          title="Delete"
+                        >
+                          <FaTrash size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Card>
+              ))}
+            </div>
+          ) : (
+            // Project View - Group by project
+            <div className="space-y-8">
+              {Object.entries(groupedByProject).map(([projectName, files]) => (
+                <div
+                  key={projectName}
+                  className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden"
+                >
+                  {/* Project header */}
+                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
+                    <h3 className="text-lg font-medium text-gray-800 flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2 text-blue-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                      </svg>
+                      {projectName === "No Project"
+                        ? "Uncategorized"
+                        : projectName}
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({files.length} crates)
+                      </span>
+                    </h3>
+                  </div>
+
+                  {/* Project crates grid */}
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {files.map((file) => (
+                        <Card
+                          key={file.id}
+                          hoverable
+                          className="transition-all overflow-hidden h-full"
+                        >
+                          <div className="p-3">
+                            <div className="flex items-start">
+                              <div className="mt-0.5 mr-2">
+                                {getFileIcon(file)}
+                              </div>
+                              <div className="flex-grow min-w-0">
+                                <Link
+                                  href={`/crate/${file.id}`}
+                                  className="block"
+                                >
+                                  <h3
+                                    className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                                    title={file.fileName}
+                                  >
+                                    {file.title || file.fileName}
+                                  </h3>
+                                </Link>
+
+                                {/* Description snippet */}
+                                {file.description && (
+                                  <p
+                                    className="text-xs text-gray-600 mt-1 line-clamp-1"
+                                    title={file.description}
+                                  >
+                                    {file.description}
+                                  </p>
+                                )}
+
+                                {/* File details */}
+                                <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                                  <div className="truncate mr-2">
+                                    {formatFileSize(file.size)}
+                                  </div>
+                                  <div className="whitespace-nowrap">
+                                    {file.createdAt &&
+                                      new Date(
+                                        file.createdAt,
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                  </div>
+                                </div>
+
+                                {/* Tags - show non-project tags only in project view */}
+                                {file.tags && file.tags.length > 0 && (
+                                  <div className="mt-1.5 flex flex-wrap gap-1">
+                                    {file.tags
+                                      .filter(
+                                        (tag) => !tag.startsWith("project:"),
+                                      )
+                                      .map((tag, idx) => {
+                                        // Determine tag type/color based on prefix
+                                        let tagClass =
+                                          "bg-gray-100 text-gray-600"; // default style
+                                        if (tag.startsWith("type:")) {
+                                          tagClass =
+                                            "bg-green-100 text-green-700";
+                                        } else if (tag.startsWith("status:")) {
+                                          tagClass =
+                                            "bg-purple-100 text-purple-700";
+                                        } else if (
+                                          tag.startsWith("priority:")
+                                        ) {
+                                          tagClass = "bg-red-100 text-red-700";
+                                        } else if (tag.startsWith("context:")) {
+                                          tagClass =
+                                            "bg-yellow-100 text-yellow-700";
+                                        }
+
+                                        return (
+                                          <span
+                                            key={idx}
+                                            className={`inline-block ${tagClass} text-xs px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80`}
+                                            onClick={() => setSearchQuery(tag)}
+                                            title={`Search for ${tag}`}
+                                          >
+                                            {tag}
+                                          </span>
+                                        );
+                                      })}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Quick actions */}
+                            <div className="flex justify-end mt-2 space-x-1">
+                              <button
+                                onClick={() => copyShareLink(file.id)}
+                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                                title="Copy link"
+                              >
+                                <FaShareAlt size={12} />
+                              </button>
+                              <Link
+                                href={`/crate/${file.id}`}
+                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                                title="View details"
+                              >
+                                <FaEye size={12} />
+                              </Link>
+                              <Link
+                                href={`/download/${file.id}`}
+                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                                title="Download"
+                              >
+                                <FaDownload size={12} />
+                              </Link>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
