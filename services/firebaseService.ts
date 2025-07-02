@@ -716,11 +716,14 @@ export async function getUserCrates(
         if (data.tags) {
           // If it exists but isn't an array, try to convert it
           try {
-            data.tags = Array.isArray(data.tags)
-              ? data.tags
-              : typeof data.tags === "string"
-                ? [data.tags]
-                : [];
+            if (typeof data.tags === "object" && data.tags !== null) {
+              // Convert object to array - get values from the object
+              data.tags = Object.values(data.tags);
+            } else if (typeof data.tags === "string") {
+              data.tags = [data.tags];
+            } else {
+              data.tags = [];
+            }
           } catch (e) {
             console.warn(
               `[DEBUG] getUserCrates: Failed to convert tags for crate ${doc.id}:`,
@@ -733,17 +736,38 @@ export async function getUserCrates(
         }
       }
 
+      // Make sure description is a string
+      if (data && data.description !== undefined) {
+        // If description exists but isn't a string, convert it to string
+        if (typeof data.description !== "string") {
+          try {
+            data.description = String(data.description);
+          } catch (e) {
+            console.warn(
+              `[DEBUG] getUserCrates: Failed to convert description for crate ${doc.id}:`,
+              e,
+            );
+            data.description = "";
+          }
+        }
+      }
+
       return fromFirestoreData(data) as Crate;
     });
 
-    // Add a debug log to check what's happening with tags
+    // Add a debug log to check what's happening with tags and descriptions
     crates.forEach((crate, index) => {
       console.log(
-        `[DEBUG] getUserCrates: Crate ${index} (${crate.id}) tags:`,
-        crate.tags,
-        `Type: ${typeof crate.tags}`,
-        `Is Array: ${Array.isArray(crate.tags)}`,
-        `Length: ${Array.isArray(crate.tags) ? crate.tags.length : "N/A"}`,
+        `[DEBUG] getUserCrates: Crate ${index} (${crate.id}) processed:`,
+        {
+          tags: crate.tags,
+          tagsType: typeof crate.tags,
+          isTagsArray: Array.isArray(crate.tags),
+          tagsLength: Array.isArray(crate.tags) ? crate.tags.length : "N/A",
+          description: crate.description,
+          descriptionType: typeof crate.description,
+          descriptionLength: crate.description ? crate.description.length : 0,
+        },
       );
     });
 

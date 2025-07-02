@@ -49,10 +49,10 @@ const CrateCard: React.FC<CrateCardProps> = ({
                 </h3>
               </Link>
 
-              {/* File Description - improved snippet */}
+              {/* File Description - improved with styling */}
               {file.description && (
                 <p
-                  className="text-xs text-gray-600 mt-1 line-clamp-2"
+                  className="text-xs text-gray-600 mt-1 line-clamp-2 bg-gray-50 p-1 rounded"
                   title={file.description}
                 >
                   {file.description}
@@ -67,9 +67,9 @@ const CrateCard: React.FC<CrateCardProps> = ({
                 </div>
               </div>
 
-              {/* Tags - if available */}
+              {/* Tags - if available - enhanced styling */}
               {file.tags && file.tags.length > 0 && (
-                <div className="mt-1.5 flex flex-wrap gap-1">
+                <div className="mt-2 flex flex-wrap gap-1 border-t border-gray-100 pt-1">
                   {file.tags.map((tag: string, index: number) => (
                     <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
                   ))}
@@ -127,14 +127,16 @@ const CrateCard: React.FC<CrateCardProps> = ({
               </h3>
             </Link>
 
-            {/* File Description - improved with truncation */}
+            {/* File Description - enhanced with better styling */}
             {file.description && (
-              <p
-                className="text-xs text-gray-600 mt-1 line-clamp-2"
-                title={file.description}
-              >
-                {file.description}
-              </p>
+              <div className="mt-2 mb-1 bg-gray-50 p-2 rounded border border-gray-100">
+                <p
+                  className="text-xs text-gray-700 line-clamp-3"
+                  title={file.description}
+                >
+                  {file.description}
+                </p>
+              </div>
             )}
           </div>
 
@@ -194,10 +196,11 @@ const CrateCard: React.FC<CrateCardProps> = ({
           </div>
         </div>
 
-        {/* Tags - if available */}
+        {/* Tags - if available - enhanced styling */}
         {file.tags && file.tags.length > 0 && (
-          <div className="mb-3">
-            <div className="flex flex-wrap gap-1">
+          <div className="mb-3 bg-gray-50 p-2 rounded border border-gray-100">
+            <div className="text-xs text-gray-600 mb-1 font-medium">Tags:</div>
+            <div className="flex flex-wrap gap-1.5">
               {file.tags.map((tag: string, index: number) => (
                 <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
               ))}
