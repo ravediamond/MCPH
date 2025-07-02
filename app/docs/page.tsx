@@ -36,7 +36,7 @@ export default function DocsPage() {
             </li>
             <li>
               <b>Store multiple content types</b> including markdown, code,
-              JSON, images, and binary files
+              JSON, images, text, YAML, and binary files
             </li>
             <li>
               <b>Integrate directly with AI tools</b> so you can create and
@@ -348,7 +348,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   Support for various file formats including markdown, code,
-                  JSON, images, and binary files
+                  JSON, YAML, text, images, and binary files
                 </li>
               </ul>
               <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
@@ -586,6 +586,12 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <b>JSON</b> - structured data for easy parsing
+                </li>
+                <li>
+                  <b>YAML</b> - configuration files and structured data
+                </li>
+                <li>
+                  <b>Text</b> - plain text files (.txt)
                 </li>
                 <li>
                   <b>Images</b> - diagrams, screenshots, and visual content

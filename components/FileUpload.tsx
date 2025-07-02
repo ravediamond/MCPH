@@ -50,6 +50,7 @@ const CRATE_CATEGORIES = [
   { value: CrateCategory.CODE, label: "Code" },
   { value: CrateCategory.JSON, label: "JSON" },
   { value: CrateCategory.YAML, label: "YAML" },
+  { value: CrateCategory.TEXT, label: "Text" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -66,7 +67,7 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/yaml": CrateCategory.YAML,
   "text/x-yaml": CrateCategory.YAML,
   "application/x-yaml": CrateCategory.YAML,
-  "text/plain": CrateCategory.CODE,
+  "text/plain": CrateCategory.TEXT,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
@@ -90,6 +91,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
+  ".txt": CrateCategory.TEXT,
 };
 
 // Type definition update to include new Crate fields

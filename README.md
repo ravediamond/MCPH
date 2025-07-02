@@ -19,7 +19,7 @@ MCPH is a system for storing, managing, and sharing AI-generated artifacts throu
 ## Features at a Glance
 
 - **Direct AI Integration**: Connect ChatGPT, Claude, and other MCP-compatible AI tools directly to share content
-- **Multiple Content Types**: Share markdown, code, images, JSON, YAML, and binary files
+- **Multiple Content Types**: Share markdown, code, images, JSON, YAML, text, and binary files
 - **Security Features**: Password protection and automatic 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Simple Sharing**: Generate shareable links that anyone can access - no login required to view content
 - **Enhanced Content Preview**: Better visualization and interaction with different content types

@@ -13,7 +13,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       `You are logged in as: ${req?.user?.userId ? `USER (${req.user.userId}) using API key` : "ANONYMOUS (no API key)"}\n\n` +
       "Features:\n" +
       "- Crate management: upload, list, get, search, share, unshare, delete\n" +
-      "- Support for multiple content types: markdown, code, images, JSON, YAML, and binary files\n" +
+      "- Support for multiple content types: markdown, code, images, JSON, YAML, text, and binary files\n" +
       "- Google OAuth flow for authentication\n" +
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +

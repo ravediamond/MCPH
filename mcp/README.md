@@ -4,7 +4,7 @@ This is the Model Context Protocol server for MCPH, an AI artifact storage and s
 
 ## What is MCPH?
 
-MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
+MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
 ## Core MCP Tools
 

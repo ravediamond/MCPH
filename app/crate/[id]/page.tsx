@@ -233,6 +233,7 @@ export default function CratePage() {
         case CrateCategory.CODE:
         case CrateCategory.JSON:
         case CrateCategory.YAML:
+        case CrateCategory.TEXT:
           return true;
         default:
           return false;
@@ -964,6 +965,15 @@ export default function CratePage() {
             <SyntaxHighlighter language={getLanguage()} showLineNumbers>
               {crateContent}
             </SyntaxHighlighter>
+          </div>
+        );
+
+      case CrateCategory.TEXT: // Added TEXT category
+        return (
+          <div className="text-sm">
+            <pre className="whitespace-pre-wrap p-4 font-mono text-gray-800 bg-gray-50 rounded border border-gray-200">
+              {crateContent}
+            </pre>
           </div>
         );
 

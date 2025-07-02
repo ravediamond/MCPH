@@ -487,8 +487,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Second row - 3 blocks */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* Second row - 4 blocks */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-orange-500 mb-3">
                 <svg
@@ -528,6 +528,31 @@ export default function Home() {
                 </svg>
               </div>
               <p className="font-medium text-gray-800">YAML</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-orange-500 mb-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8 mx-auto"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                  <path d="M10 9H8" />
+                </svg>
+              </div>
+              <p className="font-medium text-gray-800">Text</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Plain text files (.txt)
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">

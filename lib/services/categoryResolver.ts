@@ -32,7 +32,6 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
 
   // Code
   "text/csv": CrateCategory.CODE,
-  "text/plain": CrateCategory.CODE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
@@ -41,6 +40,9 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "application/typescript": CrateCategory.CODE,
   "application/xml": CrateCategory.CODE,
   "text/xml": CrateCategory.CODE,
+
+  // Text
+  "text/plain": CrateCategory.TEXT,
 };
 
 /**
@@ -75,8 +77,10 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".py": CrateCategory.CODE,
   ".java": CrateCategory.CODE,
   ".xml": CrateCategory.CODE,
-  ".txt": CrateCategory.CODE,
   ".log": CrateCategory.CODE,
+
+  // Text
+  ".txt": CrateCategory.TEXT,
   ".tsx": CrateCategory.CODE,
   ".jsx": CrateCategory.CODE,
 };
