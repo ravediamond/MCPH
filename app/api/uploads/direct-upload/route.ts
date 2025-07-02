@@ -187,6 +187,7 @@ export async function POST(req: NextRequest) {
       size: crateData.size,
       apiUrl,
       downloadUrl,
+      tags: crateData.tags, // Include tags in the response
       uploadedAt:
         crateData.createdAt instanceof Date
           ? crateData.createdAt.toISOString()

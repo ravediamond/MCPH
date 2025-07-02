@@ -97,7 +97,7 @@ export default function HomePage() {
   });
 
   // View mode state
-  const [viewMode, setViewMode] = useState<"list" | "project">("list");
+  const [viewMode] = useState<"list">("list");
 
   // --- Embedding-based search state ---
   const [searchResults, setSearchResults] = useState<
@@ -856,81 +856,10 @@ export default function HomePage() {
             {/* View mode toggle and quick tag filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between max-w-4xl mx-auto mb-4">
               <div className="flex space-x-2 mb-3 md:mb-0">
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`px-3 py-1.5 rounded-full text-sm flex items-center ${
-                    viewMode === "list"
-                      ? "bg-primary-100 text-primary-700 border-primary-200 border"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  List View
-                </button>
-                <button
-                  onClick={() => setViewMode("project")}
-                  className={`px-3 py-1.5 rounded-full text-sm flex items-center ${
-                    viewMode === "project"
-                      ? "bg-primary-100 text-primary-700 border-primary-200 border"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                  </svg>
-                  Project View
-                </button>
+                {/* List view is now the only option */}
               </div>
 
-              {/* Quick tag filters */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSearchQuery("project:")}
-                  className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200"
-                >
-                  Project Tags
-                </button>
-                <button
-                  onClick={() => setSearchQuery("type:")}
-                  className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200"
-                >
-                  Type Tags
-                </button>
-                <button
-                  onClick={() => setSearchQuery("status:")}
-                  className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200"
-                >
-                  Status Tags
-                </button>
-                <button
-                  onClick={() => setSearchQuery("priority:")}
-                  className="px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200"
-                >
-                  Priority Tags
-                </button>
-                <button
-                  onClick={() => setSearchQuery("context:")}
-                  className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200"
-                >
-                  Context Tags
-                </button>
-              </div>
+              {/* Quick tag filters removed */}
             </div>
           </div>
         </div>
@@ -968,17 +897,17 @@ export default function HomePage() {
                 <p className="text-gray-500">No matching crates found</p>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {searchResults.map((file) => (
                   <Card
                     key={file.id}
                     hoverable
-                    className="transition-all overflow-hidden"
+                    className="transition-all overflow-hidden h-full"
                   >
                     {/* ...existing file card rendering... */}
-                    <div className="p-3">
+                    <div className="p-6">
                       <div className="flex items-start space-x-3">
-                        <div className="mt-0.5">
+                        <div className="mt-0.5 mr-3">
                           {getFileIcon(
                             "contentType" in file
                               ? (file as FileMetadataExtended)
@@ -988,7 +917,7 @@ export default function HomePage() {
                         <div className="flex-grow min-w-0">
                           <Link href={`/crate/${file.id}`} className="block">
                             <h3
-                              className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
+                              className="font-medium text-base text-gray-800 hover:text-primary-600 transition-colors truncate"
                               title={file.fileName}
                             >
                               {file.title || file.fileName}
@@ -998,7 +927,7 @@ export default function HomePage() {
                           {/* File Description - improved snippet */}
                           {file.description && (
                             <p
-                              className="text-xs text-gray-600 mt-1 line-clamp-2"
+                              className="text-sm text-gray-600 mt-2 mb-3 line-clamp-3"
                               title={file.description}
                             >
                               {file.description}
@@ -1017,32 +946,34 @@ export default function HomePage() {
 
                           {/* Tags - if available */}
                           {file.tags && file.tags.length > 0 && (
-                            <div className="mt-1.5 flex flex-wrap gap-1">
-                              {file.tags.map((tag, index) => {
-                                // Determine tag type/color based on prefix
-                                let tagClass = "bg-gray-100 text-gray-600"; // default style
-                                if (tag.startsWith("project:")) {
-                                  tagClass = "bg-blue-100 text-blue-700";
-                                } else if (tag.startsWith("type:")) {
-                                  tagClass = "bg-green-100 text-green-700";
-                                } else if (tag.startsWith("status:")) {
-                                  tagClass = "bg-purple-100 text-purple-700";
-                                } else if (tag.startsWith("priority:")) {
-                                  tagClass = "bg-red-100 text-red-700";
-                                } else if (tag.startsWith("context:")) {
-                                  tagClass = "bg-yellow-100 text-yellow-700";
-                                }
+                            <div className="my-5 pb-1">
+                              <div className="text-xs text-gray-500 mb-3">Tags:</div>
+                              <div className="flex flex-wrap gap-3">
+                                {file.tags.map((tag, index) => {
+                                  // Determine tag type/color based on prefix
+                                  let tagClass = "bg-gray-100 text-gray-600"; // default style
+                                  if (tag.startsWith("project:")) {
+                                    tagClass = "bg-blue-100 text-blue-700";
+                                  } else if (tag.startsWith("type:")) {
+                                    tagClass = "bg-green-100 text-green-700";
+                                  } else if (tag.startsWith("status:")) {
+                                    tagClass = "bg-purple-100 text-purple-700";
+                                  } else if (tag.startsWith("priority:")) {
+                                    tagClass = "bg-red-100 text-red-700";
+                                  } else if (tag.startsWith("context:")) {
+                                    tagClass = "bg-yellow-100 text-yellow-700";
+                                  }
 
-                                return (
-                                  <span
-                                    key={index}
-                                    className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
-                                    onClick={() => setSearchQuery(tag)}
-                                    title={`Search for ${tag}`}
-                                  >
-                                    {tag}
-                                  </span>
-                                );
+                                  return (
+                                    <span
+                                      key={index}
+                                      className={`inline-block ${tagClass} text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 shadow-sm`}
+                                      onClick={() => setSearchQuery(tag)}
+                                      title={`Search for ${tag}`}
+                                    >
+                                      {tag}
+                                    </span>
+                                  );
                               })}
                             </div>
                           )}
@@ -1060,20 +991,20 @@ export default function HomePage() {
                           {renderMetadata(file.metadata)}
                         </div>
                       </div>
-                      <div className="flex justify-end mt-2 space-x-1">
+                      <div className="flex justify-end mt-3 space-x-2">
                         <button
                           onClick={() => copyShareLink(file.id)}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="Copy link"
                         >
-                          <FaShareAlt size={12} />
+                          <FaShareAlt size={14} />
                         </button>
                         <Link
                           href={`/crate/${file.id}`}
-                          className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+                          className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                           title="View details"
                         >
-                          <FaEye size={12} />
+                          <FaEye size={14} />
                         </Link>
                       </div>
                     </div>
@@ -1105,15 +1036,15 @@ export default function HomePage() {
                 </Link>
               )}
             </Card>
-          ) : viewMode === "list" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          ) : (              
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredFiles.map((file) => (
                 <Card
                   key={file.id}
                   hoverable
                   className="transition-all overflow-hidden h-full"
                 >
-                  <div className="p-4">
+                  <div className="p-6">
                     {/* File Header with Icon and Title */}
                     <div className="flex items-start mb-3">
                       <div className="mt-0.5 mr-3">
@@ -1126,7 +1057,7 @@ export default function HomePage() {
                       <div className="flex-grow min-w-0">
                         <Link href={`/crate/${file.id}`} className="block">
                           <h3
-                            className="font-medium text-base text-gray-800 hover:text-primary-600 transition-colors truncate"
+                            className="font-medium text-lg text-gray-800 hover:text-primary-600 transition-colors truncate"
                             title={file.fileName}
                           >
                             {file.title || file.fileName}
@@ -1136,7 +1067,7 @@ export default function HomePage() {
                         {/* File Description - improved with truncation */}
                         {file.description && (
                           <p
-                            className="text-xs text-gray-600 mt-1 line-clamp-2"
+                            className="text-sm text-gray-600 mt-2 mb-3 line-clamp-3"
                             title={file.description}
                           >
                             {file.description}
@@ -1205,8 +1136,9 @@ export default function HomePage() {
 
                     {/* Tags - if available */}
                     {file.tags && file.tags.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex flex-wrap gap-1">
+                      <div className="my-5 pb-1">
+                        <div className="text-xs text-gray-500 mb-3">Tags:</div>
+                        <div className="flex flex-wrap gap-3">
                           {file.tags.map((tag, index) => {
                             // Determine tag type/color based on prefix
                             let tagClass = "bg-gray-100 text-gray-600"; // default style
@@ -1225,7 +1157,7 @@ export default function HomePage() {
                             return (
                               <span
                                 key={index}
-                                className={`inline-block ${tagClass} text-xs px-2 py-0.5 rounded cursor-pointer hover:opacity-80`}
+                                className={`inline-block ${tagClass} text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 shadow-sm`}
                                 onClick={() => setSearchQuery(tag)}
                                 title={`Search for ${tag}`}
                               >
@@ -1312,25 +1244,8 @@ export default function HomePage() {
 
                     {/* Action Buttons - Quick Actions */}
                     <div className="flex justify-between mt-3 pt-2 border-t border-gray-100">
-                      {/* Quick tag buttons */}
+                      {/* Empty div to maintain spacing */}
                       <div className="flex space-x-1">
-                        <button
-                          onClick={() => addTag(file.id, "project:default")}
-                          className="p-1.5 hover:bg-blue-50 rounded text-blue-500 hover:text-blue-700 transition-colors text-xs"
-                          title="Add to default project"
-                        >
-                          <span className="flex items-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-3.5 w-3.5 mr-1"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" />
-                            </svg>
-                            Project
-                          </span>
-                        </button>
                       </div>
 
                       {/* Main action buttons */}
@@ -1373,161 +1288,6 @@ export default function HomePage() {
                     </div>
                   </div>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            // Project View - Group by project
-            <div className="space-y-8">
-              {Object.entries(groupedByProject).map(([projectName, files]) => (
-                <div
-                  key={projectName}
-                  className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden"
-                >
-                  {/* Project header */}
-                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-100">
-                    <h3 className="text-lg font-medium text-gray-800 flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2 text-blue-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                      </svg>
-                      {projectName === "No Project"
-                        ? "Uncategorized"
-                        : projectName}
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({files.length} crates)
-                      </span>
-                    </h3>
-                  </div>
-
-                  {/* Project crates grid */}
-                  <div className="p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {files.map((file) => (
-                        <Card
-                          key={file.id}
-                          hoverable
-                          className="transition-all overflow-hidden h-full"
-                        >
-                          <div className="p-3">
-                            <div className="flex items-start">
-                              <div className="mt-0.5 mr-2">
-                                {getFileIcon(file)}
-                              </div>
-                              <div className="flex-grow min-w-0">
-                                <Link
-                                  href={`/crate/${file.id}`}
-                                  className="block"
-                                >
-                                  <h3
-                                    className="font-medium text-sm text-gray-800 hover:text-primary-600 transition-colors truncate"
-                                    title={file.fileName}
-                                  >
-                                    {file.title || file.fileName}
-                                  </h3>
-                                </Link>
-
-                                {/* Description snippet */}
-                                {file.description && (
-                                  <p
-                                    className="text-xs text-gray-600 mt-1 line-clamp-1"
-                                    title={file.description}
-                                  >
-                                    {file.description}
-                                  </p>
-                                )}
-
-                                {/* File details */}
-                                <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                                  <div className="truncate mr-2">
-                                    {formatFileSize(file.size)}
-                                  </div>
-                                  <div className="whitespace-nowrap">
-                                    {file.createdAt &&
-                                      new Date(
-                                        file.createdAt,
-                                      ).toLocaleDateString(undefined, {
-                                        month: "short",
-                                        day: "numeric",
-                                      })}
-                                  </div>
-                                </div>
-
-                                {/* Tags - show non-project tags only in project view */}
-                                {file.tags && file.tags.length > 0 && (
-                                  <div className="mt-1.5 flex flex-wrap gap-1">
-                                    {file.tags
-                                      .filter(
-                                        (tag) => !tag.startsWith("project:"),
-                                      )
-                                      .map((tag, idx) => {
-                                        // Determine tag type/color based on prefix
-                                        let tagClass =
-                                          "bg-gray-100 text-gray-600"; // default style
-                                        if (tag.startsWith("type:")) {
-                                          tagClass =
-                                            "bg-green-100 text-green-700";
-                                        } else if (tag.startsWith("status:")) {
-                                          tagClass =
-                                            "bg-purple-100 text-purple-700";
-                                        } else if (
-                                          tag.startsWith("priority:")
-                                        ) {
-                                          tagClass = "bg-red-100 text-red-700";
-                                        } else if (tag.startsWith("context:")) {
-                                          tagClass =
-                                            "bg-yellow-100 text-yellow-700";
-                                        }
-
-                                        return (
-                                          <span
-                                            key={idx}
-                                            className={`inline-block ${tagClass} text-xs px-1.5 py-0.5 rounded cursor-pointer hover:opacity-80`}
-                                            onClick={() => setSearchQuery(tag)}
-                                            title={`Search for ${tag}`}
-                                          >
-                                            {tag}
-                                          </span>
-                                        );
-                                      })}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Quick actions */}
-                            <div className="flex justify-end mt-2 space-x-1">
-                              <button
-                                onClick={() => copyShareLink(file.id)}
-                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                                title="Copy link"
-                              >
-                                <FaShareAlt size={12} />
-                              </button>
-                              <Link
-                                href={`/crate/${file.id}`}
-                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                                title="View details"
-                              >
-                                <FaEye size={12} />
-                              </Link>
-                              <Link
-                                href={`/download/${file.id}`}
-                                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-                                title="Download"
-                              >
-                                <FaDownload size={12} />
-                              </Link>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               ))}
             </div>
           )}

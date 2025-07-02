@@ -80,6 +80,12 @@ export default function UploadPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
+                      <span>
+                        Tag files for better organization and filtering
+                      </span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-orange-500 font-bold mr-2">•</span>
                       <span>Auto-delete after 30 days (guest users)</span>
                     </li>
                     <li className="flex items-start">

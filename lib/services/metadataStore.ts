@@ -96,13 +96,38 @@ export async function getCrateMetadata(
     }
 
     const doc = await docRef.get();
-
     if (!doc.exists) {
       return null;
     }
 
     const data = doc.data();
-    return fromFirestoreData(data) as Crate;
+
+    // Ensure tags is always an array
+    if (data && !Array.isArray(data.tags)) {
+      if (data.tags) {
+        // If it exists but isn't an array, try to convert it
+        try {
+          if (
+            typeof data.tags === "object" &&
+            Object.keys(data.tags).length > 0
+          ) {
+            // Convert object to array - get values from the object
+            data.tags = Object.values(data.tags);
+          } else if (typeof data.tags === "string") {
+            data.tags = [data.tags];
+          } else {
+            data.tags = [];
+          }
+        } catch (e) {
+          data.tags = [];
+        }
+      } else {
+        data.tags = [];
+      }
+    }
+
+    const processedData = fromFirestoreData(data) as Crate;
+    return processedData;
   } catch (error) {
     console.error("Error getting crate metadata from Firestore:", error);
     return null;

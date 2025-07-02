@@ -164,6 +164,19 @@ const fromFirestoreData = (data: any): any => {
   Object.keys(result).forEach((key) => {
     if (result[key] && typeof result[key].toDate === "function") {
       result[key] = result[key].toDate();
+    } else if (key === "tags" && result[key] !== undefined) {
+      // Special handling for tags to ensure they're always arrays
+      if (!Array.isArray(result[key])) {
+        console.log(
+          `[DEBUG] fromFirestoreData: Converting non-array tags:`,
+          result[key],
+        );
+        result[key] = result[key]
+          ? typeof result[key] === "string"
+            ? [result[key]]
+            : []
+          : [];
+      }
     } else if (typeof result[key] === "object" && result[key] !== null) {
       result[key] = fromFirestoreData(result[key]);
     }
@@ -515,6 +528,37 @@ export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
   }
 }
 
+export async function updateCrateMetadata(
+  crateId: string,
+  updateData: Partial<Crate>,
+): Promise<Crate> {
+  try {
+    // Get the current crate data first
+    const currentCrate = await getCrateMetadata(crateId);
+    if (!currentCrate) {
+      throw new Error(`Crate with ID ${crateId} not found`);
+    }
+
+    // Create the merged data
+    const updatedCrate = {
+      ...currentCrate,
+      ...updateData,
+    };
+
+    // Convert to Firestore format
+    const dataToSave = toFirestoreData(updatedCrate);
+
+    // Update the document
+    await db.collection(CRATES_COLLECTION).doc(crateId).update(dataToSave);
+
+    // Return the updated crate
+    return updatedCrate;
+  } catch (error) {
+    console.error("Error updating crate metadata in Firestore:", error);
+    throw error;
+  }
+}
+
 export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
   try {
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
@@ -525,8 +569,44 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
     }
 
     const data = doc.data();
+    console.log(
+      `[DEBUG] Firebase getCrateMetadata: Raw crate data for ${crateId}:`,
+      JSON.stringify(data, null, 2),
+    );
 
-    return fromFirestoreData(data) as Crate;
+    // Ensure tags is always an array
+    if (data && !Array.isArray(data.tags)) {
+      console.log(
+        `[DEBUG] Firebase getCrateMetadata: Tags for crate ${crateId} is not an array, converting:`,
+        data.tags,
+      );
+      if (data.tags) {
+        // If it exists but isn't an array, try to convert it
+        try {
+          data.tags = Array.isArray(data.tags)
+            ? data.tags
+            : typeof data.tags === "string"
+              ? [data.tags]
+              : [];
+        } catch (e) {
+          console.warn(
+            `[DEBUG] Firebase getCrateMetadata: Failed to convert tags for crate ${crateId}:`,
+            e,
+          );
+          data.tags = [];
+        }
+      } else {
+        data.tags = [];
+      }
+    }
+
+    const processedData = fromFirestoreData(data) as Crate;
+    console.log(
+      `[DEBUG] Firebase getCrateMetadata: Processed crate data with tags:`,
+      processedData.tags,
+    );
+
+    return processedData;
   } catch (error) {
     console.error("Error getting crate metadata from Firestore:", error);
     return null;
@@ -624,9 +704,48 @@ export async function getUserCrates(
       ? querySnapshot.docs.slice(0, limit)
       : querySnapshot.docs;
 
-    const crates = docsToProcess.map(
-      (doc: QueryDocumentSnapshot) => fromFirestoreData(doc.data()) as Crate,
-    );
+    const crates = docsToProcess.map((doc: QueryDocumentSnapshot) => {
+      const data = doc.data();
+
+      // Process tags to ensure they're always an array
+      if (data && data.tags !== undefined && !Array.isArray(data.tags)) {
+        console.log(
+          `[DEBUG] getUserCrates: Tags for crate ${doc.id} is not an array, converting:`,
+          data.tags,
+        );
+        if (data.tags) {
+          // If it exists but isn't an array, try to convert it
+          try {
+            data.tags = Array.isArray(data.tags)
+              ? data.tags
+              : typeof data.tags === "string"
+                ? [data.tags]
+                : [];
+          } catch (e) {
+            console.warn(
+              `[DEBUG] getUserCrates: Failed to convert tags for crate ${doc.id}:`,
+              e,
+            );
+            data.tags = [];
+          }
+        } else {
+          data.tags = [];
+        }
+      }
+
+      return fromFirestoreData(data) as Crate;
+    });
+
+    // Add a debug log to check what's happening with tags
+    crates.forEach((crate, index) => {
+      console.log(
+        `[DEBUG] getUserCrates: Crate ${index} (${crate.id}) tags:`,
+        crate.tags,
+        `Type: ${typeof crate.tags}`,
+        `Is Array: ${Array.isArray(crate.tags)}`,
+        `Length: ${Array.isArray(crate.tags) ? crate.tags.length : "N/A"}`,
+      );
+    });
 
     // Get the ID of the last document for pagination
     const lastCrateId =

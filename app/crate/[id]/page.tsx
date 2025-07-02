@@ -69,6 +69,7 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   isPasswordProtected: boolean;
   isOwner: boolean;
   viewCount?: number;
+  tags?: string[];
   accessHistory?: {
     date: string;
     count: number;
@@ -148,7 +149,12 @@ export default function CratePage() {
 
         if (response.status === 401 && data.passwordRequired) {
           // Password protected crate, and user is not owner
-          setCrateInfo(data); // Set basic info, including isPasswordProtected
+          // Ensure tags is always an array
+          const processedData = {
+            ...data,
+            tags: Array.isArray(data.tags) ? data.tags : [],
+          };
+          setCrateInfo(processedData); // Set basic info, including isPasswordProtected
           setPasswordRequired(true);
           setLoading(false);
           return;
@@ -169,7 +175,26 @@ export default function CratePage() {
           );
         }
 
-        setCrateInfo(data);
+        // Process tags to ensure they're in the correct format
+        const processedTags = (() => {
+          if (Array.isArray(data.tags)) {
+            return data.tags;
+          } else if (typeof data.tags === "object" && data.tags !== null) {
+            // Handle case where tags is an object - convert to array of values
+            return Object.values(data.tags);
+          } else if (typeof data.tags === "string") {
+            return [data.tags];
+          } else {
+            return [];
+          }
+        })();
+
+        const processedData = {
+          ...data,
+          tags: processedTags,
+        };
+
+        setCrateInfo(processedData);
 
         if (data.expiresAt) {
           updateTimeRemaining(data.expiresAt);
@@ -638,7 +663,69 @@ export default function CratePage() {
     }
   };
 
-  // Render metadata key-value pairs
+  // Format tag display - similar to home page tag formatting
+  const formatTagDisplay = (tag: string, fullDisplay = true) => {
+    if (!tag.includes(":")) return tag;
+
+    const [type, value] = tag.split(":");
+
+    return fullDisplay ? `${type}: ${value}` : value;
+  };
+
+  // Get tag style based on tag prefix
+  const getTagStyle = (tag: string) => {
+    if (tag.startsWith("project:")) {
+      return "bg-purple-100 text-purple-800";
+    } else if (tag.startsWith("status:")) {
+      return "bg-blue-100 text-blue-800";
+    } else if (tag.startsWith("priority:")) {
+      return "bg-red-100 text-red-800";
+    } else if (tag.startsWith("tag:")) {
+      return "bg-gray-100 text-gray-800";
+    }
+    return "bg-gray-100 text-gray-800";
+  };
+
+  // Render tags for the crate
+  const renderTags = (tags?: string[] | any) => {
+    // Process tags to ensure we have a usable array
+    let processedTags: string[] = [];
+
+    if (Array.isArray(tags)) {
+      processedTags = tags;
+    } else if (typeof tags === "object" && tags !== null) {
+      // Handle case where tags is an object - convert to array of values
+      processedTags = Object.values(tags);
+    } else if (typeof tags === "string") {
+      processedTags = [tags];
+    }
+
+    // Check if processed tags exists and has items
+    if (processedTags.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="mb-4 border border-blue-200 p-2 rounded">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">
+          Tags ({processedTags.length})
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {processedTags.map((tag, index) => (
+            <span
+              key={index}
+              className={`inline-block ${getTagStyle(tag)} text-sm px-3 py-1.5 rounded-full shadow-sm`}
+              title={tag}
+            >
+              {formatTagDisplay(tag)}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render metadata for the crate
   const renderMetadata = (metadata?: Record<string, string>) => {
     if (!metadata || Object.keys(metadata).length === 0) return null;
     return (
@@ -651,34 +738,6 @@ export default function CratePage() {
             </li>
           ))}
         </ul>
-      </div>
-    );
-  };
-
-  // Render tags
-  const renderTags = (tags?: string[] | any) => {
-    // Ensure tags is an array (defensive check)
-    if (!tags) return null;
-
-    // Convert to array if it's not already (handles string or other types)
-    const tagsArray = Array.isArray(tags)
-      ? tags
-      : typeof tags === "string"
-        ? [tags]
-        : [];
-
-    if (tagsArray.length === 0) return null;
-
-    return (
-      <div className="flex flex-wrap gap-1 mt-2">
-        {tagsArray.map((tag) => (
-          <span
-            key={tag}
-            className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"
-          >
-            {tag}
-          </span>
-        ))}
       </div>
     );
   };
@@ -1256,6 +1315,24 @@ export default function CratePage() {
 
             {/* Tags */}
             {renderTags(crateInfo.tags)}
+
+            {/* Debug tags info */}
+            <div className="mb-2 p-2 bg-yellow-50 text-xs border border-yellow-200 rounded">
+              <div className="font-semibold">Tags Debug:</div>
+              <div>
+                Has tags property:{" "}
+                {crateInfo.hasOwnProperty("tags") ? "Yes" : "No"}
+              </div>
+              <div>Tags type: {typeof crateInfo.tags}</div>
+              <div>
+                Is array: {Array.isArray(crateInfo.tags) ? "Yes" : "No"}
+              </div>
+              <div>
+                Length:{" "}
+                {Array.isArray(crateInfo.tags) ? crateInfo.tags.length : "N/A"}
+              </div>
+              <div>Raw value: {JSON.stringify(crateInfo.tags)}</div>
+            </div>
 
             {/* Metadata display */}
             {renderMetadata(crateInfo.metadata)}
