@@ -768,7 +768,8 @@ export default function DocsPage() {
                 manage your files
               </li>
               <li>
-                <b>No MCP all tools access</b> - you can only use the crates_get tool to get a crate by its ID. You cannot use the other tools.
+                <b>No MCP all tools access</b> - you can only use the crates_get
+                tool to get a crate by its ID. You cannot use the other tools.
               </li>
             </ul>
             <p className="text-gray-700 mt-2">

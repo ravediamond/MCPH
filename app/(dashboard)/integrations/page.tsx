@@ -51,13 +51,16 @@ export default function IntegrationsPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-white shadow-sm">Claude Code Integration</h2>
+            <h2 className="text-xl font-bold text-white shadow-sm">
+              Claude Code Integration
+            </h2>
           </div>
         </Card.Header>
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect MCPH to Claude Code to enhance your AI coding assistant with access to your stored artifacts and crates.
+              Connect MCPH to Claude Code to enhance your AI coding assistant
+              with access to your stored artifacts and crates.
             </p>
 
             <div className="space-y-4 mb-6">
@@ -66,7 +69,8 @@ export default function IntegrationsPage() {
                   1
                 </div>
                 <span className="text-gray-700">
-                  Create a <code>claude-code.toml</code> configuration file in your project
+                  Create a <code>claude-code.toml</code> configuration file in
+                  your project
                 </span>
               </div>
               <div className="flex items-center">
@@ -89,10 +93,13 @@ export default function IntegrationsPage() {
 
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-6">
               <p className="text-yellow-700 text-sm">
-                <strong>Example configuration:</strong><br />
+                <strong>Example configuration:</strong>
+                <br />
                 <code>
-                  [mcp.servers.mcph]<br />
-                  url = "https://mcp.mcph.io/mcp"<br />
+                  [mcp.servers.mcph]
+                  <br />
+                  url = "https://mcp.mcph.io/mcp"
+                  <br />
                   headers = {"{"} "Authorization" = "Bearer YOUR_API_KEY" {"}"}
                 </code>
               </p>
