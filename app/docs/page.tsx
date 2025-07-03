@@ -781,88 +781,78 @@ export default function DocsPage() {
             Step 2: Connect Your AI Tool
           </h3>
           <p className="text-gray-600 mb-3">
-            MCPH works with any AI tool that supports the Model Context
-            Protocol. Anonymous uploads are stored for 30 days, while
-            authenticated user uploads have no expiration. All generated
-            download links expires in 24 hours. The simplest way to connect is
-            using the <code>mcp-remote</code> CLI tool:
+            MCPH works with any AI tool that supports the Model Context Protocol
+            (MCP). The basic steps for connecting any AI tool are:
           </p>
 
-          <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
-            <li>
-              <b>
-                Install <code>mcp-remote</code> (one-time setup):
-              </b>
-              <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npm install -g mcp-remote
-              </pre>
-              <p className="text-sm text-gray-600">
-                Or use <code>npx</code> to run without installing (shown in
-                examples below).
-              </p>
-            </li>
-
-            <li>
-              <b>Connect to MCPH with your API key:</b>
-              <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npx mcp-remote https://mcp.mcph.io/mcp --header "Authorization:
-                Bearer YOUR_API_KEY"
-              </pre>
-              <p className="text-sm text-gray-600">
-                Replace <code>YOUR_API_KEY</code> with the API key you generated
-                in Step 1.
-              </p>
-            </li>
-
-            <li>
-              <b>Configure your AI tool to use MCPH:</b>
-              <p className="text-gray-600 text-sm mb-2 mt-1">
-                Different AI tools have different setup methods. Here are a few
-                common ones:
-              </p>
-
-              <div className="mt-2 mb-3">
-                <p className="font-medium text-gray-700 mb-1">ChatGPT</p>
-                <p className="text-sm text-gray-600 mb-2">
-                  In ChatGPT Teams or Enterprise, use the "Configure Custom
-                  Integration" feature and add MCPH as a new action with the
-                  endpoint <code>https://mcp.mcph.io/mcp</code>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-gray-700 mb-2">
+              Essential Information
+            </h4>
+            <ul className="list-disc pl-5 text-gray-600 space-y-2">
+              <li>
+                <b>Get the MCP URL:</b> <code>https://mcp.mcph.io/mcp</code>
+                <p className="text-sm text-gray-600 mt-1">
+                  This is the endpoint you'll need to configure in your AI tool.
                 </p>
-              </div>
-
-              <div className="mb-3">
-                <p className="font-medium text-gray-700 mb-1">Claude</p>
-                <p className="text-sm text-gray-600 mb-2">
-                  In Claude Pro or Enterprise, navigate to Settings {`>`} File &
-                  Storage and add MCPH as a remote MCP server with the URL{" "}
-                  <code>https://mcp.mcph.io/mcp</code>
+              </li>
+              <li>
+                <b>Get your API Key:</b>{" "}
+                <span className="text-gray-600">
+                  Available from your MCPH account dashboard
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Log in to{" "}
+                  <a
+                    href="https://mcph.io"
+                    className="text-blue-500 hover:underline"
+                  >
+                    mcph.io
+                  </a>{" "}
+                  and navigate to the API Keys section to generate or retrieve
+                  your key.
                 </p>
-              </div>
-
-              <div className="mb-3">
-                <p className="font-medium text-gray-700 mb-1">Local AI Tools</p>
-                <p className="text-sm text-gray-600">
-                  Many local AI tools and editors support configuration files.
-                  Add this to your config:
+              </li>
+              <li>
+                <b>Configure your AI tool:</b>{" "}
+                <span className="text-gray-600">
+                  Set up the MCP server in your tool's settings
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Each AI tool has a different configuration process. Most tools
+                  have a dedicated section for MCP server configuration where
+                  you'll enter the URL and API key.
                 </p>
-                <pre className="text-xs bg-gray-100 p-2 rounded mt-1 mb-2 text-blue-700 whitespace-pre-wrap">
-                  {`{
-  "mcpServers": {
-    "mcph": {
-      "command": "npx",
-      "args": [
-        "mcp-remote", 
-        "https://mcp.mcph.io/mcp",
-        "--header",
-        "Authorization: Bearer YOUR_API_KEY"
-      ]
-    }
-  }
-}`}
-                </pre>
-              </div>
-            </li>
-          </ol>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-amber-800 mb-2">Key Notes</h4>
+            <ul className="list-disc pl-5 text-gray-700 space-y-2">
+              <li>
+                The specific configuration steps vary by tool (ChatGPT, Claude,
+                custom AI applications, etc.)
+              </li>
+              <li>
+                Anonymous uploads are stored for 30 days, while authenticated
+                user uploads have no expiration
+              </li>
+              <li>All generated download links expire in 24 hours</li>
+            </ul>
+            <p className="mt-3 text-sm">
+              For detailed, tool-specific configuration instructions, please
+              visit our{" "}
+              <Link
+                href="/integrations"
+                className="text-blue-500 hover:underline"
+              >
+                Integrations page
+              </Link>
+              . There you'll find step-by-step guides for all major AI tools
+              that support MCP.
+            </p>
+          </div>
 
           <h3 className="text-lg font-medium text-gray-800 mb-3">
             Step 3: Create and Share Content
