@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCrateMetadata, logEvent } from "@/services/firebaseService";
+import { logEvent, updateCrateMetadata } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
+import { getCrateMetadata } from "@/lib/services";
 import { auth } from "@/lib/firebaseAdmin";
 import bcrypt from "bcrypt";
 
@@ -40,12 +41,10 @@ export async function GET(
         userId = decodedToken.uid;
         isAuthenticated = true;
       } catch (error) {
-        console.warn(`[DEBUG] Invalid authentication token:`, error);
+        console.warn(`Invalid authentication token:`, error);
       }
     } else {
-      console.log(
-        `[DEBUG] No valid Bearer token found. Using anonymous access.`,
-      );
+      console.log(`No valid Bearer token found. Using anonymous access.`);
     }
 
     // Check if user has access to this crate
@@ -79,6 +78,19 @@ export async function GET(
     }
 
     // Prepare crate response (exclude sensitive data)
+    const processTags = (tags: any): string[] => {
+      if (Array.isArray(tags)) {
+        return tags;
+      } else if (typeof tags === "object" && tags !== null) {
+        // Handle case where tags is an object - convert to array of values
+        return Object.values(tags);
+      } else if (typeof tags === "string") {
+        return [tags];
+      } else {
+        return [];
+      }
+    };
+
     const crateResponse = {
       id: crate.id,
       title: crate.title,
@@ -93,7 +105,7 @@ export async function GET(
       isPasswordProtected: Boolean(crate.shared.passwordHash),
       isOwner,
       metadata: crate.metadata,
-      tags: crate.tags,
+      tags: processTags(crate.tags),
     };
 
     return NextResponse.json(crateResponse);
@@ -288,6 +300,164 @@ export async function DELETE(
     console.error("Error deleting crate:", error);
     return NextResponse.json(
       { error: "Failed to delete crate" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * API endpoint to update a crate's metadata
+ */
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    // Get crate metadata
+    const crate = await getCrateMetadata(id);
+    if (!crate) {
+      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+    }
+
+    // Check authentication
+    const authHeader = req.headers.get("authorization");
+    let userId = "anonymous";
+    let isAuthenticated = false;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      try {
+        const decodedToken = await auth.verifyIdToken(token);
+        userId = decodedToken.uid;
+        isAuthenticated = true;
+      } catch (error) {
+        console.warn(`[DEBUG] Invalid authentication token:`, error);
+        return NextResponse.json(
+          { error: "Invalid authentication token" },
+          { status: 401 },
+        );
+      }
+    } else {
+      // Try to get authentication from cookies for browser-based requests
+      const cookies = req.cookies;
+      const sessionCookie = cookies.get("session");
+
+      if (sessionCookie && sessionCookie.value) {
+        try {
+          const decodedClaims = await auth.verifySessionCookie(
+            sessionCookie.value,
+          );
+          userId = decodedClaims.uid;
+          isAuthenticated = true;
+        } catch (error) {
+          console.warn(`[DEBUG] Invalid session cookie:`, error);
+        }
+      }
+
+      if (!isAuthenticated) {
+        console.log(
+          `[DEBUG] No valid authentication found. Unauthorized update attempt.`,
+        );
+        return NextResponse.json(
+          { error: "Authentication required to update a crate" },
+          { status: 401 },
+        );
+      }
+    }
+
+    // Only the owner can update the crate
+    if (crate.ownerId !== userId) {
+      return NextResponse.json(
+        { error: "You don't have permission to update this crate" },
+        { status: 403 },
+      );
+    }
+
+    // Parse the request body
+    const body = await req.json();
+    const updateData: Partial<typeof crate> = {};
+
+    // Fields that can be updated
+    if (body.title && typeof body.title === "string") {
+      updateData.title = body.title;
+    }
+
+    if (body.description !== undefined) {
+      updateData.description = body.description;
+    }
+
+    if (body.tags !== undefined && Array.isArray(body.tags)) {
+      updateData.tags = body.tags;
+    }
+
+    if (body.metadata !== undefined && typeof body.metadata === "object") {
+      updateData.metadata = body.metadata;
+    }
+
+    // Update shared/public status
+    if (body.shared !== undefined) {
+      if (typeof body.shared === "object") {
+        updateData.shared = { ...crate.shared };
+
+        if (typeof body.shared.public === "boolean") {
+          updateData.shared.public = body.shared.public;
+        }
+
+        // Handle password changes
+        if (body.password) {
+          updateData.shared.passwordHash = await bcrypt.hash(body.password, 10);
+        } else if (body.removePassword) {
+          updateData.shared.passwordHash = null;
+        }
+      }
+    }
+
+    // Skip update if no fields were changed
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No changes to apply",
+        crate: {
+          id: crate.id,
+          title: crate.title,
+          description: crate.description,
+          tags: crate.tags,
+          metadata: crate.metadata,
+          shared: {
+            public: crate.shared.public,
+            hasPassword: !!crate.shared.passwordHash,
+          },
+        },
+      });
+    }
+
+    // Update the crate metadata in Firestore
+    const updatedCrate = await updateCrateMetadata(id, updateData);
+
+    // Log the update event
+    await logEvent("crate_update", id, undefined, { userId });
+
+    // Return the updated crate data
+    return NextResponse.json({
+      success: true,
+      crate: {
+        id: updatedCrate.id,
+        title: updatedCrate.title,
+        description: updatedCrate.description,
+        tags: updatedCrate.tags,
+        metadata: updatedCrate.metadata,
+        shared: {
+          public: updatedCrate.shared.public,
+          hasPassword: !!updatedCrate.shared.passwordHash,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error updating crate:", error);
+    return NextResponse.json(
+      { error: "Failed to update crate" },
       { status: 500 },
     );
   }

@@ -3,6 +3,7 @@ export enum CrateCategory {
   CODE = "code",
   IMAGE = "image",
   JSON = "json",
+  TEXT = "text",
   BINARY = "binary",
 }
 
@@ -26,6 +27,9 @@ export interface Crate {
   size: number; // File size in bytes
   downloadCount: number; // Number of times the crate was downloaded
   fileName: string; // Original filename of the uploaded file
+  expiresAt?: Date; // Optional expiry date
+  isExpiringSoon?: boolean; // Whether the crate is expiring soon
+  daysTillExpiry?: number; // Number of days until expiry
 
   // Optional metadata
   metadata?: Record<string, string>; // Key-value user metadata

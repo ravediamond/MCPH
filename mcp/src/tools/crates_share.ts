@@ -15,7 +15,8 @@ export function registerCratesShareTool(server: McpServer): void {
     {
       title: "Share Crate",
       description:
-        "Updates a crate's sharing settings (public/private, password protection).\n\n" +
+        "Updates a crate's sharing settings (public/private, password protection). Makes crates accessible via direct links for collaboration.\n\n" +
+        "AI USAGE: Share organized project contexts or curated knowledge collections. Consider sharing entire 'project:name' tagged collections for team collaboration.\n\n" +
         "AI usage example:\n" +
         '• "share crate 12345 publicly"',
       inputSchema: ShareCrateParams.shape,

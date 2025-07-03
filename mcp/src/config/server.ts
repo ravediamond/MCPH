@@ -13,7 +13,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       `You are logged in as: ${req?.user?.userId ? `USER (${req.user.userId}) using API key` : "ANONYMOUS (no API key)"}\n\n` +
       "Features:\n" +
       "- Crate management: upload, list, get, search, share, unshare, delete\n" +
-      "- Support for multiple content types: markdown, code, images, JSON, YAML, and binary files\n" +
+      "- Support for multiple content types: markdown, code, images, JSON, YAML, text, and binary files\n" +
       "- Google OAuth flow for authentication\n" +
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +
@@ -24,6 +24,8 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       '• "show crate with ID 12345" → crates_get\n' +
       '• "get download link for crate 12345" → crates_get_download_link\n' +
       "• \"search my crates for 'report'\" → crates_search\n" +
+      "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\" → crates_search\n" +
+      "• \"search my crates in scope 'project:mobile-app' for 'api'\" → crates_search\n" +
       "• \"upload this file as a crate titled 'notes'\" → crates_upload\n" +
       '• "share crate 12345 publicly" → crates_share\n' +
       '• "make crate 12345 private" → crates_unshare\n' +

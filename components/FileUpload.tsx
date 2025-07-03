@@ -10,11 +10,13 @@ import {
   FaTimes,
   FaCopy,
   FaExternalLinkAlt,
+  FaTags,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { CrateCategory } from "../shared/types/crate";
+import TagInput from "./ui/TagInput";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -48,6 +50,7 @@ const CRATE_CATEGORIES = [
   { value: CrateCategory.CODE, label: "Code" },
   { value: CrateCategory.JSON, label: "JSON" },
   { value: CrateCategory.YAML, label: "YAML" },
+  { value: CrateCategory.TEXT, label: "Text" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -64,7 +67,7 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "text/yaml": CrateCategory.YAML,
   "text/x-yaml": CrateCategory.YAML,
   "application/x-yaml": CrateCategory.YAML,
-  "text/plain": CrateCategory.CODE,
+  "text/plain": CrateCategory.TEXT,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
@@ -88,6 +91,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
+  ".txt": CrateCategory.TEXT,
 };
 
 // Type definition update to include new Crate fields
@@ -130,6 +134,7 @@ export default function FileUpload({
   const [urlCopied, setUrlCopied] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
   const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
   const [isShared, setIsShared] = useState<boolean>(true); // Default to shared
 
@@ -257,15 +262,23 @@ export default function FileUpload({
     setIsUploading(true);
     setUploadProgress(0);
 
-    // Set up progress reporting
+    // Set up a more predictable progress reporting
+    let progressStep = 0;
     const updateProgressInterval = setInterval(() => {
-      // Simulate progress
-      const simulatedProgress = Math.min(
-        95,
-        uploadProgress + Math.random() * 5,
-      );
-      setUploadProgress(simulatedProgress);
-    }, 300);
+      // Use fixed steps for better visual feedback
+      if (progressStep < 3) {
+        setUploadProgress(10); // Starting
+      } else if (progressStep < 6) {
+        setUploadProgress(25); // Processing
+      } else if (progressStep < 10) {
+        setUploadProgress(50); // Halfway
+      } else if (progressStep < 15) {
+        setUploadProgress(75); // Almost there
+      } else {
+        setUploadProgress(90); // Final stage before completion
+      }
+      progressStep++;
+    }, 500);
 
     try {
       let uploadResponse;
@@ -287,7 +300,13 @@ export default function FileUpload({
       formData.append("title", title);
       formData.append("description", description);
       formData.append("fileType", fileType);
+      formData.append("category", fileType); // Explicitly add the selected category
       formData.append("isShared", isShared ? "true" : "false");
+
+      // Add tags if present
+      if (tags.length > 0) {
+        formData.append("tags", JSON.stringify(tags));
+      }
 
       if (user) {
         formData.append("userId", user.uid);
@@ -313,7 +332,7 @@ export default function FileUpload({
       }
 
       clearInterval(updateProgressInterval);
-      setUploadProgress(100);
+      setUploadProgress(100); // Immediately set to 100% when upload completes
 
       uploadedFileData = await uploadResponse.json();
 
@@ -326,10 +345,11 @@ export default function FileUpload({
         title: title,
         description: description,
         contentType: file.type || "application/octet-stream",
-        category: fileType,
+        category: fileType, // Use the selected category
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
+        tags: uploadedFileData.tags || tags, // Use tags from response or local state
       });
 
       // Auto-copy the URL to clipboard
@@ -354,6 +374,7 @@ export default function FileUpload({
       // Reset state
       setTitle("");
       setDescription("");
+      setTags([]);
 
       toast.success("Your file has been uploaded successfully!");
 
@@ -374,6 +395,7 @@ export default function FileUpload({
           size: file.size,
           downloadUrl: crateUrl,
           uploadedAt: new Date().toISOString(),
+          tags: uploadedFileData.tags || tags, // Use tags from response or local state
         });
       }
     } catch (error) {
@@ -428,8 +450,7 @@ export default function FileUpload({
             >
               <FaTimes size={20} />
             </button>
-          </div>
-
+          </div>{" "}
           <div className="space-y-4">
             <div className="flex items-center">
               <FaFile className="text-gray-500 mr-3" />
@@ -443,6 +464,23 @@ export default function FileUpload({
                 </p>
               </div>
             </div>
+
+            {/* Display tags if present */}
+            {uploadedFile.tags && uploadedFile.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                <div className="text-sm text-gray-600 flex items-center">
+                  <FaTags className="mr-1" /> Tags:
+                </div>
+                {uploadedFile.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="bg-beige-100 p-4 rounded-md">
               <div className="flex flex-wrap items-center justify-between mb-4">
@@ -561,8 +599,9 @@ export default function FileUpload({
             </p>
             <p className="mt-2">
               Upload a single crate (up to 10MB) to quickly share with others.
-              Your crate will be automatically categorized based on its type and
-              will be accessible via a simple link.
+              Your crate will be automatically categorized based on its type,
+              but you can also manually select a different category if needed.
+              Your crate will be accessible via a simple link.
             </p>
           </div>
 
@@ -632,9 +671,33 @@ export default function FileUpload({
                     </div>
                   )}
                 </div>
+                <div className="ml-4 mr-2">
+                  <label
+                    htmlFor="category"
+                    className="text-xs text-gray-500 mb-1 block"
+                  >
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    className="text-sm border border-gray-300 rounded-md py-1 px-2 bg-white focus:ring-2 focus:ring-[#ff7a32] focus:border-[#ff7a32] min-w-[120px]"
+                    value={fileType}
+                    onChange={(e) =>
+                      setFileType(e.target.value as CrateCategory)
+                    }
+                    disabled={isUploading}
+                    aria-label="Select crate category"
+                  >
+                    {CRATE_CATEGORIES.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <button
                   type="button"
-                  className="ml-auto text-gray-400 hover:text-red-500"
+                  className="text-gray-400 hover:text-red-500"
                   onClick={() => setFile(null)}
                   aria-label="Remove crate"
                   disabled={isUploading}
@@ -686,6 +749,36 @@ export default function FileUpload({
                   rows={3}
                   disabled={isUploading}
                 />
+              </div>
+
+              {/* Tags Field */}
+              <div className="mb-4">
+                <label
+                  htmlFor="fileTags"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Tags (optional)
+                </label>
+                <div className="flex items-center space-x-2">
+                  <div className="flex-grow">
+                    <TagInput
+                      tags={tags}
+                      onChange={setTags}
+                      disabled={isUploading}
+                      placeholder="Add tags (e.g., project:work, status:active)"
+                      suggestions={[
+                        "project:work",
+                        "project:personal",
+                        "status:active",
+                        "status:review",
+                        "status:archived",
+                        "priority:high",
+                        "priority:medium",
+                        "priority:low",
+                      ]}
+                    />
+                  </div>
+                </div>
               </div>
             </>
           )}

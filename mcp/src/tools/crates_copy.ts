@@ -16,7 +16,8 @@ export function registerCratesCopyTool(server: McpServer): void {
     {
       title: "Copy Crate",
       description:
-        "Copies an existing crate to the user's collection. If the crate is already owned by the user, it will not be copied.\n\n" +
+        "Copies an existing crate to your collection. Useful for adopting shared templates or building on existing work.\n\n" +
+        "AI USAGE: Copy well-organized crates as templates, then update tags to match your current project (e.g., change 'project:template' to 'project:your-project').\n\n" +
         "AI usage examples:\n" +
         '• "copy crate with ID 12345 to my collection"\n' +
         '• "save this crate 12345 to my crates"',

@@ -17,7 +17,8 @@ export function registerCratesGetTool(server: McpServer): void {
     {
       title: "Get Crate",
       description:
-        "Retrieves a crate's contents by its ID (text, images, or download link for binaries).\n\n" +
+        "Retrieves a crate's full contents and metadata by ID. Returns text content directly, images as base64, or download links for binaries.\n\n" +
+        "AI USAGE: Use this to access complete context from organized crate collections found via search or folder-like tag filtering.\n\n" +
         "AI usage examples:\n" +
         '• "show crate with ID 12345"\n' +
         '• "get my crate 12345"',

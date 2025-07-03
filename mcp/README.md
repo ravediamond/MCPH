@@ -4,7 +4,7 @@ This is the Model Context Protocol server for MCPH, an AI artifact storage and s
 
 ## What is MCPH?
 
-MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
+MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
 ## Core MCP Tools
 
@@ -31,9 +31,14 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Note: Default expiration is 24 hours for the download link
   - Note: Will return an error if the crate has expired
 
-- **crates_search**: Search for crates by query.
-  - Input: `{ query: string }`
-  - Output: List of matching crates (including expiration dates for anonymous uploads)
+- **crates_search**: Search for crates with advanced filtering.
+  - Input: `{ query: string, tags?: string[], scope?: string, limit?: number }`
+  - Output: List of matching crates with relevance scores
+  - Features:
+    - Text search across all crate metadata
+    - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
+    - Project scoping for faster, focused searches (e.g., `scope: "project:mobile-app"`)
+    - Tag hierarchy understanding with relevance boosting for conventional tags
   - Permissions: Requires authentication
 
 ### Creating & Managing Crates

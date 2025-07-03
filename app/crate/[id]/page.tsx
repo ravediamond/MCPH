@@ -69,6 +69,7 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   isPasswordProtected: boolean;
   isOwner: boolean;
   viewCount?: number;
+  tags?: string[];
   accessHistory?: {
     date: string;
     count: number;
@@ -98,14 +99,7 @@ export default function CratePage() {
     week: 0,
     month: 0,
   });
-  const [showResetExpiry, setShowResetExpiry] = useState(false);
-  const [resetExpiryLoading, setResetExpiryLoading] = useState(false);
-  const [resetExpiryError, setResetExpiryError] = useState<string | null>(null);
-  const [resetExpirySuccess, setResetExpirySuccess] = useState<string | null>(
-    null,
-  );
-  const [expiryUnit, setExpiryUnit] = useState<"days" | "hours">("days");
-  const [expiryAmount, setExpiryAmount] = useState<number>(1);
+  // No more expiry reset functionality as crates no longer expire when logged in
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [passwordInput, setPasswordInput] = useState<string>("");
@@ -148,7 +142,12 @@ export default function CratePage() {
 
         if (response.status === 401 && data.passwordRequired) {
           // Password protected crate, and user is not owner
-          setCrateInfo(data); // Set basic info, including isPasswordProtected
+          // Ensure tags is always an array
+          const processedData = {
+            ...data,
+            tags: Array.isArray(data.tags) ? data.tags : [],
+          };
+          setCrateInfo(processedData); // Set basic info, including isPasswordProtected
           setPasswordRequired(true);
           setLoading(false);
           return;
@@ -169,7 +168,26 @@ export default function CratePage() {
           );
         }
 
-        setCrateInfo(data);
+        // Process tags to ensure they're in the correct format
+        const processedTags = (() => {
+          if (Array.isArray(data.tags)) {
+            return data.tags;
+          } else if (typeof data.tags === "object" && data.tags !== null) {
+            // Handle case where tags is an object - convert to array of values
+            return Object.values(data.tags);
+          } else if (typeof data.tags === "string") {
+            return [data.tags];
+          } else {
+            return [];
+          }
+        })();
+
+        const processedData = {
+          ...data,
+          tags: processedTags,
+        };
+
+        setCrateInfo(processedData);
 
         if (data.expiresAt) {
           updateTimeRemaining(data.expiresAt);
@@ -208,6 +226,7 @@ export default function CratePage() {
         case CrateCategory.CODE:
         case CrateCategory.JSON:
         case CrateCategory.YAML:
+        case CrateCategory.TEXT:
           return true;
         default:
           return false;
@@ -483,54 +502,8 @@ export default function CratePage() {
     }
   };
 
-  // Handler to reset expiry
-  const handleResetExpiry = async () => {
-    setResetExpiryLoading(true);
-    setResetExpiryError(null);
-    setResetExpirySuccess(null);
-    try {
-      let durationMs = 0;
-      if (expiryUnit === "days") {
-        durationMs = expiryAmount * 24 * 60 * 60 * 1000;
-      } else {
-        durationMs = expiryAmount * 60 * 60 * 1000;
-      }
-      // Max 29 days
-      const maxMs = 29 * 24 * 60 * 60 * 1000;
-      if (durationMs > maxMs) {
-        setResetExpiryError("Expiry cannot be more than 29 days.");
-        setResetExpiryLoading(false);
-        return;
-      }
-      if (durationMs < 60 * 60 * 1000) {
-        setResetExpiryError("Expiry must be at least 1 hour.");
-        setResetExpiryLoading(false);
-        return;
-      }
-      const pickedDate = new Date(Date.now() + durationMs);
-      const response = await fetch(`/api/crates/${crateId}/expiry`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ expiresAt: pickedDate.toISOString() }),
-      });
-      if (!response.ok) throw new Error("Failed to update expiry");
-      setResetExpirySuccess("Expiry updated");
-      setShowResetExpiry(false);
-      setExpiryAmount(1);
-      // Refresh crate info
-      const refreshed = await fetch(`/api/crates/${crateId}`);
-      if (refreshed.ok) {
-        const data = await refreshed.json();
-        setCrateInfo(data);
-        if (data.expiresAt) updateTimeRemaining(data.expiresAt);
-      }
-    } catch (err: any) {
-      setResetExpiryError(err.message || "Failed to update expiry");
-    } finally {
-      setResetExpiryLoading(false);
-      setTimeout(() => setResetExpirySuccess(null), 2000);
-    }
-  };
+  // Handler to reset expiry has been removed as crates no longer expire when logged in
+  // and automatically expire after 30 days when not logged in
 
   const handleDelete = async () => {
     if (
@@ -638,7 +611,69 @@ export default function CratePage() {
     }
   };
 
-  // Render metadata key-value pairs
+  // Format tag display - similar to home page tag formatting
+  const formatTagDisplay = (tag: string, fullDisplay = true) => {
+    if (!tag.includes(":")) return tag;
+
+    const [type, value] = tag.split(":");
+
+    return fullDisplay ? `${type}: ${value}` : value;
+  };
+
+  // Get tag style based on tag prefix
+  const getTagStyle = (tag: string) => {
+    if (tag.startsWith("project:")) {
+      return "bg-purple-100 text-purple-800";
+    } else if (tag.startsWith("status:")) {
+      return "bg-blue-100 text-blue-800";
+    } else if (tag.startsWith("priority:")) {
+      return "bg-red-100 text-red-800";
+    } else if (tag.startsWith("tag:")) {
+      return "bg-gray-100 text-gray-800";
+    }
+    return "bg-gray-100 text-gray-800";
+  };
+
+  // Render tags for the crate
+  const renderTags = (tags?: string[] | any) => {
+    // Process tags to ensure we have a usable array
+    let processedTags: string[] = [];
+
+    if (Array.isArray(tags)) {
+      processedTags = tags;
+    } else if (typeof tags === "object" && tags !== null) {
+      // Handle case where tags is an object - convert to array of values
+      processedTags = Object.values(tags);
+    } else if (typeof tags === "string") {
+      processedTags = [tags];
+    }
+
+    // Check if processed tags exists and has items
+    if (processedTags.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="mb-4 border border-blue-200 p-2 rounded">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">
+          Tags ({processedTags.length})
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {processedTags.map((tag, index) => (
+            <span
+              key={index}
+              className={`inline-block ${getTagStyle(tag)} text-sm px-3 py-1.5 rounded-full shadow-sm`}
+              title={tag}
+            >
+              {formatTagDisplay(tag)}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Render metadata for the crate
   const renderMetadata = (metadata?: Record<string, string>) => {
     if (!metadata || Object.keys(metadata).length === 0) return null;
     return (
@@ -651,34 +686,6 @@ export default function CratePage() {
             </li>
           ))}
         </ul>
-      </div>
-    );
-  };
-
-  // Render tags
-  const renderTags = (tags?: string[] | any) => {
-    // Ensure tags is an array (defensive check)
-    if (!tags) return null;
-
-    // Convert to array if it's not already (handles string or other types)
-    const tagsArray = Array.isArray(tags)
-      ? tags
-      : typeof tags === "string"
-        ? [tags]
-        : [];
-
-    if (tagsArray.length === 0) return null;
-
-    return (
-      <div className="flex flex-wrap gap-1 mt-2">
-        {tagsArray.map((tag) => (
-          <span
-            key={tag}
-            className="px-2 py-0.5 bg-gray-100 rounded-full text-gray-600 text-xs"
-          >
-            {tag}
-          </span>
-        ))}
       </div>
     );
   };
@@ -867,6 +874,38 @@ export default function CratePage() {
           </div>
         );
 
+      case CrateCategory.TEXT: // Enhanced text rendering
+        return (
+          <div className="text-sm">
+            <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
+              <span className="text-gray-700 font-medium">Text Preview</span>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() =>
+                    window.open(`/api/crates/${crateId}/content`, "_blank")
+                  }
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaExternalLinkAlt className="inline mr-1" />
+                  Open Raw
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                >
+                  <FaDownload className="inline mr-1" />
+                  Download
+                </button>
+              </div>
+            </div>
+            <div className="overflow-auto max-h-[500px] rounded border border-gray-200 p-4 bg-white">
+              <pre className="whitespace-pre-wrap font-mono text-gray-800">
+                {crateContent}
+              </pre>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="p-4 text-gray-600 text-center">
@@ -905,6 +944,15 @@ export default function CratePage() {
             <SyntaxHighlighter language={getLanguage()} showLineNumbers>
               {crateContent}
             </SyntaxHighlighter>
+          </div>
+        );
+
+      case CrateCategory.TEXT: // Added TEXT category
+        return (
+          <div className="text-sm">
+            <pre className="whitespace-pre-wrap p-4 font-mono text-gray-800 bg-gray-50 rounded border border-gray-200">
+              {crateContent}
+            </pre>
           </div>
         );
 
@@ -1306,6 +1354,7 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.CODE ||
                 crateInfo.category === CrateCategory.JSON ||
                 crateInfo.category === CrateCategory.YAML ||
+                crateInfo.category === CrateCategory.TEXT ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
@@ -1316,16 +1365,9 @@ export default function CratePage() {
                 </button>
               )}
 
-              {/* Only show reset expiry and delete if owner */}
+              {/* Only show delete if owner */}
               {crateInfo.isOwner && (
                 <>
-                  <button
-                    onClick={() => setShowResetExpiry(true)}
-                    className="flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 border border-blue-700 font-semibold shadow transition-colors"
-                    title="Reset Expiry"
-                  >
-                    <FaClock className="mr-1" /> Reset Expiry
-                  </button>
                   <button
                     onClick={handleDelete}
                     disabled={deleteLoading}
@@ -1347,65 +1389,6 @@ export default function CratePage() {
                 <div className="text-red-600 mt-2 text-sm">{deleteError}</div>
               )}
             </div>
-
-            {/* Reset Expiry Modal/Inline */}
-            {showResetExpiry && (
-              <div className="mt-4 p-6 border border-gray-200 rounded-lg bg-white shadow-lg max-w-md">
-                <div className="mb-3 font-semibold text-gray-800 text-base">
-                  Set new expiry duration (max 29 days):
-                </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <input
-                    type="number"
-                    min={expiryUnit === "days" ? 1 : 1}
-                    max={expiryUnit === "days" ? 29 : 696}
-                    value={expiryAmount}
-                    onChange={(e) => setExpiryAmount(Number(e.target.value))}
-                    className="border border-gray-300 px-2 py-1 rounded w-20 focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                  />
-                  <select
-                    value={expiryUnit}
-                    onChange={(e) =>
-                      setExpiryUnit(e.target.value as "days" | "hours")
-                    }
-                    className="border border-gray-300 px-2 py-1 rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                  >
-                    <option value="days">days</option>
-                    <option value="hours">hours</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleResetExpiry}
-                    disabled={resetExpiryLoading || !expiryAmount}
-                    className="px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-semibold shadow border border-blue-700 transition-colors"
-                  >
-                    {resetExpiryLoading ? "Updating..." : "Update Expiry"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowResetExpiry(false);
-                      setResetExpiryError(null);
-                      setExpiryAmount(1);
-                      setExpiryUnit("days");
-                    }}
-                    className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {resetExpiryError && (
-                  <div className="text-red-600 mt-3 text-sm">
-                    {resetExpiryError}
-                  </div>
-                )}
-                {resetExpirySuccess && (
-                  <div className="text-green-600 mt-3 text-sm">
-                    {resetExpirySuccess}
-                  </div>
-                )}
-              </div>
-            )}
           </Card.Body>
         </Card>
 

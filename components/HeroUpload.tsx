@@ -191,7 +191,7 @@ export default function HeroUpload() {
                 isDragActive
                   ? "border-orange-400 ring-4 ring-orange-300/40 bg-orange-100/60"
                   : "border-orange-300/60 bg-orange-50/40 hover:bg-orange-100/60"
-              } transition-colors p-12 sm:p-20 h-[340px] md:h-[380px] text-center cursor-pointer`,
+              } transition-colors p-10 sm:p-16 h-[280px] w-full text-center cursor-pointer relative`,
             })}
             onPaste={handlePaste}
             tabIndex={0}
@@ -250,13 +250,37 @@ export default function HeroUpload() {
                       <p className="text-gray-700 text-base md:text-lg">
                         or paste Markdown / JSON
                       </p>
-                      <span className="inline-block mt-3 md:mt-4 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                        10 MB max •{" "}
-                        {user
-                          ? "Stored until you delete them"
-                          : "Auto-delete after 30 days"}{" "}
-                        • Download links expire in 24 hours
-                      </span>
+
+                      {/* Info tooltip in the top-right corner */}
+                      <div className="absolute top-3 right-3">
+                        <div className="relative group">
+                          <span className="cursor-help text-gray-400 hover:text-gray-600">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                              />
+                            </svg>
+                          </span>
+                          <div className="absolute z-10 bottom-full right-0 mb-2 w-60 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                            <p className="mb-1">• 10 MB max file size</p>
+                            <p className="mb-1">
+                              • Download links expire in 24 hours
+                            </p>
+                            <p>
+                              • Files auto-delete after 30 days (guest uploads)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </>
                 )}

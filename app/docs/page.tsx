@@ -36,7 +36,7 @@ export default function DocsPage() {
             </li>
             <li>
               <b>Store multiple content types</b> including markdown, code,
-              JSON, images, and binary files
+              JSON, images, text, YAML, and binary files
             </li>
             <li>
               <b>Integrate directly with AI tools</b> so you can create and
@@ -348,7 +348,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   Support for various file formats including markdown, code,
-                  JSON, images, and binary files
+                  JSON, YAML, text, images, and binary files
                 </li>
               </ul>
               <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
@@ -567,81 +567,6 @@ export default function DocsPage() {
               </div>
             </div>
           </div>
-
-          {/* Multi-Agent Context Pool */}
-          <div className="mb-6">
-            <div className="flex items-start mb-3">
-              <span className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg mr-3 flex-shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 4-3 4-6 0-1.5-.5-3-2-4"></path>
-                  <path d="M12 14c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
-                  <path d="M12 8c1.5 0 2.75 1.06 4 1.06 1 0 1.5-.75 2-1.5"></path>
-                  <path d="M4 17c0 3 1 6 4 6 1.25 0 2.5-1.06 4-1.06 1.5 0 2.75 1.06 4 1.06-1.5-5-6-4.94-6-8.94 0-1-.25-1.94-1-2.94-1 1-1 1.94-1 2.94 0 4-4.5 3.94-6 8.94-1.25 0-2.5-1.06-4-1.06"></path>
-                </svg>
-              </span>
-              <div>
-                <h3 className="font-medium text-gray-800 text-lg">
-                  Multi-Agent Context Pool
-                </h3>
-                <p className="text-gray-600 mb-3">
-                  Shared context pool—agents dump state, others pull only what
-                  they need.
-                </p>
-              </div>
-            </div>
-            <div className="pl-12">
-              <p className="text-gray-600 mb-3">
-                MCPH provides the underlying infrastructure for a shared context
-                repository. While not implementing a dedicated context
-                management layer, the platform's storage capabilities enable
-                developers to build context-sharing systems between AI agents.
-              </p>
-              <h4 className="font-medium text-gray-700 mb-2">
-                Current capabilities:
-              </h4>
-              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
-                <li>
-                  Store structured context data as JSON or Markdown with
-                  metadata
-                </li>
-                <li>
-                  Provide consistent access points for different AI agents
-                  through the same storage layer
-                </li>
-                <li>
-                  Enable selective artifact retrieval through search and
-                  filtering
-                </li>
-                <li>Maintain metadata that helps organize context pieces</li>
-                <li>Support versioning of context artifacts as they evolve</li>
-                <li>
-                  Programmatic API access for custom context management
-                  workflows
-                </li>
-              </ul>
-              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
-                <h5 className="font-medium text-gray-700 mb-1">
-                  Use case example
-                </h5>
-                <p className="text-sm text-gray-600">
-                  Design a workflow where one AI agent creates structured
-                  reports in MCPH, and different specialized agents can
-                  selectively access specific sections of those reports as
-                  needed—reducing context duplication while maintaining focused
-                  access to relevant information.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -661,6 +586,12 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <b>JSON</b> - structured data for easy parsing
+                </li>
+                <li>
+                  <b>YAML</b> - configuration files and structured data
+                </li>
+                <li>
+                  <b>Text</b> - plain text files (.txt)
                 </li>
                 <li>
                   <b>Images</b> - diagrams, screenshots, and visual content
@@ -793,7 +724,7 @@ export default function DocsPage() {
                 </a>
               </li>
               <li>
-                <b>API Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
+                <b>MCP Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
               </li>
               <li>
                 <b>View Shared Content:</b>{" "}
@@ -837,8 +768,8 @@ export default function DocsPage() {
                 manage your files
               </li>
               <li>
-                <b>No API access</b> - you can't use the API directly without an
-                account
+                <b>No MCP all tools access</b> - you can only use the crates_get
+                tool to get a crate by its ID. You cannot use the other tools.
               </li>
             </ul>
             <p className="text-gray-700 mt-2">
@@ -850,88 +781,78 @@ export default function DocsPage() {
             Step 2: Connect Your AI Tool
           </h3>
           <p className="text-gray-600 mb-3">
-            MCPH works with any AI tool that supports the Model Context
-            Protocol. Anonymous uploads are stored for 30 days, while
-            authenticated user uploads have no expiration. All generated
-            download links expires in 24 hours. The simplest way to connect is
-            using the <code>mcp-remote</code> CLI tool:
+            MCPH works with any AI tool that supports the Model Context Protocol
+            (MCP). The basic steps for connecting any AI tool are:
           </p>
 
-          <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-4">
-            <li>
-              <b>
-                Install <code>mcp-remote</code> (one-time setup):
-              </b>
-              <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npm install -g mcp-remote
-              </pre>
-              <p className="text-sm text-gray-600">
-                Or use <code>npx</code> to run without installing (shown in
-                examples below).
-              </p>
-            </li>
-
-            <li>
-              <b>Connect to MCPH with your API key:</b>
-              <pre className="text-xs text-blue-700 bg-gray-100 p-2 rounded mt-1 mb-2">
-                npx mcp-remote https://mcp.mcph.io/mcp --header "Authorization:
-                Bearer YOUR_API_KEY"
-              </pre>
-              <p className="text-sm text-gray-600">
-                Replace <code>YOUR_API_KEY</code> with the API key you generated
-                in Step 1.
-              </p>
-            </li>
-
-            <li>
-              <b>Configure your AI tool to use MCPH:</b>
-              <p className="text-gray-600 text-sm mb-2 mt-1">
-                Different AI tools have different setup methods. Here are a few
-                common ones:
-              </p>
-
-              <div className="mt-2 mb-3">
-                <p className="font-medium text-gray-700 mb-1">ChatGPT</p>
-                <p className="text-sm text-gray-600 mb-2">
-                  In ChatGPT Teams or Enterprise, use the "Configure Custom
-                  Integration" feature and add MCPH as a new action with the
-                  endpoint <code>https://mcp.mcph.io/mcp</code>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-gray-700 mb-2">
+              Essential Information
+            </h4>
+            <ul className="list-disc pl-5 text-gray-600 space-y-2">
+              <li>
+                <b>Get the MCP URL:</b> <code>https://mcp.mcph.io/mcp</code>
+                <p className="text-sm text-gray-600 mt-1">
+                  This is the endpoint you'll need to configure in your AI tool.
                 </p>
-              </div>
-
-              <div className="mb-3">
-                <p className="font-medium text-gray-700 mb-1">Claude</p>
-                <p className="text-sm text-gray-600 mb-2">
-                  In Claude Pro or Enterprise, navigate to Settings {`>`} File &
-                  Storage and add MCPH as a remote MCP server with the URL{" "}
-                  <code>https://mcp.mcph.io/mcp</code>
+              </li>
+              <li>
+                <b>Get your API Key:</b>{" "}
+                <span className="text-gray-600">
+                  Available from your MCPH account dashboard
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Log in to{" "}
+                  <a
+                    href="https://mcph.io"
+                    className="text-blue-500 hover:underline"
+                  >
+                    mcph.io
+                  </a>{" "}
+                  and navigate to the API Keys section to generate or retrieve
+                  your key.
                 </p>
-              </div>
-
-              <div className="mb-3">
-                <p className="font-medium text-gray-700 mb-1">Local AI Tools</p>
-                <p className="text-sm text-gray-600">
-                  Many local AI tools and editors support configuration files.
-                  Add this to your config:
+              </li>
+              <li>
+                <b>Configure your AI tool:</b>{" "}
+                <span className="text-gray-600">
+                  Set up the MCP server in your tool's settings
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Each AI tool has a different configuration process. Most tools
+                  have a dedicated section for MCP server configuration where
+                  you'll enter the URL and API key.
                 </p>
-                <pre className="text-xs bg-gray-100 p-2 rounded mt-1 mb-2 text-blue-700 whitespace-pre-wrap">
-                  {`{
-  "mcpServers": {
-    "mcph": {
-      "command": "npx",
-      "args": [
-        "mcp-remote", 
-        "https://mcp.mcph.io/mcp",
-        "--header",
-        "Authorization: Bearer YOUR_API_KEY"
-      ]
-    }
-  }
-}`}
-                </pre>
-              </div>
-            </li>
-          </ol>
+              </li>
+            </ul>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-amber-800 mb-2">Key Notes</h4>
+            <ul className="list-disc pl-5 text-gray-700 space-y-2">
+              <li>
+                The specific configuration steps vary by tool (ChatGPT, Claude,
+                custom AI applications, etc.)
+              </li>
+              <li>
+                Anonymous uploads are stored for 30 days, while authenticated
+                user uploads have no expiration
+              </li>
+              <li>All generated download links expire in 24 hours</li>
+            </ul>
+            <p className="mt-3 text-sm">
+              For detailed, tool-specific configuration instructions, please
+              visit our{" "}
+              <Link
+                href="/integrations"
+                className="text-blue-500 hover:underline"
+              >
+                Integrations page
+              </Link>
+              . There you'll find step-by-step guides for all major AI tools
+              that support MCP.
+            </p>
+          </div>
 
           <h3 className="text-lg font-medium text-gray-800 mb-3">
             Step 3: Create and Share Content
@@ -1055,14 +976,28 @@ export default function DocsPage() {
             </h3>
             <ul className="list-disc pl-5 text-gray-600 space-y-1">
               <li>
-                <b>crates_search</b> - Find your content using hybrid search
-                technology
+                <b>crates_search</b> - Find your content using advanced hybrid
+                search with structured filtering
               </li>
             </ul>
             <p className="text-sm text-gray-600 mt-2">
               Combines vector embeddings for semantic understanding with
-              text-based search across titles, descriptions, and tags. Results
-              are ranked by relevance for the most useful matches.
+              text-based search across titles, descriptions, and tags. Features
+              structured tag filtering, project scoping, and tag hierarchy
+              understanding. Results are ranked by relevance with boosting for
+              conventional tag patterns.
+            </p>
+            <p className="text-sm bg-gray-50 p-2 rounded border border-gray-200 mt-2">
+              <span className="font-semibold">Advanced Search Tips:</span>
+              <br />• Use <code>
+                tags: ["project:website", "status:final"]
+              </code>{" "}
+              for precise filtering
+              <br />• Use <code>scope: "project:mobile-app"</code> for focused
+              project searches
+              <br />• Conventional tags like <code>project:</code>,{" "}
+              <code>type:</code>, <code>status:</code> receive relevance
+              boosting
             </p>
           </div>
         </div>

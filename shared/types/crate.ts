@@ -4,6 +4,7 @@ export enum CrateCategory {
   IMAGE = "image",
   JSON = "json",
   YAML = "yaml",
+  TEXT = "text",
   BINARY = "binary",
 }
 

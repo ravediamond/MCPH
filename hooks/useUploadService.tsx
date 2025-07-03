@@ -159,6 +159,11 @@ export const useUploadService = () => {
       return CrateCategory.YAML;
     }
 
+    // Text detection
+    if (mimeType === "text/plain" || fileName.endsWith(".txt")) {
+      return CrateCategory.TEXT;
+    }
+
     // Code detection (simplistic)
     if (
       [
