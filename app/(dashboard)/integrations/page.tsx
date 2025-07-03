@@ -19,6 +19,114 @@ export default function IntegrationsPage() {
   // Shared function to render integration cards
   const renderIntegrationCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Claude Code Integration Card */}
+      <Card hoverable>
+        <Card.Header className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white">
+          <div className="flex items-center">
+            <div className="mr-3">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  width="32"
+                  height="32"
+                  rx="6"
+                  fill="white"
+                  fillOpacity="0.2"
+                />
+                <path
+                  d="M7 16C7 11.0294 11.0294 7 16 7C20.9706 7 25 11.0294 25 16C25 20.9706 20.9706 25 16 25C11.0294 25 7 20.9706 7 16Z"
+                  stroke="white"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M12 20L20 12M12 12L20 20"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-white shadow-sm">Claude Code Integration</h2>
+          </div>
+        </Card.Header>
+        <div className="p-6">
+          <div className="mb-6">
+            <p className="text-gray-700 mb-4">
+              Connect MCPH to Claude Code to enhance your AI coding assistant with access to your stored artifacts and crates.
+            </p>
+
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 flex-shrink-0">
+                  1
+                </div>
+                <span className="text-gray-700">
+                  Create a <code>claude-code.toml</code> configuration file in your project
+                </span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 flex-shrink-0">
+                  2
+                </div>
+                <span className="text-gray-700">
+                  Configure MCPH as an MCP server with your API key
+                </span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3 flex-shrink-0">
+                  3
+                </div>
+                <span className="text-gray-700">
+                  Access your MCPH contexts directly in Claude Code
+                </span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-6">
+              <p className="text-yellow-700 text-sm">
+                <strong>Example configuration:</strong><br />
+                <code>
+                  [mcp.servers.mcph]<br />
+                  url = "https://mcp.mcph.io/mcp"<br />
+                  headers = {"{"} "Authorization" = "Bearer YOUR_API_KEY" {"}"}
+                </code>
+              </p>
+            </div>
+          </div>
+
+          <a
+            href="https://docs.anthropic.com/en/docs/claude-code/mcp"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center px-4 py-3 bg-indigo-700 text-white rounded-md hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 transition-colors"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              ></path>
+            </svg>
+            Setup Guide
+          </a>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Claude Code MCP integration is available to all Claude users
+          </p>
+        </div>
+      </Card>
+
       {/* Claude Integration Card */}
       <Card hoverable>
         <Card.Header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
