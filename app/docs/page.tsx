@@ -724,7 +724,7 @@ export default function DocsPage() {
                 </a>
               </li>
               <li>
-                <b>API Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
+                <b>MCP Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
               </li>
               <li>
                 <b>View Shared Content:</b>{" "}
@@ -768,8 +768,7 @@ export default function DocsPage() {
                 manage your files
               </li>
               <li>
-                <b>No API access</b> - you can't use the API directly without an
-                account
+                <b>No MCP all tools access</b> - you can only use the crates_get tool to get a crate by its ID. You cannot use the other tools.
               </li>
             </ul>
             <p className="text-gray-700 mt-2">
