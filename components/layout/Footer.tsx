@@ -49,7 +49,7 @@ export default function Footer() {
 
         <div className="mt-4 pt-4 border-t border-gray-200 flex justify-center">
           <p className="text-gray-500 text-xs">
-            &copy; {new Date().getFullYear()} MCPH
+            &copy; {new Date().getFullYear()} MCPH. All rights reserved.
           </p>
         </div>
       </div>

@@ -1092,43 +1092,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer Info */}
-      <section className="py-8 px-4 border-t border-gray-200 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="border-t border-gray-200 pt-6 mt-2">
-            <div className="flex flex-wrap justify-center gap-8">
-              <Link
-                href="/docs"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Documentation
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Status
-              </Link>
-              <Link
-                href="https://github.com/ravediamond/mcph"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                GitHub
-              </Link>
-              <Link
-                href="/privacy"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Privacy
-              </Link>
-            </div>
-            <p className="text-gray-400 text-xs text-center mt-6">
-              © {new Date().getFullYear()} MCPH. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
