@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY mcp/package*.json ./mcp/
 
-# Install dependencies (skip dev dependencies)
-RUN npm ci --omit=dev
+# Install dependencies (skip dev dependencies and lifecycle scripts)
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy source files
 COPY mcp/tsconfig.json ./mcp/
@@ -20,7 +20,7 @@ COPY shared ./shared
 
 # Build the application
 WORKDIR /app/mcp
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 RUN npm run build
 
 # Create production image
@@ -32,7 +32,7 @@ COPY --from=builder /app/mcp/dist ./dist
 COPY --from=builder /app/mcp/package*.json ./
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Set environment variables
 ENV PORT=8080
