@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY mcp/package*.json ./mcp/
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (skip dev dependencies)
+RUN npm ci --omit=dev
 
 # Copy source files
 COPY mcp/tsconfig.json ./mcp/
@@ -20,7 +20,7 @@ COPY shared ./shared
 
 # Build the application
 WORKDIR /app/mcp
-RUN npm ci
+RUN npm ci --omit=dev
 RUN npm run build
 
 # Create production image
