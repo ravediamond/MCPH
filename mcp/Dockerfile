@@ -8,8 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY mcp/package*.json ./mcp/
 
-# Install dependencies (skip dev dependencies and lifecycle scripts)
-RUN npm ci --omit=dev --ignore-scripts
+# Install dependencies with dev dependencies but skip scripts
+RUN npm ci --ignore-scripts
 
 # Copy source files
 COPY mcp/tsconfig.json ./mcp/
@@ -20,7 +20,7 @@ COPY shared ./shared
 
 # Build the application
 WORKDIR /app/mcp
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --ignore-scripts
 RUN npm run build
 
 # Create production image
