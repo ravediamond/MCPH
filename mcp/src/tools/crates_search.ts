@@ -54,18 +54,6 @@ export function registerCratesSearchTool(server: McpServer): void {
       const authInfo = extra?.authInfo;
       const reqAuth = extra?.req?.auth;
 
-      // Debug the auth structure
-      console.log("[crates_search] Auth Debug:", {
-        hasExtra: !!extra,
-        hasAuthInfo: !!authInfo,
-        authInfoKeys: authInfo ? Object.keys(authInfo) : [],
-        hasReqAuth: !!reqAuth,
-        reqAuthKeys: reqAuth ? Object.keys(reqAuth) : [],
-        extraKeys: extra ? Object.keys(extra) : [],
-        authInfoDetails: authInfo,
-        reqAuthDetails: reqAuth,
-      });
-
       // If we have a valid UID from client ID in either source, use it
       if (authInfo && authInfo.clientId && authInfo.clientId !== "") {
         uid = authInfo.clientId; // real end-user filter from authInfo
