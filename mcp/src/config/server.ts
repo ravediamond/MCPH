@@ -18,15 +18,15 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       "- API-key auth middleware and per-user usage tracking\n" +
       "- IP-based rate limiting and CORS support\n" +
       "- Streamable HTTP transport\n" +
-      "- Guest crates auto-delete after 7 days. Logged-in users' crates are stored until deleted. Download links expire in 24 hours\n\n" +
+      "- Guest crates auto-delete after 30 days. Logged-in users' crates are stored until deleted. Download links expire in 24 hours\n\n" +
       "Natural-language AI commands:\n" +
       '• "list my crates" → crates_list\n' +
       '• "show crate with ID 12345" → crates_get\n' +
       '• "get download link for crate 12345" → crates_get_download_link\n' +
       "• \"search my crates for 'report'\" → crates_search\n" +
       "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\" → crates_search\n" +
-      "• \"search my crates in scope 'project:mobile-app' for 'api'\" → crates_search\n" +
       "• \"upload this file as a crate titled 'notes'\" → crates_upload\n" +
+      '• "update crate 12345 with new content" → crates_update\n' +
       '• "share crate 12345 publicly" → crates_share\n' +
       '• "make crate 12345 private" → crates_unshare\n' +
       '• "delete crate 12345" → crates_delete\n\n' +

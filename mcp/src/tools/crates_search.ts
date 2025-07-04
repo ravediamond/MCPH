@@ -14,7 +14,7 @@ export function registerCratesSearchTool(server: McpServer): void {
       description:
         "Searches your crates using hybrid semantic + text search across title, description, tags, and metadata.\n\n" +
         "SEARCH TIPS for AI tools:\n" +
-        "• Search by project: 'project:website-redesign' or use scope parameter\n" +
+        "• Search by project: 'project:website-redesign' using tags parameter\n" +
         "• Combine tags: 'project:chatbot type:code' or use tags parameter\n" +
         "• Find by context: 'context:user-research'\n" +
         "• Search workflow: 'status:final priority:high'\n\n" +
@@ -22,35 +22,30 @@ export function registerCratesSearchTool(server: McpServer): void {
         "• Vector embeddings (768-dimensional) for semantic understanding of content\n" +
         "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +
         "• Structured tag filtering for precise organization-based searches\n" +
-        "• Project scoping for faster, more focused results\n" +
         "• Results are ranked by relevance and deduplicated\n\n" +
         "AI usage examples:\n" +
         "• \"search my crates for 'report'\"\n" +
-        "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\"\n" +
-        "• \"search my crates in scope 'project:mobile-app' for 'api'\"",
+        "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\"",
       inputSchema: SearchParams.shape,
     },
     async (
       {
         query,
         tags,
-        scope,
         limit = 10,
       }: {
         query: string;
         tags?: string[];
-        scope?: string;
         limit?: number;
       },
       extra?: any,
     ) => {
-      // Implementation of the enhanced search with structured tag filtering, tag hierarchy
-      // understanding, and search scoping for better context engineering.
+      // Implementation of the enhanced search with structured tag filtering and tag hierarchy
+      // understanding for better context engineering.
       //
       // The key enhancements include:
       // 1. Structured Tag Filtering: Use `tags` parameter for exact tag matching
       // 2. Tag Hierarchy Understanding: Recognize and boost scores for conventional tag patterns
-      // 3. Search Scoping: Use `scope` parameter to narrow search to a specific project context
 
       // The ctxUser might be in extra.req.auth or extra.authInfo depending on flow
       let uid = "__nobody__"; // sentinel that never matches "" in DB
@@ -97,20 +92,6 @@ export function registerCratesSearchTool(server: McpServer): void {
       let query_ref = db
         .collection(CRATES_COLLECTION)
         .where("ownerId", "==", uid);
-
-      // Parse scope parameter if provided
-      // Scope is expected in format "prefix:value" like "project:website-redesign"
-      if (scope) {
-        console.log(`[crates_search] Using scope filter: ${scope}`);
-        // For structured scopes like "project:website", extract the tag to search for
-        if (scope.includes(":")) {
-          // Add to the query directly as a tag filter
-          query_ref = query_ref.where("tags", "array-contains", scope);
-        } else {
-          // If it's just a plain scope without structure, treat as a simple tag
-          query_ref = query_ref.where("tags", "array-contains", scope);
-        }
-      }
 
       // Build query with tag filters if provided
       if (tags && tags.length > 0) {
@@ -230,7 +211,6 @@ export function registerCratesSearchTool(server: McpServer): void {
       const searchMetadata = {
         query: textQuery,
         tags: tags || [],
-        scope: scope || null,
         totalResults: crates.length,
         limit: topK,
       };
@@ -258,10 +238,8 @@ export function registerCratesSearchTool(server: McpServer): void {
                     .join("\n---\n") +
                   "\n\nAdvanced Search Tips:\n" +
                   "• For precise filtering: search with tags=['project:website', 'status:final'] for 'feature'\n" +
-                  "• For focused project searches: search with scope='project:mobile-app' for 'api'\n" +
-                  "• For combined search: search with tags=['type:document'] scope='project:redesign' for 'wireframe'\n" +
                   "• Tags like project:, type:, status:, priority: get higher relevance scores"
-                : `No crates found matching "${query}"${tags?.length ? ` with tags [${tags.join(", ")}]` : ""}${scope ? ` in scope "${scope}"` : ""}`,
+                : `No crates found matching "${query}"${tags?.length ? ` with tags [${tags.join(", ")}]` : ""}`,
           },
         ],
       };

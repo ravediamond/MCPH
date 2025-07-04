@@ -61,6 +61,17 @@ export const CopyCrateParams = z.object({
 export const SearchParams = z.object({
   query: z.string(),
   tags: z.array(z.string()).optional(),
-  scope: z.string().optional(),
   limit: z.number().int().min(1).max(50).optional().default(10),
+});
+
+export const UpdateCrateParams = z.object({
+  id: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  data: z.string().optional(), // base64-encoded if present
+  fileName: z.string().optional(),
+  contentType: z.string().optional(),
+  category: z.nativeEnum(CrateCategory).optional(),
+  tags: z.array(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
 });

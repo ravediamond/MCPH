@@ -159,10 +159,10 @@ export function registerCratesUploadTool(server: McpServer): void {
         partialCrate.category = category;
       }
 
-      // Add expiration date for anonymous uploads (7 days from now)
+      // Add expiration date for anonymous uploads (30 days from now)
       if (ownerId === "anonymous") {
         const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
+        expiresAt.setDate(expiresAt.getDate() + 30);
         partialCrate.expiresAt = expiresAt;
       }
 

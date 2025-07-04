@@ -24,7 +24,7 @@ export default function PrivacyPage() {
             </li>
             <li>
               For guest users, crates you upload are automatically deleted after
-              7 days. For logged-in users, crates are stored until you delete
+              30 days. For logged-in users, crates are stored until you delete
               them.
             </li>
             <li>We do not track you or sell your data.</li>
@@ -68,11 +68,11 @@ export default function PrivacyPage() {
                 The crate itself (encrypted at rest in Google Cloud Storage)
               </li>
               <li>Basic metadata such as filename, file type, and size</li>
-              <li>For guest users: expiration time of 7 days</li>
+              <li>For guest users: expiration time of 30 days</li>
             </ul>
             <p className="text-gray-600 font-medium">
               Guest crates and associated metadata are automatically and
-              permanently deleted after 7 days. Crates uploaded by logged-in
+              permanently deleted after 30 days. Crates uploaded by logged-in
               users are stored until the user deletes them.
             </p>
           </div>
