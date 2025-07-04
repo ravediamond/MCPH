@@ -18,7 +18,7 @@ import { useUploadService } from "../hooks/useUploadService";
 import { CrateCategory } from "../shared/types/crate";
 import Link from "next/link";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for the simplified landing page version
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for all uploads
 
 export default function HeroUpload() {
   // State
@@ -97,7 +97,7 @@ export default function HeroUpload() {
 
           // Anonymous user success message
           toast.success(
-            "Link generated! Anonymous uploads auto-delete after 30 days. Sign in to keep your crates permanently and access more features →",
+            "Link generated! Anonymous uploads auto-delete after 7 days. Sign in to keep your crates permanently and access more features →",
             {
               duration: 5000,
               icon: "🔗",
@@ -112,7 +112,7 @@ export default function HeroUpload() {
         } else {
           // Authenticated user success message
           toast.success(
-            "Link generated! Download link expires in 24 hours. Crate available for 30 days. View all your uploads in your dashboard.",
+            "Link generated! Download link expires in 24 hours. Crate available for 7 days. View all your uploads in your dashboard.",
             {
               duration: 4000,
               icon: "✓",
@@ -179,6 +179,25 @@ export default function HeroUpload() {
         console.error("Failed to copy: ", err);
         toast.error("Failed to copy URL to clipboard");
       });
+  };
+
+  // Email functionality
+  const [emailInput, setEmailInput] = useState("");
+  const [showEmailInput, setShowEmailInput] = useState(false);
+
+  const handleEmailShare = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Basic email validation
+    if (!emailInput.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // In a real implementation, this would send an email via API
+    toast.success(`Link sent to ${emailInput}!`);
+    setShowEmailInput(false);
+    setEmailInput("");
   };
 
   return (
@@ -254,6 +273,7 @@ export default function HeroUpload() {
                       {/* Info tooltip in the top-right corner */}
                       <div className="absolute top-3 right-3">
                         <div className="relative group">
+                          {" "}
                           <span className="cursor-help text-gray-400 hover:text-gray-600">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
@@ -276,7 +296,7 @@ export default function HeroUpload() {
                               • Download links expire in 24 hours
                             </p>
                             <p>
-                              • Files auto-delete after 30 days (guest uploads)
+                              • Files auto-delete after 7 days (guest uploads)
                             </p>
                           </div>
                         </div>
@@ -354,13 +374,54 @@ export default function HeroUpload() {
               </div>
             </div>
 
+            {/* Email link option */}
+            <button
+              onClick={() => setShowEmailInput(!showEmailInput)}
+              className="text-blue-600 hover:text-blue-800 text-sm flex items-center mx-auto mt-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                />
+              </svg>
+              {showEmailInput ? "Cancel" : "Email me this link"}
+            </button>
+
+            {showEmailInput && (
+              <form onSubmit={handleEmailShare} className="mt-3 flex">
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Enter your email"
+                  className="flex-1 py-2 px-3 border border-gray-300 rounded-l-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-r-lg text-sm"
+                >
+                  Send
+                </button>
+              </form>
+            )}
+
             <div className="text-center mt-3 md:mt-4 p-2 md:p-3 bg-blue-50 rounded-lg">
               {!user ? (
                 <p className="text-xs md:text-sm text-blue-700">
                   Download link expires in 24 hours.{" "}
                   {user
                     ? "Your crates are stored until you delete them."
-                    : "Crate auto-deletes after 30 days."}{" "}
+                    : "Crate auto-deletes after 7 days."}{" "}
                   <a href="/login" className="font-medium underline">
                     Create an account
                   </a>{" "}

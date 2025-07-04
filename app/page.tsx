@@ -7,6 +7,7 @@ import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTran
 import HeroUpload from "../components/HeroUpload";
 import WaitingListModal from "../components/WaitingListModal";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function Home() {
   // Redirect authenticated users to their dashboard if needed
@@ -27,13 +28,15 @@ export default function Home() {
             <h1 className="text-5xl font-bold">
               AI Artifact Storage & Sharing System
             </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Crates = packaged AI artifacts you can open anywhere
+            </p>
             <p className="text-xs text-gray-400 mt-1">
               Test it without creating an account.
             </p>
             <p className="text-xl text-gray-600 max-w-xl mx-auto mt-4">
-              Your personal hub for AI-generated content—store, search, and
-              seamlessly share artifacts between Claude, ChatGPT, and custom
-              agents. Access your AI artifacts anytime, anywhere.
+              One link for every AI output—store, search & share crates with
+              ChatGPT, Claude, and your own agents.
             </p>
             <p className="text-base text-gray-500 max-w-xl mx-auto mt-2">
               No account required—upload instantly and get started right away.
@@ -71,6 +74,81 @@ export default function Home() {
             <span className="font-medium">LangGraph</span>
             <span className="text-gray-300 hidden sm:block">·</span>
             <span className="font-medium">Perplexity</span>
+          </div>
+
+          {/* Security Badge Row */}
+          <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-wrap items-center justify-center gap-3 mb-6 text-sm">
+            <span className="inline-flex items-center px-3 py-1 rounded-md bg-green-50 text-green-700 border border-green-100">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+              AES-256
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+              HTTPS
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="inline-flex items-center px-3 py-1 rounded-md bg-orange-50 text-orange-700 border border-orange-100">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              7-day guest expiry
+            </span>
+            <span className="text-gray-300">•</span>
+            <span className="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-purple-700 border border-purple-100">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              Permanent for members
+            </span>
           </div>
 
           {/* Benefits Tag Line - simplified */}
@@ -642,7 +720,7 @@ export default function Home() {
                   </tr>
                   <tr className="border-t border-gray-100">
                     <td className="p-2">Storage Duration</td>
-                    <td className="p-2">30-day auto-delete</td>
+                    <td className="p-2">7-day auto-delete</td>
                     <td className="p-2 text-green-600">
                       Permanent (until deleted)
                     </td>
@@ -714,6 +792,36 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
+                  <span className="text-gray-600">500MB total storage</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-600">5 shared crates max</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   <span className="text-gray-600">
                     Securely stored until you delete them (logged in users)
                   </span>
@@ -732,7 +840,7 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-600">
-                    30-day expiry for guest uploads
+                    7-day expiry for guest uploads
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -810,7 +918,41 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-700">
-                    <strong>1-year</strong> link expiry
+                    <strong>10GB</strong> total storage
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-700">
+                    <strong>100</strong> shared crates
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-700">
+                    <strong>30-day</strong> link expiry
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -871,6 +1013,36 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
+                  <span className="text-gray-700">Full-content search</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-700">Faster MCP calls</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   <span className="text-gray-700">API access</span>
                 </li>
               </ul>
@@ -917,43 +1089,6 @@ export default function Home() {
             >
               Create Free Account
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer Info */}
-      <section className="py-8 px-4 border-t border-gray-200 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="border-t border-gray-200 pt-6 mt-2">
-            <div className="flex flex-wrap justify-center gap-8">
-              <Link
-                href="/docs"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Documentation
-              </Link>
-              <Link
-                href="#"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Status
-              </Link>
-              <Link
-                href="https://github.com/ravediamond/mcph"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                GitHub
-              </Link>
-              <Link
-                href="/privacy"
-                className="text-gray-500 hover:text-orange-600 text-sm"
-              >
-                Privacy
-              </Link>
-            </div>
-            <p className="text-gray-400 text-xs text-center mt-6">
-              © {new Date().getFullYear()} MCPH. All rights reserved.
-            </p>
           </div>
         </div>
       </section>

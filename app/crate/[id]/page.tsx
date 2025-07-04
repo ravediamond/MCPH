@@ -503,7 +503,7 @@ export default function CratePage() {
   };
 
   // Handler to reset expiry has been removed as crates no longer expire when logged in
-  // and automatically expire after 30 days when not logged in
+  // and automatically expire after 7 days when not logged in
 
   const handleDelete = async () => {
     if (

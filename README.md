@@ -24,7 +24,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
 - **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
 - **Multiple Content Types**: Store and share markdown, code, images, JSON, YAML, text, and binary files
-- **Security Features**: Private by default with optional password protection, 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
+- **Security Features**: Private by default with optional password protection, 7-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
 
 ## Quick Start
@@ -62,7 +62,7 @@ MCPH offers different capabilities depending on whether you are logged in or usi
 For anonymous users:
 
 - **Anonymous uploads** are available through AI assistants that support MCP
-- **30-day expiration** - your content will be automatically deleted after 30 days
+- **7-day expiration** - your content will be automatically deleted after 7 days
 - **Limited management** - you can't search, organize, or manage your files
 - **No MCP all tools access** - you can only use the crates_get tool to get a crate by its ID. You cannot use the other tools.
 
@@ -135,7 +135,7 @@ MCPH provides a set of powerful tools that enable you to manage your content thr
   - Output: `{ content: [ { type: 'text|image', text|data, mimeType? }, ... ] }`
   - Permission:
     - Owner can always access their crates
-    - Anonymous uploads are public by default (expire after 30 days)
+    - Anonymous uploads are public by default (expire after 7 days)
     - Password-protected crates require the password parameter
     - For binary files, directs to use `crates_get_download_link` instead
 
@@ -144,7 +144,7 @@ MCPH provides a set of powerful tools that enable you to manage your content thr
   - Output (binary): `{ uploadUrl, fileId, gcsPath, message }`
   - Output (text): `{ crate, message }`
   - Small text content is uploaded directly; large/binary files return a pre-signed upload URL
-  - Note: Anonymous uploads expire after 30 days, authenticated user uploads have no expiration
+  - Note: Anonymous uploads expire after 7 days, authenticated user uploads have no expiration
 
 - **crates_delete**: Remove unwanted crates
   - Input: `{ id: string }`
@@ -229,7 +229,7 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 ### Key Benefits
 
 - **No learning curve** - talk about files naturally
-- **Persistent storage** - files remain accessible across sessions indefinitely for authenticated users, 30 days for anonymous uploads
+- **Persistent storage** - files remain accessible across sessions indefinitely for authenticated users, 7 days for anonymous uploads
 - **Smart search** - AI finds files using keywords and context
 - **Instant sharing** - generate public links with simple requests
 - **Cross-session continuity** - reference files from previous conversations
