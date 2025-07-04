@@ -28,7 +28,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
         "• \"change the title of crate 12345 to 'Final Report'\"\n" +
         '• "add tags to crate 12345"\n' +
         '• "update the description of my crate 12345"',
-      inputSchema: UpdateCrateParams._def.schema._def.shape(),
+      inputSchema: UpdateCrateParams.shape,
     },
     async (args: z.infer<typeof UpdateCrateParams>, extra: any) => {
       const {
