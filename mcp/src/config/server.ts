@@ -26,7 +26,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
       "• \"search my crates for 'report'\" → crates_search\n" +
       "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\" → crates_search\n" +
       "• \"upload this file as a crate titled 'notes'\" → crates_upload\n" +
-      "• \"update crate 12345 with new content\" → crates_update\n" +
+      '• "update crate 12345 with new content" → crates_update\n' +
       '• "share crate 12345 publicly" → crates_share\n' +
       '• "make crate 12345 private" → crates_unshare\n' +
       '• "delete crate 12345" → crates_delete\n\n' +

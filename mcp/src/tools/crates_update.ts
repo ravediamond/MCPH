@@ -24,10 +24,10 @@ export function registerCratesUpdateTool(server: McpServer): void {
         "Allows users to iterate on content while preserving the crate ID, sharing settings, and creation timestamp.\n\n" +
         "Only the provided parameters will be updated; omitted parameters remain unchanged.\n\n" +
         "AI usage examples:\n" +
-        "• \"update crate 12345 with new content\"\n" +
+        '• "update crate 12345 with new content"\n' +
         "• \"change the title of crate 12345 to 'Final Report'\"\n" +
-        "• \"add tags to crate 12345\"\n" +
-        "• \"update the description of my crate 12345\"",
+        '• "add tags to crate 12345"\n' +
+        '• "update the description of my crate 12345"',
       inputSchema: UpdateCrateParams._def.schema._def.shape(),
     },
     async (args: z.infer<typeof UpdateCrateParams>, extra: any) => {
@@ -132,20 +132,23 @@ export function registerCratesUpdateTool(server: McpServer): void {
 
           const actualContentType = contentType || originalCrate.mimeType;
           const actualFileName = fileName || originalCrate.fileName;
-          
+
           // Create buffer from data
           const buffer = Buffer.from(data, "utf8");
-          
+
           // Update searchField for text search
-          const metaString = updateData.metadata || originalCrate.metadata
-            ? Object.entries(updateData.metadata || originalCrate.metadata || {})
-                .map(([k, v]) => `${k}: ${v}`)
-                .join(" ")
-            : "";
-          
+          const metaString =
+            updateData.metadata || originalCrate.metadata
+              ? Object.entries(
+                  updateData.metadata || originalCrate.metadata || {},
+                )
+                  .map(([k, v]) => `${k}: ${v}`)
+                  .join(" ")
+              : "";
+
           const updatedTags = updateData.tags || originalCrate.tags || [];
           const tagsString = updatedTags.join(" ");
-          
+
           const searchText = [
             updateData.title || originalCrate.title,
             updateData.description || originalCrate.description,
@@ -154,9 +157,9 @@ export function registerCratesUpdateTool(server: McpServer): void {
           ]
             .filter(Boolean)
             .join(" ");
-          
+
           updateData.searchField = searchText.toLowerCase();
-          
+
           // Use the existing crate info but with the updated file
           const crateData = await uploadCrate(
             buffer,
@@ -167,12 +170,12 @@ export function registerCratesUpdateTool(server: McpServer): void {
               id: originalCrate.id, // Preserve the ID
               ownerId: userId,
               shared: originalCrate.shared, // Preserve sharing settings
-            }
+            },
           );
-          
+
           // Log the update event
           await logEvent("crate_update", id, undefined, { userId });
-          
+
           return {
             content: [
               {
@@ -195,18 +198,26 @@ export function registerCratesUpdateTool(server: McpServer): void {
               isError: true,
             };
           }
-          
+
           // Update searchField for text search if metadata was changed
-          if (updateData.title || updateData.description || updateData.tags || updateData.metadata) {
-            const metaString = updateData.metadata || originalCrate.metadata
-              ? Object.entries(updateData.metadata || originalCrate.metadata || {})
-                  .map(([k, v]) => `${k}: ${v}`)
-                  .join(" ")
-              : "";
-            
+          if (
+            updateData.title ||
+            updateData.description ||
+            updateData.tags ||
+            updateData.metadata
+          ) {
+            const metaString =
+              updateData.metadata || originalCrate.metadata
+                ? Object.entries(
+                    updateData.metadata || originalCrate.metadata || {},
+                  )
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(" ")
+                : "";
+
             const updatedTags = updateData.tags || originalCrate.tags || [];
             const tagsString = updatedTags.join(" ");
-            
+
             const searchText = [
               updateData.title || originalCrate.title,
               updateData.description || originalCrate.description,
@@ -215,16 +226,16 @@ export function registerCratesUpdateTool(server: McpServer): void {
             ]
               .filter(Boolean)
               .join(" ");
-            
+
             updateData.searchField = searchText.toLowerCase();
           }
-          
+
           // Update the crate metadata in Firestore
           const updatedCrate = await updateCrateMetadata(id, updateData);
-          
+
           // Log the update event
           await logEvent("crate_update", id, undefined, { userId });
-          
+
           return {
             content: [
               {
@@ -247,6 +258,6 @@ export function registerCratesUpdateTool(server: McpServer): void {
           isError: true,
         };
       }
-    }
+    },
   );
 }

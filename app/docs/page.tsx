@@ -983,9 +983,9 @@ export default function DocsPage() {
             <p className="text-sm text-gray-600 mt-2">
               Combines vector embeddings for semantic understanding with
               text-based search across titles, descriptions, and tags. Features
-              structured tag filtering and tag hierarchy
-              understanding. Results are ranked by relevance with boosting for
-              conventional tag patterns.
+              structured tag filtering and tag hierarchy understanding. Results
+              are ranked by relevance with boosting for conventional tag
+              patterns.
             </p>
             <p className="text-sm bg-gray-50 p-2 rounded border border-gray-200 mt-2">
               <span className="font-semibold">Advanced Search Tips:</span>
