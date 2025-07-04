@@ -578,7 +578,7 @@ export default function FileUpload({
               <br />
               <span className="text-xs text-amber-600">
                 Download link expires in 24 hours.{" "}
-                {!user && "Anonymous crates expire after 30 days."}
+                {!user && "Anonymous crates expire after 7 days."}
               </span>
             </p>
           </div>
@@ -817,7 +817,7 @@ export default function FileUpload({
           <p className="text-xs text-gray-500 text-center mt-4">
             {!user ? (
               <>
-                Anonymous crates auto-delete after 30 days. Sign in to keep your
+                Anonymous crates auto-delete after 7 days. Sign in to keep your
                 crates permanently. Download links expire after 24 hours.
               </>
             ) : (

@@ -24,7 +24,7 @@ export default function TermsPage() {
             </li>
             <li>
               Crates are deleted automatically after an expiration time
-              (default: 30 days).
+              (default: 7 days).
             </li>
             <li>
               We can remove content and block users who violate these terms.
@@ -65,10 +65,10 @@ export default function TermsPage() {
             <li>No account or registration required</li>
             <li>
               Crates are automatically deleted after a set expiration period
-              (default: 30 days)
+              (default: 7 days)
             </li>
-            <li>Maximum file size limit of 500MB per upload</li>
-            <li>Maximum expiration period of 30 days</li>
+            <li>Maximum file size limit of 10MB per upload</li>
+            <li>Maximum expiration period of 7 days</li>
             <li>
               Rate limits to prevent abuse (20 uploads per 10 minutes per IP)
             </li>
@@ -125,7 +125,7 @@ export default function TermsPage() {
             You retain all ownership rights to the crates you upload. By
             uploading crates to MCPH, you grant us a limited license to store
             and make your crates available for download. For guest users, crates
-            will be automatically deleted after 30 days. For logged-in users,
+            will be automatically deleted after 7 days. For logged-in users,
             crates are stored until you delete them.
           </p>
 

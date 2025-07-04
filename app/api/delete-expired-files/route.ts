@@ -24,14 +24,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Calculate expiration date for all crates (30 days)
+    // Calculate expiration date for all crates (7 days)
     const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() - 30);
+    expirationDate.setDate(expirationDate.getDate() - 7);
 
-    console.log("Cleaning up expired crates older than 30 days...");
+    console.log("Cleaning up expired crates older than 7 days...");
     console.log("Expiration date:", expirationDate);
 
-    // Query for all expired crates (older than 30 days)
+    // Query for all expired crates (older than 7 days)
     const snapshot = await firestore
       .collection("crates")
       .where("createdAt", "<", expirationDate)

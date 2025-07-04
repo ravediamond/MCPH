@@ -192,7 +192,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <b>Persistent storage</b> - files remain accessible across
-                  sessions indefinitely for authenticated users, 30 days for
+                  sessions indefinitely for authenticated users, 7 days for
                   anonymous uploads
                 </li>
                 <li>
@@ -343,7 +343,7 @@ export default function DocsPage() {
                 <li>Rich metadata tagging for better organization</li>
                 <li>Powerful semantic search for instant retrieval</li>
                 <li>
-                  30-day storage for guest users; permanent storage for
+                  7-day storage for guest users; permanent storage for
                   registered users
                 </li>
                 <li>
@@ -760,8 +760,8 @@ export default function DocsPage() {
                 that support MCP
               </li>
               <li>
-                <b>30-day expiration</b> - your content will be automatically
-                deleted after 30 days
+                <b>7-day expiration</b> - your content will be automatically
+                deleted after 7 days
               </li>
               <li>
                 <b>Limited management</b> - you can't search, organize, or
@@ -835,7 +835,7 @@ export default function DocsPage() {
                 custom AI applications, etc.)
               </li>
               <li>
-                Anonymous uploads are stored for 30 days, while authenticated
+                Anonymous uploads are stored for 7 days, while authenticated
                 user uploads have no expiration
               </li>
               <li>All generated download links expire in 24 hours</li>

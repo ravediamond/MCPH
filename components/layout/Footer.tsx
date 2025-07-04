@@ -21,6 +21,12 @@ export default function Footer() {
               API Docs
             </Link>
             <Link
+              href="/security"
+              className="text-gray-600 hover:text-primary-500 transition-colors"
+            >
+              Security
+            </Link>
+            <Link
               href="/about"
               className="text-gray-600 hover:text-primary-500 transition-colors"
             >
