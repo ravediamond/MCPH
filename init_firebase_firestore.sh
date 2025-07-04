@@ -184,6 +184,15 @@ gcloud firestore indexes composite create \
   --field-config="field-path=isPublic,order=DESCENDING" \
   --field-config="field-path=createdAt,order=ASCENDING"
 
+# Add index for crates search (ownerId + searchField + __name__)
+echo "--- Creating composite index for crates search (ownerId + searchField + __name__) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=ownerId,order=ASCENDING" \
+  --field-config="field-path=searchField,order=ASCENDING" \
+  --field-config="field-path=__name__,order=ASCENDING"
+
 echo "--- Creating vector index for crates.embedding ---"
 gcloud firestore indexes composite create \
   --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \

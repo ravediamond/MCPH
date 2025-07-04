@@ -40,54 +40,18 @@ export function registerCratesDeleteTool(server: McpServer): void {
           throw new Error("You don't have permission to delete this crate");
         }
 
-        // Use elicitation to ask for confirmation before deletion
-        const confirmResult = await server.server.elicitInput({
-          message: `You're about to permanently delete crate "${crate.fileName || crate.title || id}". This action cannot be undone.`,
-          requestedSchema: {
-            type: "object",
-            properties: {
-              confirmDelete: {
-                type: "boolean",
-                title: "Confirm Deletion",
-                description: "Are you sure you want to delete this crate?",
-              },
-              deleteReason: {
-                type: "string",
-                title: "Reason (optional)",
-                description: "Optional: Reason for deletion",
-              },
-            },
-            required: ["confirmDelete"],
-          },
-        });
-
-        // Check if the user confirmed deletion
-        if (
-          confirmResult.action !== "accept" ||
-          !confirmResult.content?.confirmDelete
-        ) {
-          return {
-            content: [{ type: "text", text: "Deletion cancelled." }],
-          };
-        }
-
-        // User confirmed, proceed with deletion
+        // Proceed with deletion without confirmation
         const result = await deleteCrate(id, userId);
 
         if (!result) {
           throw new Error("Failed to delete crate");
         }
 
-        // Include the optional reason if provided
-        const reason = confirmResult.content.deleteReason
-          ? `\nReason: ${confirmResult.content.deleteReason}`
-          : "";
-
         return {
           content: [
             {
               type: "text",
-              text: `Crate ${id} has been successfully deleted.${reason}`,
+              text: `Crate ${id} has been successfully deleted.`,
             },
           ],
           id,
