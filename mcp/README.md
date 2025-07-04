@@ -1,10 +1,10 @@
 # MCP Server
 
-This is the Model Context Protocol server for MCPH, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPH services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 7 days, while authenticated user uploads have no expiration.
+This is the Model Context Protocol server for MCPH, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPH services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
 
 ## What is MCPH?
 
-MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 7 days, while content from authenticated users is stored indefinitely.
+MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
 ## Core MCP Tools
 
@@ -20,7 +20,7 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Output: Content of the crate (text, image, or download info)
   - Permissions:
     - Owner can always access
-    - Anonymous uploads are public by default (expire after 7 days)
+    - Anonymous uploads are public by default (expire after 30 days)
     - Password-protected crates require a password
   - Note: Will return an error if the crate has expired
 
@@ -32,12 +32,11 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Note: Will return an error if the crate has expired
 
 - **crates_search**: Search for crates with advanced filtering.
-  - Input: `{ query: string, tags?: string[], scope?: string, limit?: number }`
+  - Input: `{ query: string, tags?: string[], limit?: number }`
   - Output: List of matching crates with relevance scores
   - Features:
     - Text search across all crate metadata
     - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
-    - Project scoping for faster, focused searches (e.g., `scope: "project:mobile-app"`)
     - Tag hierarchy understanding with relevance boosting for conventional tags
   - Permissions: Requires authentication
 
@@ -48,7 +47,13 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Output (text): `{ crate: object }`
   - Output (binary): `{ uploadUrl: string, crateId: string }`
   - Permissions: Requires authentication (except anonymous uploads)
-  - Note: Anonymous uploads expire after 7 days, authenticated user uploads have no expiration
+  - Note: Anonymous uploads expire after 30 days, authenticated user uploads have no expiration
+
+- **crates_update**: Update an existing crate.
+  - Input: `{ id: string, title?: string, description?: string, data?: string, ... }`
+  - Output: `{ crate: object }`
+  - Permissions: Owner only
+  - Note: Updates content, metadata, or organizational information while preserving the crate ID, sharing settings, and creation timestamp
 
 - **crates_delete**: Delete a crate permanently.
   - Input: `{ id: string }`

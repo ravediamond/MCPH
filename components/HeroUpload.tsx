@@ -97,7 +97,7 @@ export default function HeroUpload() {
 
           // Anonymous user success message
           toast.success(
-            "Link generated! Anonymous uploads auto-delete after 7 days. Sign in to keep your crates permanently and access more features →",
+            "Link generated! Anonymous uploads auto-delete after 30 days. Sign in to keep your crates permanently and access more features →",
             {
               duration: 5000,
               icon: "🔗",
@@ -112,7 +112,7 @@ export default function HeroUpload() {
         } else {
           // Authenticated user success message
           toast.success(
-            "Link generated! Download link expires in 24 hours. Crate available for 7 days. View all your uploads in your dashboard.",
+            "Link generated! Download link expires in 24 hours. Crate stored indefinitely. View all your uploads in your dashboard.",
             {
               duration: 4000,
               icon: "✓",
@@ -296,7 +296,7 @@ export default function HeroUpload() {
                               • Download links expire in 24 hours
                             </p>
                             <p>
-                              • Files auto-delete after 7 days (guest uploads)
+                              • Files auto-delete after 30 days (guest uploads)
                             </p>
                           </div>
                         </div>
@@ -421,7 +421,7 @@ export default function HeroUpload() {
                   Download link expires in 24 hours.{" "}
                   {user
                     ? "Your crates are stored until you delete them."
-                    : "Crate auto-deletes after 7 days."}{" "}
+                    : "Crate auto-deletes after 30 days."}{" "}
                   <a href="/login" className="font-medium underline">
                     Create an account
                   </a>{" "}

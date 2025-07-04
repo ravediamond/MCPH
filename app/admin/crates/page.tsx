@@ -308,7 +308,7 @@ const AdminCratesPage: React.FC = () => {
   const cleanupExpiredCrates = async () => {
     if (
       !confirm(
-        "Are you sure you want to clean up expired crates? This will delete:\n\n- Private crates older than 7 days\n- Public crates older than 90 days",
+        "Are you sure you want to clean up expired crates? This will delete:\n\n- Private crates older than 30 days\n- Public crates older than 90 days",
       )
     ) {
       return;

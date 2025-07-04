@@ -835,7 +835,7 @@ export default function DocsPage() {
                 custom AI applications, etc.)
               </li>
               <li>
-                Anonymous uploads are stored for 7 days, while authenticated
+                Anonymous uploads are stored for 30 days, while authenticated
                 user uploads have no expiration
               </li>
               <li>All generated download links expire in 24 hours</li>
@@ -983,7 +983,7 @@ export default function DocsPage() {
             <p className="text-sm text-gray-600 mt-2">
               Combines vector embeddings for semantic understanding with
               text-based search across titles, descriptions, and tags. Features
-              structured tag filtering, project scoping, and tag hierarchy
+              structured tag filtering and tag hierarchy
               understanding. Results are ranked by relevance with boosting for
               conventional tag patterns.
             </p>
@@ -993,8 +993,6 @@ export default function DocsPage() {
                 tags: ["project:website", "status:final"]
               </code>{" "}
               for precise filtering
-              <br />• Use <code>scope: "project:mobile-app"</code> for focused
-              project searches
               <br />• Conventional tags like <code>project:</code>,{" "}
               <code>type:</code>, <code>status:</code> receive relevance
               boosting
