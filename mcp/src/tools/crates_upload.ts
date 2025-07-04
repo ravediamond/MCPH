@@ -21,12 +21,12 @@ export function registerCratesUploadTool(server: McpServer): void {
       description:
         "Uploads a new crate with content, metadata, and organizational tags. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
         "TAGGING BEST PRACTICES for AI tools:\n" +
-        "• Use project tags: 'project:website-redesign', 'project:chatbot-v2'\n" +
-        "• Add type tags: 'type:requirements', 'type:code', 'type:data', 'type:notes'\n" +
-        "• Include context tags: 'context:user-research', 'context:technical-specs'\n" +
-        "• Add workflow tags: 'status:draft', 'status:final', 'priority:high'\n" +
-        "• Use component tags for code: 'component:auth', 'component:ui'\n\n" +
-        "Example tags: ['project:ecommerce-site', 'type:requirements', 'context:user-stories', 'status:approved']\n\n" +
+        '• Use project tags: "project:website-redesign", "project:chatbot-v2"\n' +
+        '• Add type tags: "type:requirements", "type:code", "type:data", "type:notes"\n' +
+        '• Include context tags: "context:user-research", "context:technical-specs"\n' +
+        '• Add workflow tags: "status:draft", "status:final", "priority:high"\n' +
+        '• Use component tags for code: "component:auth", "component:ui"\n\n' +
+        'Example tags: ["project:ecommerce-site", "type:requirements", "context:user-stories", "status:approved"]\n\n' +
         "AI usage example:\n" +
         "• \"upload this file as a crate titled 'notes'\"",
       inputSchema: UploadCrateParams._def.schema._def.shape(),

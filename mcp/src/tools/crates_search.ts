@@ -15,7 +15,7 @@ export function registerCratesSearchTool(server: McpServer): void {
         "Searches your crates using hybrid semantic + text search across title, description, tags, and metadata.\n\n" +
         "SEARCH TIPS for AI tools:\n" +
         "• Search by project: 'project:website-redesign' using tags parameter\n" +
-        "• Combine tags: 'project:chatbot type:code' or use tags parameter\n" +
+        '• Combine tags: "project:chatbot type:code" or use tags parameter\n' +
         "• Find by context: 'context:user-research'\n" +
         "• Search workflow: 'status:final priority:high'\n\n" +
         "The search uses:\n" +
@@ -25,7 +25,7 @@ export function registerCratesSearchTool(server: McpServer): void {
         "• Results are ranked by relevance and deduplicated\n\n" +
         "AI usage examples:\n" +
         "• \"search my crates for 'report'\"\n" +
-        "• \"search my crates with tags ['project:website', 'status:final'] for 'authentication'\"",
+        '• "search my crates with tags ["project:website", "status:final"] for \'authentication\'"',
       inputSchema: SearchParams.shape,
     },
     async (
