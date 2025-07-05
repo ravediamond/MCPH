@@ -14,11 +14,9 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
-import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { CrateCategory } from "../shared/types/crate";
-import TagInput from "./ui/TagInput";
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 const API_BASE_URL = "";
 
@@ -119,8 +117,6 @@ export default function FileUpload({
 }: FileUploadProps) {
   // Get current user from auth context
   const { user } = useAuth();
-  // Get anonymous upload transition hook
-  const { storeTempCrateId, transferModal } = useAnonymousUploadTransition();
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
@@ -134,9 +130,9 @@ export default function FileUpload({
   const [urlCopied, setUrlCopied] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagsInput, setTagsInput] = useState<string>("");
   const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
-  const [isShared, setIsShared] = useState<boolean>(true); // Default to shared
+  const [isShared, setIsShared] = useState<boolean>(false); // Default to private
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -166,47 +162,52 @@ export default function FileUpload({
   };
 
   // Dropzone setup
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const selectedFile = acceptedFiles[0];
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (!acceptedFiles || acceptedFiles.length === 0) return;
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error(
-        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
-      );
-      return;
-    }
+      const selectedFile = acceptedFiles[0];
 
-    setFile(selectedFile);
-    setUploadedFile(null); // Reset previous upload state
-
-    // Automatically use the filename as the title (without extension)
-    const fileNameWithoutExtension = selectedFile.name.replace(
-      /\\.[^/.]+$/,
-      "",
-    );
-    setTitle(fileNameWithoutExtension);
-
-    // Automatically detect crate type based on content type or extension
-    let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
-
-    // First check MIME type
-    if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
-      detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
-    } else {
-      // Then check file extension
-      const fileExtension = selectedFile.name
-        .match(/\\.[^/.]+$/)?.[0]
-        .toLowerCase();
-      if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
-        detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error(
+          `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
+        );
+        return;
       }
-    }
 
-    // Set the detected file type
-    setFileType(detectedCategory);
-  }, []); // Keep dependencies minimal, assuming MIME_TYPE_TO_CATEGORY and EXTENSION_TO_CATEGORY are stable
+      setFile(selectedFile);
+      setUploadedFile(null); // Reset previous upload state
 
-  const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
+      // Automatically use the filename as the title (without extension)
+      const fileNameWithoutExtension = selectedFile.name.replace(
+        /\\.[^/.]+$/,
+        "",
+      );
+      setTitle(fileNameWithoutExtension);
+
+      // Automatically detect crate type based on content type or extension
+      let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
+
+      // First check MIME type
+      if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
+        detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
+      } else {
+        // Then check file extension
+        const fileExtension = selectedFile.name
+          .match(/\\.[^/.]+$/)?.[0]
+          .toLowerCase();
+        if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
+          detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
+        }
+      }
+
+      // Set the detected file type
+      setFileType(detectedCategory);
+    },
+    [formatBytes],
+  ); // Add formatBytes to dependencies
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
     noClick: false,
@@ -214,6 +215,8 @@ export default function FileUpload({
 
   // Add an effect to show the full-width highlight when dragging over the form
   useEffect(() => {
+    if (!formRef.current) return;
+
     const handleFormDragOver = (e: DragEvent) => {
       e.preventDefault();
       if (!formRef.current) return;
@@ -232,17 +235,16 @@ export default function FileUpload({
     };
 
     const formElement = formRef.current;
-    if (formElement) {
-      formElement.addEventListener("dragover", handleFormDragOver);
-      formElement.addEventListener("dragleave", handleFormDragLeave);
-      formElement.addEventListener("drop", handleFormDrop);
 
-      return () => {
-        formElement.removeEventListener("dragover", handleFormDragOver);
-        formElement.removeEventListener("dragleave", handleFormDragLeave);
-        formElement.removeEventListener("drop", handleFormDrop);
-      };
-    }
+    formElement.addEventListener("dragover", handleFormDragOver);
+    formElement.addEventListener("dragleave", handleFormDragLeave);
+    formElement.addEventListener("drop", handleFormDrop);
+
+    return () => {
+      formElement.removeEventListener("dragover", handleFormDragOver);
+      formElement.removeEventListener("dragleave", handleFormDragLeave);
+      formElement.removeEventListener("drop", handleFormDrop);
+    };
   }, []);
 
   // Handle crate upload using the appropriate endpoint based on crate type
@@ -260,25 +262,6 @@ export default function FileUpload({
     }
 
     setIsUploading(true);
-    setUploadProgress(0);
-
-    // Set up a more predictable progress reporting
-    let progressStep = 0;
-    const updateProgressInterval = setInterval(() => {
-      // Use fixed steps for better visual feedback
-      if (progressStep < 3) {
-        setUploadProgress(10); // Starting
-      } else if (progressStep < 6) {
-        setUploadProgress(25); // Processing
-      } else if (progressStep < 10) {
-        setUploadProgress(50); // Halfway
-      } else if (progressStep < 15) {
-        setUploadProgress(75); // Almost there
-      } else {
-        setUploadProgress(90); // Final stage before completion
-      }
-      progressStep++;
-    }, 500);
 
     try {
       let uploadResponse;
@@ -286,12 +269,17 @@ export default function FileUpload({
 
       // Get auth token if user is logged in
       let authToken = null;
-      if (user) {
-        try {
+      try {
+        if (user) {
           authToken = await user.getIdToken();
-        } catch (error) {
-          console.error("Error getting auth token:", error);
+        } else {
+          // Handle not logged in case
+          toast.error("You need to be logged in to upload files");
+          setIsUploading(false);
+          return;
         }
+      } catch (error) {
+        console.error("Error getting auth token:", error);
       }
 
       // Always use direct-upload endpoint for all file types
@@ -304,7 +292,11 @@ export default function FileUpload({
       formData.append("isShared", isShared ? "true" : "false");
 
       // Add tags if present
-      if (tags.length > 0) {
+      if (tagsInput.trim()) {
+        const tags = tagsInput
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag);
         formData.append("tags", JSON.stringify(tags));
       }
 
@@ -331,9 +323,6 @@ export default function FileUpload({
         throw new Error(errorDetail);
       }
 
-      clearInterval(updateProgressInterval);
-      setUploadProgress(100); // Immediately set to 100% when upload completes
-
       uploadedFileData = await uploadResponse.json();
 
       // Use the full URL for the download link
@@ -349,22 +338,15 @@ export default function FileUpload({
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
-        tags: uploadedFileData.tags || tags, // Use tags from response or local state
+        tags:
+          uploadedFileData.tags ||
+          (tagsInput.trim()
+            ? tagsInput
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag)
+            : []), // Use tags from response or local state
       });
-
-      // Auto-copy the URL to clipboard
-      navigator.clipboard
-        .writeText(crateUrl)
-        .then(() => {
-          setUrlCopied(true);
-          toast.success("Link copied to clipboard!");
-
-          // Reset copy status after 3 seconds
-          setTimeout(() => setUrlCopied(false), 3000);
-        })
-        .catch((err) => {
-          console.error("Failed to copy: ", err);
-        });
 
       // Reset form
       if (formRef.current) {
@@ -374,14 +356,9 @@ export default function FileUpload({
       // Reset state
       setTitle("");
       setDescription("");
-      setTags([]);
+      setTagsInput("");
 
       toast.success("Your file has been uploaded successfully!");
-
-      // If user is not logged in, store the crate ID for later transfer
-      if (!user && uploadedFileData.fileId) {
-        storeTempCrateId(uploadedFileData.fileId);
-      }
 
       // Call the onUploadSuccess callback if provided
       if (onUploadSuccess) {
@@ -395,11 +372,17 @@ export default function FileUpload({
           size: file.size,
           downloadUrl: crateUrl,
           uploadedAt: new Date().toISOString(),
-          tags: uploadedFileData.tags || tags, // Use tags from response or local state
+          tags:
+            uploadedFileData.tags ||
+            (tagsInput.trim()
+              ? tagsInput
+                  .split(",")
+                  .map((tag) => tag.trim())
+                  .filter((tag) => tag)
+              : []), // Use tags from response or local state
         });
       }
     } catch (error) {
-      clearInterval(updateProgressInterval);
       setIsUploading(false);
 
       const errorMessage =
@@ -436,8 +419,18 @@ export default function FileUpload({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {transferModal}
-      {uploadedFile ? (
+      {!user ? (
+        // Show message if not authenticated
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-red-600">
+            Authentication Required
+          </h3>
+          <p className="text-gray-700 mb-4">
+            You need to be logged in to upload crates. Please sign in to
+            continue.
+          </p>
+        </div>
+      ) : uploadedFile ? (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-green-600 flex items-center">
@@ -488,6 +481,12 @@ export default function FileUpload({
                   <span className="block md:inline">
                     Uploaded: {formatDate(uploadedFile.uploadedAt)}
                   </span>
+                  {" • "}
+                  <span
+                    className={`${isShared ? "text-green-600" : "text-amber-600"} font-medium`}
+                  >
+                    {isShared ? "Public" : "Private"}
+                  </span>
                 </p>
               </div>
 
@@ -524,16 +523,6 @@ export default function FileUpload({
                       </>
                     )}
                   </button>
-                  <a
-                    href={uploadedFile.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 bg-gray-100 rounded text-gray-700 hover:bg-gray-200 hover:text-[#ff7a32] flex items-center"
-                    title="Open in new tab"
-                    aria-label="Open link in new tab"
-                  >
-                    <FaExternalLinkAlt />
-                  </a>
                 </div>
               </div>
 
@@ -544,41 +533,14 @@ export default function FileUpload({
                 >
                   Download Crate
                 </a>
-                <button
-                  onClick={() => setUploadedFile(null)}
-                  className="inline-block px-4 py-2 bg-[#ff7a32] hover:bg-[#e96d2d] text-center text-white rounded-md shadow transition-colors"
-                >
-                  Upload Another Crate
-                </button>
-              </div>
-
-              {/* MCP CLI snippet */}
-              <div className="mt-5 bg-gray-800 rounded-md p-3 text-xs">
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-400">MCP CLI</span>
-                  <button
-                    onClick={() => {
-                      const cliCommand = `npx mcp-remote crates/get ${uploadedFile.id}`;
-                      navigator.clipboard.writeText(cliCommand);
-                      toast.success("CLI command copied!");
-                    }}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaCopy size={12} />
-                  </button>
-                </div>
-                <div className="font-mono text-green-400">
-                  $ npx mcp-remote crates/get {uploadedFile.id}
-                </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-500 text-center mt-4">
-              Give this link to an agent or teammate—no login needed.
+              Give this link to an agent or teammate.
               <br />
               <span className="text-xs text-amber-600">
-                Download link expires in 24 hours.{" "}
-                {!user && "Anonymous crates expire after 30 days."}
+                Download link expires in 24 hours.
               </span>
             </p>
           </div>
@@ -648,28 +610,6 @@ export default function FileUpload({
                       </span>
                     )}
                   </p>
-
-                  {isUploading && (
-                    <div className="mt-2">
-                      <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full transition-all duration-300 ease-in-out rounded-full"
-                          style={{
-                            width: `${uploadProgress}%`,
-                            backgroundColor:
-                              uploadProgress < 30
-                                ? "#93c5fd" // light blue
-                                : uploadProgress < 70
-                                  ? "#60a5fa" // medium blue
-                                  : "#ff7a32", // orange
-                          }}
-                        ></div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {Math.round(uploadProgress)}% uploaded
-                      </p>
-                    </div>
-                  )}
                 </div>
                 <div className="ml-4 mr-2">
                   <label
@@ -761,37 +701,51 @@ export default function FileUpload({
                 </label>
                 <div className="flex items-center space-x-2">
                   <div className="flex-grow">
-                    <TagInput
-                      tags={tags}
-                      onChange={setTags}
+                    <input
+                      type="text"
+                      value={tagsInput}
+                      onChange={(e) => setTagsInput(e.target.value)}
+                      placeholder="Enter comma-separated tags (e.g., work, report, presentation)"
+                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
                       disabled={isUploading}
-                      placeholder="Add tags (e.g., project:work, status:active)"
-                      suggestions={[
-                        "project:work",
-                        "project:personal",
-                        "status:active",
-                        "status:review",
-                        "status:archived",
-                        "priority:high",
-                        "priority:medium",
-                        "priority:low",
-                      ]}
+                      autoComplete="off"
+                      aria-label="Crate tags"
                     />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate tags with commas
+                </p>
+              </div>
+
+              {/* Privacy Settings */}
+              <div className="mb-4">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="isPublic"
+                      type="checkbox"
+                      checked={isShared}
+                      onChange={(e) => setIsShared(e.target.checked)}
+                      className="focus:ring-[#ff7a32] h-4 w-4 text-[#ff7a32] border-gray-300 rounded"
+                      disabled={isUploading}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label
+                      htmlFor="isPublic"
+                      className="font-medium text-gray-700"
+                    >
+                      Make this crate public
+                    </label>
+                    <p className="text-gray-500">
+                      When enabled, anyone with the link can access this crate.
+                      When disabled, only you can access it.
+                    </p>
                   </div>
                 </div>
               </div>
             </>
-          )}
-
-          {isUploading && (
-            <div className="mb-4">
-              <div className="h-2 bg-gray-200 rounded-full mb-1 overflow-hidden">
-                <div
-                  className="h-full bg-[#ff7a32] rounded-full transition-all duration-300 ease-in-out"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-            </div>
           )}
 
           <button
@@ -815,17 +769,9 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            {!user ? (
-              <>
-                Anonymous crates auto-delete after 30 days. Sign in to keep your
-                crates permanently. Download links expire after 24 hours.
-              </>
-            ) : (
-              <>
-                Your crates are stored until you delete them. Download links
-                expire after 24 hours.
-              </>
-            )}
+            Your crates are stored until you delete them.{" "}
+            {isShared ? "Public crates" : "Download links"} expire after 24
+            hours.
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
             By uploading a crate, you agree to our Terms of Service and Privacy

@@ -86,7 +86,9 @@ export default function UploadPage() {
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
-                      <span>Auto-delete after 30 days (guest users)</span>
+                      <span>
+                        Private by default, with option to make public
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-500 font-bold mr-2">•</span>
@@ -121,6 +123,10 @@ export default function UploadPage() {
                   <li>
                     <b>JSON:</b> .json crates, shown as formatted code or parsed
                     data.
+                  </li>
+                  <li>
+                    <b>Text:</b> .txt crates, displayed as plain text without
+                    formatting or syntax highlighting.
                   </li>
                   <li>
                     <b>Image:</b> Common image formats (PNG, JPG, GIF, SVG),
