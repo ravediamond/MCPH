@@ -118,23 +118,6 @@ export default function FileUpload({
   // Get current user from auth context
   const { user } = useAuth();
 
-  // Redirect to login if user is not authenticated
-  if (!user) {
-    return (
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-xl font-semibold mb-4 text-red-600">
-            Authentication Required
-          </h3>
-          <p className="text-gray-700 mb-4">
-            You need to be logged in to upload crates. Please sign in to
-            continue.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -149,7 +132,7 @@ export default function FileUpload({
   const [description, setDescription] = useState<string>("");
   const [tagsInput, setTagsInput] = useState<string>("");
   const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
-  const [isShared, setIsShared] = useState<boolean>(true); // Default to shared
+  const [isShared, setIsShared] = useState<boolean>(false); // Default to private
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -179,47 +162,52 @@ export default function FileUpload({
   };
 
   // Dropzone setup
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const selectedFile = acceptedFiles[0];
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (!acceptedFiles || acceptedFiles.length === 0) return;
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error(
-        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
-      );
-      return;
-    }
+      const selectedFile = acceptedFiles[0];
 
-    setFile(selectedFile);
-    setUploadedFile(null); // Reset previous upload state
-
-    // Automatically use the filename as the title (without extension)
-    const fileNameWithoutExtension = selectedFile.name.replace(
-      /\\.[^/.]+$/,
-      "",
-    );
-    setTitle(fileNameWithoutExtension);
-
-    // Automatically detect crate type based on content type or extension
-    let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
-
-    // First check MIME type
-    if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
-      detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
-    } else {
-      // Then check file extension
-      const fileExtension = selectedFile.name
-        .match(/\\.[^/.]+$/)?.[0]
-        .toLowerCase();
-      if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
-        detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error(
+          `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
+        );
+        return;
       }
-    }
 
-    // Set the detected file type
-    setFileType(detectedCategory);
-  }, []); // Keep dependencies minimal, assuming MIME_TYPE_TO_CATEGORY and EXTENSION_TO_CATEGORY are stable
+      setFile(selectedFile);
+      setUploadedFile(null); // Reset previous upload state
 
-  const { getRootProps, getInputProps, isDragActive, rootRef } = useDropzone({
+      // Automatically use the filename as the title (without extension)
+      const fileNameWithoutExtension = selectedFile.name.replace(
+        /\\.[^/.]+$/,
+        "",
+      );
+      setTitle(fileNameWithoutExtension);
+
+      // Automatically detect crate type based on content type or extension
+      let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
+
+      // First check MIME type
+      if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
+        detectedCategory = MIME_TYPE_TO_CATEGORY[selectedFile.type];
+      } else {
+        // Then check file extension
+        const fileExtension = selectedFile.name
+          .match(/\\.[^/.]+$/)?.[0]
+          .toLowerCase();
+        if (fileExtension && EXTENSION_TO_CATEGORY[fileExtension]) {
+          detectedCategory = EXTENSION_TO_CATEGORY[fileExtension];
+        }
+      }
+
+      // Set the detected file type
+      setFileType(detectedCategory);
+    },
+    [formatBytes],
+  ); // Add formatBytes to dependencies
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
     noClick: false,
@@ -227,6 +215,8 @@ export default function FileUpload({
 
   // Add an effect to show the full-width highlight when dragging over the form
   useEffect(() => {
+    if (!formRef.current) return;
+
     const handleFormDragOver = (e: DragEvent) => {
       e.preventDefault();
       if (!formRef.current) return;
@@ -245,17 +235,16 @@ export default function FileUpload({
     };
 
     const formElement = formRef.current;
-    if (formElement) {
-      formElement.addEventListener("dragover", handleFormDragOver);
-      formElement.addEventListener("dragleave", handleFormDragLeave);
-      formElement.addEventListener("drop", handleFormDrop);
 
-      return () => {
-        formElement.removeEventListener("dragover", handleFormDragOver);
-        formElement.removeEventListener("dragleave", handleFormDragLeave);
-        formElement.removeEventListener("drop", handleFormDrop);
-      };
-    }
+    formElement.addEventListener("dragover", handleFormDragOver);
+    formElement.addEventListener("dragleave", handleFormDragLeave);
+    formElement.addEventListener("drop", handleFormDrop);
+
+    return () => {
+      formElement.removeEventListener("dragover", handleFormDragOver);
+      formElement.removeEventListener("dragleave", handleFormDragLeave);
+      formElement.removeEventListener("drop", handleFormDrop);
+    };
   }, []);
 
   // Handle crate upload using the appropriate endpoint based on crate type
@@ -281,7 +270,14 @@ export default function FileUpload({
       // Get auth token if user is logged in
       let authToken = null;
       try {
-        authToken = await user.getIdToken();
+        if (user) {
+          authToken = await user.getIdToken();
+        } else {
+          // Handle not logged in case
+          toast.error("You need to be logged in to upload files");
+          setIsUploading(false);
+          return;
+        }
       } catch (error) {
         console.error("Error getting auth token:", error);
       }
@@ -304,7 +300,9 @@ export default function FileUpload({
         formData.append("tags", JSON.stringify(tags));
       }
 
-      formData.append("userId", user.uid);
+      if (user) {
+        formData.append("userId", user.uid);
+      }
 
       uploadResponse = await fetch("/api/uploads/direct-upload", {
         method: "POST",
@@ -421,7 +419,18 @@ export default function FileUpload({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {uploadedFile ? (
+      {!user ? (
+        // Show message if not authenticated
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-red-600">
+            Authentication Required
+          </h3>
+          <p className="text-gray-700 mb-4">
+            You need to be logged in to upload crates. Please sign in to
+            continue.
+          </p>
+        </div>
+      ) : uploadedFile ? (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-green-600 flex items-center">
@@ -471,6 +480,12 @@ export default function FileUpload({
                 <p className="text-sm text-gray-600">
                   <span className="block md:inline">
                     Uploaded: {formatDate(uploadedFile.uploadedAt)}
+                  </span>
+                  {" • "}
+                  <span
+                    className={`${isShared ? "text-green-600" : "text-amber-600"} font-medium`}
+                  >
+                    {isShared ? "Public" : "Private"}
                   </span>
                 </p>
               </div>
@@ -702,6 +717,34 @@ export default function FileUpload({
                   Separate tags with commas
                 </p>
               </div>
+
+              {/* Privacy Settings */}
+              <div className="mb-4">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="isPublic"
+                      type="checkbox"
+                      checked={isShared}
+                      onChange={(e) => setIsShared(e.target.checked)}
+                      className="focus:ring-[#ff7a32] h-4 w-4 text-[#ff7a32] border-gray-300 rounded"
+                      disabled={isUploading}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label
+                      htmlFor="isPublic"
+                      className="font-medium text-gray-700"
+                    >
+                      Make this crate public
+                    </label>
+                    <p className="text-gray-500">
+                      When enabled, anyone with the link can access this crate.
+                      When disabled, only you can access it.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
@@ -726,8 +769,9 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            Your crates are stored until you delete them. Download links expire
-            after 24 hours.
+            Your crates are stored until you delete them.{" "}
+            {isShared ? "Public crates" : "Download links"} expire after 24
+            hours.
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
             By uploading a crate, you agree to our Terms of Service and Privacy

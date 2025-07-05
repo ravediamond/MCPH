@@ -35,119 +35,136 @@ export default function HeroUpload() {
   const { uploadCrate } = useUploadService();
 
   // Format bytes to human-readable size
-  const formatBytes = (bytes: number): string => {
+  const formatBytes = useCallback((bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
+  }, []);
+
+  // Handle upload using the shared upload service
+  const handleUpload = useCallback(
+    async (file: File) => {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        // Simulate upload progress
+        const interval = setInterval(() => {
+          setUploadProgress((prev) => {
+            if (prev >= 95) {
+              clearInterval(interval);
+              return 95;
+            }
+            return prev + 5;
+          });
+        }, 100);
+
+        // Simple upload with minimal options - title defaults to filename
+        const result = await uploadCrate(file);
+
+        clearInterval(interval);
+        setUploadProgress(100);
+        setIsUploading(false);
+
+        if (result.success) {
+          setUploadedUrl(result.url);
+          setCrateId(result.id);
+
+          // Store the temporary crate ID for potential migration when user logs in
+          if (!user) {
+            storeTempCrateId(result.id);
+
+            // Anonymous user success message
+            toast.success(
+              "Link generated! Anonymous uploads auto-delete after 30 days. Sign in to keep your crates permanently and access more features →",
+              {
+                duration: 5000,
+                icon: "🔗",
+                style: {
+                  borderRadius: "10px",
+                  background: "#fef6ee",
+                  border: "1px solid #ffedd5",
+                  color: "#c2410c",
+                },
+              },
+            );
+          } else {
+            // Authenticated user success message
+            toast.success(
+              "Link generated! Download link expires in 24 hours. Crate stored indefinitely. View all your uploads in your dashboard.",
+              {
+                duration: 4000,
+                icon: "✓",
+                style: {
+                  borderRadius: "10px",
+                  background: "#f0fdf4",
+                  border: "1px solid #dcfce7",
+                  color: "#166534",
+                },
+              },
+            );
+          }
+
+          // Auto-copy the URL to clipboard
+          navigator.clipboard
+            .writeText(result.url)
+            .then(() => {
+              setUrlCopied(true);
+              toast.success("Link copied to clipboard!");
+
+              // Reset copy status after 3 seconds
+              setTimeout(() => setUrlCopied(false), 3000);
+            })
+            .catch((err) => {
+              console.error("Failed to copy: ", err);
+            });
+        } else {
+          throw new Error(
+            result.error || "Sorry, we couldn't upload your file",
+          );
+        }
+      } catch (error) {
+        console.error("Upload failed:", error);
+        toast.error("Sorry, we couldn't upload your file. Please try again.");
+        setIsUploading(false);
+      }
+    },
+    [
+      uploadCrate,
+      setIsUploading,
+      setUploadProgress,
+      setUploadedUrl,
+      setCrateId,
+      user,
+      storeTempCrateId,
+      setUrlCopied,
+    ],
+  );
 
   // Dropzone setup
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const selectedFile = acceptedFiles[0];
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const selectedFile = acceptedFiles[0];
 
-    if (selectedFile.size > MAX_FILE_SIZE) {
-      toast.error(
-        `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
-      );
-      return;
-    }
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        toast.error(
+          `That file is too big (limit ${formatBytes(MAX_FILE_SIZE)}). Try compressing it.`,
+        );
+        return;
+      }
 
-    setFile(selectedFile);
-    handleUpload(selectedFile);
-  }, []);
+      setFile(selectedFile);
+      handleUpload(selectedFile);
+    },
+    [handleUpload, formatBytes],
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
   });
-
-  // Handle upload using the shared upload service
-  const handleUpload = async (file: File) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      // Simulate upload progress
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) {
-            clearInterval(interval);
-            return 95;
-          }
-          return prev + 5;
-        });
-      }, 100);
-
-      // Simple upload with minimal options - title defaults to filename
-      const result = await uploadCrate(file);
-
-      clearInterval(interval);
-      setUploadProgress(100);
-      setIsUploading(false);
-
-      if (result.success) {
-        setUploadedUrl(result.url);
-        setCrateId(result.id);
-
-        // Store the temporary crate ID for potential migration when user logs in
-        if (!user) {
-          storeTempCrateId(result.id);
-
-          // Anonymous user success message
-          toast.success(
-            "Link generated! Anonymous uploads auto-delete after 30 days. Sign in to keep your crates permanently and access more features →",
-            {
-              duration: 5000,
-              icon: "🔗",
-              style: {
-                borderRadius: "10px",
-                background: "#fef6ee",
-                border: "1px solid #ffedd5",
-                color: "#c2410c",
-              },
-            },
-          );
-        } else {
-          // Authenticated user success message
-          toast.success(
-            "Link generated! Download link expires in 24 hours. Crate stored indefinitely. View all your uploads in your dashboard.",
-            {
-              duration: 4000,
-              icon: "✓",
-              style: {
-                borderRadius: "10px",
-                background: "#f0fdf4",
-                border: "1px solid #dcfce7",
-                color: "#166534",
-              },
-            },
-          );
-        }
-
-        // Auto-copy the URL to clipboard
-        navigator.clipboard
-          .writeText(result.url)
-          .then(() => {
-            setUrlCopied(true);
-            toast.success("Link copied to clipboard!");
-
-            // Reset copy status after 3 seconds
-            setTimeout(() => setUrlCopied(false), 3000);
-          })
-          .catch((err) => {
-            console.error("Failed to copy: ", err);
-          });
-      } else {
-        throw new Error(result.error || "Sorry, we couldn't upload your file");
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Sorry, we couldn't upload your file. Please try again.");
-      setIsUploading(false);
-    }
-  };
 
   // Handle manual text paste
   const handlePaste = (e: React.ClipboardEvent) => {
