@@ -14,11 +14,10 @@ import {
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
-import { useAnonymousUploadTransition } from "../contexts/useAnonymousUploadTransition";
 import { CrateCategory } from "../shared/types/crate";
 import TagInput from "./ui/TagInput";
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 const API_BASE_URL = "";
 
@@ -119,8 +118,23 @@ export default function FileUpload({
 }: FileUploadProps) {
   // Get current user from auth context
   const { user } = useAuth();
-  // Get anonymous upload transition hook
-  const { storeTempCrateId, transferModal } = useAnonymousUploadTransition();
+
+  // Redirect to login if user is not authenticated
+  if (!user) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-red-600">
+            Authentication Required
+          </h3>
+          <p className="text-gray-700 mb-4">
+            You need to be logged in to upload crates. Please sign in to
+            continue.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
@@ -260,25 +274,6 @@ export default function FileUpload({
     }
 
     setIsUploading(true);
-    setUploadProgress(0);
-
-    // Set up a more predictable progress reporting
-    let progressStep = 0;
-    const updateProgressInterval = setInterval(() => {
-      // Use fixed steps for better visual feedback
-      if (progressStep < 3) {
-        setUploadProgress(10); // Starting
-      } else if (progressStep < 6) {
-        setUploadProgress(25); // Processing
-      } else if (progressStep < 10) {
-        setUploadProgress(50); // Halfway
-      } else if (progressStep < 15) {
-        setUploadProgress(75); // Almost there
-      } else {
-        setUploadProgress(90); // Final stage before completion
-      }
-      progressStep++;
-    }, 500);
 
     try {
       let uploadResponse;
@@ -286,12 +281,10 @@ export default function FileUpload({
 
       // Get auth token if user is logged in
       let authToken = null;
-      if (user) {
-        try {
-          authToken = await user.getIdToken();
-        } catch (error) {
-          console.error("Error getting auth token:", error);
-        }
+      try {
+        authToken = await user.getIdToken();
+      } catch (error) {
+        console.error("Error getting auth token:", error);
       }
 
       // Always use direct-upload endpoint for all file types
@@ -308,9 +301,7 @@ export default function FileUpload({
         formData.append("tags", JSON.stringify(tags));
       }
 
-      if (user) {
-        formData.append("userId", user.uid);
-      }
+      formData.append("userId", user.uid);
 
       uploadResponse = await fetch("/api/uploads/direct-upload", {
         method: "POST",
@@ -331,9 +322,6 @@ export default function FileUpload({
         throw new Error(errorDetail);
       }
 
-      clearInterval(updateProgressInterval);
-      setUploadProgress(100); // Immediately set to 100% when upload completes
-
       uploadedFileData = await uploadResponse.json();
 
       // Use the full URL for the download link
@@ -352,20 +340,6 @@ export default function FileUpload({
         tags: uploadedFileData.tags || tags, // Use tags from response or local state
       });
 
-      // Auto-copy the URL to clipboard
-      navigator.clipboard
-        .writeText(crateUrl)
-        .then(() => {
-          setUrlCopied(true);
-          toast.success("Link copied to clipboard!");
-
-          // Reset copy status after 3 seconds
-          setTimeout(() => setUrlCopied(false), 3000);
-        })
-        .catch((err) => {
-          console.error("Failed to copy: ", err);
-        });
-
       // Reset form
       if (formRef.current) {
         formRef.current.reset();
@@ -377,11 +351,6 @@ export default function FileUpload({
       setTags([]);
 
       toast.success("Your file has been uploaded successfully!");
-
-      // If user is not logged in, store the crate ID for later transfer
-      if (!user && uploadedFileData.fileId) {
-        storeTempCrateId(uploadedFileData.fileId);
-      }
 
       // Call the onUploadSuccess callback if provided
       if (onUploadSuccess) {
@@ -399,7 +368,6 @@ export default function FileUpload({
         });
       }
     } catch (error) {
-      clearInterval(updateProgressInterval);
       setIsUploading(false);
 
       const errorMessage =
@@ -436,7 +404,6 @@ export default function FileUpload({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {transferModal}
       {uploadedFile ? (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -524,16 +491,6 @@ export default function FileUpload({
                       </>
                     )}
                   </button>
-                  <a
-                    href={uploadedFile.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-1.5 bg-gray-100 rounded text-gray-700 hover:bg-gray-200 hover:text-[#ff7a32] flex items-center"
-                    title="Open in new tab"
-                    aria-label="Open link in new tab"
-                  >
-                    <FaExternalLinkAlt />
-                  </a>
                 </div>
               </div>
 
@@ -544,41 +501,14 @@ export default function FileUpload({
                 >
                   Download Crate
                 </a>
-                <button
-                  onClick={() => setUploadedFile(null)}
-                  className="inline-block px-4 py-2 bg-[#ff7a32] hover:bg-[#e96d2d] text-center text-white rounded-md shadow transition-colors"
-                >
-                  Upload Another Crate
-                </button>
-              </div>
-
-              {/* MCP CLI snippet */}
-              <div className="mt-5 bg-gray-800 rounded-md p-3 text-xs">
-                <div className="flex justify-between mb-1">
-                  <span className="text-gray-400">MCP CLI</span>
-                  <button
-                    onClick={() => {
-                      const cliCommand = `npx mcp-remote crates/get ${uploadedFile.id}`;
-                      navigator.clipboard.writeText(cliCommand);
-                      toast.success("CLI command copied!");
-                    }}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <FaCopy size={12} />
-                  </button>
-                </div>
-                <div className="font-mono text-green-400">
-                  $ npx mcp-remote crates/get {uploadedFile.id}
-                </div>
               </div>
             </div>
 
             <p className="text-sm text-gray-500 text-center mt-4">
-              Give this link to an agent or teammate—no login needed.
+              Give this link to an agent or teammate.
               <br />
               <span className="text-xs text-amber-600">
-                Download link expires in 24 hours.{" "}
-                {!user && "Anonymous crates expire after 30 days."}
+                Download link expires in 24 hours.
               </span>
             </p>
           </div>
@@ -648,28 +578,6 @@ export default function FileUpload({
                       </span>
                     )}
                   </p>
-
-                  {isUploading && (
-                    <div className="mt-2">
-                      <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full transition-all duration-300 ease-in-out rounded-full"
-                          style={{
-                            width: `${uploadProgress}%`,
-                            backgroundColor:
-                              uploadProgress < 30
-                                ? "#93c5fd" // light blue
-                                : uploadProgress < 70
-                                  ? "#60a5fa" // medium blue
-                                  : "#ff7a32", // orange
-                          }}
-                        ></div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {Math.round(uploadProgress)}% uploaded
-                      </p>
-                    </div>
-                  )}
                 </div>
                 <div className="ml-4 mr-2">
                   <label
@@ -783,17 +691,6 @@ export default function FileUpload({
             </>
           )}
 
-          {isUploading && (
-            <div className="mb-4">
-              <div className="h-2 bg-gray-200 rounded-full mb-1 overflow-hidden">
-                <div
-                  className="h-full bg-[#ff7a32] rounded-full transition-all duration-300 ease-in-out"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={!file || isUploading || !title.trim()}
@@ -815,17 +712,8 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            {!user ? (
-              <>
-                Anonymous crates auto-delete after 30 days. Sign in to keep your
-                crates permanently. Download links expire after 24 hours.
-              </>
-            ) : (
-              <>
-                Your crates are stored until you delete them. Download links
-                expire after 24 hours.
-              </>
-            )}
+            Your crates are stored until you delete them. Download links expire
+            after 24 hours.
           </p>
           <p className="text-xs text-gray-500 text-center mt-2">
             By uploading a crate, you agree to our Terms of Service and Privacy
