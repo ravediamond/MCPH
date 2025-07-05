@@ -15,7 +15,6 @@ import {
 import { toast } from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { CrateCategory } from "../shared/types/crate";
-import TagInput from "./ui/TagInput";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
 
@@ -148,7 +147,7 @@ export default function FileUpload({
   const [urlCopied, setUrlCopied] = useState(false);
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagsInput, setTagsInput] = useState<string>("");
   const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
   const [isShared, setIsShared] = useState<boolean>(true); // Default to shared
 
@@ -297,7 +296,8 @@ export default function FileUpload({
       formData.append("isShared", isShared ? "true" : "false");
 
       // Add tags if present
-      if (tags.length > 0) {
+      if (tagsInput.trim()) {
+        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
         formData.append("tags", JSON.stringify(tags));
       }
 
@@ -337,7 +337,7 @@ export default function FileUpload({
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
-        tags: uploadedFileData.tags || tags, // Use tags from response or local state
+        tags: uploadedFileData.tags || (tagsInput.trim() ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : []), // Use tags from response or local state
       });
 
       // Reset form
@@ -348,7 +348,7 @@ export default function FileUpload({
       // Reset state
       setTitle("");
       setDescription("");
-      setTags([]);
+      setTagsInput("");
 
       toast.success("Your file has been uploaded successfully!");
 
@@ -364,7 +364,7 @@ export default function FileUpload({
           size: file.size,
           downloadUrl: crateUrl,
           uploadedAt: new Date().toISOString(),
-          tags: uploadedFileData.tags || tags, // Use tags from response or local state
+          tags: uploadedFileData.tags || (tagsInput.trim() ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : []), // Use tags from response or local state
         });
       }
     } catch (error) {
@@ -669,24 +669,19 @@ export default function FileUpload({
                 </label>
                 <div className="flex items-center space-x-2">
                   <div className="flex-grow">
-                    <TagInput
-                      tags={tags}
-                      onChange={setTags}
+                    <input
+                      type="text"
+                      value={tagsInput}
+                      onChange={(e) => setTagsInput(e.target.value)}
+                      placeholder="Enter comma-separated tags (e.g., work, report, presentation)"
+                      className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#ff7a32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff7a32] sm:text-sm"
                       disabled={isUploading}
-                      placeholder="Add tags (e.g., project:work, status:active)"
-                      suggestions={[
-                        "project:work",
-                        "project:personal",
-                        "status:active",
-                        "status:review",
-                        "status:archived",
-                        "priority:high",
-                        "priority:medium",
-                        "priority:low",
-                      ]}
+                      autoComplete="off"
+                      aria-label="Crate tags"
                     />
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
               </div>
             </>
           )}
