@@ -297,7 +297,10 @@ export default function FileUpload({
 
       // Add tags if present
       if (tagsInput.trim()) {
-        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+        const tags = tagsInput
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag);
         formData.append("tags", JSON.stringify(tags));
       }
 
@@ -337,7 +340,14 @@ export default function FileUpload({
         size: file.size,
         downloadUrl: crateUrl,
         uploadedAt: new Date().toISOString(),
-        tags: uploadedFileData.tags || (tagsInput.trim() ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : []), // Use tags from response or local state
+        tags:
+          uploadedFileData.tags ||
+          (tagsInput.trim()
+            ? tagsInput
+                .split(",")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag)
+            : []), // Use tags from response or local state
       });
 
       // Reset form
@@ -364,7 +374,14 @@ export default function FileUpload({
           size: file.size,
           downloadUrl: crateUrl,
           uploadedAt: new Date().toISOString(),
-          tags: uploadedFileData.tags || (tagsInput.trim() ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : []), // Use tags from response or local state
+          tags:
+            uploadedFileData.tags ||
+            (tagsInput.trim()
+              ? tagsInput
+                  .split(",")
+                  .map((tag) => tag.trim())
+                  .filter((tag) => tag)
+              : []), // Use tags from response or local state
         });
       }
     } catch (error) {
@@ -681,7 +698,9 @@ export default function FileUpload({
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate tags with commas
+                </p>
               </div>
             </>
           )}
