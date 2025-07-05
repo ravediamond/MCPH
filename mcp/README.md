@@ -35,9 +35,11 @@ MCPH is an artifact storage and sharing system for AI tools—store, share, and 
   - Input: `{ query: string, tags?: string[], limit?: number }`
   - Output: List of matching crates with relevance scores
   - Features:
-    - Text search across all crate metadata
+    - Text search across title, description, tags, and metadata fields (not crate content)
+    - Vector embeddings for semantic understanding of metadata
     - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
     - Tag hierarchy understanding with relevance boosting for conventional tags
+    - Note: Content-based semantic search is available in the Pro version
   - Permissions: Requires authentication
 
 ### Creating & Managing Crates

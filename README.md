@@ -184,9 +184,10 @@ MCPH provides a set of powerful tools that enable you to manage your content thr
   - Input: `{ query: string, tags?: string[], limit?: number }`
   - Output: `{ crates: [ { id, title, description, category, relevanceScore, ... }, ... ], searchMetadata: { ... } }`
   - Features:
-    - Combines vector embeddings for semantic understanding with text-based search
+    - Combines vector embeddings for semantic understanding of metadata with text-based search
     - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
     - Tag hierarchy understanding with relevance boosting for conventional tags
+    - Note: Content-based semantic search is available in the Pro version
   - Permission: Requires authentication to search user's crates
   - Results: Ranked by relevance, limited to specified limit (default: 10)
 
