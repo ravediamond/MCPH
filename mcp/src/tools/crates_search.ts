@@ -115,14 +115,24 @@ export function registerCratesSearchTool(server: McpServer): void {
       // Apply additional tag filtering in memory if multiple tags were provided
       if (tags && tags.length > 1) {
         allCrates = allCrates.filter((crate: any) => {
+          // Convert object tags to array if needed
+          let crateTags = crate.tags;
+          if (
+            crateTags &&
+            !Array.isArray(crateTags) &&
+            typeof crateTags === "object"
+          ) {
+            crateTags = Object.values(crateTags);
+          }
+
           // Check if crate has all required tags (starting from the second tag since first was in query)
           return tags
             .slice(1)
             .every(
               (tag) =>
-                crate.tags &&
-                Array.isArray(crate.tags) &&
-                crate.tags.includes(tag),
+                crateTags &&
+                Array.isArray(crateTags) &&
+                crateTags.includes(tag),
             );
         });
       }
@@ -131,8 +141,18 @@ export function registerCratesSearchTool(server: McpServer): void {
       allCrates = allCrates.map((crate: any) => {
         let score = 1.0; // Base score
 
+        // Convert object tags to array if needed
+        let crateTags = crate.tags;
+        if (
+          crateTags &&
+          !Array.isArray(crateTags) &&
+          typeof crateTags === "object"
+        ) {
+          crateTags = Object.values(crateTags);
+        }
+
         // Weight tag matches higher when they follow conventions
-        if (crate.tags && Array.isArray(crate.tags)) {
+        if (crateTags && Array.isArray(crateTags)) {
           // Define patterns for structured tag conventions
           // These are used to identify and boost scores for structured, well-organized tags
           const conventionPatterns = [
@@ -144,7 +164,7 @@ export function registerCratesSearchTool(server: McpServer): void {
           ];
 
           // Count matching convention patterns
-          const conventionMatches = crate.tags.filter((tag: string) =>
+          const conventionMatches = crateTags.filter((tag: string) =>
             conventionPatterns.some((pattern) => pattern.test(tag)),
           ).length;
 
@@ -185,9 +205,20 @@ export function registerCratesSearchTool(server: McpServer): void {
         const mimeType = data.mimeType;
         const category = data.category;
 
+        // Convert tags object to array if it's not already an array
+        let tagsArray = data.tags;
+        if (
+          data.tags &&
+          !Array.isArray(data.tags) &&
+          typeof data.tags === "object"
+        ) {
+          tagsArray = Object.values(data.tags);
+        }
+
         return {
           id,
           ...filteredData,
+          tags: tagsArray, // Include normalized tags array
           contentType: mimeType, // Use safely extracted mimeType
           category: category, // Use safely extracted category
           expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null, // Include actual expiration date if set
@@ -220,7 +251,7 @@ export function registerCratesSearchTool(server: McpServer): void {
                         `Owner: ${c.ownerId || "anonymous"}\n` +
                         `Category: ${c.category || "N/A"}\n` +
                         `Content Type: ${c.contentType || "N/A"}\n` +
-                        `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n` +
+                        `Tags: ${c.tags && (Array.isArray(c.tags) ? c.tags.length > 0 : Object.keys(c.tags).length > 0) ? (Array.isArray(c.tags) ? c.tags : Object.values(c.tags)).join(", ") : "No tags"}\n` +
                         `Relevance Score: ${c.relevanceScore?.toFixed(2) || "1.00"}\n`,
                     )
                     .join("\n---\n") +

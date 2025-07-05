@@ -19,7 +19,8 @@ const CrateTag: React.FC<CrateTagProps> = ({ tag, onClick }) => {
         onClick={() => onClick(tag)}
         title={`Search for ${tag}`}
       >
-        <span className="font-semibold">{prefix}:</span>{value}
+        <span className="font-semibold">{prefix}:</span>
+        {value}
       </span>
     );
   }

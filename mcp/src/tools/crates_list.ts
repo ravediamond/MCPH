@@ -125,9 +125,20 @@ export function registerCratesListTool(server: McpServer): void {
           const mimeType = data.mimeType;
           const category = data.category;
 
+          // Convert tags object to array if it's not already an array
+          let tagsArray = data.tags;
+          if (
+            data.tags &&
+            !Array.isArray(data.tags) &&
+            typeof data.tags === "object"
+          ) {
+            tagsArray = Object.values(data.tags);
+          }
+
           return {
             id: doc.id,
             ...filteredData,
+            tags: tagsArray, // Include normalized tags array
             contentType: mimeType, // Add contentType
             category: category, // Add category
             expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null, // Include actual expiration date if set
@@ -152,7 +163,7 @@ export function registerCratesListTool(server: McpServer): void {
                     `Owner: ${c.ownerId || "anonymous"}\n` +
                     `Category: ${c.category || "N/A"}\n` +
                     `Content Type: ${c.contentType || "N/A"}\n` +
-                    `Tags: ${Array.isArray(c.tags) ? c.tags.join(", ") : "None"}\n`,
+                    `Tags: ${c.tags && (Array.isArray(c.tags) ? c.tags.length > 0 : Object.keys(c.tags).length > 0) ? (Array.isArray(c.tags) ? c.tags : Object.values(c.tags)).join(", ") : "No tags"}\n`,
                 )
                 .join("\n---\n"),
             },
