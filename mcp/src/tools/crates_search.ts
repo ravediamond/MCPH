@@ -7,6 +7,34 @@ import { Crate, CrateCategory } from "../../../shared/types/crate";
  * Register the crates_search tool with the server
  */
 export function registerCratesSearchTool(server: McpServer): void {
+  // Helper function to normalize tags that might be stored as objects with numeric keys
+  const normalizeTags = (tags: any): string[] => {
+    if (!tags) return [];
+    if (Array.isArray(tags)) return tags;
+
+    if (typeof tags === "object") {
+      // Debug log to understand the tag structure
+      console.log(
+        `[crates_search] Normalizing tag object:`,
+        JSON.stringify(tags),
+      );
+
+      // Handle specific case of Firestore numeric keys (like in the screenshot)
+      // This will extract values from objects with numeric keys (0, 1, 2, etc.)
+      const values = Object.entries(tags).map(([key, value]) => {
+        console.log(
+          `[crates_search] Processing tag key: ${key}, value: ${value}`,
+        );
+        return String(value);
+      });
+
+      console.log(`[crates_search] Normalized tags:`, values);
+      return values;
+    }
+
+    return [String(tags)];
+  };
+
   server.registerTool(
     "crates_search",
     {
@@ -85,15 +113,15 @@ export function registerCratesSearchTool(server: McpServer): void {
       if (tags && tags.length > 0) {
         console.log(`[crates_search] Using tag filters: ${tags.join(", ")}`);
 
-        // For multiple tags, we need to use a compound query
-        // Firestore can only use one array-contains per query, so we'll filter first by one tag
-        // and then filter the results for the other tags in memory
-        if (tags.length === 1) {
-          query_ref = query_ref.where("tags", "array-contains", tags[0]);
-        } else {
-          // Use the first tag in the Firestore query
-          query_ref = query_ref.where("tags", "array-contains", tags[0]);
-        }
+        // For tag filtering, since tags can be stored as objects with numeric keys,
+        // we'll get all the user's crates first and then filter in memory
+        // This approach is more reliable but potentially less efficient for large datasets
+
+        // Note: We're not applying any tag filtering at the Firestore query level
+        // because we need to handle different tag storage formats
+        console.log(
+          `[crates_search] Will filter ${tags.length} tags in memory after query`,
+        );
       }
 
       // Apply text search filter
@@ -112,47 +140,69 @@ export function registerCratesSearchTool(server: McpServer): void {
         ...doc.data(),
       }));
 
-      // Apply additional tag filtering in memory if multiple tags were provided
-      if (tags && tags.length > 1) {
-        allCrates = allCrates.filter((crate: any) => {
-          // Convert object tags to array if needed
-          let crateTags = crate.tags;
-          if (
-            crateTags &&
-            !Array.isArray(crateTags) &&
-            typeof crateTags === "object"
-          ) {
-            crateTags = Object.values(crateTags);
-          }
+      // Apply tag filtering in memory for all tags
+      if (tags && tags.length > 0) {
+        console.log(
+          `[crates_search] Starting in-memory tag filtering with ${allCrates.length} crates`,
+        );
 
-          // Check if crate has all required tags (starting from the second tag since first was in query)
-          return tags
-            .slice(1)
-            .every(
-              (tag) =>
-                crateTags &&
-                Array.isArray(crateTags) &&
-                crateTags.includes(tag),
+        allCrates = allCrates.filter((crate: any) => {
+          // Log the actual structure of tags for debugging
+          console.log(
+            `[crates_search] Crate ${crate.id} tags structure:`,
+            typeof crate.tags === "object"
+              ? JSON.stringify(crate.tags)
+              : crate.tags,
+          );
+
+          // Normalize the crate tags using our helper function
+          const normalizedCrateTags = normalizeTags(crate.tags).map((tag) =>
+            typeof tag === "string"
+              ? tag.toLowerCase()
+              : String(tag).toLowerCase(),
+          );
+
+          console.log(
+            `[crates_search] Crate ${crate.id} has normalized tags: ${normalizedCrateTags.join(", ")}`,
+          );
+
+          // Check if crate has all required tags
+          const hasAllTags = tags.every((tag) => {
+            const lowercaseTag = tag.toLowerCase();
+
+            // Try both exact match and value match (for object-stored tags)
+            const exactMatch = normalizedCrateTags.includes(lowercaseTag);
+
+            // Special case: If the tag is stored as a number in Firestore but provided as string
+            const numericMatch =
+              !isNaN(Number(tag)) &&
+              normalizedCrateTags.includes(String(Number(tag)));
+
+            const hasTag = exactMatch || numericMatch;
+
+            console.log(
+              `[crates_search] Checking if crate ${crate.id} has tag '${lowercaseTag}': ${hasTag} (exact: ${exactMatch}, numeric: ${numericMatch})`,
             );
+            return hasTag;
+          });
+
+          return hasAllTags;
         });
+
+        console.log(
+          `[crates_search] After tag filtering: ${allCrates.length} crates remain`,
+        );
       }
 
       // Weight results based on tag hierarchy and conventions
       allCrates = allCrates.map((crate: any) => {
         let score = 1.0; // Base score
 
-        // Convert object tags to array if needed
-        let crateTags = crate.tags;
-        if (
-          crateTags &&
-          !Array.isArray(crateTags) &&
-          typeof crateTags === "object"
-        ) {
-          crateTags = Object.values(crateTags);
-        }
+        // Normalize crate tags using our helper function
+        const normalizedCrateTags = normalizeTags(crate.tags);
 
         // Weight tag matches higher when they follow conventions
-        if (crateTags && Array.isArray(crateTags)) {
+        if (normalizedCrateTags.length > 0) {
           // Define patterns for structured tag conventions
           // These are used to identify and boost scores for structured, well-organized tags
           const conventionPatterns = [
@@ -164,7 +214,7 @@ export function registerCratesSearchTool(server: McpServer): void {
           ];
 
           // Count matching convention patterns
-          const conventionMatches = crateTags.filter((tag: string) =>
+          const conventionMatches = normalizedCrateTags.filter((tag: string) =>
             conventionPatterns.some((pattern) => pattern.test(tag)),
           ).length;
 
@@ -205,15 +255,8 @@ export function registerCratesSearchTool(server: McpServer): void {
         const mimeType = data.mimeType;
         const category = data.category;
 
-        // Convert tags object to array if it's not already an array
-        let tagsArray = data.tags;
-        if (
-          data.tags &&
-          !Array.isArray(data.tags) &&
-          typeof data.tags === "object"
-        ) {
-          tagsArray = Object.values(data.tags);
-        }
+        // Normalize tags using our helper function
+        const tagsArray = normalizeTags(data.tags);
 
         return {
           id,
@@ -251,7 +294,7 @@ export function registerCratesSearchTool(server: McpServer): void {
                         `Owner: ${c.ownerId || "anonymous"}\n` +
                         `Category: ${c.category || "N/A"}\n` +
                         `Content Type: ${c.contentType || "N/A"}\n` +
-                        `Tags: ${c.tags && (Array.isArray(c.tags) ? c.tags.length > 0 : Object.keys(c.tags).length > 0) ? (Array.isArray(c.tags) ? c.tags : Object.values(c.tags)).join(", ") : "No tags"}\n` +
+                        `Tags: ${c.tags && c.tags.length > 0 ? c.tags.join(", ") : "No tags"}\n` +
                         `Relevance Score: ${c.relevanceScore?.toFixed(2) || "1.00"}\n`,
                     )
                     .join("\n---\n") +
