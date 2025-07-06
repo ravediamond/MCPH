@@ -107,6 +107,22 @@ export function apiKeyAuthMiddleware(
 
   const token = authHeader.replace("Bearer ", "").trim();
 
+  // Check if this is an OAuth token (mock tokens start with "firebase_custom_token_")
+  if (token.startsWith("firebase_custom_token_")) {
+    console.log("[apiKeyAuthMiddleware] OAuth token detected, allowing access");
+    req.user = {
+      userId: "oauth_user", // Use a generic OAuth user ID
+      authMethod: "firebase_auth",
+    };
+
+    // Extract client name if available in the request
+    if (req.body?.params?.name) {
+      req.clientName = req.body.params.name;
+    }
+
+    return next();
+  }
+
   // Try Firebase Auth first
   (async () => {
     try {
