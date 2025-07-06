@@ -181,14 +181,13 @@ export async function registerClient(
  */
 export async function updateClientToPublic(clientId: string): Promise<boolean> {
   try {
-    await db
-      .collection(OAUTH_CLIENTS_COLLECTION)
-      .doc(clientId)
-      .update({
-        clientSecret: null,
-      });
-    
-    console.log(`[OAuth] Updated client ${clientId} to public client (no secret)`);
+    await db.collection(OAUTH_CLIENTS_COLLECTION).doc(clientId).update({
+      clientSecret: null,
+    });
+
+    console.log(
+      `[OAuth] Updated client ${clientId} to public client (no secret)`,
+    );
     return true;
   } catch (error) {
     console.error(`[OAuth] Failed to update client ${clientId}:`, error);
