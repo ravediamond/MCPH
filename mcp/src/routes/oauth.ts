@@ -16,7 +16,7 @@ import {
  */
 export function configureOAuthRoutes(router: Router): void {
   // Client Registration Endpoint (Dynamic Client Registration)
-  router.post("/oauth/register", (req: Request, res: Response) => {
+  router.post("/oauth/register", async (req: Request, res: Response) => {
     const {
       client_name,
       client_uri,
@@ -45,7 +45,7 @@ export function configureOAuthRoutes(router: Router): void {
 
     try {
       // Register the client
-      const client = registerClient(
+      const client = await registerClient(
         client_name,
         client_uri,
         redirect_uris,
@@ -105,7 +105,7 @@ export function configureOAuthRoutes(router: Router): void {
   );
 
   // Authorization Endpoint
-  router.get("/auth/authorize", (req: Request, res: Response) => {
+  router.get("/auth/authorize", async (req: Request, res: Response) => {
     const { client_id, redirect_uri, response_type, state, scope } = req.query;
 
     console.log("[OAuth] Authorization request:", {
@@ -125,7 +125,7 @@ export function configureOAuthRoutes(router: Router): void {
     }
 
     // Validate client exists and redirect URI is authorized
-    const client = getRegisteredClient(client_id as string);
+    const client = await getRegisteredClient(client_id as string);
     if (!client) {
       return res.status(400).json({
         error: "invalid_client",
@@ -133,7 +133,9 @@ export function configureOAuthRoutes(router: Router): void {
       });
     }
 
-    if (!validateRedirectUri(client_id as string, redirect_uri as string)) {
+    if (
+      !(await validateRedirectUri(client_id as string, redirect_uri as string))
+    ) {
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Invalid redirect URI",
@@ -262,7 +264,8 @@ export function configureOAuthRoutes(router: Router): void {
     }
 
     // Validate client credentials
-    if (!validateClient(client_id, client_secret)) {
+    if (!(await validateClient(client_id, client_secret))) {
+      console.log("[OAuth] Client validation failed for:", client_id);
       return res.status(401).json({
         error: "invalid_client",
         error_description: "Invalid client credentials",

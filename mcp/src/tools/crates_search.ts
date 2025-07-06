@@ -125,9 +125,12 @@ export function registerCratesSearchTool(server: McpServer): void {
         );
       }
 
-      // Apply text search filter
+      // Apply text search filter only if no tags are specified
+      // When tags are provided, we need to do in-memory filtering anyway,
+      // so we skip the text search at the Firestore level to avoid missing results
+      // where the query text exists only in tags but not in title/description/metadata
       const textQuery = query.toLowerCase();
-      if (textQuery.trim() !== "") {
+      if (textQuery.trim() !== "" && (!tags || tags.length === 0)) {
         query_ref = query_ref
           .where("searchField", ">=", textQuery)
           .where("searchField", "<=", textQuery + "\uf8ff");
@@ -141,7 +144,14 @@ export function registerCratesSearchTool(server: McpServer): void {
         ...doc.data(),
       }));
 
-      // Apply tag filtering in memory for all tags
+      // Apply text search in memory if we skipped it at Firestore level due to tags
+      if (textQuery.trim() !== "" && tags && tags.length > 0) {
+        console.log(
+          `[crates_search] Applying text search in memory due to tag filtering`,
+        );
+      }
+
+      // Apply tag filtering and text search in memory when tags are provided
       if (tags && tags.length > 0) {
         console.log(
           `[crates_search] Starting in-memory tag filtering with ${allCrates.length} crates`,
@@ -187,11 +197,33 @@ export function registerCratesSearchTool(server: McpServer): void {
             return hasTag;
           });
 
+          // When tags are provided AND there's a text query, also check if the text matches
+          // Check searchField OR check if text exists in normalized tags
+          if (hasAllTags && textQuery.trim() !== "") {
+            const searchField = (crate.searchField || "").toLowerCase();
+            const textInSearchField = searchField.includes(textQuery);
+            const textInTags = normalizedCrateTags.some((tag) =>
+              tag.includes(textQuery),
+            );
+
+            console.log(
+              `[crates_search] Crate ${crate.id} text match check: query='${textQuery}' searchField='${textInSearchField}' tags='${textInTags}'`,
+            );
+
+            return textInSearchField || textInTags;
+          }
+
           return hasAllTags;
         });
 
         console.log(
           `[crates_search] After tag filtering: ${allCrates.length} crates remain`,
+        );
+      } else if (textQuery.trim() !== "" && (!tags || tags.length === 0)) {
+        // Pure text search case - this should have been handled by Firestore query
+        // but we include this for completeness and debugging
+        console.log(
+          `[crates_search] Text-only search was handled by Firestore query`,
         );
       }
 
