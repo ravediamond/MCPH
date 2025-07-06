@@ -238,8 +238,19 @@ export async function validateClient(
     return false;
   }
 
+  console.log(`[OAuth] Client details:`, {
+    hasClientSecret: !!client.clientSecret,
+    scope: client.scope,
+    clientName: client.clientName,
+  });
+
   // If client has a secret, it must match
   if (client.clientSecret && client.clientSecret !== clientSecret) {
+    console.log(`[OAuth] Client has secret but provided secret doesn't match`);
+    console.log(
+      `[OAuth] Checking conversion conditions: scope=${client.scope}, clientSecret=${!!clientSecret}`,
+    );
+
     // Special case: if this is an MCP client that was registered with a secret,
     // convert it to a public client (no secret required)
     if (client.scope === "mcp" && !clientSecret) {
@@ -247,7 +258,9 @@ export async function validateClient(
       await updateClientToPublic(clientId);
       // Continue with validation - the client is now public
     } else {
-      console.log(`[OAuth] Client validation failed: secret mismatch`);
+      console.log(
+        `[OAuth] Client validation failed: secret mismatch, scope=${client.scope}, hasClientSecret=${!!clientSecret}`,
+      );
       return false;
     }
   }
