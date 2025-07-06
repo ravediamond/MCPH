@@ -115,7 +115,12 @@ Or configure your client:
 
 ### Authentication
 
-Pass your API key as a Bearer token in the `Authorization` header.
+MCPH supports two authentication methods:
+
+1. **OAuth (Recommended)**: Sign in with your MCPH account through the OAuth flow
+2. **API Key**: Pass your API key as a Bearer token in the `Authorization` header
+
+For AI assistants using custom integrations (like Claude AI), OAuth provides the easiest setup experience.
 
 ## Available MCP Tools
 
@@ -236,7 +241,16 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 
 ### Getting Started with AI Assistants
 
-1. **Connect MCPH to your AI assistant** using your API key
+#### Claude AI (Recommended - Easiest Setup)
+
+1. **Open Claude AI** and click "Integrations" in the bottom left corner
+2. **Add custom integration** and enter: `https://mcp.mcph.io/mcp`
+3. **Choose authentication**: OAuth (recommended) or API key
+4. **Start using** - Ask Claude to access your MCPH crates and create new content
+
+#### Other AI Assistants
+
+1. **Connect MCPH to your AI assistant** using your API key or OAuth
 2. **Use natural language commands** to manage your files
 3. **Share content instantly** by simply asking your AI to make content public
 

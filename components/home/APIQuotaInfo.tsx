@@ -18,10 +18,17 @@ interface SharedCratesInfo {
   remaining: number;
 }
 
+interface FeedbackTemplatesInfo {
+  count: number;
+  limit: number;
+  remaining: number;
+}
+
 interface APIQuotaInfoProps {
   userQuota: QuotaInfo | null;
   userStorage: StorageInfo | null;
   userSharedCrates: SharedCratesInfo | null;
+  userFeedbackTemplates: FeedbackTemplatesInfo | null;
   quotaLoading: boolean;
   formatFileSize: (bytes: number) => string;
 }
@@ -30,6 +37,7 @@ const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
   userQuota,
   userStorage,
   userSharedCrates,
+  userFeedbackTemplates,
   quotaLoading,
   formatFileSize,
 }) => {
@@ -95,6 +103,30 @@ const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
               1,
             )}
             % used, {userSharedCrates.remaining} left)
+          </span>
+        </div>
+      )}
+
+      {userFeedbackTemplates && (
+        <div className="text-sm text-gray-700 mt-1">
+          Feedback templates:{" "}
+          <span
+            className={
+              userFeedbackTemplates.remaining === 0
+                ? "text-red-600 font-semibold"
+                : "font-semibold"
+            }
+          >
+            {userFeedbackTemplates.count}
+          </span>{" "}
+          / <span className="font-semibold">{userFeedbackTemplates.limit}</span>
+          <span className="ml-2">
+            (
+            {(
+              (userFeedbackTemplates.count / userFeedbackTemplates.limit) *
+              100
+            ).toFixed(1)}
+            % used, {userFeedbackTemplates.remaining} left)
           </span>
         </div>
       )}

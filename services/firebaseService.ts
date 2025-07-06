@@ -138,8 +138,17 @@ if (!getApps().length) {
 const CRATES_COLLECTION = "crates";
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
+const FEEDBACK_TEMPLATES_COLLECTION = "feedbackTemplates";
+const FEEDBACK_RESPONSES_COLLECTION = "feedbackResponses";
 
-export { CRATES_COLLECTION, METRICS_COLLECTION, EVENTS_COLLECTION, db };
+export {
+  CRATES_COLLECTION,
+  METRICS_COLLECTION,
+  EVENTS_COLLECTION,
+  FEEDBACK_TEMPLATES_COLLECTION,
+  FEEDBACK_RESPONSES_COLLECTION,
+  db,
+};
 
 const toFirestoreData = (data: any): any => {
   const result = { ...data };
@@ -440,7 +449,8 @@ export async function getApiKeyToolUsage(
 
 const USER_USAGE_COLLECTION = "userUsage";
 const USER_TOOL_CALL_LIMIT = 1000;
-const USER_SHARED_CRATES_LIMIT = 50;
+const USER_SHARED_CRATES_LIMIT = 10;
+const USER_FEEDBACK_TEMPLATES_LIMIT = 5;
 
 export async function incrementUserToolUsage(
   userId: string,
@@ -860,6 +870,41 @@ export async function hasReachedSharedCratesLimit(
   return remaining <= 0;
 }
 
+export async function getUserFeedbackTemplatesCount(
+  userId: string,
+): Promise<{ count: number; limit: number; remaining: number }> {
+  try {
+    const querySnapshot = await db
+      .collection(FEEDBACK_TEMPLATES_COLLECTION)
+      .where("ownerId", "==", userId)
+      .get();
+
+    const count = querySnapshot.size;
+    return {
+      count,
+      limit: USER_FEEDBACK_TEMPLATES_LIMIT,
+      remaining: Math.max(0, USER_FEEDBACK_TEMPLATES_LIMIT - count),
+    };
+  } catch (error) {
+    console.error(
+      `Error getting feedback templates count for user ${userId}:`,
+      error,
+    );
+    return {
+      count: 0,
+      limit: USER_FEEDBACK_TEMPLATES_LIMIT,
+      remaining: USER_FEEDBACK_TEMPLATES_LIMIT,
+    };
+  }
+}
+
+export async function hasReachedFeedbackTemplatesLimit(
+  userId: string,
+): Promise<boolean> {
+  const { remaining } = await getUserFeedbackTemplatesCount(userId);
+  return remaining <= 0;
+}
+
 export async function updateCrateSharing(
   crateId: string,
   userId: string,
@@ -884,7 +929,7 @@ export async function updateCrateSharing(
         return {
           success: false,
           error:
-            "Shared crates limit reached. You can share a maximum of 50 crates. Please delete some shared crates before sharing new ones.",
+            "Shared crates limit reached. You can share a maximum of 10 crates. Please delete some shared crates before sharing new ones.",
         };
       }
     }

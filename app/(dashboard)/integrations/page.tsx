@@ -178,7 +178,8 @@ export default function IntegrationsPage() {
         <div className="p-6">
           <div className="mb-6">
             <p className="text-gray-700 mb-4">
-              Connect your account to Claude AI for enhanced MCP functionality.
+              Connect MCPH to Claude AI using the new custom integrations
+              feature. Choose between API key or OAuth authentication.
             </p>
 
             <div className="space-y-4 mb-6">
@@ -187,7 +188,7 @@ export default function IntegrationsPage() {
                   1
                 </div>
                 <span className="text-gray-700">
-                  Get your API key from the "My API keys" section
+                  In Claude AI, click "Integrations" in the bottom left corner
                 </span>
               </div>
               <div className="flex items-center">
@@ -195,7 +196,8 @@ export default function IntegrationsPage() {
                   2
                 </div>
                 <span className="text-gray-700">
-                  Follow the setup guide in the Claude documentation
+                  Click "Add custom integration" and enter:{" "}
+                  <code>https://mcp.mcph.io/mcp</code>
                 </span>
               </div>
               <div className="flex items-center">
@@ -203,18 +205,30 @@ export default function IntegrationsPage() {
                   3
                 </div>
                 <span className="text-gray-700">
-                  Use https://mcp.mcph.io/mcp as your MCP server URL
+                  Choose authentication: OAuth (recommended) or API key
                 </span>
               </div>
+            </div>
+
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md mb-6">
+              <p className="text-blue-700 text-sm">
+                <strong>New:</strong> MCPH now supports both OAuth (for easy
+                setup) and API key authentication.
+                <br />
+                <strong>OAuth:</strong> Sign in with your MCPH account for
+                automatic authentication
+                <br />
+                <strong>API Key:</strong> Use your API key from the "My API
+                keys" section
+              </p>
             </div>
           </div>
 
           <a
-            href="https://modelcontextprotocol.io/quickstart/user"
+            href="https://support.anthropic.com/fr/articles/11175166-commencer-avec-les-integrations-personnalisees-en-utilisant-mcp-distant"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-            onClick={handleClaudeDocRedirect}
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -230,21 +244,22 @@ export default function IntegrationsPage() {
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
               ></path>
             </svg>
-            View Setup Guide
+            Custom Integrations Guide
           </a>
           <p className="text-xs text-gray-500 mt-2 text-center">
-            Your API key can be found in the "My API keys" section
+            Available to all Claude users with the new custom integrations
+            feature
           </p>
 
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md mt-6">
-            <p className="text-yellow-700 text-sm">
-              <strong>Important:</strong> MCP integration with simplified setup
-              is only available in Claude Pro and Enterprise plans. Without
-              these plans, you won't be able to use the MCP feature that allows
-              direct integration with MCPH.
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md mt-6">
+            <p className="text-green-700 text-sm">
+              <strong>Simplified Setup:</strong> The new custom integrations
+              feature makes it easy to connect MCPH to Claude. Just click
+              "Integrations" → "Add custom integration" and paste the MCPH URL.
               <br />
               <br />
-              The configuration file is located at:
+              <strong>Legacy Desktop App:</strong> If you prefer the desktop
+              configuration file method, you can still use:
               <br />
               <strong>macOS:</strong>{" "}
               <code>
@@ -253,18 +268,6 @@ export default function IntegrationsPage() {
               <br />
               <strong>Windows:</strong>{" "}
               <code>%APPDATA%\Claude\claude_desktop_config.json</code>
-              <br />
-              <br />
-              For more details, please refer to the{" "}
-              <a
-                href="https://modelcontextprotocol.io/quickstart/user"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-indigo-600 hover:underline"
-              >
-                Claude MCP documentation
-              </a>
-              .
             </p>
           </div>
         </div>

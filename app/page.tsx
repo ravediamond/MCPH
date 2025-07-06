@@ -11,7 +11,7 @@ import { toast } from "react-hot-toast";
 
 export default function Home() {
   // Redirect authenticated users to their dashboard if needed
-  useAuthRedirect({ whenAuthenticated: "/home" });
+  useAuthRedirect({ whenAuthenticated: "/crates" });
 
   // Handle migration of anonymous uploads when a user logs in
   useAnonymousUploadTransition();
