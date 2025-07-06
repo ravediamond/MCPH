@@ -92,6 +92,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
         }
 
         // Prepare update data based on what was provided
+        // Only include fields that are explicitly provided to avoid overwriting existing values
         const updateData: Partial<Crate> = {};
 
         // Update metadata fields if provided
@@ -161,16 +162,20 @@ export function registerCratesUpdateTool(server: McpServer): void {
           updateData.searchField = searchText.toLowerCase();
 
           // Use the existing crate info but with the updated file
+          // Merge original crate data with updates to preserve all existing fields
+          const mergedCrateData = {
+            ...originalCrate,
+            ...updateData,
+            id: originalCrate.id, // Preserve the ID
+            ownerId: userId,
+            shared: originalCrate.shared, // Preserve sharing settings
+          };
+
           const crateData = await uploadCrate(
             buffer,
             actualFileName,
             actualContentType,
-            {
-              ...updateData,
-              id: originalCrate.id, // Preserve the ID
-              ownerId: userId,
-              shared: originalCrate.shared, // Preserve sharing settings
-            },
+            mergedCrateData,
           );
 
           // Log the update event
