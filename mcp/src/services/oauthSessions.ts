@@ -209,7 +209,9 @@ export async function validateClient(
   clientId: string,
   clientSecret?: string,
 ): Promise<boolean> {
-  console.log(`[OAuth] Validating client: ${clientId}, has secret: ${!!clientSecret}`);
+  console.log(
+    `[OAuth] Validating client: ${clientId}, has secret: ${!!clientSecret}`,
+  );
   const client = await getRegisteredClient(clientId);
   if (!client) {
     console.log(`[OAuth] Client validation failed: client not found`);
