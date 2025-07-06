@@ -265,6 +265,7 @@ export function configureOAuthRoutes(router: Router): void {
 
     // Validate client credentials
     if (!(await validateClient(client_id, client_secret))) {
+      console.log("[OAuth] Client validation failed for:", client_id);
       return res.status(401).json({
         error: "invalid_client",
         error_description: "Invalid client credentials",

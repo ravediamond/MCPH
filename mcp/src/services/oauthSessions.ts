@@ -209,16 +209,22 @@ export async function validateClient(
   clientId: string,
   clientSecret?: string,
 ): Promise<boolean> {
+  console.log(
+    `[OAuth] Validating client: ${clientId}, has secret: ${!!clientSecret}`,
+  );
   const client = await getRegisteredClient(clientId);
   if (!client) {
+    console.log(`[OAuth] Client validation failed: client not found`);
     return false;
   }
 
   // If client has a secret, it must match
   if (client.clientSecret && client.clientSecret !== clientSecret) {
+    console.log(`[OAuth] Client validation failed: secret mismatch`);
     return false;
   }
 
+  console.log(`[OAuth] Client validation successful`);
   return true;
 }
 
