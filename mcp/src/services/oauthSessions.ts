@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { db } from "../../../services/firebaseService";
 
 interface OAuthSession {
   authorizationCode: string;
@@ -23,9 +24,11 @@ interface RegisteredClient {
   createdAt: Date;
 }
 
-// Simple in-memory storage for OAuth sessions and registered clients
+// Simple in-memory storage for OAuth sessions (keeping sessions in memory for now)
 const oauthSessions = new Map<string, OAuthSession>();
-const registeredClients = new Map<string, RegisteredClient>();
+
+// Collections for Firestore persistence
+const OAUTH_CLIENTS_COLLECTION = "oauthClients";
 
 // Cleanup interval (run every 5 minutes)
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
@@ -129,14 +132,14 @@ export function validateState(state: string, expectedState: string): boolean {
 /**
  * Register a new OAuth client
  */
-export function registerClient(
+export async function registerClient(
   clientName: string,
   clientUri?: string,
   redirectUris?: string[],
   grantTypes?: string[],
   responseTypes?: string[],
   scope?: string,
-): RegisteredClient {
+): Promise<RegisteredClient> {
   const clientId = generateClientId();
   const clientSecret = generateClientSecret();
   const now = new Date();
@@ -154,27 +157,59 @@ export function registerClient(
     createdAt: now,
   };
 
-  registeredClients.set(clientId, client);
+  try {
+    // Save to Firestore
+    await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .set({
+        ...client,
+        createdAt: now,
+      });
 
-  console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
-  return client;
+    console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
+    return client;
+  } catch (error) {
+    console.error(`[OAuth] Failed to register client ${clientName}:`, error);
+    throw error;
+  }
 }
 
 /**
  * Get registered client by client ID
  */
-export function getRegisteredClient(clientId: string): RegisteredClient | null {
-  return registeredClients.get(clientId) || null;
+export async function getRegisteredClient(
+  clientId: string,
+): Promise<RegisteredClient | null> {
+  try {
+    const doc = await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .get();
+
+    if (!doc.exists) {
+      return null;
+    }
+
+    const data = doc.data();
+    return {
+      ...data,
+      createdAt: data?.createdAt?.toDate() || new Date(),
+    } as RegisteredClient;
+  } catch (error) {
+    console.error(`[OAuth] Failed to get client ${clientId}:`, error);
+    return null;
+  }
 }
 
 /**
  * Validate client credentials
  */
-export function validateClient(
+export async function validateClient(
   clientId: string,
   clientSecret?: string,
-): boolean {
-  const client = registeredClients.get(clientId);
+): Promise<boolean> {
+  const client = await getRegisteredClient(clientId);
   if (!client) {
     return false;
   }
@@ -190,11 +225,11 @@ export function validateClient(
 /**
  * Validate redirect URI for client
  */
-export function validateRedirectUri(
+export async function validateRedirectUri(
   clientId: string,
   redirectUri: string,
-): boolean {
-  const client = registeredClients.get(clientId);
+): Promise<boolean> {
+  const client = await getRegisteredClient(clientId);
   if (!client) {
     return false;
   }
