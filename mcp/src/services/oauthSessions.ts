@@ -253,7 +253,7 @@ export async function validateClient(
 
     // Special case: if this is an MCP client that was registered with a secret,
     // convert it to a public client (no secret required)
-    if (client.scope === "mcp" && !clientSecret) {
+    if ((client.scope === "mcp" || client.scope === "claudeai") && !clientSecret) {
       console.log(`[OAuth] Converting MCP client ${clientId} to public client`);
       await updateClientToPublic(clientId);
       // Continue with validation - the client is now public
