@@ -6,6 +6,36 @@ This is the Model Context Protocol server for MCPH, an AI artifact storage and s
 
 MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
 
+## Example Prompts
+
+Here are three working example prompts to get you started with MCPH:
+
+### 1. Upload and Share a Project File
+
+```
+I want to upload my React component code to share with my team. Here's the component:
+
+[paste your React component code here]
+
+Please upload this as a crate with the title "UserProfile Component" and tag it as "project:frontend" and "status:review-ready".
+```
+
+### 2. Search and Retrieve Team Resources
+
+```
+I'm looking for any markdown documentation files related to our API project. Search for crates tagged with "project:api" that contain documentation or guides.
+```
+
+### 3. Create a Password-Protected Code Snippet
+
+```
+I need to share a database configuration file with my teammate, but it contains sensitive information. Please upload this configuration file and make it password-protected with the password "team2024":
+
+[paste your config file here]
+
+Title it "Database Config - Production" and tag it as "project:backend" and "status:sensitive".
+```
+
 ## Core MCP Tools
 
 ### Fetching Crate Data

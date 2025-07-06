@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { ipThrottlingMiddleware, startThrottleCleanup } from "./throttling";
 import { mapUserToAuth } from "./mapUserToAuth";
+import {
+  standardTimeoutMiddleware,
+  extendedTimeoutMiddleware,
+} from "./timeout";
+import { metricsMiddleware } from "./metrics";
 
 /**
  * Middleware for CORS headers
@@ -24,4 +29,11 @@ export function corsMiddleware(
 }
 
 // Export all middleware for easy import
-export { ipThrottlingMiddleware, startThrottleCleanup, mapUserToAuth };
+export {
+  ipThrottlingMiddleware,
+  startThrottleCleanup,
+  mapUserToAuth,
+  standardTimeoutMiddleware,
+  extendedTimeoutMiddleware,
+  metricsMiddleware,
+};
