@@ -190,10 +190,10 @@ export default function Home() {
       <section className="py-10 md:py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
-            Complete Workflow in 4 Steps
+            Complete Workflow in 5 Steps
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <FaUpload className="text-lg md:text-xl" />
@@ -289,6 +289,39 @@ export default function Home() {
               </h3>
               <p className="text-gray-600 text-center text-base md:text-lg">
                 Share with humans and AI - no login required.
+              </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
+                Collect Feedback
+              </h3>
+              <p className="text-gray-600 text-center text-base md:text-lg">
+                Create custom feedback forms to gather user insights.
               </p>
               <div className="mt-3 flex justify-center gap-2">
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
@@ -479,6 +512,36 @@ export default function Home() {
               <p className="text-sm text-gray-600">
                 All AI tools—Claude, ChatGPT, Gemini—can write and access the
                 same artifacts.
+              </p>
+            </div>
+
+            {/* 6. Feedback Collection */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Feedback Collection
+              </h4>
+              <p className="text-sm text-gray-600">
+                Create custom feedback forms and collect user responses with
+                powerful form builder.
               </p>
             </div>
           </div>
@@ -807,7 +870,24 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-gray-600">5 shared crates max</span>
+                  <span className="text-gray-600">10 shared crates max</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-600">
+                    5 feedback templates max
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
