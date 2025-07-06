@@ -116,6 +116,11 @@ export default function CratePage() {
   const [shareUrl, setShareUrl] = useState("");
   const [sharingLoading, setSharingLoading] = useState(false);
 
+  // New copy-related state variables
+  const [copyLoading, setCopyLoading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
+
   // Fetch crate metadata only when crateId changes or when auth state changes
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -428,6 +433,53 @@ export default function CratePage() {
     setSharingSuccess(null);
     setShareUrl(`${window.location.origin}/crate/${crateId}`);
     setShowSharingModal(true);
+  };
+
+  // New function to copy crate to user's collection
+  const handleCopyCrate = async () => {
+    if (!crateInfo) return;
+
+    setCopyLoading(true);
+    setCopyError(null);
+    setCopySuccess(null);
+
+    try {
+      // Get the auth token
+      const idToken = await getIdToken();
+
+      // Include the auth token in the request headers
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (idToken) {
+        headers["Authorization"] = `Bearer ${idToken}`;
+      }
+
+      const response = await fetch(`/api/crates/${crateId}/copy`, {
+        method: "POST",
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to copy crate");
+      }
+
+      setCopySuccess(
+        `Crate copied successfully! New crate: "${data.crate.title}"`,
+      );
+
+      // Auto-clear success message after 5 seconds
+      setTimeout(() => setCopySuccess(null), 5000);
+    } catch (error: any) {
+      setCopyError(error.message || "Failed to copy crate");
+      // Auto-clear error message after 5 seconds
+      setTimeout(() => setCopyError(null), 5000);
+    } finally {
+      setCopyLoading(false);
+    }
   };
 
   // New function to update sharing settings
@@ -1332,6 +1384,18 @@ export default function CratePage() {
               </div>
             </div>
 
+            {/* Success/Error Messages */}
+            {copySuccess && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                {copySuccess}
+              </div>
+            )}
+            {copyError && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {copyError}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2">
               <button
@@ -1341,6 +1405,31 @@ export default function CratePage() {
                 <FaFileDownload className="mr-2 text-lg" />
                 <span>Download</span>
               </button>
+
+              {/* Copy to My Crates button - only show for non-owners of public/accessible crates */}
+              {!crateInfo.isOwner && user && (
+                <button
+                  onClick={handleCopyCrate}
+                  disabled={copyLoading}
+                  className="flex items-center justify-center px-4 py-2 bg-green-500 text-white text-base font-medium rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition-colors border border-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaUpload className="mr-2 text-lg" />
+                  <span>
+                    {copyLoading ? "Copying..." : "Copy to My Crates"}
+                  </span>
+                </button>
+              )}
+
+              {/* Show sign-in prompt for anonymous users */}
+              {!crateInfo.isOwner && !user && (
+                <button
+                  onClick={() => signInWithGoogle()}
+                  className="flex items-center justify-center px-4 py-2 bg-purple-500 text-white text-base font-medium rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 transition-colors border border-purple-600"
+                >
+                  <FaUpload className="mr-2 text-lg" />
+                  <span>Sign in to Copy</span>
+                </button>
+              )}
 
               <button
                 onClick={handleOpenSharingModal}
