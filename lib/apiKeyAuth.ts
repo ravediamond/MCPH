@@ -114,12 +114,12 @@ export function apiKeyAuthMiddleware(
       userId: "oauth_user", // Use a generic OAuth user ID
       authMethod: "firebase_auth",
     };
-    
+
     // Extract client name if available in the request
     if (req.body?.params?.name) {
       req.clientName = req.body.params.name;
     }
-    
+
     return next();
   }
 
