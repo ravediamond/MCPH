@@ -15,7 +15,11 @@ export function configureOAuthRoutes(router: Router): void {
   router.get(
     "/.well-known/oauth-authorization-server",
     (req: Request, res: Response) => {
-      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      // Use HTTPS for production deployments, HTTP for localhost
+      const protocol =
+        req.get("x-forwarded-proto") ||
+        (req.get("host")?.includes("localhost") ? req.protocol : "https");
+      const baseUrl = `${protocol}://${req.get("host")}`;
 
       const metadata = {
         issuer: baseUrl,
@@ -27,7 +31,7 @@ export function configureOAuthRoutes(router: Router): void {
         scopes_supported: ["mcp"],
       };
 
-      console.log("[OAuth] Serving discovery metadata");
+      console.log("[OAuth] Serving discovery metadata for", baseUrl);
       res.json(metadata);
     },
   );
@@ -55,11 +59,17 @@ export function configureOAuthRoutes(router: Router): void {
     // Store the authorization request parameters in session
     const authState = generateState();
 
+    // Use HTTPS for production deployments, HTTP for localhost
+    const protocol =
+      req.get("x-forwarded-proto") ||
+      (req.get("host")?.includes("localhost") ? req.protocol : "https");
+    const callbackUrl = `${protocol}://${req.get("host")}/auth/callback`;
+
     // Create Google OAuth URL that will be handled by Firebase Auth
     const googleOAuthUrl =
       `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.GOOGLE_OAUTH_CLIENT_ID}` +
-      `&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get("host")}/auth/callback`)}` +
+      `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
       `&response_type=code` +
       `&scope=openid email profile` +
       `&state=${encodeURIComponent(
