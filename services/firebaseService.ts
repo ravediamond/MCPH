@@ -1001,7 +1001,7 @@ export interface McpClient {
   id: string;
   userId: string;
   clientName: string;
-  authMethod: 'api_key' | 'firebase_auth';
+  authMethod: "api_key" | "firebase_auth";
   registeredAt: Date;
   lastSeenAt: Date;
 }
@@ -1012,14 +1012,14 @@ export interface McpClient {
 export async function registerMcpClient(
   userId: string,
   clientName: string,
-  authMethod: 'api_key' | 'firebase_auth'
+  authMethod: "api_key" | "firebase_auth",
 ): Promise<McpClient> {
   try {
     const clientId = `${userId}_${clientName}`;
     const now = new Date();
-    
+
     const existingClient = await getMcpClient(clientId);
-    
+
     const clientData: McpClient = {
       id: clientId,
       userId,
@@ -1029,9 +1029,14 @@ export async function registerMcpClient(
       lastSeenAt: now,
     };
 
-    await db.collection(MCP_CLIENTS_COLLECTION).doc(clientId).set(toFirestoreData(clientData));
-    
-    console.log(`[registerMcpClient] Client ${clientName} registered for user ${userId} with ${authMethod}`);
+    await db
+      .collection(MCP_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .set(toFirestoreData(clientData));
+
+    console.log(
+      `[registerMcpClient] Client ${clientName} registered for user ${userId} with ${authMethod}`,
+    );
     return clientData;
   } catch (error) {
     console.error("Error registering MCP client:", error);
@@ -1042,7 +1047,9 @@ export async function registerMcpClient(
 /**
  * Get MCP client information
  */
-export async function getMcpClient(clientId: string): Promise<McpClient | null> {
+export async function getMcpClient(
+  clientId: string,
+): Promise<McpClient | null> {
   try {
     const doc = await db.collection(MCP_CLIENTS_COLLECTION).doc(clientId).get();
     if (!doc.exists) {
@@ -1066,7 +1073,9 @@ export async function listUserMcpClients(userId: string): Promise<McpClient[]> {
       .orderBy("lastSeenAt", "desc")
       .get();
 
-    return querySnapshot.docs.map(doc => fromFirestoreData(doc.data()) as McpClient);
+    return querySnapshot.docs.map(
+      (doc) => fromFirestoreData(doc.data()) as McpClient,
+    );
   } catch (error) {
     console.error("Error listing user MCP clients:", error);
     return [];

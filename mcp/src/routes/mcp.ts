@@ -62,9 +62,11 @@ export function configureMcpRoutes(router: Router): void {
             await registerMcpClient(
               authReq.user.userId,
               clientName,
-              authReq.user.authMethod
+              authReq.user.authMethod,
             );
-            console.log(`[MCP] Auto-registered client ${clientName} for user ${authReq.user.userId}`);
+            console.log(
+              `[MCP] Auto-registered client ${clientName} for user ${authReq.user.userId}`,
+            );
           } catch (error) {
             console.error("[MCP] Error auto-registering client:", error);
             // Don't fail the request if client registration fails

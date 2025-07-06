@@ -32,7 +32,7 @@ class CustomResponse {
 export interface AuthenticatedRequest extends IncomingMessage {
   user?: {
     userId: string;
-    authMethod: 'api_key' | 'firebase_auth';
+    authMethod: "api_key" | "firebase_auth";
   };
   clientName?: string;
   body: any;
@@ -98,7 +98,8 @@ export function apiKeyAuthMiddleware(
       jsonrpc: "2.0",
       error: {
         code: -32001,
-        message: "Authentication required. Please provide a valid API key or Firebase token.",
+        message:
+          "Authentication required. Please provide a valid API key or Firebase token.",
       },
       id: req.body?.id || null,
     });
@@ -112,11 +113,11 @@ export function apiKeyAuthMiddleware(
       // Import Firebase Admin auth
       const { auth } = await import("../lib/firebaseAdmin");
       const decodedToken = await auth.verifyIdToken(token);
-      
+
       // Firebase auth successful
       req.user = {
         userId: decodedToken.uid,
-        authMethod: 'firebase_auth',
+        authMethod: "firebase_auth",
       };
 
       // Extract client name if available in the request
@@ -124,12 +125,17 @@ export function apiKeyAuthMiddleware(
         req.clientName = req.body.params.name;
       }
 
-      console.log("[apiKeyAuthMiddleware] Firebase auth successful for user:", decodedToken.uid);
+      console.log(
+        "[apiKeyAuthMiddleware] Firebase auth successful for user:",
+        decodedToken.uid,
+      );
       return next();
     } catch (firebaseError) {
       // Firebase auth failed, try API key
-      console.log("[apiKeyAuthMiddleware] Firebase auth failed, trying API key");
-      
+      console.log(
+        "[apiKeyAuthMiddleware] Firebase auth failed, trying API key",
+      );
+
       try {
         const apiKeyRecord = await findUserByApiKey(token);
         if (!apiKeyRecord) {
@@ -147,7 +153,7 @@ export function apiKeyAuthMiddleware(
         // API key auth successful
         req.user = {
           userId: apiKeyRecord.userId,
-          authMethod: 'api_key',
+          authMethod: "api_key",
         };
 
         // Extract client name if available in the request
@@ -155,10 +161,16 @@ export function apiKeyAuthMiddleware(
           req.clientName = req.body.params.name;
         }
 
-        console.log("[apiKeyAuthMiddleware] API key auth successful for user:", apiKeyRecord.userId);
+        console.log(
+          "[apiKeyAuthMiddleware] API key auth successful for user:",
+          apiKeyRecord.userId,
+        );
         next();
       } catch (apiKeyError) {
-        console.error("[apiKeyAuthMiddleware] Error validating API key:", apiKeyError);
+        console.error(
+          "[apiKeyAuthMiddleware] Error validating API key:",
+          apiKeyError,
+        );
         res.status(500).json({
           jsonrpc: "2.0",
           error: {
