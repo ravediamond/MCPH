@@ -7,6 +7,7 @@ import {
   AuthenticatedRequest,
 } from "../../../lib/apiKeyAuth";
 import { mapUserToAuth } from "../middleware/mapUserToAuth";
+import { registerMcpClient } from "../../../services/firebaseService";
 
 /**
  * Configure routes for the MCP server
@@ -53,6 +54,23 @@ export function configureMcpRoutes(router: Router): void {
         else if (authReq.body && authReq.body.params?.name) {
           clientName = authReq.body.params.name;
           authReq.clientName = clientName;
+        }
+
+        // Auto-register client if authenticated and client name is available
+        if (authReq.user && clientName) {
+          try {
+            await registerMcpClient(
+              authReq.user.userId,
+              clientName,
+              authReq.user.authMethod,
+            );
+            console.log(
+              `[MCP] Auto-registered client ${clientName} for user ${authReq.user.userId}`,
+            );
+          } catch (error) {
+            console.error("[MCP] Error auto-registering client:", error);
+            // Don't fail the request if client registration fails
+          }
         }
 
         // Set MCP-Protocol-Version header for all responses
