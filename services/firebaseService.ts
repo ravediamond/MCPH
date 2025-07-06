@@ -993,3 +993,82 @@ export async function bulkTransferCrateOwnership(
     successCount,
   };
 }
+
+// MCP Client Registration
+const MCP_CLIENTS_COLLECTION = "mcpClients";
+
+export interface McpClient {
+  id: string;
+  userId: string;
+  clientName: string;
+  authMethod: 'api_key' | 'firebase_auth';
+  registeredAt: Date;
+  lastSeenAt: Date;
+}
+
+/**
+ * Register or update an MCP client
+ */
+export async function registerMcpClient(
+  userId: string,
+  clientName: string,
+  authMethod: 'api_key' | 'firebase_auth'
+): Promise<McpClient> {
+  try {
+    const clientId = `${userId}_${clientName}`;
+    const now = new Date();
+    
+    const existingClient = await getMcpClient(clientId);
+    
+    const clientData: McpClient = {
+      id: clientId,
+      userId,
+      clientName,
+      authMethod,
+      registeredAt: existingClient?.registeredAt || now,
+      lastSeenAt: now,
+    };
+
+    await db.collection(MCP_CLIENTS_COLLECTION).doc(clientId).set(toFirestoreData(clientData));
+    
+    console.log(`[registerMcpClient] Client ${clientName} registered for user ${userId} with ${authMethod}`);
+    return clientData;
+  } catch (error) {
+    console.error("Error registering MCP client:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get MCP client information
+ */
+export async function getMcpClient(clientId: string): Promise<McpClient | null> {
+  try {
+    const doc = await db.collection(MCP_CLIENTS_COLLECTION).doc(clientId).get();
+    if (!doc.exists) {
+      return null;
+    }
+    return fromFirestoreData(doc.data()) as McpClient;
+  } catch (error) {
+    console.error("Error getting MCP client:", error);
+    return null;
+  }
+}
+
+/**
+ * List all MCP clients for a user
+ */
+export async function listUserMcpClients(userId: string): Promise<McpClient[]> {
+  try {
+    const querySnapshot = await db
+      .collection(MCP_CLIENTS_COLLECTION)
+      .where("userId", "==", userId)
+      .orderBy("lastSeenAt", "desc")
+      .get();
+
+    return querySnapshot.docs.map(doc => fromFirestoreData(doc.data()) as McpClient);
+  } catch (error) {
+    console.error("Error listing user MCP clients:", error);
+    return [];
+  }
+}

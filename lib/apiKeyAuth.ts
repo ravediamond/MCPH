@@ -32,6 +32,7 @@ class CustomResponse {
 export interface AuthenticatedRequest extends IncomingMessage {
   user?: {
     userId: string;
+    authMethod: 'api_key' | 'firebase_auth';
   };
   clientName?: string;
   body: any;
@@ -74,14 +75,14 @@ export async function requireApiKeyAuth(req: NextRequest) {
 }
 
 /**
- * Express middleware to check API key authentication
+ * Express middleware to check both Firebase Auth and API key authentication
  */
 export function apiKeyAuthMiddleware(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
 ) {
-  // Look for the API key in headers (prefer x-authorization, fallback to authorization)
+  // Look for authorization in headers
   const authHeader =
     req.headers["x-authorization"] || req.headers.authorization;
 
@@ -97,32 +98,25 @@ export function apiKeyAuthMiddleware(
       jsonrpc: "2.0",
       error: {
         code: -32001,
-        message: "Authentication required. Please provide a valid API key.",
+        message: "Authentication required. Please provide a valid API key or Firebase token.",
       },
       id: req.body?.id || null,
     });
   }
 
-  const apiKey = authHeader.replace("Bearer ", "").trim();
+  const token = authHeader.replace("Bearer ", "").trim();
 
-  // Validate the API key against the database
-  findUserByApiKey(apiKey)
-    .then((apiKeyRecord: ApiKeyRecord | null) => {
-      if (!apiKeyRecord) {
-        console.log("[apiKeyAuthMiddleware] API key not found in database");
-        return res.status(401).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32001,
-            message: "Invalid API key.",
-          },
-          id: req.body?.id || null,
-        });
-      }
-
-      // Attach the user to the request object for use in downstream handlers
+  // Try Firebase Auth first
+  (async () => {
+    try {
+      // Import Firebase Admin auth
+      const { auth } = await import("../lib/firebaseAdmin");
+      const decodedToken = await auth.verifyIdToken(token);
+      
+      // Firebase auth successful
       req.user = {
-        userId: apiKeyRecord.userId,
+        userId: decodedToken.uid,
+        authMethod: 'firebase_auth',
       };
 
       // Extract client name if available in the request
@@ -130,19 +124,52 @@ export function apiKeyAuthMiddleware(
         req.clientName = req.body.params.name;
       }
 
-      next();
-    })
-    .catch((error: unknown) => {
-      console.error("[apiKeyAuthMiddleware] Error validating API key:", error);
-      res.status(500).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32603,
-          message: "Internal server error during authentication.",
-        },
-        id: req.body?.id || null,
-      });
-    });
+      console.log("[apiKeyAuthMiddleware] Firebase auth successful for user:", decodedToken.uid);
+      return next();
+    } catch (firebaseError) {
+      // Firebase auth failed, try API key
+      console.log("[apiKeyAuthMiddleware] Firebase auth failed, trying API key");
+      
+      try {
+        const apiKeyRecord = await findUserByApiKey(token);
+        if (!apiKeyRecord) {
+          console.log("[apiKeyAuthMiddleware] API key not found in database");
+          return res.status(401).json({
+            jsonrpc: "2.0",
+            error: {
+              code: -32001,
+              message: "Invalid API key or Firebase token.",
+            },
+            id: req.body?.id || null,
+          });
+        }
+
+        // API key auth successful
+        req.user = {
+          userId: apiKeyRecord.userId,
+          authMethod: 'api_key',
+        };
+
+        // Extract client name if available in the request
+        if (req.body?.params?.name) {
+          req.clientName = req.body.params.name;
+        }
+
+        console.log("[apiKeyAuthMiddleware] API key auth successful for user:", apiKeyRecord.userId);
+        next();
+      } catch (apiKeyError) {
+        console.error("[apiKeyAuthMiddleware] Error validating API key:", apiKeyError);
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: {
+            code: -32603,
+            message: "Internal server error during authentication.",
+          },
+          id: req.body?.id || null,
+        });
+      }
+    }
+  })();
 }
 
 /**
