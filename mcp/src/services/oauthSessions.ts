@@ -141,7 +141,8 @@ export async function registerClient(
   scope?: string,
 ): Promise<RegisteredClient> {
   const clientId = generateClientId();
-  const clientSecret = generateClientSecret();
+  // For MCP clients, don't generate a client secret (public clients)
+  const clientSecret = scope === "mcp" ? undefined : generateClientSecret();
   const now = new Date();
 
   const client: RegisteredClient = {
@@ -172,6 +173,26 @@ export async function registerClient(
   } catch (error) {
     console.error(`[OAuth] Failed to register client ${clientName}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Update existing client to remove client secret (for public clients)
+ */
+export async function updateClientToPublic(clientId: string): Promise<boolean> {
+  try {
+    await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .update({
+        clientSecret: null,
+      });
+    
+    console.log(`[OAuth] Updated client ${clientId} to public client (no secret)`);
+    return true;
+  } catch (error) {
+    console.error(`[OAuth] Failed to update client ${clientId}:`, error);
+    return false;
   }
 }
 
@@ -220,8 +241,16 @@ export async function validateClient(
 
   // If client has a secret, it must match
   if (client.clientSecret && client.clientSecret !== clientSecret) {
-    console.log(`[OAuth] Client validation failed: secret mismatch`);
-    return false;
+    // Special case: if this is an MCP client that was registered with a secret,
+    // convert it to a public client (no secret required)
+    if (client.scope === "mcp" && !clientSecret) {
+      console.log(`[OAuth] Converting MCP client ${clientId} to public client`);
+      await updateClientToPublic(clientId);
+      // Continue with validation - the client is now public
+    } else {
+      console.log(`[OAuth] Client validation failed: secret mismatch`);
+      return false;
+    }
   }
 
   console.log(`[OAuth] Client validation successful`);
