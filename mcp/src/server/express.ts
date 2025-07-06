@@ -8,12 +8,24 @@ import {
 } from "../middleware";
 import { configureRoutes } from "../routes";
 import { startOAuthSessionCleanup } from "../services/oauthSessions";
+import { standardTimeoutMiddleware } from "../middleware/timeout";
+import { metricsMiddleware } from "../middleware/metrics";
+import { requestLoggingMiddleware } from "../utils/logger";
 
 /**
  * Initialize and configure the Express server
  */
 export function createServer() {
   const app = express();
+
+  // Add request logging middleware first (for request ID generation)
+  app.use(requestLoggingMiddleware());
+
+  // Add timeout middleware for MCP best practices compliance (1-second response time)
+  app.use(standardTimeoutMiddleware);
+
+  // Add metrics collection middleware
+  app.use(metricsMiddleware);
 
   // Configure and use helmet for security headers
   app.use(
