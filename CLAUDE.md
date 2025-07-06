@@ -164,6 +164,33 @@ Currently no automated tests are configured. When adding tests:
 - `tsconfig.json`: TypeScript configuration
 - `firebase.json`: Firebase project configuration
 
+## Development Guidelines
+
+### Core Principles
+
+- **Keep it simple**: Don't over-engineer solutions
+- **No tests**: Don't implement automated tests unless explicitly requested
+- **Plan first**: Always create a detailed implementation plan and get approval before coding
+- **Minimal changes**: Prefer modifying existing code over creating new files
+- **Format before commit**: Always run `npx prettier --write .` before pushing changes
+
+### Workflow
+
+1. **Planning Phase**: Create detailed implementation plan with file-by-file changes
+2. **Validation**: Present plan for approval before making any code changes
+3. **Implementation**: Make minimal, focused changes
+4. **Formatting**: Run `npx prettier --write .` to format all code
+5. **Testing**: Verify with `npm run type-check` and `npm run build`
+6. **Commit**: Use descriptive commit messages with proper formatting
+
+### Code Quality
+
+- Run `npx prettier --write .` before every commit
+- Use TypeScript strictly - no `any` types unless necessary
+- Follow existing patterns and conventions
+- Keep functions small and focused
+- Add logging for debugging but avoid verbose output
+
 ## Common Operations
 
 ### Adding a New MCP Tool
@@ -171,7 +198,7 @@ Currently no automated tests are configured. When adding tests:
 1. Create tool file in `mcp/src/tools/`
 2. Export register function
 3. Add to `mcp/src/tools/index.ts`
-4. Test with MCP client
+4. Run prettier and test with MCP client
 
 ### Adding a New API Route
 
@@ -179,6 +206,7 @@ Currently no automated tests are configured. When adding tests:
 2. Use `route.ts` naming convention
 3. Implement proper authentication if needed
 4. Add error handling
+5. Format code with prettier
 
 ### Adding New Components
 
@@ -186,3 +214,4 @@ Currently no automated tests are configured. When adding tests:
 2. Use TypeScript interfaces for props
 3. Follow existing styling patterns
 4. Export from index files when appropriate
+5. Format with prettier before committing
