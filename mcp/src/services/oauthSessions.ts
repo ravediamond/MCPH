@@ -159,11 +159,14 @@ export async function registerClient(
 
   try {
     // Save to Firestore
-    await db.collection(OAUTH_CLIENTS_COLLECTION).doc(clientId).set({
-      ...client,
-      createdAt: now,
-    });
-    
+    await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .set({
+        ...client,
+        createdAt: now,
+      });
+
     console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
     return client;
   } catch (error) {
@@ -175,14 +178,19 @@ export async function registerClient(
 /**
  * Get registered client by client ID
  */
-export async function getRegisteredClient(clientId: string): Promise<RegisteredClient | null> {
+export async function getRegisteredClient(
+  clientId: string,
+): Promise<RegisteredClient | null> {
   try {
-    const doc = await db.collection(OAUTH_CLIENTS_COLLECTION).doc(clientId).get();
-    
+    const doc = await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .get();
+
     if (!doc.exists) {
       return null;
     }
-    
+
     const data = doc.data();
     return {
       ...data,

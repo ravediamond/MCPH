@@ -133,7 +133,9 @@ export function configureOAuthRoutes(router: Router): void {
       });
     }
 
-    if (!(await validateRedirectUri(client_id as string, redirect_uri as string))) {
+    if (
+      !(await validateRedirectUri(client_id as string, redirect_uri as string))
+    ) {
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Invalid redirect URI",
