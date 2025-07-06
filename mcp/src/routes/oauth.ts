@@ -5,12 +5,79 @@ import {
   storeOAuthSession,
   consumeOAuthSession,
   validateState,
+  registerClient,
+  getRegisteredClient,
+  validateClient,
+  validateRedirectUri,
 } from "../services/oauthSessions";
 
 /**
  * Configure OAuth routes for the MCP server
  */
 export function configureOAuthRoutes(router: Router): void {
+  // Client Registration Endpoint (Dynamic Client Registration)
+  router.post("/oauth/register", (req: Request, res: Response) => {
+    const {
+      client_name,
+      client_uri,
+      redirect_uris,
+      grant_types,
+      response_types,
+      scope,
+    } = req.body;
+
+    console.log("[OAuth] Client registration request:", {
+      client_name,
+      client_uri,
+      redirect_uris,
+      grant_types,
+      response_types,
+      scope,
+    });
+
+    // Validate required fields
+    if (!client_name) {
+      return res.status(400).json({
+        error: "invalid_client_metadata",
+        error_description: "client_name is required",
+      });
+    }
+
+    try {
+      // Register the client
+      const client = registerClient(
+        client_name,
+        client_uri,
+        redirect_uris,
+        grant_types,
+        response_types,
+        scope,
+      );
+
+      // Return registration response according to MCP spec
+      const response = {
+        client_id: client.clientId,
+        client_secret: client.clientSecret,
+        client_id_issued_at: client.clientIdIssuedAt,
+        client_name: client.clientName,
+        client_uri: client.clientUri,
+        redirect_uris: client.redirectUris,
+        grant_types: client.grantTypes,
+        response_types: client.responseTypes,
+        scope: client.scope,
+      };
+
+      console.log("[OAuth] Client registered successfully:", client.clientId);
+      res.status(201).json(response);
+    } catch (error) {
+      console.error("[OAuth] Client registration error:", error);
+      res.status(500).json({
+        error: "server_error",
+        error_description: "Failed to register client",
+      });
+    }
+  });
+
   // OAuth Discovery Endpoint
   router.get(
     "/.well-known/oauth-authorization-server",
@@ -25,6 +92,7 @@ export function configureOAuthRoutes(router: Router): void {
         issuer: baseUrl,
         authorization_endpoint: `${baseUrl}/auth/authorize`,
         token_endpoint: `${baseUrl}/auth/token`,
+        registration_endpoint: `${baseUrl}/oauth/register`,
         response_types_supported: ["code"],
         grant_types_supported: ["authorization_code"],
         code_challenge_methods_supported: ["plain", "S256"],
@@ -53,6 +121,22 @@ export function configureOAuthRoutes(router: Router): void {
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Missing or invalid required parameters",
+      });
+    }
+
+    // Validate client exists and redirect URI is authorized
+    const client = getRegisteredClient(client_id as string);
+    if (!client) {
+      return res.status(400).json({
+        error: "invalid_client",
+        error_description: "Client not found or not registered",
+      });
+    }
+
+    if (!validateRedirectUri(client_id as string, redirect_uri as string)) {
+      return res.status(400).json({
+        error: "invalid_request",
+        error_description: "Invalid redirect URI",
       });
     }
 
@@ -151,7 +235,8 @@ export function configureOAuthRoutes(router: Router): void {
 
   // Token Exchange Endpoint
   router.post("/auth/token", async (req: Request, res: Response) => {
-    const { grant_type, code, redirect_uri, client_id } = req.body;
+    const { grant_type, code, redirect_uri, client_id, client_secret } =
+      req.body;
 
     console.log("[OAuth] Token exchange request:", {
       grant_type,
@@ -173,6 +258,14 @@ export function configureOAuthRoutes(router: Router): void {
       return res.status(400).json({
         error: "invalid_request",
         error_description: "Missing required parameters",
+      });
+    }
+
+    // Validate client credentials
+    if (!validateClient(client_id, client_secret)) {
+      return res.status(401).json({
+        error: "invalid_client",
+        error_description: "Invalid client credentials",
       });
     }
 

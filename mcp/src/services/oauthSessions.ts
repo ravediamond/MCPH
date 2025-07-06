@@ -10,8 +10,22 @@ interface OAuthSession {
   expiresAt: Date;
 }
 
-// Simple in-memory storage for OAuth sessions
+interface RegisteredClient {
+  clientId: string;
+  clientSecret?: string;
+  clientName: string;
+  clientUri?: string;
+  redirectUris: string[];
+  grantTypes: string[];
+  responseTypes: string[];
+  scope: string;
+  clientIdIssuedAt: number;
+  createdAt: Date;
+}
+
+// Simple in-memory storage for OAuth sessions and registered clients
 const oauthSessions = new Map<string, OAuthSession>();
+const registeredClients = new Map<string, RegisteredClient>();
 
 // Cleanup interval (run every 5 minutes)
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
@@ -29,6 +43,20 @@ export function generateAuthorizationCode(): string {
  */
 export function generateState(): string {
   return randomBytes(16).toString("base64url");
+}
+
+/**
+ * Generate a secure client ID
+ */
+export function generateClientId(): string {
+  return `mcp_${randomBytes(16).toString("base64url")}`;
+}
+
+/**
+ * Generate a secure client secret
+ */
+export function generateClientSecret(): string {
+  return randomBytes(32).toString("base64url");
 }
 
 /**
@@ -96,6 +124,87 @@ export function consumeOAuthSession(
  */
 export function validateState(state: string, expectedState: string): boolean {
   return state === expectedState;
+}
+
+/**
+ * Register a new OAuth client
+ */
+export function registerClient(
+  clientName: string,
+  clientUri?: string,
+  redirectUris?: string[],
+  grantTypes?: string[],
+  responseTypes?: string[],
+  scope?: string,
+): RegisteredClient {
+  const clientId = generateClientId();
+  const clientSecret = generateClientSecret();
+  const now = new Date();
+
+  const client: RegisteredClient = {
+    clientId,
+    clientSecret,
+    clientName,
+    clientUri,
+    redirectUris: redirectUris || [],
+    grantTypes: grantTypes || ["authorization_code"],
+    responseTypes: responseTypes || ["code"],
+    scope: scope || "mcp",
+    clientIdIssuedAt: Math.floor(now.getTime() / 1000),
+    createdAt: now,
+  };
+
+  registeredClients.set(clientId, client);
+
+  console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
+  return client;
+}
+
+/**
+ * Get registered client by client ID
+ */
+export function getRegisteredClient(clientId: string): RegisteredClient | null {
+  return registeredClients.get(clientId) || null;
+}
+
+/**
+ * Validate client credentials
+ */
+export function validateClient(
+  clientId: string,
+  clientSecret?: string,
+): boolean {
+  const client = registeredClients.get(clientId);
+  if (!client) {
+    return false;
+  }
+
+  // If client has a secret, it must match
+  if (client.clientSecret && client.clientSecret !== clientSecret) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Validate redirect URI for client
+ */
+export function validateRedirectUri(
+  clientId: string,
+  redirectUri: string,
+): boolean {
+  const client = registeredClients.get(clientId);
+  if (!client) {
+    return false;
+  }
+
+  // If no redirect URIs registered, allow any (for development)
+  if (client.redirectUris.length === 0) {
+    return true;
+  }
+
+  return client.redirectUris.includes(redirectUri);
 }
 
 /**
