@@ -7,6 +7,7 @@ import {
   startThrottleCleanup,
 } from "../middleware";
 import { configureRoutes } from "../routes";
+import { startOAuthSessionCleanup } from "../services/oauthSessions";
 
 /**
  * Initialize and configure the Express server
@@ -86,6 +87,9 @@ export function createServer() {
 
   // Start the cleanup interval for the throttle map
   startThrottleCleanup();
+
+  // Start OAuth session cleanup
+  startOAuthSessionCleanup();
 
   // Add CORS headers for API endpoints
   app.use(corsMiddleware);
