@@ -35,10 +35,10 @@ export default function UploadPage() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
           <Link
-            href="/home"
+            href="/crates"
             className="inline-flex items-center text-gray-600 hover:text-primary-500 mb-4"
           >
-            <FaArrowLeft className="mr-2" /> Back to Dashboard
+            <FaArrowLeft className="mr-2" /> Back to Crates
           </Link>
 
           <h1 className="text-3xl font-bold text-gray-800 mb-2">

@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             error:
-              "Shared crates limit reached. You can share a maximum of 50 crates. Please delete some shared crates before sharing new ones.",
+              "Shared crates limit reached. You can share a maximum of 10 crates. Please delete some shared crates before sharing new ones.",
           },
           { status: 403 },
         );

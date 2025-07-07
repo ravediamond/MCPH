@@ -1,6 +1,13 @@
 import React from "react";
 import Link from "next/link";
-import { FaShareAlt, FaEye, FaDownload, FaTrash } from "react-icons/fa";
+import {
+  FaShareAlt,
+  FaEye,
+  FaDownload,
+  FaTrash,
+  FaEdit,
+  FaChartBar,
+} from "react-icons/fa";
 import Card from "../ui/Card";
 import CrateTag from "./CrateTag";
 import { Crate } from "@/app/types/crate";
@@ -60,10 +67,23 @@ const CrateCard: React.FC<CrateCardProps> = ({
               )}
 
               <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
-                <div className="truncate mr-2">{formatFileSize(file.size)}</div>
+                <div className="truncate mr-2">
+                  {file.category === "feedback"
+                    ? "Feedback Template"
+                    : formatFileSize(file.size)}
+                </div>
                 <div className="flex items-center whitespace-nowrap">
-                  <FaDownload className="mr-1" size={10} />{" "}
-                  {file.downloadCount || 0}
+                  {file.category === "feedback" ? (
+                    <>
+                      <FaChartBar className="mr-1" size={10} />
+                      {file.metadata?.submissionCount || 0} responses
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload className="mr-1" size={10} />
+                      {file.downloadCount || 0}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -187,12 +207,23 @@ const CrateCard: React.FC<CrateCardProps> = ({
             </span>
           </div>
 
-          {/* Downloads */}
+          {/* Downloads or Responses */}
           <div className="text-xs">
-            <span className="text-gray-500 mr-1">Downloads:</span>
-            <span className="font-medium text-gray-700">
-              {file.downloadCount || 0}
-            </span>
+            {file.category === "feedback" ? (
+              <>
+                <span className="text-gray-500 mr-1">Responses:</span>
+                <span className="font-medium text-gray-700">
+                  {file.metadata?.submissionCount || 0}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-gray-500 mr-1">Downloads:</span>
+                <span className="font-medium text-gray-700">
+                  {file.downloadCount || 0}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -302,13 +333,32 @@ const CrateCard: React.FC<CrateCardProps> = ({
               <FaEye size={14} />
             </Link>
 
-            <Link
-              href={`/download/${file.id}`}
-              className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-              title="Download"
-            >
-              <FaDownload size={14} />
-            </Link>
+            {file.category === "feedback" ? (
+              <>
+                <Link
+                  href={`/feedback/responses/${file.id}`}
+                  className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                  title="View responses"
+                >
+                  <FaChartBar size={14} />
+                </Link>
+                <Link
+                  href={`/feedback/manage?edit=${file.id}`}
+                  className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                  title="Edit template"
+                >
+                  <FaEdit size={14} />
+                </Link>
+              </>
+            ) : (
+              <Link
+                href={`/download/${file.id}`}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+                title="Download"
+              >
+                <FaDownload size={14} />
+              </Link>
+            )}
 
             <button
               onClick={() => {

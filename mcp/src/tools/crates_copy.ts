@@ -93,7 +93,7 @@ export function registerCratesCopyTool(server: McpServer): void {
 
         // Prepare new crate data for the copy
         const newCrateData = {
-          title: `Copy of ${sourceCrate.title}`,
+          title: sourceCrate.title,
           description: sourceCrate.description,
           ownerId: userUid,
           category: sourceCrate.category,

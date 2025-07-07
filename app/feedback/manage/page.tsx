@@ -3,11 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function HomePage() {
+export default function ManageFeedbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to /crates since /home is now /crates
+    // Redirect to /crates since feedback management is now integrated there
     router.replace("/crates");
   }, [router]);
 

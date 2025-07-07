@@ -223,6 +223,28 @@ gcloud firestore indexes composite create \
   --collection-group="waitingList" \
   --field-config="field-path=createdAt,order=DESCENDING"
 
+# Add feedback template indexes
+echo "--- Creating composite index for feedbackTemplates (ownerId + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="feedbackTemplates" \
+  --field-config="field-path=ownerId,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
+echo "--- Creating composite index for feedbackTemplates (isPublic + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="feedbackTemplates" \
+  --field-config="field-path=isPublic,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
+echo "--- Creating composite index for feedbackResponses (templateId + submittedAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="feedbackResponses" \
+  --field-config="field-path=templateId,order=ASCENDING" \
+  --field-config="field-path=submittedAt,order=DESCENDING"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
@@ -234,4 +256,6 @@ echo "- events: For application event logs"
 echo "- apiKeys: For API key management"
 echo "- feedback: For storing user feedback submissions"
 echo "- waitingList: For Pro version waiting list subscribers"
+echo "- feedbackTemplates: For storing feedback form templates"
+echo "- feedbackResponses: For storing feedback responses"
 echo ""

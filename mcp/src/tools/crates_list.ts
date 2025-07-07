@@ -13,6 +13,8 @@ export function registerCratesListTool(server: McpServer): void {
       title: "List Crates",
       description:
         "Lists all your crates with metadata, IDs, titles, descriptions, categories, and tags. Use this to discover existing organizational patterns and tag conventions in your crates before uploading new content.\n\n" +
+        "CATEGORIES: Includes all crate types: markdown, code, image, json, yaml, text, binary, and feedback templates.\n" +
+        "FEEDBACK TEMPLATES: Use category 'feedback' to list only feedback templates.\n\n" +
         "AI USAGE: Review existing tags to maintain consistent project/type/context naming conventions.\n\n" +
         "Pagination support:\n" +
         "• limit: Number of crates to return per page (default: 20, max: 100)\n" +
@@ -20,6 +22,7 @@ export function registerCratesListTool(server: McpServer): void {
         "• Response includes lastCrateId and hasMore flags for pagination\n\n" +
         "AI usage examples:\n" +
         '• "list my crates"\n' +
+        '• "show my feedback templates" (filter by category: feedback)\n' +
         '• "show my recent crates"\n' +
         '• "show next page of my crates" (use startAfter from previous response)\n' +
         '• "list my first 10 crates" (use limit parameter)\n' +

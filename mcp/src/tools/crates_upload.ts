@@ -29,7 +29,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         'Example tags: ["project:ecommerce-site", "type:requirements", "context:user-stories", "status:approved"]\n\n' +
         "AI usage example:\n" +
         "• \"upload this file as a crate titled 'notes'\"",
-      inputSchema: UploadCrateParams._def.schema._def.shape(),
+      inputSchema: UploadCrateParams.shape,
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
       const {

@@ -26,6 +26,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Multiple Content Types**: Store and share markdown, code, images, JSON, YAML, text, and binary files
 - **Security Features**: Private by default with optional password protection, 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
+- **Feedback Collection System**: Create custom feedback templates with various field types (text, rating, select, etc.) to collect structured feedback on your projects
 
 ## Quick Start
 
@@ -58,6 +59,8 @@ MCPH offers different capabilities depending on whether you are logged in or usi
 | Search Crates   | ✗               | ✓               |
 | Delete Crates   | ✗               | ✓               |
 | Manage API Keys | ✗               | ✓               |
+| Create Feedback | ✗               | ✓ (5 templates) |
+| Submit Feedback | ✓               | ✓               |
 
 For anonymous users:
 
@@ -115,7 +118,12 @@ Or configure your client:
 
 ### Authentication
 
-Pass your API key as a Bearer token in the `Authorization` header.
+MCPH supports two authentication methods:
+
+1. **OAuth (Recommended)**: Sign in with your MCPH account through the OAuth flow
+2. **API Key**: Pass your API key as a Bearer token in the `Authorization` header
+
+For AI assistants using custom integrations (like Claude AI), OAuth provides the easiest setup experience.
 
 ## Available MCP Tools
 
@@ -178,6 +186,33 @@ MCPH provides a set of powerful tools that enable you to manage your content thr
   - Note: If you already own the crate, it will not be copied again
   - Note: When an authenticated user copies an anonymous crate, the expiration is removed
 
+### Feedback System
+
+- **feedback_template_create**: Create custom feedback templates
+  - Input: `{ title: string, description?: string, fields: Array<FieldConfig>, isPublic?: boolean, tags?: string[], linkedCrates?: string[] }`
+  - Output: `{ success: true, template: FeedbackTemplate, content: [...] }`
+  - Field Types: text, number, boolean, select, multiselect, rating
+  - Features: Custom validation rules, required/optional fields, dropdown options
+  - Limits: 5 templates per user
+
+- **feedback_submit**: Submit responses to feedback templates
+  - Input: `{ templateId: string, responses: Record<string, any>, metadata?: Record<string, any> }`
+  - Output: `{ success: true, response: FeedbackResponse, content: [...] }`
+  - Permission: Anyone can submit to open templates (no authentication required)
+  - Validation: Responses validated against template field requirements
+
+- **feedback_template_toggle**: Open/close templates for responses
+  - Input: `{ templateId: string, isOpen: boolean }`
+  - Output: `{ success: true, content: [...] }`
+  - Permission: Only template owners can toggle status
+  - Features: Closed templates don't accept new responses
+
+- **feedback_data_get**: Retrieve feedback data and analytics
+  - Input: `{ templateId?: string, includeResponses?: boolean, includeAnalytics?: boolean }`
+  - Output: `{ success: true, data: {...}, content: [...] }`
+  - Features: Response analytics, field statistics, submission counts
+  - Permission: Template owners can access their data
+
 ### Search & Discovery
 
 - **crates_search**: Find your content using advanced hybrid search
@@ -225,6 +260,7 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 - **Managing Files**: "Show me my files", "Save this document", "Delete that old file"
 - **Sharing Content**: "Make this public", "Give me a shareable link", "Make this private again"
 - **Viewing Content**: "Show me that document", "What's in that file?"
+- **Collecting Feedback**: "Create a feedback form for my product", "Show me responses to my survey", "Close this feedback template"
 
 ### Key Benefits
 
@@ -233,10 +269,20 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 - **Smart search** - AI finds files using keywords and context
 - **Instant sharing** - generate public links with simple requests
 - **Cross-session continuity** - reference files from previous conversations
+- **Feedback collection** - create structured forms and collect responses with analytics
 
 ### Getting Started with AI Assistants
 
-1. **Connect MCPH to your AI assistant** using your API key
+#### Claude AI (Recommended - Easiest Setup)
+
+1. **Open Claude AI** and click "Integrations" in the bottom left corner
+2. **Add custom integration** and enter: `https://mcp.mcph.io/mcp`
+3. **Choose authentication**: OAuth (recommended) or API key
+4. **Start using** - Ask Claude to access your MCPH crates and create new content
+
+#### Other AI Assistants
+
+1. **Connect MCPH to your AI assistant** using your API key or OAuth
 2. **Use natural language commands** to manage your files
 3. **Share content instantly** by simply asking your AI to make content public
 

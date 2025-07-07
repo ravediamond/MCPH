@@ -70,7 +70,7 @@ export async function POST(
 
     // Prepare new crate data for the copy
     const newCrateData = {
-      title: `Copy of ${sourceCrate.title}`,
+      title: sourceCrate.title,
       description: sourceCrate.description,
       ownerId: userId,
       category: sourceCrate.category,

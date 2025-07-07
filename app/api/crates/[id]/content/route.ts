@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCrateMetadata } from "@/services/firebaseService";
+import {
+  getCrateMetadata,
+  db,
+  FEEDBACK_TEMPLATES_COLLECTION,
+} from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
+import { CrateCategory } from "@/shared/types/crate";
 import bcrypt from "bcrypt";
 
 // Define the type for params
@@ -145,7 +150,57 @@ export async function GET(
       );
     }
 
-    // Get crate content based on its category
+    // Handle feedback templates differently - get data from Firestore
+    if (crate.category === CrateCategory.FEEDBACK) {
+      console.log(
+        `[Content Route] Fetching feedback template data for ID: ${id}`,
+      );
+
+      try {
+        const feedbackDoc = await db
+          .collection(FEEDBACK_TEMPLATES_COLLECTION)
+          .doc(id)
+          .get();
+
+        if (!feedbackDoc.exists) {
+          console.log(
+            `[Content Route] Feedback template not found with ID: ${id}`,
+          );
+          return NextResponse.json(
+            { error: "Feedback template not found" },
+            { status: 404 },
+          );
+        }
+
+        const feedbackData = feedbackDoc.data();
+        const contentBuffer = Buffer.from(
+          JSON.stringify(feedbackData, null, 2),
+          "utf-8",
+        );
+
+        console.log(
+          `[Content Route] Feedback template content retrieved successfully, size: ${contentBuffer.length} bytes`,
+        );
+
+        return new NextResponse(contentBuffer, {
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Disposition": `inline; filename="${encodeURIComponent(crate.title)}.json"`,
+          },
+        });
+      } catch (error) {
+        console.error(
+          "[Content Route] Error retrieving feedback template:",
+          error,
+        );
+        return NextResponse.json(
+          { error: "Failed to retrieve feedback template data" },
+          { status: 500 },
+        );
+      }
+    }
+
+    // Get crate content based on its category (for regular files)
     const { buffer, crate: updatedCrate } = await getCrateContent(id);
     console.log(
       `[Content Route] Content retrieved successfully, size: ${buffer.length} bytes`,
@@ -251,7 +306,58 @@ export async function POST(
       }
     }
 
-    // Get crate content based on its category
+    // Handle feedback templates differently - get data from Firestore
+    if (crate.category === CrateCategory.FEEDBACK) {
+      console.log(
+        `[Content Route] POST Fetching feedback template data for ID: ${id}`,
+      );
+
+      try {
+        const feedbackDoc = await db
+          .collection(FEEDBACK_TEMPLATES_COLLECTION)
+          .doc(id)
+          .get();
+
+        if (!feedbackDoc.exists) {
+          console.log(
+            `[Content Route] POST Feedback template not found with ID: ${id}`,
+          );
+          return NextResponse.json(
+            { error: "Feedback template not found" },
+            { status: 404 },
+          );
+        }
+
+        const feedbackData = feedbackDoc.data();
+        const contentBuffer = Buffer.from(
+          JSON.stringify(feedbackData, null, 2),
+          "utf-8",
+        );
+
+        // Set cache headers for better performance
+        const headers = new Headers({
+          "Content-Type": "application/json",
+          "Content-Disposition": `inline; filename="${encodeURIComponent(crate.title)}.json"`,
+          // Cache for 1 hour if public, no cache if private
+          "Cache-Control": isPublic
+            ? "public, max-age=3600"
+            : "private, no-cache",
+        });
+
+        return new NextResponse(contentBuffer, { headers });
+      } catch (error) {
+        console.error(
+          "[Content Route] POST Error retrieving feedback template:",
+          error,
+        );
+        return NextResponse.json(
+          { error: "Failed to retrieve feedback template data" },
+          { status: 500 },
+        );
+      }
+    }
+
+    // Get crate content based on its category (for regular files)
     const { buffer, crate: updatedCrate } = await getCrateContent(id);
 
     // Set cache headers for better performance

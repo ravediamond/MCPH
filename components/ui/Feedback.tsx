@@ -73,12 +73,12 @@ const Feedback: React.FC = () => {
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
-          <span className="hidden md:inline">Feedback</span>
+          <span className="hidden md:inline">Support</span>
         </button>
       ) : (
         <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 w-[320px]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-white">Send Feedback</h3>
+            <h3 className="text-lg font-medium text-white">Support</h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-400 hover:text-white"
@@ -103,7 +103,7 @@ const Feedback: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Feedback Type
+                Support Type
               </label>
               <select
                 value={type}
@@ -111,7 +111,7 @@ const Feedback: React.FC = () => {
                 className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isSubmitting}
               >
-                <option value="general">General Feedback</option>
+                <option value="general">General Support</option>
                 <option value="bug">Report a Bug</option>
                 <option value="feature">Feature Request</option>
               </select>
@@ -151,7 +151,7 @@ const Feedback: React.FC = () => {
               disabled={isSubmitting}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md font-medium transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
+              {isSubmitting ? "Submitting..." : "Submit"}
             </button>
           </form>
         </div>

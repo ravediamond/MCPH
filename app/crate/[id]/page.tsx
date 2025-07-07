@@ -30,6 +30,7 @@ import {
   FaLock,
   FaTasks,
   FaTable,
+  FaComments,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -232,6 +233,7 @@ export default function CratePage() {
         case CrateCategory.JSON:
         case CrateCategory.YAML:
         case CrateCategory.TEXT:
+        case CrateCategory.FEEDBACK:
           return true;
         default:
           return false;
@@ -426,6 +428,11 @@ export default function CratePage() {
   const handleOpenSharingModal = () => {
     if (!crateInfo) return;
 
+    console.log("[DEBUG] Opening sharing modal with crate info:", {
+      isPublic: crateInfo.isPublic,
+      isPasswordProtected: crateInfo.isPasswordProtected,
+    });
+
     setIsPublic(crateInfo.isPublic);
     setIsPasswordProtected(crateInfo.isPasswordProtected);
     setSharingPassword("");
@@ -531,12 +538,17 @@ export default function CratePage() {
         throw new Error(data.error || "Failed to update sharing settings");
       }
 
+      console.log("[DEBUG] Sharing update response:", data);
+
       // Update local state
-      setCrateInfo({
+      const updatedCrateInfo = {
         ...crateInfo,
         isPublic: data.isShared,
         isPasswordProtected: data.passwordProtected,
-      });
+      };
+
+      console.log("[DEBUG] Updating crate info:", updatedCrateInfo);
+      setCrateInfo(updatedCrateInfo);
 
       setShareUrl(data.shareUrl);
       setSharingSuccess("Sharing settings updated successfully");
@@ -547,6 +559,12 @@ export default function CratePage() {
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
       }
+
+      // Auto-close modal after successful update
+      setTimeout(() => {
+        setShowSharingModal(false);
+        setSharingSuccess(null);
+      }, 1500);
     } catch (error: any) {
       setSharingError(error.message || "Failed to update sharing settings");
     } finally {
@@ -617,6 +635,8 @@ export default function CratePage() {
         return <FaFileCode className="text-orange-500" />;
       case CrateCategory.YAML:
         return <FaFileCode className="text-green-500" />;
+      case CrateCategory.FEEDBACK:
+        return <FaComments className="text-purple-600" />;
       case CrateCategory.BINARY:
       default:
         // Fallback to mime type checking for legacy or unknown types
@@ -1017,6 +1037,131 @@ export default function CratePage() {
           </div>
         );
 
+      case CrateCategory.FEEDBACK:
+        // For feedback templates, show the template structure and fields
+        let feedbackData;
+        try {
+          feedbackData = crateContent ? JSON.parse(crateContent) : null;
+        } catch (e) {
+          feedbackData = null;
+        }
+
+        if (!feedbackData) {
+          return (
+            <div className="p-4 text-gray-600 text-center">
+              Unable to load feedback template data.
+            </div>
+          );
+        }
+
+        return (
+          <div className="p-4">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Feedback Template Preview
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                {feedbackData.description || "No description provided"}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">Status:</span>
+                  <span
+                    className={`ml-2 px-2 py-1 rounded text-xs ${
+                      feedbackData.isOpen
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {feedbackData.isOpen ? "Open" : "Closed"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Visibility:</span>
+                  <span className="ml-2 text-gray-600">
+                    {feedbackData.isPublic ? "Public" : "Private"}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Fields:</span>
+                  <span className="ml-2 text-gray-600">
+                    {feedbackData.fields?.length || 0}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Responses:</span>
+                  <span className="ml-2 text-gray-600">
+                    {feedbackData.submissionCount || 0}
+                  </span>
+                </div>
+              </div>
+
+              {feedbackData.fields && feedbackData.fields.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-gray-800 mb-3">
+                    Form Fields:
+                  </h4>
+                  <div className="space-y-3">
+                    {feedbackData.fields.map((field: any, index: number) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 p-3 rounded border"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium text-gray-800">
+                            {field.label}
+                          </span>
+                          <div className="flex gap-2">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                              {field.type}
+                            </span>
+                            {field.required && (
+                              <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
+                                Required
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Key:{" "}
+                          <code className="bg-gray-200 px-1 rounded">
+                            {field.key}
+                          </code>
+                        </div>
+                        {field.options && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            Options: {field.options.join(", ")}
+                          </div>
+                        )}
+                        {field.placeholder && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            Placeholder: "{field.placeholder}"
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {feedbackData.linkedCrates &&
+                feedbackData.linkedCrates.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-800 mb-2">
+                      Linked Crates:
+                    </h4>
+                    <div className="text-sm text-gray-600">
+                      {feedbackData.linkedCrates.join(", ")}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="p-4 text-gray-600 text-center">
@@ -1188,45 +1333,87 @@ export default function CratePage() {
               </div>
             )}
 
-            <div className="mb-4">
-              <label className="flex items-center space-x-2 mb-2">
-                <input
-                  type="checkbox"
-                  checked={isPublic}
-                  onChange={(e) => setIsPublic(e.target.checked)}
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <span className="text-sm text-gray-700">
-                  Make crate public (anyone with link can view)
-                </span>
-              </label>
+            <div className="space-y-4">
+              {/* Public/Private Toggle */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-gray-900">
+                    Public Access
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    {isPublic
+                      ? "Anyone with the link can view this crate"
+                      : "Only you can access this crate"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsPublic(!isPublic)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                    isPublic ? "bg-primary-600" : "bg-gray-200"
+                  }`}
+                  role="switch"
+                  aria-checked={isPublic}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isPublic ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
 
+              {/* Password Protection Toggle - only shown when public */}
               {isPublic && (
-                <div className="ml-6 mt-2">
-                  <label className="flex items-center space-x-2 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={isPasswordProtected}
-                      onChange={(e) => setIsPasswordProtected(e.target.checked)}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                    <span className="text-sm text-gray-700">
-                      Require password to access
-                    </span>
-                  </label>
+                <div className="ml-4 space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-gray-900">
+                        Password Protection
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        {isPasswordProtected
+                          ? "Viewers must enter a password to access"
+                          : "No password required for access"}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIsPasswordProtected(!isPasswordProtected)
+                      }
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
+                        isPasswordProtected ? "bg-yellow-600" : "bg-gray-200"
+                      }`}
+                      role="switch"
+                      aria-checked={isPasswordProtected}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          isPasswordProtected
+                            ? "translate-x-5"
+                            : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
 
+                  {/* Password Input - only shown when password protection is enabled */}
                   {isPasswordProtected && (
-                    <div className="ml-6 mt-2">
-                      <label className="block text-sm text-gray-700 mb-1">
-                        Password
+                    <div className="ml-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Set Password
                       </label>
                       <input
                         type="password"
                         value={sharingPassword}
                         onChange={(e) => setSharingPassword(e.target.value)}
-                        placeholder="Enter a password"
+                        placeholder="Enter a secure password"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Choose a strong password to protect your crate
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1234,8 +1421,8 @@ export default function CratePage() {
             </div>
 
             {isPublic && (
-              <div className="mb-4">
-                <label className="block text-sm text-gray-700 mb-1">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Share URL
                 </label>
                 <div className="flex">
@@ -1243,7 +1430,7 @@ export default function CratePage() {
                     type="text"
                     value={shareUrl}
                     readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
                   />
                   <button
                     onClick={() => {
@@ -1251,34 +1438,77 @@ export default function CratePage() {
                       setLinkCopied(true);
                       setTimeout(() => setLinkCopied(false), 2000);
                     }}
-                    className="bg-primary-600 px-4 text-white rounded-r-md hover:bg-primary-700"
+                    className={`px-4 py-2 text-white rounded-r-md transition-colors ${
+                      linkCopied
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-primary-600 hover:bg-primary-700"
+                    }`}
                   >
                     {linkCopied ? (
-                      <FaCheck className="inline" />
+                      <>
+                        <FaCheck className="inline mr-1" />
+                        Copied!
+                      </>
                     ) : (
-                      <span>Copy</span>
+                      <>
+                        <FaShareAlt className="inline mr-1" />
+                        Copy
+                      </>
                     )}
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  This link allows anyone to view your crate.
+                <p className="mt-2 text-xs text-blue-600">
+                  <FaInfoCircle className="inline mr-1" />
+                  Anyone with this link can{" "}
+                  {isPasswordProtected
+                    ? "view your crate (with password)"
+                    : "view your crate"}
                 </p>
               </div>
             )}
 
-            <div className="flex justify-end space-x-3 mt-5">
+            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
               <button
                 onClick={() => setShowSharingModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateSharing}
-                disabled={sharingLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                disabled={
+                  sharingLoading ||
+                  (isPasswordProtected && isPublic && !sharingPassword)
+                }
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
               >
-                {sharingLoading ? "Updating..." : "Update Sharing"}
+                {sharingLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Updating...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
             </div>
           </div>
@@ -1367,8 +1597,16 @@ export default function CratePage() {
               </div>
 
               <div>
-                <div className="text-xs text-gray-500 mb-1">Downloads</div>
-                <div className="font-medium">{crateInfo.downloadCount}</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  {crateInfo.category === CrateCategory.FEEDBACK
+                    ? "Responses"
+                    : "Downloads"}
+                </div>
+                <div className="font-medium">
+                  {crateInfo.category === CrateCategory.FEEDBACK
+                    ? crateInfo.metadata?.submissionCount || 0
+                    : crateInfo.downloadCount}
+                </div>
               </div>
 
               {crateInfo.expiresAt && (
@@ -1398,20 +1636,46 @@ export default function CratePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleDownload}
-                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600"
-              >
-                <FaFileDownload className="mr-2 text-lg" />
-                <span>Download</span>
-              </button>
+              {/* Primary Actions */}
+              {crateInfo.category === CrateCategory.FEEDBACK ? (
+                // Feedback template specific actions
+                <>
+                  {!crateInfo.isOwner && (
+                    <Link
+                      href={`/feedback/submit/${crateId}`}
+                      className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600"
+                    >
+                      <FaFileDownload className="mr-2 text-lg" />
+                      <span>Submit Feedback</span>
+                    </Link>
+                  )}
+                  {crateInfo.isOwner && (
+                    <Link
+                      href={`/feedback/responses/${crateId}`}
+                      className="flex items-center justify-center px-4 py-2 bg-green-500 text-white text-base font-medium rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition-colors border border-green-600"
+                    >
+                      <FaChartBar className="mr-2 text-lg" />
+                      <span>View Responses</span>
+                    </Link>
+                  )}
+                </>
+              ) : (
+                // Regular file download
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600"
+                >
+                  <FaFileDownload className="mr-2 text-lg" />
+                  <span>Download</span>
+                </button>
+              )}
 
-              {/* Copy to My Crates button - only show for non-owners of public/accessible crates */}
+              {/* Copy to My Crates - show for non-owners who are signed in */}
               {!crateInfo.isOwner && user && (
                 <button
                   onClick={handleCopyCrate}
                   disabled={copyLoading}
-                  className="flex items-center justify-center px-4 py-2 bg-green-500 text-white text-base font-medium rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition-colors border border-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center px-4 py-2 bg-purple-500 text-white text-base font-medium rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 transition-colors border border-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaUpload className="mr-2 text-lg" />
                   <span>
@@ -1420,25 +1684,20 @@ export default function CratePage() {
                 </button>
               )}
 
-              {/* Show sign-in prompt for anonymous users */}
+              {/* Sign in to Copy - show for non-owners who are not signed in */}
               {!crateInfo.isOwner && !user && (
                 <button
                   onClick={() => signInWithGoogle()}
-                  className="flex items-center justify-center px-4 py-2 bg-purple-500 text-white text-base font-medium rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 transition-colors border border-purple-600"
+                  className="flex items-center justify-center px-4 py-2 bg-gray-500 text-white text-base font-medium rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors border border-gray-600"
                 >
                   <FaUpload className="mr-2 text-lg" />
                   <span>Sign in to Copy</span>
                 </button>
               )}
 
-              <button
-                onClick={handleOpenSharingModal}
-                className="flex items-center justify-center px-3 py-1.5 bg-green-100 text-sm text-green-700 rounded hover:bg-green-200 transition-colors"
-              >
-                <FaShareAlt className="mr-1" /> Manage Sharing
-              </button>
+              {/* Secondary Actions */}
 
-              {/* Show preview button for supported categories */}
+              {/* Show preview button for supported categories (excluding feedback) */}
               {(crateInfo.category === CrateCategory.MARKDOWN ||
                 crateInfo.category === CrateCategory.CODE ||
                 crateInfo.category === CrateCategory.JSON ||
@@ -1447,16 +1706,23 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors ml-auto"
+                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors"
                 >
                   <FaEye className="mr-1" />{" "}
                   {showPreview ? "Hide Preview" : "View Content"}
                 </button>
               )}
 
-              {/* Only show delete if owner */}
+              {/* Owner-only Actions */}
               {crateInfo.isOwner && (
                 <>
+                  <button
+                    onClick={handleOpenSharingModal}
+                    className="flex items-center justify-center px-3 py-1.5 bg-green-100 text-sm text-green-700 rounded hover:bg-green-200 transition-colors"
+                  >
+                    <FaShareAlt className="mr-1" /> Manage Sharing
+                  </button>
+
                   <button
                     onClick={handleDelete}
                     disabled={deleteLoading}
