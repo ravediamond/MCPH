@@ -1005,7 +1005,7 @@ export default function DocsPage() {
             How the MCP Endpoint Works
           </h2>
           <p className="text-gray-600 mb-3">
-            The <b>MCP endpoint</b> (<code>/api/mcp</code>) is the only
+            The <b>MCP endpoint</b> (<code>/mcp</code>) is the only
             supported way to interact with MCPH programmatically. It uses the
             Model Context Protocol (MCP) over Streamable HTTP for real-time,
             bidirectional communication.
