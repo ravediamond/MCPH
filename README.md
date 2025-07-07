@@ -1,12 +1,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm version](https://img.shields.io/npm/v/mcph.svg)](https://www.npmjs.com/package/mcph)
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
-[![Vercel](https://vercelbadge.vercel.app/api/OWNER/REPO)](https://vercel.com/OWNER/REPO)
-[![Open Issues](https://img.shields.io/github/issues/OWNER/REPO.svg)](https://github.com/OWNER/REPO/issues)
-[![Open PRs](https://img.shields.io/github/issues-pr/OWNER/REPO.svg)](https://github.com/OWNER/REPO/pulls)
-[![Last Commit](https://img.shields.io/github/last-commit/OWNER/REPO.svg)](https://github.com/OWNER/REPO/commits/main)
-[![Forks](https://img.shields.io/github/forks/OWNER/REPO.svg?style=social&label=Fork)](https://github.com/OWNER/REPO/fork)
-[![Stars](https://img.shields.io/github/stars/OWNER/REPO.svg?style=social&label=Star)](https://github.com/OWNER/REPO)
+[![GitHub stars](https://img.shields.io/github/stars/ravediamond/MCPH.svg?style=social&label=Star)](https://github.com/ravediamond/MCPH)
+[![GitHub forks](https://img.shields.io/github/forks/ravediamond/MCPH.svg?style=social&label=Fork)](https://github.com/ravediamond/MCPH/fork)
+[![GitHub issues](https://img.shields.io/github/issues/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/commits/master)
+[![Website](https://img.shields.io/website?url=https%3A//mcph.io)](https://mcph.io)
+[![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://github.com/modelcontextprotocol/specification)
 
 # MCPH: Model Context Protocol (MCP) Hub
 
@@ -30,7 +29,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 
 ## Quick Start
 
-- **MCP Endpoint:** `https://mcp.mcph.io/mcp`
+- **MCP Endpoint:** `https://api.mcph.io/mcp`
 - **Web UI:** [mcph.io](https://mcph.io)
 - **Crate Page:** `https://mcph.io/crate/[id]`
 
@@ -39,7 +38,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 1. **Create an Account**: Visit [mcph.io](https://mcph.io) and sign up for a free account. After logging in, navigate to the API Keys section to generate your personal API key.
 
 2. **Connect Your AI Tool**: MCPH works with any AI tool that supports the Model Context Protocol (MCP). Configure your tool with:
-   - MCP URL: `https://mcp.mcph.io/mcp`
+   - MCP URL: `https://api.mcph.io/mcp`
    - Your API Key (from your MCPH account dashboard)
 
 3. **Create and Share Content**: Once connected, you can ask your AI to create and share content via MCPH. For example:
@@ -182,7 +181,7 @@ npm run build:mcp
 ### Connect with mcp-remote
 
 ```sh
-npx mcp-remote https://mcp.mcph.io/mcp
+npx mcp-remote https://api.mcph.io/mcp
 ```
 
 Or configure your client:
@@ -192,7 +191,7 @@ Or configure your client:
   "mcpServers": {
     "MCPH": {
       "command": "npx",
-      "args": ["mcp-remote", "https://mcp.mcph.io/mcp"]
+      "args": ["mcp-remote", "https://api.mcph.io/mcp"]
     }
   }
 }
@@ -337,9 +336,9 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
 
 ## How the MCP Endpoint Works
 
-The **MCP endpoint** (`https://mcp.mcph.io/mcp`) is the only supported way to interact with MCPH programmatically. It uses the Model Context Protocol (MCP) over Streamable HTTP for real-time, bidirectional communication.
+The **MCP endpoint** (`https://api.mcph.io/mcp`) is the only supported way to interact with MCPH programmatically. It uses the Model Context Protocol (MCP) over Streamable HTTP for real-time, bidirectional communication.
 
-1. **Connect via Streamable HTTP:** Use `npx mcp-remote https://mcp.mcph.io/mcp` or configure your client to use the endpoint.
+1. **Connect via Streamable HTTP:** Use `npx mcp-remote https://api.mcph.io/mcp` or configure your client to use the endpoint.
 2. **Authentication:** Pass your API key as a Bearer token in the `Authorization` header.
 3. **Session:** On connect, you receive a session ID in the `MCP-Session-ID` response header. All subsequent requests must include this ID in the `MCP-Session-ID` header.
 4. **Calling Tools:** Send JSON-RPC requests to the endpoint. Example for `crates/list`:
@@ -385,7 +384,7 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 #### Claude AI (Recommended - Easiest Setup)
 
 1. **Open Claude AI** and click "Integrations" in the bottom left corner
-2. **Add custom integration** and enter: `https://mcp.mcph.io/mcp`
+2. **Add custom integration** and enter: `https://api.mcph.io/mcp`
 3. **Choose authentication**: OAuth (recommended) or API key
 4. **Start using** - Ask Claude to access your MCPH crates and create new content
 

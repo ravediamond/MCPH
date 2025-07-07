@@ -724,7 +724,7 @@ export default function DocsPage() {
                 </a>
               </li>
               <li>
-                <b>MCP Endpoint:</b> <code>https://mcp.mcph.io/mcp</code>
+                <b>MCP Endpoint:</b> <code>https://api.mcph.io/mcp</code>
               </li>
               <li>
                 <b>View Shared Content:</b>{" "}
@@ -791,7 +791,7 @@ export default function DocsPage() {
             </h4>
             <ul className="list-disc pl-5 text-gray-600 space-y-2">
               <li>
-                <b>Get the MCP URL:</b> <code>https://mcp.mcph.io/mcp</code>
+                <b>Get the MCP URL:</b> <code>https://api.mcph.io/mcp</code>
                 <p className="text-sm text-gray-600 mt-1">
                   This is the endpoint you'll need to configure in your AI tool.
                 </p>
@@ -1005,15 +1005,15 @@ export default function DocsPage() {
             How the MCP Endpoint Works
           </h2>
           <p className="text-gray-600 mb-3">
-            The <b>MCP endpoint</b> (<code>/mcp</code>) is the only
-            supported way to interact with MCPH programmatically. It uses the
-            Model Context Protocol (MCP) over Streamable HTTP for real-time,
+            The <b>MCP endpoint</b> (<code>/mcp</code>) is the only supported
+            way to interact with MCPH programmatically. It uses the Model
+            Context Protocol (MCP) over Streamable HTTP for real-time,
             bidirectional communication.
           </p>
           <ol className="list-decimal pl-5 text-gray-600 mb-4 space-y-2">
             <li>
               <b>Connect via Streamable HTTP:</b> Use{" "}
-              <code>npx mcp-remote https://mcp.mcph.io/mcp</code> or configure
+              <code>npx mcp-remote https://api.mcph.io/mcp</code> or configure
               your client to use the endpoint.
             </li>
             <li>
