@@ -1,12 +1,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm version](https://img.shields.io/npm/v/mcph.svg)](https://www.npmjs.com/package/mcph)
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
-[![Vercel](https://vercelbadge.vercel.app/api/OWNER/REPO)](https://vercel.com/OWNER/REPO)
-[![Open Issues](https://img.shields.io/github/issues/OWNER/REPO.svg)](https://github.com/OWNER/REPO/issues)
-[![Open PRs](https://img.shields.io/github/issues-pr/OWNER/REPO.svg)](https://github.com/OWNER/REPO/pulls)
-[![Last Commit](https://img.shields.io/github/last-commit/OWNER/REPO.svg)](https://github.com/OWNER/REPO/commits/main)
-[![Forks](https://img.shields.io/github/forks/OWNER/REPO.svg?style=social&label=Fork)](https://github.com/OWNER/REPO/fork)
-[![Stars](https://img.shields.io/github/stars/OWNER/REPO.svg?style=social&label=Star)](https://github.com/OWNER/REPO)
+[![GitHub stars](https://img.shields.io/github/stars/ravediamond/MCPH.svg?style=social&label=Star)](https://github.com/ravediamond/MCPH)
+[![GitHub forks](https://img.shields.io/github/forks/ravediamond/MCPH.svg?style=social&label=Fork)](https://github.com/ravediamond/MCPH/fork)
+[![GitHub issues](https://img.shields.io/github/issues/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/ravediamond/MCPH.svg)](https://github.com/ravediamond/MCPH/commits/master)
+[![Website](https://img.shields.io/website?url=https%3A//mcph.io)](https://mcph.io)
+[![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://github.com/modelcontextprotocol/specification)
 
 # MCPH: Model Context Protocol (MCP) Hub
 
@@ -30,7 +29,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 
 ## Quick Start
 
-- **MCP Endpoint:** `https://mcp.mcph.io/mcp`
+- **MCP Endpoint:** `https://api.mcph.io/mcp`
 - **Web UI:** [mcph.io](https://mcph.io)
 - **Crate Page:** `https://mcph.io/crate/[id]`
 
@@ -39,7 +38,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 1. **Create an Account**: Visit [mcph.io](https://mcph.io) and sign up for a free account. After logging in, navigate to the API Keys section to generate your personal API key.
 
 2. **Connect Your AI Tool**: MCPH works with any AI tool that supports the Model Context Protocol (MCP). Configure your tool with:
-   - MCP URL: `https://mcp.mcph.io/mcp`
+   - MCP URL: `https://api.mcph.io/mcp`
    - Your API Key (from your MCPH account dashboard)
 
 3. **Create and Share Content**: Once connected, you can ask your AI to create and share content via MCPH. For example:
@@ -182,7 +181,7 @@ npm run build:mcp
 ### Connect with mcp-remote
 
 ```sh
-npx mcp-remote https://mcp.mcph.io/mcp
+npx mcp-remote https://api.mcph.io/mcp
 ```
 
 Or configure your client:
@@ -192,7 +191,7 @@ Or configure your client:
   "mcpServers": {
     "MCPH": {
       "command": "npx",
-      "args": ["mcp-remote", "https://mcp.mcph.io/mcp"]
+      "args": ["mcp-remote", "https://api.mcph.io/mcp"]
     }
   }
 }
@@ -209,110 +208,137 @@ For AI assistants using custom integrations (like Claude AI), OAuth provides the
 
 ## Available MCP Tools
 
-MCPH provides a set of powerful tools that enable you to manage your content through the Model Context Protocol (MCP). These tools can be used programmatically or through AI assistants using natural language.
+MCPH provides a comprehensive set of powerful tools that enable you to manage your content through the Model Context Protocol (MCP). These tools can be used programmatically or through AI assistants using natural language commands.
 
 ### Content Management
 
-- **crates_list**: List all your stored crates
-  - Input: `{ limit?: number, startAfter?: string }`
-  - Output: `{ crates: [ { id, title, description, category, ... }, ... ], lastCrateId, hasMore }`
-  - Pagination: Use `limit` (default: 20, max: 100) and `startAfter` (ID of the last crate from the previous page)
-  - Permission: Requires authentication to list user's crates
-  - Sort: Most recent crates first
+- **crates_list**: List and discover your stored crates
+  - **Input**: `{ limit?: number, startAfter?: string, category?: string }`
+  - **Output**: `{ crates: [ { id, title, description, category, tags, shared, ... }, ... ], lastCrateId, hasMore }`
+  - **Features**: Pagination support, category filtering (including 'feedback' templates), tag-based organization
+  - **Permissions**: Requires authentication; shows only user's crates
+  - **AI Usage**: "List my crates", "Show my feedback templates", "Find my recent uploads"
 
-- **crates_get**: Retrieve a crate's contents
-  - Input: `{ id: string, password?: string }`
-  - Output: `{ content: [ { type: 'text|image', text|data, mimeType? }, ... ] }`
-  - Permission:
-    - Owner can always access their crates
-    - Anonymous uploads are public by default (expire after 30 days)
-    - Password-protected crates require the password parameter
-    - For binary files, directs to use `crates_get_download_link` instead
+- **crates_get**: Retrieve and display crate contents
+  - **Input**: `{ id: string, password?: string }`
+  - **Output**: `{ content: [ { type: 'text|image', text|data, mimeType? }, ... ], metadata: {...} }`
+  - **Features**: Supports all content types, handles password-protected crates, rich metadata access
+  - **Permissions**: Owner access always; public crate access based on sharing settings
+  - **AI Usage**: "Show me crate abc123", "Get the content of that document", "Display my project specs"
 
-- **crates_upload**: Create and store new content
-  - Input: `{ fileName: string, contentType: string, data: string, ... }`
-  - Output (binary): `{ uploadUrl, fileId, gcsPath, message }`
-  - Output (text): `{ crate, message }`
-  - Small text content is uploaded directly; large/binary files return a pre-signed upload URL
-  - Note: Anonymous uploads expire after 30 days, authenticated user uploads have no expiration
+- **crates_upload**: Create and store new content with smart tagging
+  - **Input**: `{ fileName: string, contentType: string, data: string, title?: string, description?: string, tags?: string[], category?: string, isPublic?: boolean, password?: string }`
+  - **Output**: `{ crate: CrateObject, content: [...] }` or `{ uploadUrl, crateId }` (for large files)
+  - **Features**: Intelligent categorization, tagging best practices, dual upload methods, expiration handling
+  - **Permissions**: Authenticated users get permanent storage; anonymous uploads expire in 30 days
+  - **AI Usage**: "Upload this file as a crate titled 'Project Requirements'", "Save this with tags project:webapp, type:specs"
 
-- **crates_delete**: Remove unwanted crates
-  - Input: `{ id: string }`
-  - Output: `{ message }`
-  - Removes both the crate content and metadata
-  - Permission: Only the owner can delete their crates
+- **crates_update**: Modify existing crate metadata and content
+  - **Input**: `{ id: string, title?: string, description?: string, tags?: string[], metadata?: object, shared?: object }`
+  - **Output**: `{ success: true, crate: UpdatedCrateObject, content: [...] }`
+  - **Features**: Update any crate property, manage sharing settings, modify templates (open/close status)
+  - **Permissions**: Only crate owners can update their crates
+  - **AI Usage**: "Update the title of crate abc123", "Add tags to my project crate", "Make my template private"
 
-### Sharing & Access
+- **crates_delete**: Remove unwanted crates permanently
+  - **Input**: `{ id: string }`
+  - **Output**: `{ success: true, content: [...] }`
+  - **Features**: Complete removal of content and metadata, irreversible operation
+  - **Permissions**: Only crate owners can delete their crates
+  - **AI Usage**: "Delete crate abc123", "Remove that old document", "Clean up my test files"
 
-- **crates_share**: Make content accessible to others
-  - Input: `{ id: string, password?: string }`
-  - Output: `{ id, isShared, shareUrl, message }`
-  - Options: Make public or password-protected
+### Sharing & Access Control
 
-- **crates_unshare**: Restrict access to private
-  - Input: `{ id: string }`
-  - Output: `{ message, ... }`
-  - Removes public access and password protection
+- **crates_share**: Make content accessible to others with advanced options
+  - **Input**: `{ id: string, public?: boolean, passwordProtected?: boolean, password?: string, removePassword?: boolean }`
+  - **Output**: `{ id, isShared, shareUrl, passwordProtected, content: [...] }`
+  - **Features**: Public/private toggle, password protection, shareable URLs, access control
+  - **Permissions**: Only crate owners can modify sharing settings
+  - **AI Usage**: "Make crate abc123 public", "Share this with password protection", "Generate a share link"
 
-- **crates_get_download_link**: Create shareable links
-  - Input: `{ id: string, expiresInSeconds?: number }`
-  - Output: `{ url: string, validForSeconds: number }`
-  - Useful for: Binary files, large files, or direct downloads
-  - Default expiration: 24 hours (can be customized with `expiresInSeconds`)
+- **crates_make_public**: Quick public sharing for immediate access
+  - **Input**: `{ id: string }`
+  - **Output**: `{ id, isShared: true, shareUrl, content: [...] }`
+  - **Features**: One-click public sharing, instant shareable URL generation
+  - **Permissions**: Only crate owners can make their crates public
+  - **AI Usage**: "Make this public", "Share this crate publicly", "Generate public link"
 
-- **crates_copy**: Save others' public crates to your collection
-  - Input: `{ id: string }`
-  - Output: `{ crate, message }`
-  - Creates a new private copy of a public crate in your collection
-  - Permission: Requires authentication; can only copy public crates or anonymous uploads
-  - Note: If you already own the crate, it will not be copied again
-  - Note: When an authenticated user copies an anonymous crate, the expiration is removed
+- **crates_unshare**: Remove public access and return to private
+  - **Input**: `{ id: string }`
+  - **Output**: `{ success: true, content: [...] }`
+  - **Features**: Complete privacy restoration, removes public access and passwords
+  - **Permissions**: Only crate owners can unshare their crates
+  - **AI Usage**: "Make crate abc123 private", "Remove public access", "Unshare this document"
 
-### Feedback System
+- **crates_get_download_link**: Generate secure, time-limited download URLs
+  - **Input**: `{ id: string, expiresInSeconds?: number }`
+  - **Output**: `{ url: string, validForSeconds: number, content: [...] }`
+  - **Features**: Configurable expiration, secure signed URLs, direct download support
+  - **Use Cases**: Binary files, large content, temporary access, external integrations
+  - **AI Usage**: "Create download link for crate abc123", "Generate 1-hour access URL"
 
-- **feedback_template_create**: Create custom feedback templates
-  - Input: `{ title: string, description?: string, fields: Array<FieldConfig>, isPublic?: boolean, tags?: string[], linkedCrates?: string[] }`
-  - Output: `{ success: true, template: FeedbackTemplate, content: [...] }`
-  - Field Types: text, number, boolean, select, multiselect, rating
-  - Features: Custom validation rules, required/optional fields, dropdown options
-  - Limits: 5 templates per user
+- **crates_copy**: Duplicate public crates to your collection
+  - **Input**: `{ id: string }`
+  - **Output**: `{ crate: NewCrateObject, content: [...] }`
+  - **Features**: Complete duplication, removes "Copy of" prefix, converts to private ownership
+  - **Permissions**: Can copy public crates and anonymous uploads; removes expiration on copy
+  - **AI Usage**: "Copy this public crate", "Save a copy of crate abc123 to my collection"
 
-- **feedback_submit**: Submit responses to feedback templates
-  - Input: `{ templateId: string, responses: Record<string, any>, metadata?: Record<string, any> }`
-  - Output: `{ success: true, response: FeedbackResponse, content: [...] }`
-  - Permission: Anyone can submit to open templates (no authentication required)
-  - Validation: Responses validated against template field requirements
+### Advanced Search & Discovery
 
-- **feedback_template_toggle**: Open/close templates for responses
-  - Input: `{ templateId: string, isOpen: boolean }`
-  - Output: `{ success: true, content: [...] }`
-  - Permission: Only template owners can toggle status
-  - Features: Closed templates don't accept new responses
+- **crates_search**: Find content using intelligent hybrid search
+  - **Input**: `{ query: string, tags?: string[], category?: string, limit?: number }`
+  - **Output**: `{ crates: [ { id, title, description, relevanceScore, category, tags, ... }, ... ], searchMetadata: {...} }`
+  - **Features**:
+    - Semantic search with vector embeddings for metadata understanding
+    - Tag-based filtering with hierarchical support (`project:webapp`, `type:docs`)
+    - Category filtering (including feedback templates: `category: 'feedback'`)
+    - Relevance scoring and intelligent ranking
+    - Full-text search across titles, descriptions, and tags
+  - **Permissions**: Searches only user's crates; requires authentication
+  - **AI Usage**: "Find my React components", "Search for project documentation", "Find feedback templates about mobile apps"
 
-- **feedback_data_get**: Retrieve feedback data and analytics
-  - Input: `{ templateId?: string, includeResponses?: boolean, includeAnalytics?: boolean }`
-  - Output: `{ success: true, data: {...}, content: [...] }`
-  - Features: Response analytics, field statistics, submission counts
-  - Permission: Template owners can access their data
+### Feedback Collection System
 
-### Search & Discovery
+- **feedback_template_create**: Build custom feedback forms with validation
+  - **Input**: `{ title: string, description?: string, fields: Array<FieldConfig>, isPublic?: boolean, tags?: string[], linkedCrates?: string[] }`
+  - **Output**: `{ success: true, template: FeedbackTemplate, content: [...] }`
+  - **Features**:
+    - 6 field types: text, number, boolean, select, multiselect, rating
+    - Custom validation rules, required/optional fields, dropdown options
+    - Automatic storage as both feedback template AND crate (category: 'feedback')
+    - Tag-based organization, public/private templates, linked crate references
+  - **Limits**: 5 templates per user (Free), 50 templates (Pro)
+  - **AI Usage**: "Create feedback form for product reviews", "Build survey with rating and text fields"
 
-- **crates_search**: Find your content using advanced hybrid search
-  - Input: `{ query: string, tags?: string[], limit?: number }`
-  - Output: `{ crates: [ { id, title, description, category, relevanceScore, ... }, ... ], searchMetadata: { ... } }`
-  - Features:
-    - Combines vector embeddings for semantic understanding of metadata with text-based search
-    - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
-    - Tag hierarchy understanding with relevance boosting for conventional tags
-    - Note: Content-based semantic search is available in the Pro version
-  - Permission: Requires authentication to search user's crates
-  - Results: Ranked by relevance, limited to specified limit (default: 10)
+- **feedback_submit**: Submit responses to feedback templates with validation
+  - **Input**: `{ templateId: string, responses: Record<string, any>, metadata?: Record<string, any> }`
+  - **Output**: `{ success: true, response: FeedbackResponse, content: [...] }`
+  - **Features**:
+    - Field-specific validation (type checking, required fields, option validation)
+    - Support for all field types with proper formatting
+    - Anonymous submissions supported, metadata tracking
+    - Real-time validation with helpful error messages
+  - **Permissions**: Anyone can submit to open public templates
+  - **AI Usage**: "Submit feedback to template abc123", "Fill out the product survey"
+
+- **feedback_responses_get**: Analyze feedback data with comprehensive analytics
+  - **Input**: `{ templateId: string, limit?: number, startAfter?: string }`
+  - **Output**: `{ success: true, template: TemplateInfo, responses: [...], statistics: {...}, pagination: {...}, content: [...] }`
+  - **Features**:
+    - Complete response analytics: averages, distributions, response rates
+    - Field-specific statistics (ratings, selections, text analysis)
+    - User identification with email/name display (when available)
+    - Pagination support for large datasets, export-ready format
+    - Comprehensive insights for data-driven decisions
+  - **Permissions**: Only template owners can access response data
+  - **AI Usage**: "Show responses for my feedback template", "Analyze survey results", "Get feedback analytics"
 
 ## How the MCP Endpoint Works
 
-The **MCP endpoint** (`https://mcp.mcph.io/mcp`) is the only supported way to interact with MCPH programmatically. It uses the Model Context Protocol (MCP) over Streamable HTTP for real-time, bidirectional communication.
+The **MCP endpoint** (`https://api.mcph.io/mcp`) is the only supported way to interact with MCPH programmatically. It uses the Model Context Protocol (MCP) over Streamable HTTP for real-time, bidirectional communication.
 
-1. **Connect via Streamable HTTP:** Use `npx mcp-remote https://mcp.mcph.io/mcp` or configure your client to use the endpoint.
+1. **Connect via Streamable HTTP:** Use `npx mcp-remote https://api.mcph.io/mcp` or configure your client to use the endpoint.
 2. **Authentication:** Pass your API key as a Bearer token in the `Authorization` header.
 3. **Session:** On connect, you receive a session ID in the `MCP-Session-ID` response header. All subsequent requests must include this ID in the `MCP-Session-ID` header.
 4. **Calling Tools:** Send JSON-RPC requests to the endpoint. Example for `crates/list`:
@@ -358,7 +384,7 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 #### Claude AI (Recommended - Easiest Setup)
 
 1. **Open Claude AI** and click "Integrations" in the bottom left corner
-2. **Add custom integration** and enter: `https://mcp.mcph.io/mcp`
+2. **Add custom integration** and enter: `https://api.mcph.io/mcp`
 3. **Choose authentication**: OAuth (recommended) or API key
 4. **Start using** - Ask Claude to access your MCPH crates and create new content
 

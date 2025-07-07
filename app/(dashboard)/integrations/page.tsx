@@ -98,7 +98,7 @@ export default function IntegrationsPage() {
                 <code>
                   [mcp.servers.mcph]
                   <br />
-                  url = "https://mcp.mcph.io/mcp"
+                  url = "https://api.mcph.io/mcp"
                   <br />
                   headers = {"{"} "Authorization" = "Bearer YOUR_API_KEY" {"}"}
                 </code>
@@ -197,7 +197,7 @@ export default function IntegrationsPage() {
                 </div>
                 <span className="text-gray-700">
                   Click "Add custom integration" and enter:{" "}
-                  <code>https://mcp.mcph.io/mcp</code>
+                  <code>https://api.mcph.io/mcp</code>
                 </span>
               </div>
               <div className="flex items-center">
