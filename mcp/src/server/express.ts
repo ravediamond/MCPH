@@ -91,8 +91,9 @@ export function createServer() {
     }),
   );
 
-  // Use body-parser middleware for JSON
+  // Use body-parser middleware for JSON and URL-encoded data
   app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
 
   // Apply IP throttling middleware
   app.use(ipThrottlingMiddleware);
