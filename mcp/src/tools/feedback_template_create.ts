@@ -17,39 +17,59 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
     {
       title: "Create Feedback Template",
       description:
-        "Creates a new feedback template with custom fields for collecting user feedback. Templates can be shared publicly or kept private.\n\n" +
-        "FIELD TYPES:\n" +
-        "• text - Free text input\n" +
-        "• number - Numeric input (with optional min/max)\n" +
-        "• boolean - True/false checkbox\n" +
-        "• select - Single choice dropdown (requires options)\n" +
-        "• multiselect - Multiple choice (requires options)\n" +
-        "• rating - Star rating (requires minValue/maxValue)\n\n" +
-        "EXAMPLE USAGE:\n" +
-        "Create a simple product feedback template:\n" +
+        "Creates a new feedback template with custom fields for collecting user feedback. Templates are automatically stored as crates with category 'feedback' and can be shared publicly or kept private.\n\n" +
+        "=== WHEN TO USE ===\n" +
+        "• User wants to create surveys, forms, questionnaires, or feedback collection\n" +
+        "• Need to gather structured data from users\n" +
+        "• Want to collect ratings, reviews, or opinions\n" +
+        "• Building user research, customer feedback, or evaluation forms\n\n" +
+        "=== FIELD TYPES & USE CASES ===\n" +
+        "• text - Open-ended responses, comments, suggestions, descriptions\n" +
+        "• number - Age, quantity, score, price, count (supports min/max validation)\n" +
+        "• boolean - Yes/No questions, agreement, consent, feature preferences\n" +
+        "• select - Single choice from predefined options (satisfaction levels, categories)\n" +
+        "• multiselect - Multiple selections (features used, interests, problems faced)\n" +
+        "• rating - Star ratings, satisfaction scores (requires minValue/maxValue)\n\n" +
+        "=== SMART FIELD SUGGESTIONS FOR AI ===\n" +
+        "Product feedback: rating (satisfaction), select (category), text (improvements)\n" +
+        "Event feedback: rating (overall), boolean (recommend), text (highlights)\n" +
+        "User research: multiselect (features), number (usage frequency), text (pain points)\n" +
+        "Course evaluation: rating (content quality), select (difficulty), text (suggestions)\n" +
+        "Service feedback: rating (service quality), boolean (return customer), text (experience)\n\n" +
+        "=== TEMPLATE CREATION TIPS ===\n" +
+        "• Use descriptive titles that indicate purpose (e.g., 'Q1 2024 Product Feedback')\n" +
+        "• Add clear descriptions explaining the feedback purpose\n" +
+        "• Keep field keys short and descriptive (e.g., 'overall_rating', 'improvement_suggestions')\n" +
+        "• Use required=true for essential fields, false for optional ones\n" +
+        "• Set isPublic=true for external feedback, false for internal use\n" +
+        "• Add helpful placeholder text for text fields\n\n" +
+        "=== EXAMPLE TEMPLATES ===\n" +
+        "1. PRODUCT FEEDBACK:\n" +
         "{\n" +
-        '  "title": "Product Feedback v1",\n' +
-        '  "description": "Help us improve our product",\n' +
+        '  "title": "Product Feedback - Mobile App v2.1",\n' +
+        '  "description": "Help us improve our mobile app experience",\n' +
         '  "fields": [\n' +
-        "    {\n" +
-        '      "key": "overall_rating",\n' +
-        '      "type": "rating",\n' +
-        '      "label": "Overall Rating",\n' +
-        '      "required": true,\n' +
-        '      "minValue": 1,\n' +
-        '      "maxValue": 5\n' +
-        "    },\n" +
-        "    {\n" +
-        '      "key": "comments",\n' +
-        '      "type": "text",\n' +
-        '      "label": "Additional Comments",\n' +
-        '      "required": false,\n' +
-        '      "placeholder": "Tell us what you think..."\n' +
-        "    }\n" +
+        '    {"key": "overall_rating", "type": "rating", "label": "Overall Satisfaction", "required": true, "minValue": 1, "maxValue": 5},\n' +
+        '    {"key": "ease_of_use", "type": "select", "label": "How easy was the app to use?", "required": true, "options": ["Very Easy", "Easy", "Neutral", "Difficult", "Very Difficult"]},\n' +
+        '    {"key": "features_used", "type": "multiselect", "label": "Which features did you use?", "required": false, "options": ["Search", "Favorites", "Sharing", "Notifications", "Settings"]},\n' +
+        '    {"key": "would_recommend", "type": "boolean", "label": "Would you recommend this app?", "required": true},\n' +
+        '    {"key": "improvements", "type": "text", "label": "What improvements would you suggest?", "required": false, "placeholder": "Tell us how we can make the app better..."}\n' +
         "  ],\n" +
         '  "isPublic": true\n' +
+        "}\n\n" +
+        "2. EVENT FEEDBACK:\n" +
+        "{\n" +
+        '  "title": "Workshop Feedback - AI in Business",\n' +
+        '  "description": "Your feedback helps us improve future workshops",\n' +
+        '  "fields": [\n' +
+        '    {"key": "content_quality", "type": "rating", "label": "Content Quality", "required": true, "minValue": 1, "maxValue": 10},\n' +
+        '    {"key": "session_length", "type": "select", "label": "Session length was:", "required": true, "options": ["Too Short", "Just Right", "Too Long"]},\n' +
+        '    {"key": "most_valuable", "type": "text", "label": "Most valuable part of the workshop", "required": false},\n' +
+        '    {"key": "attend_future", "type": "boolean", "label": "Would you attend future workshops?", "required": true}\n' +
+        "  ],\n" +
+        '  "isPublic": false\n' +
         "}",
-      inputSchema: CreateFeedbackTemplateParams._def.schema._def.shape(),
+      inputSchema: CreateFeedbackTemplateParams.shape,
     },
     async (args: any, extra?: any) => {
       const {

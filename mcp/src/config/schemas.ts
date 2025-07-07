@@ -98,11 +98,6 @@ export const CreateFeedbackTemplateParams = z.object({
   linkedCrates: z.array(z.string()).optional(),
 });
 
-export const ListFeedbackTemplatesParams = z.object({
-  limit: z.number().int().min(1).max(100).optional(),
-  startAfter: z.string().optional(),
-});
-
 export const SubmitFeedbackParams = z.object({
   templateId: z.string(),
   responses: z.record(z.string(), z.any()),
@@ -113,15 +108,4 @@ export const GetFeedbackResponsesParams = z.object({
   templateId: z.string(),
   limit: z.number().int().min(1).max(100).optional(),
   startAfter: z.string().optional(),
-});
-
-export const ToggleFeedbackTemplateStatusParams = z.object({
-  templateId: z.string(),
-  isOpen: z.boolean(),
-});
-
-export const GetFeedbackDataParams = z.object({
-  templateId: z.string().optional(),
-  includeResponses: z.boolean().optional().default(true),
-  includeAnalytics: z.boolean().optional().default(true),
 });

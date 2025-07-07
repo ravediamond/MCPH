@@ -22,11 +22,14 @@ export function registerCratesUpdateTool(server: McpServer): void {
       description:
         "Updates an existing crate's content, metadata, or organizational information. " +
         "Allows users to iterate on content while preserving the crate ID, sharing settings, and creation timestamp.\n\n" +
+        "FEEDBACK TEMPLATES: For feedback crates, you can update metadata like 'isOpen' to open/close templates for responses.\n\n" +
         "Only the provided parameters will be updated; omitted parameters remain unchanged.\n\n" +
         "AI usage examples:\n" +
         '• "update crate 12345 with new content"\n' +
         "• \"change the title of crate 12345 to 'Final Report'\"\n" +
         '• "add tags to crate 12345"\n' +
+        '• "close feedback template 12345" (set metadata.isOpen to false)\n' +
+        '• "reopen feedback template 12345" (set metadata.isOpen to true)\n' +
         '• "update the description of my crate 12345"',
       inputSchema: UpdateCrateParams.shape,
     },

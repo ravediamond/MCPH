@@ -16,6 +16,8 @@ interface FeedbackResponse {
   id: string;
   templateId: string;
   submitterId: string;
+  submitterEmail: string | null;
+  submitterName: string | null;
   submittedAt: string;
   responses: Record<string, any>;
   metadata: Record<string, string>;
@@ -39,11 +41,15 @@ interface Statistics {
 export default function FeedbackResponsesPage({
   params,
 }: {
-  params: { templateId: string };
+  params: Promise<{ templateId: string }>;
 }) {
   const router = useRouter();
   const { user, loading, getIdToken } = useAuth();
-  const { templateId } = params;
+  const [templateId, setTemplateId] = useState<string>("");
+
+  useEffect(() => {
+    params.then(({ templateId }) => setTemplateId(templateId));
+  }, [params]);
 
   const [template, setTemplate] = useState<FeedbackTemplate | null>(null);
   const [responses, setResponses] = useState<FeedbackResponse[]>([]);
@@ -52,13 +58,13 @@ export default function FeedbackResponsesPage({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && templateId) {
       router.push(`/login?next=/feedback/responses/${templateId}`);
     }
   }, [user, loading, router, templateId]);
 
   useEffect(() => {
-    if (user) {
+    if (user && templateId) {
       fetchResponses();
     }
   }, [user, templateId]);
@@ -301,7 +307,11 @@ export default function FeedbackResponsesPage({
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                           <div className="flex items-center">
                             <FaUser className="mr-1 h-3 w-3" />
-                            {response.submitterId}
+                            {response.submitterName ||
+                              response.submitterEmail ||
+                              (response.submitterId === "anonymous"
+                                ? "Anonymous"
+                                : `User ${response.submitterId.slice(-8)}`)}
                           </div>
                           <div className="flex items-center">
                             <FaCalendar className="mr-1 h-3 w-3" />

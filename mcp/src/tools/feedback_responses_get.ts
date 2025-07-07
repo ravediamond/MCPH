@@ -19,23 +19,67 @@ export function registerFeedbackResponsesGetTool(server: McpServer): void {
     {
       title: "Get Feedback Responses",
       description:
-        "Retrieves feedback responses for a specific template. Only template owners can view responses.\n\n" +
-        "USAGE:\n" +
-        "• Requires templateId of a template you own\n" +
-        "• Returns all responses with submitter info and response data\n" +
-        "• Supports pagination with limit and startAfter\n\n" +
-        "EXAMPLE USAGE:\n" +
-        "Get all responses for a template:\n" +
+        "Retrieves and analyzes feedback responses for templates you own. Provides response data, analytics, and statistics to help understand feedback patterns and insights.\n\n" +
+        "=== WHEN TO USE ===\n" +
+        "• Template owner wants to analyze collected feedback data\n" +
+        "• AI needs to generate reports from feedback responses\n" +
+        "• Reviewing survey results and extracting insights\n" +
+        "• Monitoring feedback campaigns and response rates\n" +
+        "• Exporting data for further analysis or reporting\n\n" +
+        "=== ANALYTICS PROVIDED ===\n" +
+        "• Response statistics: count, response rates per field\n" +
+        "• Numeric/Rating fields: average, min, max values\n" +
+        "• Boolean fields: true/false counts and percentages\n" +
+        "• Select/Multiselect: option distribution and popularity\n" +
+        "• Text fields: response count and average length\n" +
+        "• Submission metadata: timestamps, submitter IDs, custom metadata\n\n" +
+        "=== DATA INSIGHTS FOR AI ===\n" +
+        "Use this tool to generate insights like:\n" +
+        '• "85% of users rated the product 4+ stars"\n' +
+        "• \"Most requested feature is 'dark mode' (mentioned 23 times)\"\n" +
+        '• "Customer satisfaction improved 15% since last quarter"\n' +
+        '• "Mobile users report 20% higher satisfaction than desktop"\n' +
+        "• \"Users who mentioned 'performance' gave 2.1 lower ratings\"\n\n" +
+        "=== PAGINATION & PERFORMANCE ===\n" +
+        "• Default limit: 50 responses (increase for comprehensive analysis)\n" +
+        "• Use startAfter for pagination through large datasets\n" +
+        "• Responses ordered by submission date (newest first)\n" +
+        "• Template submission count shows total responses collected\n\n" +
+        "=== WORKFLOW FOR AI ANALYSIS ===\n" +
+        "1. Get responses: feedback_responses_get (templateId)\n" +
+        "2. Analyze patterns: Look for trends in ratings, common text themes\n" +
+        "3. Generate insights: Compare metrics across time periods or segments\n" +
+        "4. Create reports: Summarize findings and recommendations\n" +
+        "5. Export data: Use response data for external analysis tools\n\n" +
+        "=== EXAMPLE USAGE ===\n" +
+        "1. GET ALL RESPONSES:\n" +
         "{\n" +
-        '  "templateId": "abc123"\n' +
+        '  \"templateId\": \"product-feedback-2024\"\n' +
         "}\n\n" +
-        "Get responses with pagination:\n" +
+        "2. PAGINATED ANALYSIS:\n" +
         "{\n" +
-        '  "templateId": "abc123",\n' +
-        '  "limit": 10,\n' +
-        '  "startAfter": "previous-response-id"\n' +
-        "}",
-      inputSchema: GetFeedbackResponsesParams._def.schema._def.shape(),
+        '  \"templateId\": \"user-survey-q1\",\n' +
+        '  \"limit\": 100,\n' +
+        '  \"startAfter\": \"response-abc123\"\n' +
+        "}\n\n" +
+        "3. COMPREHENSIVE DATASET:\n" +
+        "{\n" +
+        '  \"templateId\": \"annual-feedback\",\n' +
+        '  \"limit\": 500\n' +
+        "}\n\n" +
+        "=== RESPONSE DATA STRUCTURE ===\n" +
+        "Each response includes:\n" +
+        "• id: Unique response identifier\n" +
+        "• submitterId: User ID or 'anonymous'\n" +
+        "• submittedAt: ISO timestamp\n" +
+        "• responses: Field key-value pairs matching template structure\n" +
+        "• metadata: Custom metadata from submission (source, version, etc.)\n\n" +
+        "=== PRIVACY & SECURITY ===\n" +
+        "• Only template owners can access responses\n" +
+        "• Anonymous submissions show 'anonymous' as submitter\n" +
+        "• Personal data handling follows template privacy settings\n" +
+        "• Metadata can include tracking info for attribution analysis",
+      inputSchema: GetFeedbackResponsesParams.shape,
     },
     async (args: any, extra?: any) => {
       const { templateId, limit = 50, startAfter } = args;

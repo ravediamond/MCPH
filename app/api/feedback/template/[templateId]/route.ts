@@ -3,10 +3,10 @@ import { db, FEEDBACK_TEMPLATES_COLLECTION } from "@/services/firebaseService";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { templateId: string } },
+  { params }: { params: Promise<{ templateId: string }> },
 ) {
   try {
-    const { templateId } = params;
+    const { templateId } = await params;
 
     if (!templateId) {
       return NextResponse.json(
@@ -31,7 +31,7 @@ export async function GET(
     const templateData = templateDoc.data();
 
     // Check if template is public or if user owns it
-    // For simplicity, we'll allow access to public templates without auth
+    // Allow access to public templates without auth
     // and require auth for private templates
     if (!templateData?.isPublic) {
       const authHeader = request.headers.get("authorization");
@@ -42,8 +42,23 @@ export async function GET(
         );
       }
 
-      // For private templates, you might want to verify the user owns it
-      // This is simplified for now
+      // For private templates, verify the user has access
+      try {
+        const { auth } = await import("@/lib/firebaseAdmin");
+        const token = authHeader.replace("Bearer ", "");
+        const decodedToken = await auth.verifyIdToken(token);
+        const userId = decodedToken.uid;
+
+        // Check if user owns the template
+        if (templateData?.ownerId !== userId) {
+          return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+      } catch (error) {
+        return NextResponse.json(
+          { error: "Invalid authentication token" },
+          { status: 401 },
+        );
+      }
     }
 
     const template = {

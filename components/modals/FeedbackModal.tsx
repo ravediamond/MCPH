@@ -50,8 +50,9 @@ export default function FeedbackModal({
 
   if (!isOpen) return null;
 
-  const hasReachedLimit =
-    feedbackTemplatesQuota && feedbackTemplatesQuota.remaining <= 0;
+  const hasReachedLimit = feedbackTemplatesQuota
+    ? feedbackTemplatesQuota.remaining <= 0
+    : false;
 
   const addField = () => {
     const newField: FeedbackField = {

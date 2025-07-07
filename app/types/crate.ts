@@ -5,6 +5,7 @@ export enum CrateCategory {
   JSON = "json",
   TEXT = "text",
   BINARY = "binary",
+  FEEDBACK = "feedback",
 }
 
 export interface CrateSharing {

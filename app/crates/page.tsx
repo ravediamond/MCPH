@@ -287,6 +287,11 @@ export default function CratesPage() {
     const contentType = file.mimeType?.toLowerCase() || "";
     const fileName = file.title?.toLowerCase() || "";
 
+    // Check if it's a feedback template
+    if (file.category === "feedback") {
+      return <FaComments size={18} className="text-purple-600" />;
+    }
+
     if (contentType.includes("image")) {
       return <FaFileImage size={18} className="text-blue-500" />;
     } else if (contentType.includes("pdf")) {

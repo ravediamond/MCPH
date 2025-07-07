@@ -4,9 +4,10 @@ import { db, FEEDBACK_TEMPLATES_COLLECTION } from "@/services/firebaseService";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { templateId: string } },
+  { params }: { params: Promise<{ templateId: string }> },
 ) {
   try {
+    const { templateId } = await params;
     // Get authentication token
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -29,7 +30,6 @@ export async function PATCH(
     }
 
     const userId = decodedToken.uid;
-    const templateId = params.templateId;
 
     // Parse request body
     const { isOpen } = await request.json();

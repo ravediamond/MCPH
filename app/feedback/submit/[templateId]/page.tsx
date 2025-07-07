@@ -32,11 +32,15 @@ interface FeedbackTemplate {
 export default function SubmitFeedbackPage({
   params,
 }: {
-  params: { templateId: string };
+  params: Promise<{ templateId: string }>;
 }) {
   const router = useRouter();
   const { getIdToken } = useAuth();
-  const { templateId } = params;
+  const [templateId, setTemplateId] = useState<string>("");
+
+  useEffect(() => {
+    params.then(({ templateId }) => setTemplateId(templateId));
+  }, [params]);
 
   const [template, setTemplate] = useState<FeedbackTemplate | null>(null);
   const [responses, setResponses] = useState<Record<string, any>>({});
@@ -46,7 +50,9 @@ export default function SubmitFeedbackPage({
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    fetchTemplate();
+    if (templateId) {
+      fetchTemplate();
+    }
   }, [templateId]);
 
   const fetchTemplate = async () => {
@@ -343,22 +349,13 @@ export default function SubmitFeedbackPage({
             <p className="text-green-700 mb-4">
               Your feedback has been submitted successfully.
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex justify-center">
               <Link
                 href="/crates"
-                className="inline-flex items-center text-green-600 hover:text-green-800"
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
                 <FaArrowLeft className="mr-2" /> Back to Crates
               </Link>
-              <button
-                onClick={() => {
-                  setSuccess(false);
-                  setResponses({});
-                }}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-              >
-                Submit Another Response
-              </button>
             </div>
           </div>
         </div>

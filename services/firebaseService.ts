@@ -719,10 +719,6 @@ export async function getUserCrates(
 
       // Process tags to ensure they're always an array
       if (data && data.tags !== undefined && !Array.isArray(data.tags)) {
-        console.log(
-          `[DEBUG] getUserCrates: Tags for crate ${doc.id} is not an array, converting:`,
-          data.tags,
-        );
         if (data.tags) {
           // If it exists but isn't an array, try to convert it
           try {
@@ -763,22 +759,6 @@ export async function getUserCrates(
       }
 
       return fromFirestoreData(data) as Crate;
-    });
-
-    // Add a debug log to check what's happening with tags and descriptions
-    crates.forEach((crate, index) => {
-      console.log(
-        `[DEBUG] getUserCrates: Crate ${index} (${crate.id}) processed:`,
-        {
-          tags: crate.tags,
-          tagsType: typeof crate.tags,
-          isTagsArray: Array.isArray(crate.tags),
-          tagsLength: Array.isArray(crate.tags) ? crate.tags.length : "N/A",
-          description: crate.description,
-          descriptionType: typeof crate.description,
-          descriptionLength: crate.description ? crate.description.length : 0,
-        },
-      );
     });
 
     // Get the ID of the last document for pagination
@@ -939,18 +919,34 @@ export async function updateCrateSharing(
       ...sharingSettings,
     } as any;
 
-    const updateData: any = { shared: updatedSharing };
-
+    // Handle password deletion properly
     if (
       sharingSettings.hasOwnProperty("passwordHash") &&
       !sharingSettings.passwordHash
     ) {
-      updateData["shared.passwordHash"] = FieldValue.delete();
       delete updatedSharing.passwordHash;
     }
 
+    const updateData: any = { shared: updatedSharing };
+
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     await docRef.update(updateData);
+
+    // For feedback crates, also update the feedback template record
+    if (crate.category === "feedback") {
+      const templateUpdateData: any = {};
+
+      if (sharingSettings.hasOwnProperty("public")) {
+        templateUpdateData.isPublic = sharingSettings.public;
+      }
+
+      if (Object.keys(templateUpdateData).length > 0) {
+        const templateRef = db
+          .collection(FEEDBACK_TEMPLATES_COLLECTION)
+          .doc(crateId);
+        await templateRef.update(templateUpdateData);
+      }
+    }
 
     return { success: true };
   } catch (error) {

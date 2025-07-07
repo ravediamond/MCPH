@@ -9,10 +9,10 @@ import { FeedbackTemplate, FeedbackResponse } from "@/shared/types/feedback";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { templateId: string } },
+  { params }: { params: Promise<{ templateId: string }> },
 ) {
   try {
-    const { templateId } = params;
+    const { templateId } = await params;
 
     if (!templateId) {
       return NextResponse.json(
@@ -91,22 +91,44 @@ export async function GET(
     // Execute query
     const snapshot = await query.limit(limit).get();
 
-    // Format responses
-    const responses = snapshot.docs.map((doc) => {
-      const data = doc.data() as FeedbackResponse;
-      return {
-        id: doc.id,
-        templateId: data.templateId,
-        submitterId: data.submitterId || "anonymous",
-        submittedAt:
-          data.submittedAt &&
-          typeof (data.submittedAt as any).toDate === "function"
-            ? (data.submittedAt as any).toDate().toISOString()
-            : data.submittedAt,
-        responses: data.responses,
-        metadata: data.metadata || {},
-      };
-    });
+    // Format responses and fetch user information
+    const responses = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const data = doc.data() as FeedbackResponse;
+
+        // Fetch user information if submitterId exists
+        let userInfo = null;
+        if (data.submitterId && data.submitterId !== "anonymous") {
+          try {
+            const userRecord = await auth.getUser(data.submitterId);
+            userInfo = {
+              email: userRecord.email,
+              displayName: userRecord.displayName,
+            };
+          } catch (error) {
+            console.warn(
+              `Could not fetch user info for ${data.submitterId}:`,
+              error,
+            );
+          }
+        }
+
+        return {
+          id: doc.id,
+          templateId: data.templateId,
+          submitterId: data.submitterId || "anonymous",
+          submitterEmail: userInfo?.email || null,
+          submitterName: userInfo?.displayName || null,
+          submittedAt:
+            data.submittedAt &&
+            typeof (data.submittedAt as any).toDate === "function"
+              ? (data.submittedAt as any).toDate().toISOString()
+              : data.submittedAt,
+          responses: data.responses,
+          metadata: data.metadata || {},
+        };
+      }),
+    );
 
     // Calculate basic statistics
     const statistics = calculateResponseStats(responses, template.fields);

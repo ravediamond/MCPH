@@ -49,7 +49,7 @@ export async function GET(
 
     // Check if user has access to this crate
     const isOwner = crate.ownerId === userId;
-    const isPublic = crate.shared.public;
+    const isPublic = crate.shared?.public || false;
     // Simplified for v1: No per-user sharing, only public/private
     const isSharedWithUser = false; // Removed sharedWith array in v1
 
@@ -101,7 +101,7 @@ export async function GET(
       createdAt: crate.createdAt,
       expiresAt: crate.expiresAt, // Include expiration date if set
       downloadCount: crate.downloadCount,
-      isPublic: crate.shared.public,
+      isPublic: crate.shared?.public || false,
       isPasswordProtected: Boolean(crate.shared.passwordHash),
       isOwner,
       metadata: crate.metadata,
@@ -165,7 +165,7 @@ export async function POST(
 
     // Check access permissions
     const isOwner = crate.ownerId === userId;
-    const isPublic = crate.shared.public;
+    const isPublic = crate.shared?.public || false;
     // Simplified for v1: No per-user sharing, only public/private
     const isSharedWithUser = false; // Removed sharedWith array in v1
 

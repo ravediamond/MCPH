@@ -20,30 +20,71 @@ export function registerFeedbackSubmitTool(server: McpServer): void {
     {
       title: "Submit Feedback",
       description:
-        "Submits feedback responses to a specific template. Validates responses against template field requirements.\n\n" +
-        "RESPONSE FORMAT:\n" +
-        "The responses object should have keys matching the template field keys, with values appropriate for each field type:\n" +
-        "• text: string value\n" +
-        "• number: numeric value\n" +
-        "• boolean: true/false\n" +
-        "• select: single string value from options\n" +
-        "• multiselect: array of strings from options\n" +
-        "• rating: numeric value between min/max\n\n" +
-        "EXAMPLE USAGE:\n" +
-        "Submit feedback to a product feedback template:\n" +
+        "Submits responses to feedback templates for data collection. Templates can be public (anyone can submit) or private (access controlled). Validates responses against field requirements and types.\n\n" +
+        "=== WHEN TO USE ===\n" +
+        "• User wants to respond to surveys, feedback forms, or questionnaires\n" +
+        "• AI needs to programmatically submit structured data to templates\n" +
+        "• Collecting user input for templates you've discovered via crates_list\n" +
+        "• Participating in public feedback collection campaigns\n\n" +
+        "=== RESPONSE FIELD TYPES & FORMATS ===\n" +
+        '• text - String values: "Great experience", "Needs improvement"\n' +
+        "• number - Numeric values: 25, 100, 3.5 (respects min/max validation)\n" +
+        "• boolean - True/false values: true, false\n" +
+        '• select - Single choice: "Excellent", "Good", "Poor" (from predefined options)\n' +
+        '• multiselect - Multiple choices: ["Feature A", "Feature B"] (array from options)\n' +
+        "• rating - Numeric ratings: 4, 8.5 (between template's minValue/maxValue)\n\n" +
+        "=== SMART SUBMISSION PATTERNS ===\n" +
+        'Product feedback: {"overall_rating": 4, "ease_of_use": "Easy", "improvements": "Better docs"}\n' +
+        'Event feedback: {"content_quality": 9, "recommend": true, "highlights": "Great speakers"}\n' +
+        'Survey responses: {"age": 28, "interests": ["Tech", "Design"], "satisfaction": "Very Satisfied"}\n' +
+        'Bug reports: {"severity": "High", "steps": "Click button, app crashes", "reproducible": true}\n\n' +
+        "=== VALIDATION & ERROR HANDLING ===\n" +
+        "• Required fields must have non-empty values\n" +
+        "• Field types must match (numbers for ratings, arrays for multiselect)\n" +
+        "• Select options must be from template's predefined choices\n" +
+        "• Rating values must be within template's min/max range\n" +
+        "• Templates can be closed (isOpen: false) and reject submissions\n\n" +
+        "=== WORKFLOW FOR AI ===\n" +
+        "1. Find templates: crates_list (category: 'feedback', shared.public: true)\n" +
+        "2. Check template structure: crates_get (to see fields and requirements)\n" +
+        "3. Submit response: feedback_submit (with properly formatted responses)\n" +
+        "4. Handle errors: Review validation messages and retry with corrections\n\n" +
+        "=== EXAMPLE SUBMISSIONS ===\n" +
+        "1. PRODUCT FEEDBACK:\n" +
         "{\n" +
-        '  "templateId": "abc123",\n' +
-        '  "responses": {\n' +
-        '    "overall_rating": 4,\n' +
-        '    "comments": "Great product, but could use better documentation",\n' +
-        '    "recommend": true\n' +
+        '  \"templateId\": \"prod-feedback-2024\",\n' +
+        '  \"responses\": {\n' +
+        '    \"overall_rating\": 4,\n' +
+        '    \"ease_of_use\": \"Very Easy\",\n' +
+        '    \"features_used\": [\"Search\", \"Favorites\"],\n' +
+        '    \"would_recommend\": true,\n' +
+        '    \"improvements\": \"Add dark mode and better notifications\"\n' +
         "  },\n" +
-        '  "metadata": {\n' +
-        '    "source": "web",\n' +
-        '    "version": "1.0"\n' +
+        '  \"metadata\": {\"source\": \"mobile_app\", \"version\": \"2.1.0\"}\n' +
+        "}\n\n" +
+        "2. EVENT FEEDBACK:\n" +
+        "{\n" +
+        '  \"templateId\": \"workshop-ai-business\",\n' +
+        '  \"responses\": {\n' +
+        '    \"content_quality\": 9,\n' +
+        '    \"session_length\": \"Just Right\",\n' +
+        '    \"most_valuable\": \"Real-world case studies and hands-on exercises\",\n' +
+        '    \"attend_future\": true\n' +
         "  }\n" +
+        "}\n\n" +
+        "3. USER RESEARCH:\n" +
+        "{\n" +
+        '  \"templateId\": \"user-research-q1\",\n' +
+        '  \"responses\": {\n' +
+        '    \"age_group\": \"25-34\",\n' +
+        '    \"usage_frequency\": 15,\n' +
+        '    \"pain_points\": [\"Slow loading\", \"Complex navigation\"],\n' +
+        '    \"satisfaction_score\": 7,\n' +
+        '    \"additional_comments\": \"Love the concept but needs performance improvements\"\n' +
+        "  },\n" +
+        '  \"metadata\": {\"campaign\": \"q1_research\", \"channel\": \"email\"}\n' +
         "}",
-      inputSchema: SubmitFeedbackParams._def.schema._def.shape(),
+      inputSchema: SubmitFeedbackParams.shape,
     },
     async (args: any, extra?: any) => {
       const { templateId, responses, metadata = {} } = args;

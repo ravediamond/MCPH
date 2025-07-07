@@ -4,8 +4,10 @@ import {
   db,
   FEEDBACK_TEMPLATES_COLLECTION,
   hasReachedFeedbackTemplatesLimit,
+  saveCrateMetadata,
 } from "@/services/firebaseService";
 import { FeedbackTemplate, FeedbackFieldType } from "@/shared/types/feedback";
+import { CrateCategory } from "@/shared/types/crate";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
@@ -146,11 +148,41 @@ export async function POST(request: NextRequest) {
       isOpen: true, // New templates are open by default
     };
 
-    // Save to Firestore
+    // Save to Firestore as both a feedback template and a crate
     await db
       .collection(FEEDBACK_TEMPLATES_COLLECTION)
       .doc(templateId)
       .set(template);
+
+    // Also store as a crate so it appears in the crates page
+    const crateData = {
+      id: templateId,
+      title: title.trim(),
+      description: description?.trim() || undefined,
+      ownerId: userId,
+      createdAt: now,
+      mimeType: "application/json",
+      category: CrateCategory.FEEDBACK,
+      gcsPath: `feedback/${templateId}`, // Virtual path for feedback templates
+      shared: {
+        public: Boolean(isPublic),
+      },
+      tags: Array.isArray(tags)
+        ? tags.filter((t) => t && t.trim()).map((t) => t.trim())
+        : [],
+      size: JSON.stringify(template).length, // Approximate size
+      downloadCount: 0,
+      fileName: `${title.trim().replace(/[^a-zA-Z0-9]/g, "_")}_feedback_template.json`,
+      metadata: {
+        type: "feedback_template",
+        submissionCount: "0",
+        isOpen: "true",
+        linkedCrates:
+          linkedCrates?.length > 0 ? linkedCrates.join(",") : undefined,
+      },
+    };
+
+    await saveCrateMetadata(crateData);
 
     return NextResponse.json({
       success: true,

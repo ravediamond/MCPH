@@ -18,8 +18,12 @@ export async function POST(
   try {
     // Handle params as a Promise in Next.js 15+
     const { id } = await context.params;
-    const { password } = await req.json();
-    const generateLink = true;
+    const {
+      password,
+      public: isPublic = true,
+      passwordProtected = false,
+      removePassword = false,
+    } = await req.json();
 
     // Check authentication
     const authHeader = req.headers.get("authorization");
@@ -79,11 +83,11 @@ export async function POST(
     }
 
     // Prepare sharing settings update
-    const sharingSettings: any = { public: true };
+    const sharingSettings: any = { public: isPublic };
 
-    if (password && password.length > 0) {
+    if (passwordProtected && password && password.length > 0) {
       sharingSettings.passwordHash = await bcrypt.hash(password, 10);
-    } else {
+    } else if (!passwordProtected || removePassword) {
       sharingSettings.passwordHash = null;
     }
 
@@ -106,7 +110,7 @@ export async function POST(
     // Log the sharing event
     await logEvent("crate_share_update", id, undefined, {
       userId,
-      isPublic: true,
+      isPublic,
     });
 
     // Generate response with share URL
@@ -116,8 +120,9 @@ export async function POST(
     // Return the updated sharing information
     return NextResponse.json({
       id,
-      isShared: true,
+      isShared: isPublic,
       shareUrl,
+      passwordProtected: Boolean(sharingSettings.passwordHash),
       message: "Sharing settings updated successfully",
     });
   } catch (error) {
