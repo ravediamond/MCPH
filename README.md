@@ -48,6 +48,88 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
    ```
    The AI will create the content and provide you with a shareable link that looks like: `https://mcph.io/crate/abc123`
 
+## 🚀 6 Power Use Cases for MCPH
+
+### 1. Persistent AI Memory System 🧠
+
+Transform AI into a learning partner that remembers everything across sessions. Build a searchable knowledge base that grows smarter over time.
+
+**Implementation Steps:**
+
+1. **Upload project contexts**: "Save our coding standards as a crate"
+2. **Tag systematically**: `project:webapp`, `type:guidelines`, `team:frontend`
+3. **Search & retrieve**: "Find our React component patterns"
+4. **AI remembers**: "Apply our coding standards to this new component"
+
+**Real Example:** Store your API error handling patterns once, and every AI session can reference them: "How do we handle auth errors in our system?"
+
+### 2. Living Documentation That Updates Itself 📚
+
+Documentation that evolves with your code. When you change features, AI updates all related docs automatically.
+
+**Implementation Steps:**
+
+1. **Create base docs**: README, API specs, architecture diagrams
+2. **Link with tags**: `doc:api-v2`, `component:auth`, `version:latest`
+3. **Update cascade**: "Update all auth documentation after this refactor"
+4. **AI maintains consistency** across all docs
+
+**Real Example:** Change your database schema → AI updates ERD diagrams, migration guides, and API docs in connected crates.
+
+### 3. Multi-Agent Project Pipeline 🤝
+
+Different AI specialists working together on your project, each handling what they do best.
+
+**Implementation Steps:**
+
+1. **Claude (Architect)**: Creates system design → saves to crate
+2. **ChatGPT (Developer)**: Reads design → implements code → saves to crate
+3. **Gemini (Tester)**: Reads both → writes test suite → saves to crate
+4. **Share progress**: One link shows entire project evolution
+
+**Real Example:** Building a chat app where each AI handles their specialty, all coordinated through shared crates.
+
+### 4. Instant Project Context Switching 🎯
+
+Switch between projects instantly with full context. Each project has its own "brain" that any AI can load.
+
+**Implementation Steps:**
+
+1. **Create project crate**: Stack, conventions, architecture, team notes
+2. **Share the link with your AI**: "Load context: mcph.io/crate/abc123"
+3. **AI instantly knows**: Tech stack, coding style, business rules
+4. **Update as needed**: Context evolves with your project
+
+**Real Example:** "Switch to the e-commerce project" → AI immediately knows to use Next.js, Stripe APIs, and your custom auth flow.
+
+### 5. Dynamic Feedback Collection System 📊
+
+Build smart surveys that adapt based on responses, with AI analyzing feedback in real-time.
+
+**Implementation Steps:**
+
+1. **Create feedback template**: Rating + select + text fields
+2. **Share form link**: Send to users or embed in your app
+3. **Collect responses**: All data stored in your account
+4. **AI analyzes**: "What patterns do you see in user feedback?"
+5. **Iterate**: Update product based on insights
+
+**Real Example:** Create a bug report form that AI monitors. When similar bugs are reported, AI can suggest known fixes or escalate critical issues.
+
+### 6. Knowledge Graph Builder 🕸️
+
+Connect ideas, research, and insights into a searchable knowledge network that reveals hidden patterns.
+
+**Implementation Steps:**
+
+1. **Store insights**: Tag with topics, dates, projects, connections
+2. **Build over time**: Each crate adds to your knowledge graph
+3. **Discover patterns**: "What connects my AI and education research?"
+4. **Share discoveries**: One link to entire research threads
+5. **AI synthesizes**: "Summarize my thinking evolution on AI ethics"
+
+**Real Example:** Research competitive products → store findings in tagged crates → AI reveals market gaps you hadn't noticed.
+
 ### Anonymous vs. Logged-in Users
 
 MCPH offers different capabilities depending on whether you are logged in or using the service anonymously:

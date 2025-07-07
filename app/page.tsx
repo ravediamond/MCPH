@@ -558,6 +558,165 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Use Cases Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-orange-50 to-blue-50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">
+              🚀 6 Power Use Cases for MCPH
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Transform how you work with AI. From persistent memory to
+              multi-agent collaboration, discover what's possible.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Use Case 1: Persistent AI Memory */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">🧠</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Persistent AI Memory System
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Transform AI into a learning partner that remembers everything
+                across sessions. Build a searchable knowledge base that grows
+                smarter over time.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> Store your coding standards once,
+                every AI session can reference them: "Apply our auth patterns to
+                this new component"
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Context Engineering Hub" ↗
+              </div>
+            </div>
+
+            {/* Use Case 2: Living Documentation */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">📚</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Living Documentation
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Documentation that evolves with your code. When you change
+                features, AI updates all related docs automatically.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> Change database schema → AI updates
+                ERD diagrams, migration guides, and API docs in connected
+                crates.
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Seamless Share Links" ↗
+              </div>
+            </div>
+
+            {/* Use Case 3: Multi-Agent Pipeline */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">🤝</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Multi-Agent Pipeline
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Different AI specialists working together on your project, each
+                handling what they do best.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> Claude designs → ChatGPT codes →
+                Gemini tests. All coordinated through shared crates.
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Multi-Agent Relay" ↗
+              </div>
+            </div>
+
+            {/* Use Case 4: Project Context Switching */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">🎯</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Instant Context Switching
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Switch between projects instantly with full context. Each
+                project has its own "brain" that any AI can load.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> "Switch to e-commerce project" → AI
+                knows Next.js, Stripe APIs, and your custom auth flow.
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Persistent Artifact Storage" ↗
+              </div>
+            </div>
+
+            {/* Use Case 5: Dynamic Feedback */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">📊</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Smart Feedback Collection
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Build smart surveys that adapt based on responses, with AI
+                analyzing feedback in real-time.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> Create bug report forms that AI
+                monitors and suggests fixes for similar issues.
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Feedback Collection" ↗
+              </div>
+            </div>
+
+            {/* Use Case 6: Knowledge Graph */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-lg hover:border-orange-200 transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <span className="text-2xl mr-3">🕸️</span>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Knowledge Graph Builder
+                </h3>
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                Connect ideas, research, and insights into a searchable
+                knowledge network that reveals hidden patterns.
+              </p>
+              <div className="text-sm text-gray-500 mb-3">
+                <strong>Example:</strong> Research competitors → store findings
+                → AI reveals market gaps you hadn't noticed.
+              </div>
+              <div className="text-xs text-orange-600 font-medium">
+                "Native MCP Integration" ↗
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action for Use Cases */}
+          <div className="text-center mt-12">
+            <Link
+              href="/upload"
+              className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-sm hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300"
+            >
+              Start Building Your AI Workflow →
+            </Link>
+            <p className="text-sm text-gray-500 mt-3">
+              Free account • No credit card required • 30-second setup
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Content Types Section - Simplified */}
       <section className="py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
@@ -1124,6 +1283,23 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-700">API access</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-gray-700">
+                    <strong>50</strong> feedback templates
+                  </span>
                 </li>
               </ul>
 
