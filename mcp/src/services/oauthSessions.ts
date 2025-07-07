@@ -1,4 +1,5 @@
 import { randomBytes } from "crypto";
+import { db } from "../../../services/firebaseService";
 
 interface OAuthSession {
   authorizationCode: string;
@@ -23,9 +24,11 @@ interface RegisteredClient {
   createdAt: Date;
 }
 
-// Simple in-memory storage for OAuth sessions and registered clients
+// Simple in-memory storage for OAuth sessions (keeping sessions in memory for now)
 const oauthSessions = new Map<string, OAuthSession>();
-const registeredClients = new Map<string, RegisteredClient>();
+
+// Collections for Firestore persistence
+const OAUTH_CLIENTS_COLLECTION = "oauthClients";
 
 // Cleanup interval (run every 5 minutes)
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
@@ -129,16 +132,17 @@ export function validateState(state: string, expectedState: string): boolean {
 /**
  * Register a new OAuth client
  */
-export function registerClient(
+export async function registerClient(
   clientName: string,
   clientUri?: string,
   redirectUris?: string[],
   grantTypes?: string[],
   responseTypes?: string[],
   scope?: string,
-): RegisteredClient {
+): Promise<RegisteredClient> {
   const clientId = generateClientId();
-  const clientSecret = generateClientSecret();
+  // For MCP clients, don't generate a client secret (public clients)
+  const clientSecret = scope === "mcp" ? undefined : generateClientSecret();
   const now = new Date();
 
   const client: RegisteredClient = {
@@ -154,47 +158,128 @@ export function registerClient(
     createdAt: now,
   };
 
-  registeredClients.set(clientId, client);
+  try {
+    // Save to Firestore
+    await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .set({
+        ...client,
+        createdAt: now,
+      });
 
-  console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
-  return client;
+    console.log(`[OAuth] Registered new client: ${clientName} (${clientId})`);
+    return client;
+  } catch (error) {
+    console.error(`[OAuth] Failed to register client ${clientName}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Update existing client to remove client secret (for public clients)
+ */
+export async function updateClientToPublic(clientId: string): Promise<boolean> {
+  try {
+    await db.collection(OAUTH_CLIENTS_COLLECTION).doc(clientId).update({
+      clientSecret: null,
+    });
+
+    console.log(
+      `[OAuth] Updated client ${clientId} to public client (no secret)`,
+    );
+    return true;
+  } catch (error) {
+    console.error(`[OAuth] Failed to update client ${clientId}:`, error);
+    return false;
+  }
 }
 
 /**
  * Get registered client by client ID
  */
-export function getRegisteredClient(clientId: string): RegisteredClient | null {
-  return registeredClients.get(clientId) || null;
+export async function getRegisteredClient(
+  clientId: string,
+): Promise<RegisteredClient | null> {
+  try {
+    const doc = await db
+      .collection(OAUTH_CLIENTS_COLLECTION)
+      .doc(clientId)
+      .get();
+
+    if (!doc.exists) {
+      return null;
+    }
+
+    const data = doc.data();
+    return {
+      ...data,
+      createdAt: data?.createdAt?.toDate() || new Date(),
+    } as RegisteredClient;
+  } catch (error) {
+    console.error(`[OAuth] Failed to get client ${clientId}:`, error);
+    return null;
+  }
 }
 
 /**
  * Validate client credentials
  */
-export function validateClient(
+export async function validateClient(
   clientId: string,
   clientSecret?: string,
-): boolean {
-  const client = registeredClients.get(clientId);
+): Promise<boolean> {
+  console.log(
+    `[OAuth] Validating client: ${clientId}, has secret: ${!!clientSecret}`,
+  );
+  const client = await getRegisteredClient(clientId);
   if (!client) {
+    console.log(`[OAuth] Client validation failed: client not found`);
     return false;
   }
+
+  console.log(`[OAuth] Client details:`, {
+    hasClientSecret: !!client.clientSecret,
+    scope: client.scope,
+    clientName: client.clientName,
+  });
 
   // If client has a secret, it must match
   if (client.clientSecret && client.clientSecret !== clientSecret) {
-    return false;
+    console.log(`[OAuth] Client has secret but provided secret doesn't match`);
+    console.log(
+      `[OAuth] Checking conversion conditions: scope=${client.scope}, clientSecret=${!!clientSecret}`,
+    );
+
+    // Special case: if this is an MCP client that was registered with a secret,
+    // convert it to a public client (no secret required)
+    if (
+      (client.scope === "mcp" || client.scope === "claudeai") &&
+      !clientSecret
+    ) {
+      console.log(`[OAuth] Converting MCP client ${clientId} to public client`);
+      await updateClientToPublic(clientId);
+      // Continue with validation - the client is now public
+    } else {
+      console.log(
+        `[OAuth] Client validation failed: secret mismatch, scope=${client.scope}, hasClientSecret=${!!clientSecret}`,
+      );
+      return false;
+    }
   }
 
+  console.log(`[OAuth] Client validation successful`);
   return true;
 }
 
 /**
  * Validate redirect URI for client
  */
-export function validateRedirectUri(
+export async function validateRedirectUri(
   clientId: string,
   redirectUri: string,
-): boolean {
-  const client = registeredClients.get(clientId);
+): Promise<boolean> {
+  const client = await getRegisteredClient(clientId);
   if (!client) {
     return false;
   }
