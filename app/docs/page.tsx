@@ -921,82 +921,358 @@ export default function DocsPage() {
             Available MCP Tools
           </h2>
           <p className="text-gray-600 mb-4">
-            MCPH provides a set of powerful tools that enable you to manage your
-            content through the Model Context Protocol (MCP). These tools can be
-            used programmatically or through AI assistants using natural
-            language.
+            MCPH provides a comprehensive set of powerful tools that enable you
+            to manage your content through the Model Context Protocol (MCP).
+            These tools can be used programmatically or through AI assistants
+            using natural language commands.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="space-y-6">
+            {/* Content Management Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
+              <h3 className="font-medium text-gray-800 mb-3">
                 Content Management
               </h3>
-              <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                <li>
-                  <b>crates_list</b> - View all your stored crates
-                </li>
-                <li>
-                  <b>crates_get</b> - Retrieve a crate's contents
-                </li>
-                <li>
-                  <b>crates_upload</b> - Create and store new content
-                </li>
-                <li>
-                  <b>crates_delete</b> - Remove unwanted crates
-                </li>
-              </ul>
+              <div className="space-y-3">
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_list</h4>
+                  <p className="text-sm text-gray-600">
+                    List and discover your stored crates
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Pagination support, category
+                    filtering (including 'feedback' templates), tag-based
+                    organization
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "List my crates", "Show my
+                    feedback templates", "Find my recent uploads"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_get</h4>
+                  <p className="text-sm text-gray-600">
+                    Retrieve and display crate contents
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Supports all content types,
+                    handles password-protected crates, rich metadata access
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Show me crate abc123", "Get the
+                    content of that document", "Display my project specs"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_upload</h4>
+                  <p className="text-sm text-gray-600">
+                    Create and store new content with smart tagging
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Intelligent categorization,
+                    tagging best practices, dual upload methods, expiration
+                    handling
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Upload this file as a crate
+                    titled 'Project Requirements'", "Save this with tags
+                    project:webapp, type:specs"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_update</h4>
+                  <p className="text-sm text-gray-600">
+                    Modify existing crate metadata and content
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Update any crate property, manage
+                    sharing settings, modify templates (open/close status)
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Update the title of crate
+                    abc123", "Add tags to my project crate", "Make my template
+                    private"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-blue-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_delete</h4>
+                  <p className="text-sm text-gray-600">
+                    Remove unwanted crates permanently
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Complete removal of content and
+                    metadata, irreversible operation
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Delete crate abc123", "Remove
+                    that old document", "Clean up my test files"
+                  </p>
+                </div>
+              </div>
             </div>
 
+            {/* Sharing & Access Control Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
-                Sharing & Access
+              <h3 className="font-medium text-gray-800 mb-3">
+                Sharing & Access Control
               </h3>
-              <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                <li>
-                  <b>crates_share</b> - Make content accessible to others
-                </li>
-                <li>
-                  <b>crates_unshare</b> - Restrict access to private
-                </li>
-                <li>
-                  <b>crates_get_download_link</b> - Create shareable links
-                </li>
-                <li>
-                  <b>crates_copy</b> - Save others' public crates to your
-                  collection
-                </li>
-              </ul>
-            </div>
-          </div>
+              <div className="space-y-3">
+                <div className="border-l-4 border-green-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_share</h4>
+                  <p className="text-sm text-gray-600">
+                    Make content accessible to others with advanced options
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Public/private toggle, password
+                    protection, shareable URLs, access control
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Make crate abc123 public",
+                    "Share this with password protection", "Generate a share
+                    link"
+                  </p>
+                </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg mb-4">
-            <h3 className="font-medium text-gray-800 mb-2">
-              Search & Discovery
-            </h3>
-            <ul className="list-disc pl-5 text-gray-600 space-y-1">
-              <li>
-                <b>crates_search</b> - Find your content using advanced hybrid
-                search with structured filtering
-              </li>
-            </ul>
-            <p className="text-sm text-gray-600 mt-2">
-              Combines vector embeddings for semantic understanding with
-              text-based search across titles, descriptions, and tags. Features
-              structured tag filtering and tag hierarchy understanding. Results
-              are ranked by relevance with boosting for conventional tag
-              patterns.
-            </p>
-            <p className="text-sm bg-gray-50 p-2 rounded border border-gray-200 mt-2">
-              <span className="font-semibold">Advanced Search Tips:</span>
-              <br />• Use <code>
-                tags: ["project:website", "status:final"]
-              </code>{" "}
-              for precise filtering
-              <br />• Conventional tags like <code>project:</code>,{" "}
-              <code>type:</code>, <code>status:</code> receive relevance
-              boosting
-            </p>
+                <div className="border-l-4 border-green-500 pl-3">
+                  <h4 className="font-medium text-gray-700">
+                    crates_make_public
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Quick public sharing for immediate access
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> One-click public sharing, instant
+                    shareable URL generation
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Make this public", "Share this
+                    crate publicly", "Generate public link"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-green-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_unshare</h4>
+                  <p className="text-sm text-gray-600">
+                    Remove public access and return to private
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Complete privacy restoration,
+                    removes public access and passwords
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Make crate abc123 private",
+                    "Remove public access", "Unshare this document"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-green-500 pl-3">
+                  <h4 className="font-medium text-gray-700">
+                    crates_get_download_link
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Generate secure, time-limited download URLs
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Configurable expiration, secure
+                    signed URLs, direct download support
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Create download link for crate
+                    abc123", "Generate 1-hour access URL"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-green-500 pl-3">
+                  <h4 className="font-medium text-gray-700">crates_copy</h4>
+                  <p className="text-sm text-gray-600">
+                    Duplicate public crates to your collection
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Features:</strong> Complete duplication, removes
+                    "Copy of" prefix, converts to private ownership
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    <strong>AI Usage:</strong> "Copy this public crate", "Save a
+                    copy of crate abc123 to my collection"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Search & Discovery Section */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-3">
+                Advanced Search & Discovery
+              </h3>
+              <div className="border-l-4 border-purple-500 pl-3">
+                <h4 className="font-medium text-gray-700">crates_search</h4>
+                <p className="text-sm text-gray-600">
+                  Find content using intelligent hybrid search
+                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-500">
+                    <strong>Features:</strong>
+                  </p>
+                  <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
+                    <li>
+                      Semantic search with vector embeddings for metadata
+                      understanding
+                    </li>
+                    <li>
+                      Tag-based filtering with hierarchical support
+                      (project:webapp, type:docs)
+                    </li>
+                    <li>
+                      Category filtering (including feedback templates:
+                      category: 'feedback')
+                    </li>
+                    <li>Relevance scoring and intelligent ranking</li>
+                    <li>
+                      Full-text search across titles, descriptions, and tags
+                    </li>
+                  </ul>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  <strong>AI Usage:</strong> "Find my React components", "Search
+                  for project documentation", "Find feedback templates about
+                  mobile apps"
+                </p>
+                <div className="bg-white p-2 rounded border border-gray-200 mt-2">
+                  <p className="text-xs font-semibold text-gray-700">
+                    Advanced Search Tips:
+                  </p>
+                  <ul className="text-xs text-gray-600 mt-1 space-y-1">
+                    <li>
+                      • Use tags: ["project:website", "status:final"] for
+                      precise filtering
+                    </li>
+                    <li>
+                      • Conventional tags like project:, type:, status: receive
+                      relevance boosting
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Feedback Collection System Section */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-800 mb-3">
+                Feedback Collection System
+              </h3>
+              <div className="space-y-3">
+                <div className="border-l-4 border-orange-500 pl-3">
+                  <h4 className="font-medium text-gray-700">
+                    feedback_template_create
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Build custom feedback forms with validation
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">
+                      <strong>Features:</strong>
+                    </p>
+                    <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
+                      <li>
+                        6 field types: text, number, boolean, select,
+                        multiselect, rating
+                      </li>
+                      <li>
+                        Custom validation rules, required/optional fields,
+                        dropdown options
+                      </li>
+                      <li>
+                        Automatic storage as both feedback template AND crate
+                        (category: 'feedback')
+                      </li>
+                      <li>
+                        Tag-based organization, public/private templates, linked
+                        crate references
+                      </li>
+                    </ul>
+                    <p className="text-xs text-gray-500 mt-1">
+                      <strong>Limits:</strong> 5 templates per user (Free), 50
+                      templates (Pro)
+                    </p>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    <strong>AI Usage:</strong> "Create feedback form for product
+                    reviews", "Build survey with rating and text fields"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-orange-500 pl-3">
+                  <h4 className="font-medium text-gray-700">feedback_submit</h4>
+                  <p className="text-sm text-gray-600">
+                    Submit responses to feedback templates with validation
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">
+                      <strong>Features:</strong>
+                    </p>
+                    <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
+                      <li>
+                        Field-specific validation (type checking, required
+                        fields, option validation)
+                      </li>
+                      <li>
+                        Support for all field types with proper formatting
+                      </li>
+                      <li>
+                        Anonymous submissions supported, metadata tracking
+                      </li>
+                      <li>Real-time validation with helpful error messages</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    <strong>AI Usage:</strong> "Submit feedback to template
+                    abc123", "Fill out the product survey"
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-orange-500 pl-3">
+                  <h4 className="font-medium text-gray-700">
+                    feedback_responses_get
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Analyze feedback data with comprehensive analytics
+                  </p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-gray-500">
+                      <strong>Features:</strong>
+                    </p>
+                    <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
+                      <li>
+                        Complete response analytics: averages, distributions,
+                        response rates
+                      </li>
+                      <li>
+                        Field-specific statistics (ratings, selections, text
+                        analysis)
+                      </li>
+                      <li>
+                        User identification with email/name display (when
+                        available)
+                      </li>
+                      <li>
+                        Pagination support for large datasets, export-ready
+                        format
+                      </li>
+                      <li>Comprehensive insights for data-driven decisions</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    <strong>AI Usage:</strong> "Show responses for my feedback
+                    template", "Analyze survey results", "Get feedback
+                    analytics"
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
