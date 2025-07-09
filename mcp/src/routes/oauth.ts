@@ -250,21 +250,41 @@ export function configureOAuthRoutes(router: Router): void {
         name: userInfo.name,
       });
 
-      // Step 3: Create Firebase custom token with user information
-      // Sanitize user ID to be Firestore-compatible (no slashes, special chars)
-      const sanitizedUserId = userInfo.id.replace(/[\/\\\.\#\$\[\]]/g, "_");
+      // Step 3: Create or get Firebase user and generate custom token
+      const { auth: firebaseAuth } = await import("../../../lib/firebaseAdmin");
 
-      if (sanitizedUserId !== userInfo.id) {
-        console.log(
-          "[OAuth] Sanitized user ID:",
-          userInfo.id,
-          "->",
-          sanitizedUserId,
-        );
+      let firebaseUser;
+      try {
+        // Try to get existing user by email
+        firebaseUser = await firebaseAuth.getUserByEmail(userInfo.email);
+        console.log("[OAuth] Found existing Firebase user:", firebaseUser.uid);
+      } catch (error) {
+        // User doesn't exist, create new one
+        console.log("[OAuth] Creating new Firebase user for:", userInfo.email);
+        firebaseUser = await firebaseAuth.createUser({
+          email: userInfo.email,
+          displayName: userInfo.name,
+          photoURL: userInfo.picture,
+          emailVerified: true,
+        });
+        console.log("[OAuth] Created new Firebase user:", firebaseUser.uid);
       }
 
-      // Format: firebase_custom_token_{timestamp}_{sanitizedUserId}_{email}
-      const firebaseToken = `firebase_custom_token_${Date.now()}_${sanitizedUserId}_${userInfo.email}`;
+      // Generate actual Firebase custom token using Firebase UID
+      const firebaseToken = await firebaseAuth.createCustomToken(
+        firebaseUser.uid,
+        {
+          email: userInfo.email,
+          name: userInfo.name,
+          picture: userInfo.picture,
+          google_id: userInfo.id,
+        },
+      );
+
+      console.log(
+        "[OAuth] Generated Firebase custom token for user:",
+        firebaseUser.uid,
+      );
 
       // Generate authorization code for the client
       const authorizationCode = generateAuthorizationCode();
@@ -369,7 +389,11 @@ export function configureOAuthRoutes(router: Router): void {
   router.get("/auth/info", (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (
+      !authHeader ||
+      typeof authHeader !== "string" ||
+      !authHeader.startsWith("Bearer ")
+    ) {
       return res
         .status(401)
         .json({ error: "Missing or invalid authorization header" });

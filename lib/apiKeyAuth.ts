@@ -111,7 +111,7 @@ export function apiKeyAuthMiddleware(
   // Check if this is an OAuth token (mock tokens start with "firebase_custom_token_")
   if (token.startsWith("firebase_custom_token_")) {
     console.log(
-      "[apiKeyAuthMiddleware] OAuth token detected, extracting user ID and email",
+      "[apiKeyAuthMiddleware] Legacy OAuth token detected, extracting user ID and email",
     );
 
     // Extract the user ID and email from the OAuth token
@@ -161,7 +161,7 @@ export function apiKeyAuthMiddleware(
         email: email,
       };
       console.log(
-        "[apiKeyAuthMiddleware] OAuth auth successful for user:",
+        "[apiKeyAuthMiddleware] Legacy OAuth auth successful for user:",
         userId,
         "email:",
         email || "not provided",
