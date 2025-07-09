@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       linkedCrates:
         Array.isArray(linkedCrates) && linkedCrates.length > 0
           ? linkedCrates.filter((id) => id && id.trim()).map((id) => id.trim())
-          : undefined,
+          : [],
       isOpen: true, // New templates are open by default
     };
 
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         submissionCount: "0",
         isOpen: "true",
         linkedCrates:
-          linkedCrates?.length > 0 ? linkedCrates.join(",") : undefined,
+          Array.isArray(linkedCrates) && linkedCrates.length > 0 ? linkedCrates.join(",") : "",
       },
     };
 

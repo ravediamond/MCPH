@@ -109,11 +109,25 @@ export function apiKeyAuthMiddleware(
 
   // Check if this is an OAuth token (mock tokens start with "firebase_custom_token_")
   if (token.startsWith("firebase_custom_token_")) {
-    console.log("[apiKeyAuthMiddleware] OAuth token detected, allowing access");
-    req.user = {
-      userId: "oauth_user", // Use a generic OAuth user ID
-      authMethod: "firebase_auth",
-    };
+    console.log("[apiKeyAuthMiddleware] OAuth token detected, extracting user ID");
+    
+    // Extract the actual user ID from the OAuth token
+    // The token format is: firebase_custom_token_{code}_{timestamp}_{userId}
+    const tokenParts = token.split("_");
+    if (tokenParts.length >= 5) {
+      const userId = tokenParts.slice(4).join("_"); // Join remaining parts as userId
+      req.user = {
+        userId: userId,
+        authMethod: "firebase_auth",
+      };
+      console.log("[apiKeyAuthMiddleware] OAuth auth successful for user:", userId);
+    } else {
+      console.log("[apiKeyAuthMiddleware] Invalid OAuth token format, using fallback");
+      req.user = {
+        userId: "oauth_user", // Fallback for invalid token format
+        authMethod: "firebase_auth",
+      };
+    }
 
     // Extract client name if available in the request
     if (req.body?.params?.name) {
