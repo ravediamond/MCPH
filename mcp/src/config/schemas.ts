@@ -26,7 +26,7 @@ export const GoogleOAuthParams = z.object({
 
 const UploadCrateBaseParams = z.object({
   fileName: z.string().optional(),
-  contentType: z.string().optional(),
+  contentType: z.string(),
   data: z.string().optional(), // base64-encoded if present
   title: z.string().optional(),
   description: z.string().optional(),

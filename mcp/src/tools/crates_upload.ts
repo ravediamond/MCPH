@@ -22,10 +22,10 @@ export function registerCratesUploadTool(server: McpServer): void {
         "Uploads a new crate with content, metadata, and organizational tags. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
         "REQUIRED PARAMETERS:\n" +
         "• data: The content to upload (text/base64)\n" +
-        "• title: Title for the crate\n\n" +
+        "• title: Title for the crate\n" +
+        "• contentType: MIME type (see allowed types below)\n\n" +
         "OPTIONAL PARAMETERS:\n" +
         "• fileName: File name (auto-generated if not provided)\n" +
-        "• contentType: MIME type (auto-detected from category if not provided)\n" +
         "• category: Content category (markdown, json, yaml, code, etc.)\n" +
         "• description: Description of the content\n" +
         "• tags: ARRAY of strings (not a single string!) - e.g. [\"project:website\", \"type:requirements\"]\n" +
@@ -37,12 +37,19 @@ export function registerCratesUploadTool(server: McpServer): void {
         '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
         '• Include context tags: ["context:user-research", "context:specs"]\n' +
         '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
+        "ALLOWED CONTENT TYPES:\n" +
+        "• Text: text/plain, text/markdown, text/csv, text/html\n" +
+        "• Code: text/javascript, text/typescript, text/python, application/json\n" +
+        "• Data: application/yaml, text/yaml, text/x-yaml\n" +
+        "• Images: image/png, image/jpeg, image/jpg, image/gif, image/webp, image/svg+xml\n" +
+        "• Binary: application/octet-stream, binary/octet-stream\n\n" +
         "IMPORTANT: tags must be an ARRAY, not a string!\n" +
         'Correct: tags: ["project:ecommerce", "type:requirements"]\n' +
         'Wrong: tags: "project:ecommerce, type:requirements"\n\n' +
         "AI usage examples:\n" +
-        '• Upload with tags: {"data": "content", "title": "My Doc", "tags": ["project:web", "type:doc"]}\n' +
-        '• Simple upload: {"data": "content", "title": "notes", "category": "markdown"}',
+        '• Upload markdown: {"data": "# Hello", "title": "Doc", "contentType": "text/markdown"}\n' +
+        '• Upload with tags: {"data": "content", "title": "My Doc", "contentType": "text/plain", "tags": ["project:web"]}\n' +
+        '• Upload JSON: {"data": "{\\"key\\": \\"value\\"}", "title": "Config", "contentType": "application/json"}',
       inputSchema: UploadCrateParamsShape.shape,
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
@@ -60,7 +67,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         };
       }
 
-      let {
+      const {
         fileName, // Original fileName from args
         contentType,
         data,
@@ -72,35 +79,6 @@ export function registerCratesUploadTool(server: McpServer): void {
         isPublic,
         password,
       } = validationResult.data;
-
-      // Auto-detect contentType from category if not provided
-      if (!contentType && category) {
-        switch (category) {
-          case CrateCategory.JSON:
-            contentType = "application/json";
-            break;
-          case CrateCategory.YAML:
-            contentType = "application/yaml";
-            break;
-          case CrateCategory.MARKDOWN:
-            contentType = "text/markdown";
-            break;
-          case CrateCategory.CODE:
-            contentType = "text/plain";
-            break;
-          case CrateCategory.IMAGE:
-            contentType = "image/png";
-            break;
-          case CrateCategory.BINARY:
-            contentType = "application/octet-stream";
-            break;
-          default:
-            contentType = "text/plain";
-        }
-      } else if (!contentType) {
-        // Default contentType if neither contentType nor category provided
-        contentType = "text/plain";
-      }
 
       // Ensure we have a proper fileName for JSON content
       let effectiveFileName = fileName;
