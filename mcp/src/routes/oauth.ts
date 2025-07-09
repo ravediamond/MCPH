@@ -10,6 +10,7 @@ import {
   validateClient,
   validateRedirectUri,
 } from "../services/oauthSessions";
+import { auth } from "../../../lib/firebaseAdmin";
 
 /**
  * Configure OAuth routes for the MCP server
@@ -197,15 +198,83 @@ export function configureOAuthRoutes(router: Router): void {
       const { original_state, client_id, redirect_uri, auth_state } = stateData;
 
       // Exchange Google OAuth code for Firebase token
-      // Note: This is a simplified implementation. In production, you would:
-      // 1. Exchange the Google OAuth code for a Google access token
-      // 2. Use that to get user info from Google
-      // 3. Create or lookup the Firebase user
-      // 4. Generate a Firebase custom token
-      // For now, we'll create a mock Firebase token with a mock user ID
-      // TODO: Implement proper Google OAuth to Firebase user mapping
-      const mockUserId = `google_oauth_user_${code.substring(0, 8)}`;
-      const firebaseToken = `firebase_custom_token_${code}_${Date.now()}_${mockUserId}`;
+      console.log("[OAuth] Exchanging Google OAuth code for access token");
+
+      // Step 1: Exchange Google OAuth code for access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: process.env.GOOGLE_OAUTH_CLIENT_ID!,
+          client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
+          redirect_uri: `${req.protocol}://${req.get("host")}/auth/callback`,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const error = await tokenResponse.text();
+        console.error("[OAuth] Token exchange failed:", error);
+        throw new Error(`Token exchange failed: ${error}`);
+      }
+
+      const { access_token } = await tokenResponse.json();
+      console.log("[OAuth] Successfully obtained Google access token");
+
+      // Step 2: Get user info from Google
+      const userResponse = await fetch(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      );
+
+      if (!userResponse.ok) {
+        const error = await userResponse.text();
+        console.error("[OAuth] User info fetch failed:", error);
+        throw new Error(`User info fetch failed: ${error}`);
+      }
+
+      const googleUser = await userResponse.json();
+      console.log("[OAuth] Retrieved Google user info:", {
+        id: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.name,
+      });
+
+      // Step 3: Create or update Firebase user
+      let firebaseUser;
+      try {
+        // Try to get existing user by email
+        firebaseUser = await auth.getUserByEmail(googleUser.email);
+        console.log("[OAuth] Found existing Firebase user:", firebaseUser.uid);
+      } catch (error) {
+        // User doesn't exist, create new one
+        console.log(
+          "[OAuth] Creating new Firebase user for:",
+          googleUser.email,
+        );
+        firebaseUser = await auth.createUser({
+          uid: googleUser.id, // Use Google ID as Firebase UID
+          email: googleUser.email,
+          displayName: googleUser.name,
+          photoURL: googleUser.picture,
+          emailVerified: googleUser.verified_email || false,
+        });
+        console.log("[OAuth] Created new Firebase user:", firebaseUser.uid);
+      }
+
+      // Step 4: Generate Firebase custom token
+      const firebaseToken = await auth.createCustomToken(firebaseUser.uid);
+      console.log(
+        "[OAuth] Generated Firebase custom token for user:",
+        firebaseUser.uid,
+      );
 
       // Generate authorization code for the client
       const authorizationCode = generateAuthorizationCode();
