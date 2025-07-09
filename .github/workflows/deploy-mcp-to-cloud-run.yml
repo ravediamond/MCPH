@@ -34,4 +34,4 @@ jobs:
             --project ${{ secrets.GCP_PROJECT_ID }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},REGION=${{ secrets.REGION }},VERTEXAI_EMBEDDING_MODEL=${{ secrets.VERTEXAI_EMBEDDING_MODEL }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }},GCS_DEFAULT_BUCKET_LOCATION=${{ secrets.GCS_DEFAULT_BUCKET_LOCATION }},GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}"
+            --set-env-vars "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }},REGION=${{ secrets.REGION }},VERTEXAI_EMBEDDING_MODEL=${{ secrets.VERTEXAI_EMBEDDING_MODEL }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }},GCS_DEFAULT_BUCKET_LOCATION=${{ secrets.GCS_DEFAULT_BUCKET_LOCATION }},GOOGLE_OAUTH_CLIENT_ID=${{ secrets.GOOGLE_OAUTH_CLIENT_ID }},GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}"
