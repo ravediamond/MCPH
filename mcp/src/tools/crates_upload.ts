@@ -20,15 +20,29 @@ export function registerCratesUploadTool(server: McpServer): void {
       title: "Upload Crate",
       description:
         "Uploads a new crate with content, metadata, and organizational tags. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
-        "TAGGING BEST PRACTICES for AI tools:\n" +
-        '• Use project tags: "project:website-redesign", "project:chatbot-v2"\n' +
-        '• Add type tags: "type:requirements", "type:code", "type:data", "type:notes"\n' +
-        '• Include context tags: "context:user-research", "context:technical-specs"\n' +
-        '• Add workflow tags: "status:draft", "status:final", "priority:high"\n' +
-        '• Use component tags for code: "component:auth", "component:ui"\n\n' +
-        'Example tags: ["project:ecommerce-site", "type:requirements", "context:user-stories", "status:approved"]\n\n' +
-        "AI usage example:\n" +
-        "• \"upload this file as a crate titled 'notes'\"",
+        "REQUIRED PARAMETERS:\n" +
+        "• data: The content to upload (text/base64)\n" +
+        "• title: Title for the crate\n\n" +
+        "OPTIONAL PARAMETERS:\n" +
+        "• fileName: File name (auto-generated if not provided)\n" +
+        "• contentType: MIME type (auto-detected from category if not provided)\n" +
+        "• category: Content category (markdown, json, yaml, code, etc.)\n" +
+        "• description: Description of the content\n" +
+        "• tags: ARRAY of strings (not a single string!) - e.g. [\"project:website\", \"type:requirements\"]\n" +
+        "• metadata: Key-value pairs for additional info\n" +
+        "• isPublic: Make crate publicly accessible (default: false)\n" +
+        "• password: Password protect the crate\n\n" +
+        "TAGGING BEST PRACTICES:\n" +
+        '• Use project tags: ["project:website-redesign", "project:chatbot-v2"]\n' +
+        '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
+        '• Include context tags: ["context:user-research", "context:specs"]\n' +
+        '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
+        "IMPORTANT: tags must be an ARRAY, not a string!\n" +
+        'Correct: tags: ["project:ecommerce", "type:requirements"]\n' +
+        'Wrong: tags: "project:ecommerce, type:requirements"\n\n' +
+        "AI usage examples:\n" +
+        '• Upload with tags: {"data": "content", "title": "My Doc", "tags": ["project:web", "type:doc"]}\n' +
+        '• Simple upload: {"data": "content", "title": "notes", "category": "markdown"}',
       inputSchema: UploadCrateParamsShape.shape,
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
@@ -46,7 +60,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         };
       }
 
-      const {
+      let {
         fileName, // Original fileName from args
         contentType,
         data,
@@ -58,6 +72,35 @@ export function registerCratesUploadTool(server: McpServer): void {
         isPublic,
         password,
       } = validationResult.data;
+
+      // Auto-detect contentType from category if not provided
+      if (!contentType && category) {
+        switch (category) {
+          case CrateCategory.JSON:
+            contentType = "application/json";
+            break;
+          case CrateCategory.YAML:
+            contentType = "application/yaml";
+            break;
+          case CrateCategory.MARKDOWN:
+            contentType = "text/markdown";
+            break;
+          case CrateCategory.CODE:
+            contentType = "text/plain";
+            break;
+          case CrateCategory.IMAGE:
+            contentType = "image/png";
+            break;
+          case CrateCategory.BINARY:
+            contentType = "application/octet-stream";
+            break;
+          default:
+            contentType = "text/plain";
+        }
+      } else if (!contentType) {
+        // Default contentType if neither contentType nor category provided
+        contentType = "text/plain";
+      }
 
       // Ensure we have a proper fileName for JSON content
       let effectiveFileName = fileName;
