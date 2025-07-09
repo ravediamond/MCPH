@@ -20,15 +20,36 @@ export function registerCratesUploadTool(server: McpServer): void {
       title: "Upload Crate",
       description:
         "Uploads a new crate with content, metadata, and organizational tags. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
-        "TAGGING BEST PRACTICES for AI tools:\n" +
-        '• Use project tags: "project:website-redesign", "project:chatbot-v2"\n' +
-        '• Add type tags: "type:requirements", "type:code", "type:data", "type:notes"\n' +
-        '• Include context tags: "context:user-research", "context:technical-specs"\n' +
-        '• Add workflow tags: "status:draft", "status:final", "priority:high"\n' +
-        '• Use component tags for code: "component:auth", "component:ui"\n\n' +
-        'Example tags: ["project:ecommerce-site", "type:requirements", "context:user-stories", "status:approved"]\n\n' +
-        "AI usage example:\n" +
-        "• \"upload this file as a crate titled 'notes'\"",
+        "REQUIRED PARAMETERS:\n" +
+        "• data: The content to upload (text/base64)\n" +
+        "• title: Title for the crate\n" +
+        "• contentType: MIME type (see allowed types below)\n\n" +
+        "OPTIONAL PARAMETERS:\n" +
+        "• fileName: File name (auto-generated if not provided)\n" +
+        "• category: Content category (markdown, json, yaml, code, etc.)\n" +
+        "• description: Description of the content\n" +
+        "• tags: ARRAY of strings (not a single string!) - e.g. [\"project:website\", \"type:requirements\"]\n" +
+        "• metadata: Key-value pairs for additional info\n" +
+        "• isPublic: Make crate publicly accessible (default: false)\n" +
+        "• password: Password protect the crate\n\n" +
+        "TAGGING BEST PRACTICES:\n" +
+        '• Use project tags: ["project:website-redesign", "project:chatbot-v2"]\n' +
+        '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
+        '• Include context tags: ["context:user-research", "context:specs"]\n' +
+        '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
+        "ALLOWED CONTENT TYPES:\n" +
+        "• Text: text/plain, text/markdown, text/csv, text/html\n" +
+        "• Code: text/javascript, text/typescript, text/python, application/json\n" +
+        "• Data: application/yaml, text/yaml, text/x-yaml\n" +
+        "• Images: image/png, image/jpeg, image/jpg, image/gif, image/webp, image/svg+xml\n" +
+        "• Binary: application/octet-stream, binary/octet-stream\n\n" +
+        "IMPORTANT: tags must be an ARRAY, not a string!\n" +
+        'Correct: tags: ["project:ecommerce", "type:requirements"]\n' +
+        'Wrong: tags: "project:ecommerce, type:requirements"\n\n' +
+        "AI usage examples:\n" +
+        '• Upload markdown: {"data": "# Hello", "title": "Doc", "contentType": "text/markdown"}\n' +
+        '• Upload with tags: {"data": "content", "title": "My Doc", "contentType": "text/plain", "tags": ["project:web"]}\n' +
+        '• Upload JSON: {"data": "{\\"key\\": \\"value\\"}", "title": "Config", "contentType": "application/json"}',
       inputSchema: UploadCrateParamsShape.shape,
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
