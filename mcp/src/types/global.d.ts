@@ -13,6 +13,11 @@ declare module "express" {
     method: string;
     ip: string;
     app: Application;
+    user?: {
+      userId: string;
+      authMethod: "api_key" | "firebase_auth";
+      email?: string;
+    };
     [key: string]: any;
   }
 

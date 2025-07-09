@@ -196,16 +196,63 @@ export function configureOAuthRoutes(router: Router): void {
       const stateData = JSON.parse(decodeURIComponent(state as string));
       const { original_state, client_id, redirect_uri, auth_state } = stateData;
 
-      // Exchange Google OAuth code for Firebase token
-      // Note: This is a simplified implementation. In production, you would:
-      // 1. Exchange the Google OAuth code for a Google access token
-      // 2. Use that to get user info from Google
-      // 3. Create or lookup the Firebase user
-      // 4. Generate a Firebase custom token
-      // For now, we'll create a mock Firebase token with a mock user ID
-      // TODO: Implement proper Google OAuth to Firebase user mapping
-      const mockUserId = `google_oauth_user_${code.substring(0, 8)}`;
-      const firebaseToken = `firebase_custom_token_${code}_${Date.now()}_${mockUserId}`;
+      // Exchange Google OAuth code for user information
+      console.log("[OAuth] Exchanging Google OAuth code for user info");
+
+      // Step 1: Exchange Google OAuth code for access token
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+          client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
+          redirect_uri: `${protocol}://${req.get("host")}/auth/callback`,
+          grant_type: "authorization_code",
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        console.error(
+          "[OAuth] Failed to exchange code for token:",
+          await tokenResponse.text(),
+        );
+        throw new Error("Failed to exchange code for token");
+      }
+
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
+
+      // Step 2: Get user info from Google
+      const userInfoResponse = await fetch(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      if (!userInfoResponse.ok) {
+        console.error(
+          "[OAuth] Failed to get user info:",
+          await userInfoResponse.text(),
+        );
+        throw new Error("Failed to get user info");
+      }
+
+      const userInfo = await userInfoResponse.json();
+      console.log("[OAuth] Retrieved user info:", {
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
+      });
+
+      // Step 3: Create Firebase custom token with user information
+      // Format: firebase_custom_token_{timestamp}_{userId}_{email}
+      const firebaseToken = `firebase_custom_token_${Date.now()}_${userInfo.id}_${userInfo.email}`;
 
       // Generate authorization code for the client
       const authorizationCode = generateAuthorizationCode();
