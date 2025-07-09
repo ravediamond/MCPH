@@ -7,6 +7,7 @@ import {
 } from "../../../services/storageService";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
+import { auth } from "../../../lib/firebaseAdmin";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
@@ -28,7 +29,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• fileName: File name (auto-generated if not provided)\n" +
         "• category: Content category (markdown, json, yaml, code, etc.)\n" +
         "• description: Description of the content\n" +
-        "• tags: ARRAY of strings (not a single string!) - e.g. [\"project:website\", \"type:requirements\"]\n" +
+        '• tags: ARRAY of strings (not a single string!) - e.g. ["project:website", "type:requirements"]\n' +
         "• metadata: Key-value pairs for additional info\n" +
         "• isPublic: Make crate publicly accessible (default: false)\n" +
         "• password: Password protect the crate\n\n" +
@@ -157,12 +158,33 @@ export function registerCratesUploadTool(server: McpServer): void {
       const authInfo = extra?.authInfo;
 
       // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-      const ownerId = authInfo?.clientId ?? req?.user?.userId ?? "anonymous";
+      let ownerId = authInfo?.clientId ?? req?.user?.userId ?? "anonymous";
+
+      // If using OAuth authentication (firebase_auth), get the user's email
+      if (
+        req?.user?.authMethod === "firebase_auth" &&
+        req?.user?.userId &&
+        req?.user?.userId !== "anonymous"
+      ) {
+        try {
+          const userRecord = await auth.getUser(req.user.userId);
+          if (userRecord.email) {
+            ownerId = userRecord.email;
+          }
+        } catch (error) {
+          console.warn(
+            `[crates_upload] Could not fetch user email for ${req.user.userId}:`,
+            error,
+          );
+          // Keep the original ownerId if we can't get the email
+        }
+      }
 
       // Debug logging to verify authentication
       console.log("[crates_upload] Authentication debug:", {
         extraHasReq: !!extra?.req,
         extraUserId: req?.user?.userId,
+        authMethod: req?.user?.authMethod,
         authInfo: authInfo ? { clientId: authInfo.clientId } : undefined,
         chosenOwnerId: ownerId,
         clientName: req?.clientName || "unknown",
