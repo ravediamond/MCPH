@@ -117,9 +117,31 @@ export function apiKeyAuthMiddleware(
     // Extract the user ID and email from the OAuth token
     // The token format is: firebase_custom_token_{timestamp}_{userId}_{email}
     const tokenParts = token.split("_");
-    if (tokenParts.length >= 5) {
+    console.log(
+      "[apiKeyAuthMiddleware] Token parts:",
+      tokenParts.map((part, index) => `${index}: ${part}`),
+    );
+
+    if (tokenParts.length >= 4) {
+      // Extract userId from token parts - it should be after "firebase_custom_token_" and timestamp
       const rawUserId = tokenParts[3]; // User ID is the 4th part (index 3)
-      const email = tokenParts.slice(4).join("_"); // Email is everything after userId
+
+      // Extract email if it exists (everything after userId)
+      let email = undefined;
+      if (tokenParts.length > 4) {
+        email = tokenParts.slice(4).join("_");
+
+        // Validate email format - if it's a number, it's likely a timestamp, not an email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email) || /^\d+$/.test(email)) {
+          console.log(
+            "[apiKeyAuthMiddleware] Invalid email format detected:",
+            email,
+            "- treating as missing email",
+          );
+          email = undefined;
+        }
+      }
 
       // Sanitize user ID to ensure Firestore compatibility (handle both old and new tokens)
       const userId = rawUserId.replace(/[\/\\\.\#\$\[\]]/g, "_");
@@ -142,7 +164,7 @@ export function apiKeyAuthMiddleware(
         "[apiKeyAuthMiddleware] OAuth auth successful for user:",
         userId,
         "email:",
-        email,
+        email || "not provided",
       );
     } else {
       console.log(
