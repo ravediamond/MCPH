@@ -198,24 +198,27 @@ export function configureOAuthRoutes(router: Router): void {
 
       // Exchange Google OAuth code for user information
       console.log("[OAuth] Exchanging Google OAuth code for user info");
-      
+
       // Step 1: Exchange Google OAuth code for access token
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           code: code as string,
-          client_id: process.env.GOOGLE_OAUTH_CLIENT_ID || '',
-          client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || '',
+          client_id: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
+          client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET || "",
           redirect_uri: `${protocol}://${req.get("host")}/auth/callback`,
-          grant_type: 'authorization_code',
+          grant_type: "authorization_code",
         }),
       });
 
       if (!tokenResponse.ok) {
-        console.error("[OAuth] Failed to exchange code for token:", await tokenResponse.text());
+        console.error(
+          "[OAuth] Failed to exchange code for token:",
+          await tokenResponse.text(),
+        );
         throw new Error("Failed to exchange code for token");
       }
 
@@ -223,22 +226,28 @@ export function configureOAuthRoutes(router: Router): void {
       const accessToken = tokenData.access_token;
 
       // Step 2: Get user info from Google
-      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
+      const userInfoResponse = await fetch(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-      });
+      );
 
       if (!userInfoResponse.ok) {
-        console.error("[OAuth] Failed to get user info:", await userInfoResponse.text());
+        console.error(
+          "[OAuth] Failed to get user info:",
+          await userInfoResponse.text(),
+        );
         throw new Error("Failed to get user info");
       }
 
       const userInfo = await userInfoResponse.json();
-      console.log("[OAuth] Retrieved user info:", { 
-        id: userInfo.id, 
-        email: userInfo.email, 
-        name: userInfo.name 
+      console.log("[OAuth] Retrieved user info:", {
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
       });
 
       // Step 3: Create Firebase custom token with user information
