@@ -143,7 +143,10 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
         isPublic,
         tags,
         submissionCount: 0,
-        linkedCrates: Array.isArray(linkedCrates) && linkedCrates.length > 0 ? linkedCrates : [],
+        linkedCrates:
+          Array.isArray(linkedCrates) && linkedCrates.length > 0
+            ? linkedCrates
+            : [],
         isOpen: true, // New templates are open by default
       };
 
@@ -182,7 +185,9 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
             submissionCount: "0",
             isOpen: "true",
             linkedCrates:
-              Array.isArray(linkedCrates) && linkedCrates.length > 0 ? linkedCrates.join(",") : "",
+              Array.isArray(linkedCrates) && linkedCrates.length > 0
+                ? linkedCrates.join(",")
+                : "",
           },
         };
 
@@ -200,7 +205,10 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
             isPublic,
             tags,
             submissionCount: 0,
-            linkedCrates: Array.isArray(linkedCrates) && linkedCrates.length > 0 ? linkedCrates : [],
+            linkedCrates:
+              Array.isArray(linkedCrates) && linkedCrates.length > 0
+                ? linkedCrates
+                : [],
           },
           content: [
             {

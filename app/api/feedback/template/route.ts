@@ -178,7 +178,9 @@ export async function POST(request: NextRequest) {
         submissionCount: "0",
         isOpen: "true",
         linkedCrates:
-          Array.isArray(linkedCrates) && linkedCrates.length > 0 ? linkedCrates.join(",") : "",
+          Array.isArray(linkedCrates) && linkedCrates.length > 0
+            ? linkedCrates.join(",")
+            : "",
       },
     };
 
