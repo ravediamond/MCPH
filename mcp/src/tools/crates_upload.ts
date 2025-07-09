@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { UploadCrateParams } from "../config/schemas";
+import { UploadCrateParams, UploadCrateParamsShape } from "../config/schemas";
 import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
 import {
   generateUploadUrl,
@@ -29,9 +29,23 @@ export function registerCratesUploadTool(server: McpServer): void {
         'Example tags: ["project:ecommerce-site", "type:requirements", "context:user-stories", "status:approved"]\n\n' +
         "AI usage example:\n" +
         "• \"upload this file as a crate titled 'notes'\"",
-      inputSchema: UploadCrateParams.shape,
+      inputSchema: UploadCrateParamsShape.shape,
     },
     async (args: z.infer<typeof UploadCrateParams>, extra: any) => {
+      // Validate the arguments with business rules
+      const validationResult = UploadCrateParams.safeParse(args);
+      if (!validationResult.success) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Invalid arguments: ${validationResult.error.message}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
       const {
         fileName, // Original fileName from args
         contentType,
@@ -43,7 +57,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         metadata,
         isPublic,
         password,
-      } = args;
+      } = validationResult.data;
 
       // Ensure we have a proper fileName for JSON content
       let effectiveFileName = fileName;
