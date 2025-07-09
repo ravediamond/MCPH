@@ -107,6 +107,14 @@ export function apiKeyAuthMiddleware(
 
   const token = authHeader.replace("Bearer ", "").trim();
 
+  // Debug logging for token analysis
+  console.log("[apiKeyAuthMiddleware] Token info:", {
+    length: token.length,
+    hasJwtFormat: token.includes(".") && token.split(".").length === 3,
+    prefix: token.substring(0, 20) + "...",
+    isApiKey: token.length === 64, // SHA-256 API keys are 64 chars
+  });
+
   // Check if this is a Firebase custom token (starts with specific format)
   // Custom tokens are JWT tokens that we generated in the OAuth flow
   if (token.includes(".") && token.split(".").length === 3) {
@@ -115,6 +123,14 @@ export function apiKeyAuthMiddleware(
       const payload = JSON.parse(
         Buffer.from(token.split(".")[1], "base64").toString(),
       );
+
+      console.log("[apiKeyAuthMiddleware] JWT payload:", {
+        iss: payload.iss,
+        aud: payload.aud,
+        uid: payload.uid,
+        hasFirebaseIss: payload.iss && payload.iss.includes("firebase"),
+      });
+
       if (payload.iss && payload.iss.includes("firebase") && payload.uid) {
         // This looks like a Firebase custom token, extract the uid directly
         req.user = {
@@ -132,13 +148,22 @@ export function apiKeyAuthMiddleware(
           payload.uid,
         );
         return next();
+      } else {
+        console.log(
+          "[apiKeyAuthMiddleware] JWT payload doesn't match Firebase custom token format",
+        );
       }
     } catch (jwtError) {
       // Not a valid JWT or not our custom token, continue to regular Firebase auth
       console.log(
-        "[apiKeyAuthMiddleware] Not a custom token, trying Firebase ID token",
+        "[apiKeyAuthMiddleware] JWT decode failed:",
+        jwtError instanceof Error ? jwtError.message : String(jwtError),
       );
     }
+  } else {
+    console.log(
+      "[apiKeyAuthMiddleware] Token is not in JWT format, checking as API key or ID token",
+    );
   }
 
   // Try Firebase Auth for ID tokens
