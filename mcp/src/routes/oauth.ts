@@ -251,8 +251,20 @@ export function configureOAuthRoutes(router: Router): void {
       });
 
       // Step 3: Create Firebase custom token with user information
-      // Format: firebase_custom_token_{timestamp}_{userId}_{email}
-      const firebaseToken = `firebase_custom_token_${Date.now()}_${userInfo.id}_${userInfo.email}`;
+      // Sanitize user ID to be Firestore-compatible (no slashes, special chars)
+      const sanitizedUserId = userInfo.id.replace(/[\/\\\.\#\$\[\]]/g, "_");
+
+      if (sanitizedUserId !== userInfo.id) {
+        console.log(
+          "[OAuth] Sanitized user ID:",
+          userInfo.id,
+          "->",
+          sanitizedUserId,
+        );
+      }
+
+      // Format: firebase_custom_token_{timestamp}_{sanitizedUserId}_{email}
+      const firebaseToken = `firebase_custom_token_${Date.now()}_${sanitizedUserId}_${userInfo.email}`;
 
       // Generate authorization code for the client
       const authorizationCode = generateAuthorizationCode();
