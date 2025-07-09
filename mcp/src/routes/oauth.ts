@@ -202,8 +202,10 @@ export function configureOAuthRoutes(router: Router): void {
       // 2. Use that to get user info from Google
       // 3. Create or lookup the Firebase user
       // 4. Generate a Firebase custom token
-      // For now, we'll create a mock Firebase token
-      const firebaseToken = `firebase_custom_token_${code}_${Date.now()}`;
+      // For now, we'll create a mock Firebase token with a mock user ID
+      // TODO: Implement proper Google OAuth to Firebase user mapping
+      const mockUserId = `google_oauth_user_${code.substring(0, 8)}`;
+      const firebaseToken = `firebase_custom_token_${code}_${Date.now()}_${mockUserId}`;
 
       // Generate authorization code for the client
       const authorizationCode = generateAuthorizationCode();
