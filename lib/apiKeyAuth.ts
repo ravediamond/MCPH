@@ -129,9 +129,30 @@ export function apiKeyAuthMiddleware(
         aud: payload.aud,
         uid: payload.uid,
         hasFirebaseIss: payload.iss && payload.iss.includes("firebase"),
+        hasFirebaseAud:
+          payload.aud && payload.aud.includes("identitytoolkit.googleapis.com"),
+        isCustomToken:
+          payload.iss &&
+          payload.aud &&
+          payload.uid &&
+          (payload.iss.includes("gserviceaccount.com") ||
+            payload.iss.includes("firebase")) &&
+          payload.aud.includes("identitytoolkit.googleapis.com"),
       });
 
-      if (payload.iss && payload.iss.includes("firebase") && payload.uid) {
+      // Firebase custom tokens have:
+      // - iss: service account email (ends with @developer.gserviceaccount.com or @firebase-adminsdk-*.iam.gserviceaccount.com)
+      // - aud: https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit
+      // - uid: user ID
+      const isFirebaseCustomToken =
+        payload.iss &&
+        payload.aud &&
+        payload.uid &&
+        (payload.iss.includes("gserviceaccount.com") ||
+          payload.iss.includes("firebase")) &&
+        payload.aud.includes("identitytoolkit.googleapis.com");
+
+      if (isFirebaseCustomToken) {
         // This looks like a Firebase custom token, extract the uid directly
         req.user = {
           userId: payload.uid,
