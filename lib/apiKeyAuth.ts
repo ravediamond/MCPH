@@ -33,7 +33,6 @@ export interface AuthenticatedRequest extends IncomingMessage {
   user?: {
     userId: string;
     authMethod: "api_key" | "firebase_auth";
-    email?: string; // Add email field for OAuth users
   };
   clientName?: string;
   body: any;
@@ -111,60 +110,21 @@ export function apiKeyAuthMiddleware(
   // Check if this is an OAuth token (mock tokens start with "firebase_custom_token_")
   if (token.startsWith("firebase_custom_token_")) {
     console.log(
-      "[apiKeyAuthMiddleware] Legacy OAuth token detected, extracting user ID and email",
+      "[apiKeyAuthMiddleware] OAuth token detected, extracting user ID",
     );
 
-    // Extract the user ID and email from the OAuth token
-    // The token format is: firebase_custom_token_{timestamp}_{userId}_{email}
+    // Extract the actual user ID from the OAuth token
+    // The token format is: firebase_custom_token_{code}_{timestamp}_{userId}
     const tokenParts = token.split("_");
-    console.log(
-      "[apiKeyAuthMiddleware] Token parts:",
-      tokenParts.map((part, index) => `${index}: ${part}`),
-    );
-
-    if (tokenParts.length >= 4) {
-      // Extract userId from token parts - it should be after "firebase_custom_token_" and timestamp
-      const rawUserId = tokenParts[3]; // User ID is the 4th part (index 3)
-
-      // Extract email if it exists (everything after userId)
-      let email = undefined;
-      if (tokenParts.length > 4) {
-        email = tokenParts.slice(4).join("_");
-
-        // Validate email format - if it's a number, it's likely a timestamp, not an email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email) || /^\d+$/.test(email)) {
-          console.log(
-            "[apiKeyAuthMiddleware] Invalid email format detected:",
-            email,
-            "- treating as missing email",
-          );
-          email = undefined;
-        }
-      }
-
-      // Sanitize user ID to ensure Firestore compatibility (handle both old and new tokens)
-      const userId = rawUserId.replace(/[\/\\\.\#\$\[\]]/g, "_");
-
-      if (userId !== rawUserId) {
-        console.log(
-          "[apiKeyAuthMiddleware] Sanitized OAuth user ID:",
-          rawUserId,
-          "->",
-          userId,
-        );
-      }
-
+    if (tokenParts.length >= 5) {
+      const userId = tokenParts.slice(4).join("_"); // Join remaining parts as userId
       req.user = {
         userId: userId,
         authMethod: "firebase_auth",
-        email: email,
       };
       console.log(
-        "[apiKeyAuthMiddleware] Legacy OAuth auth successful for user:",
+        "[apiKeyAuthMiddleware] OAuth auth successful for user:",
         userId,
-        "email:",
-        email || "not provided",
       );
     } else {
       console.log(
@@ -195,7 +155,6 @@ export function apiKeyAuthMiddleware(
       req.user = {
         userId: decodedToken.uid,
         authMethod: "firebase_auth",
-        email: decodedToken.email, // Include email from Firebase token
       };
 
       // Extract client name if available in the request
@@ -206,8 +165,6 @@ export function apiKeyAuthMiddleware(
       console.log(
         "[apiKeyAuthMiddleware] Firebase auth successful for user:",
         decodedToken.uid,
-        "email:",
-        decodedToken.email,
       );
       return next();
     } catch (firebaseError) {
