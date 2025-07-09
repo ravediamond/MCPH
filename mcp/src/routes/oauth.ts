@@ -168,7 +168,10 @@ export function configureOAuthRoutes(router: Router): void {
         }),
       )}`;
 
-    console.log("[OAuth] Redirecting to Google OAuth");
+    console.log(
+      "[OAuth] Redirecting to Google OAuth with callback URL:",
+      callbackUrl,
+    );
     res.redirect(googleOAuthUrl);
   });
 
@@ -201,6 +204,17 @@ export function configureOAuthRoutes(router: Router): void {
       console.log("[OAuth] Exchanging Google OAuth code for access token");
 
       // Step 1: Exchange Google OAuth code for access token
+      // Use same protocol detection as authorization endpoint
+      const protocol =
+        req.get("x-forwarded-proto") ||
+        (req.get("host")?.includes("localhost") ? req.protocol : "https");
+      const callbackUrl = `${protocol}://${req.get("host")}/auth/callback`;
+
+      console.log(
+        "[OAuth] Using redirect URI for token exchange:",
+        callbackUrl,
+      );
+
       const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
         method: "POST",
         headers: {
@@ -210,7 +224,7 @@ export function configureOAuthRoutes(router: Router): void {
           code: code as string,
           client_id: process.env.GOOGLE_OAUTH_CLIENT_ID!,
           client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
-          redirect_uri: `${req.protocol}://${req.get("host")}/auth/callback`,
+          redirect_uri: callbackUrl,
           grant_type: "authorization_code",
         }),
       });
