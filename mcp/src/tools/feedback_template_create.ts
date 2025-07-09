@@ -83,18 +83,15 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
         linkedCrates = [],
       } = args;
 
-      // Get user ID and email from auth context
+      // Get user ID from auth context
       let uid = "__nobody__";
-      let userEmail = "";
       const authInfo = extra?.authInfo;
       const reqAuth = extra?.req?.auth;
 
       if (authInfo && authInfo.clientId && authInfo.clientId !== "") {
         uid = authInfo.clientId;
-        userEmail = authInfo.email || "";
       } else if (reqAuth && reqAuth.clientId && reqAuth.clientId !== "") {
         uid = reqAuth.clientId;
-        userEmail = reqAuth.email || "";
       }
 
       if (uid === "__nobody__") {
@@ -154,7 +151,7 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
       };
 
       console.log(
-        `[feedback_template_create] Creating template: ${templateId} for user: ${uid} (${userEmail})`,
+        `[feedback_template_create] Creating template: ${templateId} for user: ${uid}`,
       );
 
       try {

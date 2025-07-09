@@ -7,7 +7,6 @@ interface AuthInfo {
   token: string;
   clientId: string;
   scopes: string[];
-  email?: string; // Add email field for user identification
 }
 
 /**
@@ -23,12 +22,10 @@ export function mapUserToAuth() {
         token: `api-key:${req.user.userId ?? "unknown"}`,
         clientId: req.user.userId,
         scopes: ["*"],
-        email: req.user.email, // Include email from user context
       } as AuthInfo;
 
       console.log("[mapUserToAuth] Set req.auth from req.user:", {
         clientId: req.user.userId,
-        email: req.user.email,
       });
     } else {
       console.log("[mapUserToAuth] No req.user found, req.auth not set");
