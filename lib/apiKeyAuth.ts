@@ -118,21 +118,8 @@ export function apiKeyAuthMiddleware(
     // The token format is: firebase_custom_token_{timestamp}_{userId}_{email}
     const tokenParts = token.split("_");
     if (tokenParts.length >= 5) {
-      const rawUserId = tokenParts[3]; // User ID is the 4th part (index 3)
+      const userId = tokenParts[3]; // User ID is the 4th part (index 3)
       const email = tokenParts.slice(4).join("_"); // Email is everything after userId
-
-      // Sanitize user ID to ensure Firestore compatibility (handle both old and new tokens)
-      const userId = rawUserId.replace(/[\/\\\.\#\$\[\]]/g, "_");
-
-      if (userId !== rawUserId) {
-        console.log(
-          "[apiKeyAuthMiddleware] Sanitized OAuth user ID:",
-          rawUserId,
-          "->",
-          userId,
-        );
-      }
-
       req.user = {
         userId: userId,
         authMethod: "firebase_auth",
