@@ -24,23 +24,28 @@ export const GoogleOAuthParams = z.object({
   redirectUri: z.string().optional(),
 });
 
-export const UploadCrateParams = z
-  .object({
-    fileName: z.string(),
-    contentType: z.string(),
-    data: z.string().optional(), // base64-encoded if present
-    title: z.string().optional(),
-    description: z.string().optional(),
-    category: z.nativeEnum(CrateCategory).optional(),
-    tags: z.array(z.string()).optional(),
-    metadata: z.record(z.string(), z.string()).optional(),
-    isPublic: z.boolean().optional().default(false),
-    password: z.string().optional(),
-  })
-  .refine((data) => !(data.isPublic && data.password), {
+const UploadCrateBaseParams = z.object({
+  fileName: z.string(),
+  contentType: z.string(),
+  data: z.string().optional(), // base64-encoded if present
+  title: z.string().optional(),
+  description: z.string().optional(),
+  category: z.nativeEnum(CrateCategory).optional(),
+  tags: z.array(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
+  isPublic: z.boolean().optional().default(false),
+  password: z.string().optional(),
+});
+
+export const UploadCrateParams = UploadCrateBaseParams.refine(
+  (data) => !(data.isPublic && data.password),
+  {
     message: "A crate cannot be both public and password-protected",
     path: ["isPublic", "password"],
-  });
+  }
+);
+
+export const UploadCrateParamsShape = UploadCrateBaseParams;
 
 export const ShareCrateParams = z.object({
   id: z.string(),
