@@ -122,3 +122,17 @@ export const CratesGalleryParams = z.object({
   startAfter: z.string().optional(),
   category: z.nativeEnum(CrateCategory).optional(),
 });
+
+export const SocialShareParams = z.object({
+  crateId: z.string(),
+  platform: z.enum([
+    "twitter",
+    "reddit",
+    "linkedin",
+    "discord",
+    "telegram",
+    "email",
+    "all",
+  ]),
+  customMessage: z.string().optional(),
+});
