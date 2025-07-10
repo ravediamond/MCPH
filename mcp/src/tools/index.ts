@@ -13,6 +13,7 @@ import { registerCratesUpdateTool } from "./crates_update";
 import { registerFeedbackTemplateCreateTool } from "./feedback_template_create";
 import { registerFeedbackSubmitTool } from "./feedback_submit";
 import { registerFeedbackResponsesGetTool } from "./feedback_responses_get";
+import { registerCratesGalleryTool } from "./crates_gallery";
 
 /**
  * Register all tools with the provided MCP server
@@ -32,4 +33,5 @@ export function registerAllTools(server: McpServer): void {
   registerFeedbackTemplateCreateTool(server);
   registerFeedbackSubmitTool(server);
   registerFeedbackResponsesGetTool(server);
+  registerCratesGalleryTool(server);
 }

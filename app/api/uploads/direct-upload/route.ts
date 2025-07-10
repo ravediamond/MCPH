@@ -52,9 +52,11 @@ export async function POST(req: NextRequest) {
 
     // New: Read sharing options from formData
     const isSharedStr = formData.get("isShared") as string | null;
+    const isDiscoverableStr = formData.get("isDiscoverable") as string | null;
     const passwordStr = formData.get("password") as string | null;
 
     const isPublic = isSharedStr === "true";
+    const isDiscoverable = isDiscoverableStr === "true";
     let passwordHash: string | null = null;
 
     if (isPublic && passwordStr && passwordStr.length > 0) {
@@ -63,6 +65,7 @@ export async function POST(req: NextRequest) {
 
     const sharingOptions: CrateSharing = {
       public: isPublic,
+      isDiscoverable,
       ...(passwordHash ? { passwordHash } : {}),
     };
 

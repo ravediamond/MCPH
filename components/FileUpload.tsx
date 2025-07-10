@@ -133,6 +133,7 @@ export default function FileUpload({
   const [tagsInput, setTagsInput] = useState<string>("");
   const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
   const [isShared, setIsShared] = useState<boolean>(false); // Default to private
+  const [isDiscoverable, setIsDiscoverable] = useState<boolean>(false); // Default to not discoverable
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -290,6 +291,7 @@ export default function FileUpload({
       formData.append("fileType", fileType);
       formData.append("category", fileType); // Explicitly add the selected category
       formData.append("isShared", isShared ? "true" : "false");
+      formData.append("isDiscoverable", isDiscoverable ? "true" : "false");
 
       // Add tags if present
       if (tagsInput.trim()) {
@@ -745,6 +747,36 @@ export default function FileUpload({
                   </div>
                 </div>
               </div>
+
+              {/* Discoverable Settings - only show if crate is public */}
+              {isShared && (
+                <div className="mb-4">
+                  <div className="flex items-start">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="isDiscoverable"
+                        type="checkbox"
+                        checked={isDiscoverable}
+                        onChange={(e) => setIsDiscoverable(e.target.checked)}
+                        className="focus:ring-[#ff7a32] h-4 w-4 text-[#ff7a32] border-gray-300 rounded"
+                        disabled={isUploading}
+                      />
+                    </div>
+                    <div className="ml-3 text-sm">
+                      <label
+                        htmlFor="isDiscoverable"
+                        className="font-medium text-gray-700"
+                      >
+                        Make this crate discoverable
+                      </label>
+                      <p className="text-gray-500">
+                        When enabled, this crate will appear in the public
+                        gallery for others to discover.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

@@ -23,6 +23,7 @@ export async function POST(
       public: isPublic = true,
       passwordProtected = false,
       removePassword = false,
+      isDiscoverable = false,
     } = await req.json();
 
     // Check authentication
@@ -83,7 +84,10 @@ export async function POST(
     }
 
     // Prepare sharing settings update
-    const sharingSettings: any = { public: isPublic };
+    const sharingSettings: any = {
+      public: isPublic,
+      isDiscoverable: isDiscoverable,
+    };
 
     if (passwordProtected && password && password.length > 0) {
       sharingSettings.passwordHash = await bcrypt.hash(password, 10);
@@ -123,6 +127,7 @@ export async function POST(
       isShared: isPublic,
       shareUrl,
       passwordProtected: Boolean(sharingSettings.passwordHash),
+      isDiscoverable: isDiscoverable,
       message: "Sharing settings updated successfully",
     });
   } catch (error) {

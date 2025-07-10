@@ -245,6 +245,24 @@ gcloud firestore indexes composite create \
   --field-config="field-path=templateId,order=ASCENDING" \
   --field-config="field-path=submittedAt,order=DESCENDING"
 
+# Add indexes for discoverable gallery feature
+echo "--- Creating composite index for discoverable gallery (isDiscoverable + public + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=shared.isDiscoverable,order=ASCENDING" \
+  --field-config="field-path=shared.public,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
+echo "--- Creating composite index for discoverable gallery with category (isDiscoverable + public + category + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=shared.isDiscoverable,order=ASCENDING" \
+  --field-config="field-path=shared.public,order=ASCENDING" \
+  --field-config="field-path=category,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."

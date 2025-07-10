@@ -11,6 +11,7 @@ export enum CrateCategory {
 export interface CrateSharing {
   public: boolean;
   passwordHash?: string | null;
+  isDiscoverable?: boolean;
 }
 
 export interface Crate {
