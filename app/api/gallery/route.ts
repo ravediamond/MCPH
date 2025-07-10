@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     const snapshot = await query.get();
-    const crates: Partial<Crate>[] = [];
+    const crates: (Partial<Crate> & { ownerName?: string })[] = [];
 
     // Get unique owner IDs to batch fetch user info
     const ownerIds = [...new Set(snapshot.docs.map(doc => doc.data().ownerId))];
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         description: crateData.description,
         category: crateData.category,
         tags: crateData.tags,
-        createdAt: crateData.createdAt?.toDate ? crateData.createdAt.toDate().toISOString() : crateData.createdAt,
+        createdAt: (crateData.createdAt as any)?.toDate ? (crateData.createdAt as any).toDate().toISOString() : crateData.createdAt,
         downloadCount: crateData.downloadCount,
         ownerId: crateData.ownerId,
         ownerName: userInfoMap.get(crateData.ownerId) || 'Unknown User',
