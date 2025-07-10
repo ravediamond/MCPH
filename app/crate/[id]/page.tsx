@@ -68,6 +68,7 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   expiresAt?: string;
   isPublic: boolean;
   isPasswordProtected: boolean;
+  isDiscoverable?: boolean;
   isOwner: boolean;
   viewCount?: number;
   tags?: string[];
@@ -111,6 +112,7 @@ export default function CratePage() {
   const [showSharingModal, setShowSharingModal] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+  const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [sharingPassword, setSharingPassword] = useState("");
   const [sharingError, setSharingError] = useState<string | null>(null);
   const [sharingSuccess, setSharingSuccess] = useState<string | null>(null);
@@ -435,6 +437,7 @@ export default function CratePage() {
 
     setIsPublic(crateInfo.isPublic);
     setIsPasswordProtected(crateInfo.isPasswordProtected);
+    setIsDiscoverable(crateInfo.isDiscoverable || false);
     setSharingPassword("");
     setSharingError(null);
     setSharingSuccess(null);
@@ -514,6 +517,7 @@ export default function CratePage() {
       const body: any = {
         public: isPublic,
         passwordProtected: isPasswordProtected,
+        isDiscoverable: isDiscoverable,
       };
 
       // Include password if it's set and the crate is password protected
@@ -545,6 +549,7 @@ export default function CratePage() {
         ...crateInfo,
         isPublic: data.isShared,
         isPasswordProtected: data.passwordProtected,
+        isDiscoverable: data.isDiscoverable,
       };
 
       console.log("[DEBUG] Updating crate info:", updatedCrateInfo);
@@ -1414,6 +1419,39 @@ export default function CratePage() {
                       <p className="mt-1 text-xs text-gray-500">
                         Choose a strong password to protect your crate
                       </p>
+                    </div>
+                  )}
+
+                  {/* Discoverable Toggle - only shown when public and not password protected */}
+                  {!isPasswordProtected && (
+                    <div className="ml-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-gray-900">
+                            Make Discoverable
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {isDiscoverable
+                              ? "This crate will appear in the public gallery"
+                              : "This crate will not appear in the public gallery"}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsDiscoverable(!isDiscoverable)}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            isDiscoverable ? "bg-blue-600" : "bg-gray-200"
+                          }`}
+                          role="switch"
+                          aria-checked={isDiscoverable}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              isDiscoverable ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

@@ -59,6 +59,54 @@
       ]
     },
     {
+      "collectionGroup": "crates",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "shared.isDiscoverable",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "shared.public",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "crates",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "shared.isDiscoverable",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "shared.public",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "category",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "feedbackTemplates",
       "queryScope": "COLLECTION_GROUP",
       "fields": [

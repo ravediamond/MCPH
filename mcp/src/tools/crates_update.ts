@@ -23,6 +23,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
         "Updates an existing crate's content, metadata, or organizational information. " +
         "Allows users to iterate on content while preserving the crate ID, sharing settings, and creation timestamp.\n\n" +
         "FEEDBACK TEMPLATES: For feedback crates, you can update metadata like 'isOpen' to open/close templates for responses.\n\n" +
+        "DISCOVERABLE CRATES: Use isDiscoverable parameter to control whether a crate appears in the public gallery.\n\n" +
         "Only the provided parameters will be updated; omitted parameters remain unchanged.\n\n" +
         "AI usage examples:\n" +
         '• "update crate 12345 with new content"\n' +
@@ -44,6 +45,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
         category,
         tags,
         metadata,
+        isDiscoverable,
       } = args;
 
       // Get authentication info from extra (supplied by the SDK)
@@ -117,6 +119,14 @@ export function registerCratesUpdateTool(server: McpServer): void {
 
         if (metadata !== undefined) {
           updateData.metadata = metadata;
+        }
+
+        // Handle isDiscoverable update
+        if (isDiscoverable !== undefined) {
+          updateData.shared = {
+            ...originalCrate.shared,
+            isDiscoverable,
+          };
         }
 
         // If content data is provided, we need to handle file upload

@@ -32,7 +32,8 @@ export function registerCratesUploadTool(server: McpServer): void {
         '• tags: ARRAY of strings (not a single string!) - e.g. ["project:website", "type:requirements"]\n' +
         "• metadata: Key-value pairs for additional info\n" +
         "• isPublic: Make crate publicly accessible (default: false)\n" +
-        "• password: Password protect the crate\n\n" +
+        "• password: Password protect the crate\n" +
+        "• isDiscoverable: Make crate discoverable in gallery (default: false)\n\n" +
         "TAGGING BEST PRACTICES:\n" +
         '• Use project tags: ["project:website-redesign", "project:chatbot-v2"]\n' +
         '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
@@ -79,6 +80,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         metadata,
         isPublic,
         password,
+        isDiscoverable,
       } = validationResult.data;
 
       // Ensure we have a proper fileName for JSON content
@@ -196,6 +198,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         ownerId,
         shared: {
           public: isPublic,
+          isDiscoverable,
           ...(password
             ? { passwordHash: await bcrypt.hash(password, 10) }
             : {}),
