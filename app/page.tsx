@@ -211,12 +211,12 @@ export default function Home() {
 
       {/* Workflow Steps Section */}
       <section className="py-10 md:py-12 px-4 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-10 text-center text-gray-800">
-            Complete Workflow in 5 Steps
+            Complete Workflow in 6 Steps
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
             <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
               <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
                 <FaUpload className="text-lg md:text-xl" />
@@ -345,6 +345,45 @@ export default function Home() {
               </h3>
               <p className="text-gray-600 text-center text-base md:text-lg">
                 Create custom feedback forms to gather user insights.
+              </p>
+              <div className="mt-3 flex justify-center gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                  Interface
+                </span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  MCP
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="bg-orange-100 text-orange-600 rounded-full h-12 w-12 md:h-14 md:w-14 flex items-center justify-center mx-auto mb-4 md:mb-5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 5.943 7.523 3 12 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S3.732 18.057 2.458 12z"
+                  />
+                </svg>
+              </div>
+              <h3 className="font-medium mb-2 md:mb-3 text-center text-gray-800 text-lg md:text-xl">
+                Discover
+              </h3>
+              <p className="text-gray-600 text-center text-base md:text-lg">
+                Explore community crates in the public gallery.
               </p>
               <div className="mt-3 flex justify-center gap-2">
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
@@ -565,6 +604,104 @@ export default function Home() {
               <p className="text-sm text-gray-600">
                 Create custom feedback forms and collect user responses with
                 powerful form builder.
+              </p>
+            </div>
+
+            {/* 7. Public Gallery */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="7" height="9"></rect>
+                    <rect x="14" y="3" width="7" height="5"></rect>
+                    <rect x="14" y="12" width="7" height="9"></rect>
+                    <rect x="3" y="16" width="7" height="5"></rect>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Public Gallery
+              </h4>
+              <p className="text-sm text-gray-600">
+                Discover amazing community crates in a beautiful, categorized
+                gallery with creator attribution.
+              </p>
+            </div>
+
+            {/* 8. Social Sharing */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 16.08c-1.24 0-2.25-.99-2.25-2.25s1.01-2.25 2.25-2.25 2.25 1.01 2.25 2.25-1.01 2.25-2.25 2.25z" />
+                    <path d="M6 6.83c-1.24 0-2.25.99-2.25 2.25S4.76 11.33 6 11.33s2.25-.99 2.25-2.25S7.24 6.83 6 6.83z" />
+                    <path d="M6 17.17c-1.24 0-2.25.99-2.25 2.25S4.76 21.67 6 21.67s2.25-.99 2.25-2.25-.99-2.25-2.25-2.25z" />
+                    <path d="M8.25 9.08l7.5 4.84" />
+                    <path d="M8.25 17.17l7.5-4.84" />
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Smart Social Sharing
+              </h4>
+              <p className="text-sm text-gray-600">
+                Share across Twitter, Reddit, LinkedIn, Discord with intelligent
+                markdown formatting for each platform.
+              </p>
+            </div>
+
+            {/* 9. Inline Editing */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all duration-300 hover:shadow-md hover:translate-y-[-2px]">
+              <div className="flex items-center mb-4">
+                <span
+                  className="bg-orange-100 text-[#FF7A00] p-2 rounded-lg"
+                  aria-hidden="true"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </span>
+              </div>
+              <h4 className="text-lg font-medium text-gray-800 mb-2">
+                Inline Editing
+              </h4>
+              <p className="text-sm text-gray-600">
+                Edit crate metadata directly from the page with real-time tag
+                management and permission controls.
               </p>
             </div>
           </div>

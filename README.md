@@ -26,6 +26,9 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Security Features**: Private by default with optional password protection, 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
 - **Feedback Collection System**: Create custom feedback templates with various field types (text, rating, select, etc.) to collect structured feedback on your projects
+- **Public Gallery**: Discover and explore community-shared crates in a beautiful, categorized gallery
+- **Social Sharing**: Share your crates across social platforms with smart markdown formatting for Twitter, Reddit, LinkedIn, Discord, Telegram, and Email
+- **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
 
 ## Quick Start
 
@@ -129,19 +132,71 @@ Connect ideas, research, and insights into a searchable knowledge network that r
 
 **Real Example:** Research competitive products → store findings in tagged crates → AI reveals market gaps you hadn't noticed.
 
+## 🎨 Gallery & Sharing Features
+
+### Public Gallery
+
+Discover amazing AI artifacts created by the community! The MCPH gallery showcases public crates that creators have chosen to make discoverable.
+
+**Key Features:**
+
+- **Category Filtering**: Browse by content type (Markdown, Code, Images, JSON, etc.)
+- **Beautiful Grid Layout**: Clean, responsive design that showcases content previews
+- **Creator Attribution**: See who created each crate with proper attribution
+- **One-Click Access**: Instantly view or copy any public crate to your collection
+- **Responsive Design**: Perfect experience on desktop and mobile
+
+**How to Make Your Crates Discoverable:**
+
+1. Create a crate and make it public
+2. Enable "Make Discoverable" in the sharing settings
+3. Your crate appears in the public gallery for others to find
+
+Visit the gallery at: [mcph.io/gallery](https://mcph.io/gallery)
+
+### Social Sharing
+
+Share your crates across all major social platforms with intelligent formatting that adapts to each platform's capabilities.
+
+**Supported Platforms:**
+
+- **Twitter/X**: Direct tweet composition with custom messages
+- **Reddit**: Creates text posts with proper title and body formatting
+- **LinkedIn**: Opens share dialog with message copied for easy pasting
+- **Discord**: Copies formatted markdown message to clipboard
+- **Telegram**: Direct sharing with custom message support
+- **Email**: Composes email with subject and body
+
+**Smart Markdown Conversion:**
+
+- **Discord & Reddit**: Full markdown support (bold, italic, links, code blocks)
+- **Telegram**: Converts to Telegram's markdown syntax automatically
+- **Twitter, LinkedIn, Email**: Strips markdown and converts to clean plain text
+
+**How to Use:**
+
+1. Open any crate you own
+2. Click "Manage Sharing" and make it public
+3. Use the social sharing section to customize your message with markdown
+4. Click any platform button to share instantly
+
 ### Anonymous vs. Logged-in Users
 
 MCPH offers different capabilities depending on whether you are logged in or using the service anonymously:
 
-| Feature         | Anonymous Users | Logged-in Users |
-| --------------- | --------------- | --------------- |
-| Download Crates | ✓               | ✓               |
-| Upload Crates   | ✗               | ✓               |
-| Search Crates   | ✗               | ✓               |
-| Delete Crates   | ✗               | ✓               |
-| Manage API Keys | ✗               | ✓               |
-| Create Feedback | ✗               | ✓ (5 templates) |
-| Submit Feedback | ✓               | ✓               |
+| Feature           | Anonymous Users | Logged-in Users |
+| ----------------- | --------------- | --------------- |
+| Download Crates   | ✓               | ✓               |
+| Upload Crates     | ✗               | ✓               |
+| Search Crates     | ✗               | ✓               |
+| Delete Crates     | ✗               | ✓               |
+| Manage API Keys   | ✗               | ✓               |
+| Create Feedback   | ✗               | ✓ (5 templates) |
+| Submit Feedback   | ✓               | ✓               |
+| Browse Gallery    | ✓               | ✓               |
+| Social Sharing    | ✗               | ✓               |
+| Inline Editing    | ✗               | ✓ (own crates)  |
+| Make Discoverable | ✗               | ✓               |
 
 For anonymous users:
 

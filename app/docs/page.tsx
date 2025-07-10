@@ -708,6 +708,239 @@ export default function DocsPage() {
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h2 className="text-xl font-medium text-gray-800 mb-4">
+            Gallery & Social Sharing
+          </h2>
+
+          {/* Public Gallery */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-purple-100 text-purple-600 p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21,15 16,10 5,21"></polyline>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Public Gallery
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Discover amazing AI artifacts created by the community.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                The MCPH gallery showcases public crates that creators have
+                chosen to make discoverable. Browse through a curated collection
+                of AI-generated content, from code snippets to creative writing,
+                research papers to visual assets.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Gallery Features:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Category filtering by content type (Markdown, Code, Images,
+                  JSON, etc.)
+                </li>
+                <li>Beautiful responsive grid layout with content previews</li>
+                <li>Creator attribution with proper credit</li>
+                <li>One-click access to view or copy any public crate</li>
+                <li>Search functionality to find specific content</li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Making Your Crates Discoverable
+                </h5>
+                <p className="text-sm text-gray-600">
+                  To share your work with the community, make your crate public
+                  and enable "Make Discoverable" in the sharing settings. Your
+                  crate will then appear in the gallery for others to find and
+                  learn from.
+                </p>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Visit the gallery at:{" "}
+                <a
+                  href="https://mcph.io/gallery"
+                  className="text-blue-500 hover:underline"
+                >
+                  mcph.io/gallery
+                </a>
+              </p>
+            </div>
+          </div>
+
+          {/* Social Sharing */}
+          <div className="mb-6 border-b border-gray-100 pb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-green-100 text-green-600 p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16,6 12,2 8,6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Social Sharing
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Share your crates across social platforms with intelligent
+                  formatting.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                MCPH's social sharing system adapts your content to each
+                platform's capabilities and formatting requirements. Write once
+                in markdown, share everywhere with platform-optimized
+                formatting.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Supported Platforms:
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                  <li>
+                    <strong>Twitter/X</strong> - Direct tweet composition
+                  </li>
+                  <li>
+                    <strong>Reddit</strong> - Text posts with title and body
+                  </li>
+                  <li>
+                    <strong>LinkedIn</strong> - Share dialog with message
+                    copying
+                  </li>
+                </ul>
+                <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                  <li>
+                    <strong>Discord</strong> - Formatted markdown messages
+                  </li>
+                  <li>
+                    <strong>Telegram</strong> - Custom message support
+                  </li>
+                  <li>
+                    <strong>Email</strong> - Composed emails with subject/body
+                  </li>
+                </ul>
+              </div>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Smart Markdown Conversion:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  <strong>Discord & Reddit</strong> - Full markdown support
+                  (bold, italic, links, code blocks)
+                </li>
+                <li>
+                  <strong>Telegram</strong> - Converts to Telegram's markdown
+                  syntax automatically
+                </li>
+                <li>
+                  <strong>Twitter, LinkedIn, Email</strong> - Strips markdown
+                  and converts to clean plain text
+                </li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  How to Use Social Sharing
+                </h5>
+                <ol className="list-decimal pl-5 text-sm text-gray-600 space-y-1">
+                  <li>Open any crate you own</li>
+                  <li>Click "Manage Sharing" and make it public</li>
+                  <li>
+                    Use the social sharing section to customize your message
+                    with markdown
+                  </li>
+                  <li>Click any platform button to share instantly</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          {/* Inline Editing */}
+          <div className="mb-6">
+            <div className="flex items-start mb-3">
+              <span className="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3 flex-shrink-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                  <polygon points="18,2 22,6 12,16 8,16 8,12 18,2"></polygon>
+                </svg>
+              </span>
+              <div>
+                <h3 className="font-medium text-gray-800 text-lg">
+                  Inline Editing
+                </h3>
+                <p className="text-gray-600 mb-3">
+                  Edit crate metadata directly from the crate page.
+                </p>
+              </div>
+            </div>
+            <div className="pl-12">
+              <p className="text-gray-600 mb-3">
+                Update your crate titles, descriptions, and tags without leaving
+                the crate page. The inline editing system provides a seamless
+                experience for content management.
+              </p>
+              <h4 className="font-medium text-gray-700 mb-2">
+                Editing Features:
+              </h4>
+              <ul className="list-disc pl-5 text-gray-600 space-y-1 mb-3">
+                <li>
+                  Permission-based access control - only crate owners can edit
+                </li>
+                <li>Real-time validation and error handling</li>
+                <li>Tag management with autocomplete suggestions</li>
+                <li>Instant save and cancel functionality</li>
+                <li>Visual feedback for successful updates</li>
+              </ul>
+              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-2">
+                <h5 className="font-medium text-gray-700 mb-1">
+                  Quick Edit Access
+                </h5>
+                <p className="text-sm text-gray-600">
+                  Look for the edit icon next to crate titles and descriptions
+                  when viewing your own crates. Click to edit, make changes, and
+                  save - it's that simple.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h2 className="text-xl font-medium text-gray-800 mb-4">
             Getting Started
           </h2>
 
