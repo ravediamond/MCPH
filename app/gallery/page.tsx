@@ -201,14 +201,15 @@ export default function GalleryPage() {
                   </Card.Header>
                   <Card.Body className="space-y-4">
                     <div className="flex flex-wrap gap-1">
-                      {Array.isArray(crate.tags) && crate.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full border"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                      {Array.isArray(crate.tags) &&
+                        crate.tags.slice(0, 3).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full border"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       {Array.isArray(crate.tags) && crate.tags.length > 3 && (
                         <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full border">
                           +{crate.tags.length - 3} more
@@ -220,12 +221,12 @@ export default function GalleryPage() {
                       <div className="flex items-center space-x-1">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {crate.createdAt && 
+                          {crate.createdAt &&
                             (() => {
                               const date = new Date(crate.createdAt);
-                              return !isNaN(date.getTime()) 
+                              return !isNaN(date.getTime())
                                 ? formatDistanceToNow(date, { addSuffix: true })
-                                : 'Unknown date';
+                                : "Unknown date";
                             })()}
                         </span>
                       </div>
@@ -239,7 +240,9 @@ export default function GalleryPage() {
                     <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center space-x-1">
                         <User className="w-4 h-4" />
-                        <span className="truncate">{(crate as any).ownerName || crate.ownerId}</span>
+                        <span className="truncate">
+                          {(crate as any).ownerName || crate.ownerId}
+                        </span>
                       </div>
 
                       <span>{crate.size && formatFileSize(crate.size)}</span>

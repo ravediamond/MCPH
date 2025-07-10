@@ -23,6 +23,7 @@ shared/**/*.js
 out
 *.log
 **/*.cache
+tsconfig.tsbuildinfo
 
 # Environment Variables
 .env.local

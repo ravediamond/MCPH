@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
     const crates: (Partial<Crate> & { ownerName?: string })[] = [];
 
     // Get unique owner IDs to batch fetch user info
-    const ownerIds = [...new Set(snapshot.docs.map(doc => doc.data().ownerId))];
+    const ownerIds = [
+      ...new Set(snapshot.docs.map((doc) => doc.data().ownerId)),
+    ];
     const userInfoMap = new Map<string, string>();
 
     // Fetch user info for all owners
@@ -46,12 +48,13 @@ export async function GET(request: NextRequest) {
       try {
         const userRecord = await auth.getUser(ownerId);
         // Use email or display name, fallback to first part of email
-        const displayName = userRecord.displayName || 
-          (userRecord.email ? userRecord.email.split('@')[0] : 'Unknown User');
+        const displayName =
+          userRecord.displayName ||
+          (userRecord.email ? userRecord.email.split("@")[0] : "Unknown User");
         userInfoMap.set(ownerId, displayName);
       } catch (error) {
         console.warn(`Failed to fetch user info for ${ownerId}:`, error);
-        userInfoMap.set(ownerId, 'Unknown User');
+        userInfoMap.set(ownerId, "Unknown User");
       }
     }
 
@@ -65,10 +68,12 @@ export async function GET(request: NextRequest) {
         description: crateData.description,
         category: crateData.category,
         tags: crateData.tags,
-        createdAt: (crateData.createdAt as any)?.toDate ? (crateData.createdAt as any).toDate().toISOString() : crateData.createdAt,
+        createdAt: (crateData.createdAt as any)?.toDate
+          ? (crateData.createdAt as any).toDate().toISOString()
+          : crateData.createdAt,
         downloadCount: crateData.downloadCount,
         ownerId: crateData.ownerId,
-        ownerName: userInfoMap.get(crateData.ownerId) || 'Unknown User',
+        ownerName: userInfoMap.get(crateData.ownerId) || "Unknown User",
         size: crateData.size,
         fileName: crateData.fileName,
         mimeType: crateData.mimeType,
