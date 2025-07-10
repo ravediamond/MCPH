@@ -307,7 +307,110 @@ export async function DELETE(
 }
 
 /**
- * API endpoint to update a crate's metadata
+ * API endpoint to update a crate's metadata (PUT method)
+ */
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    // Get crate metadata
+    const crate = await getCrateMetadata(id);
+    if (!crate) {
+      return NextResponse.json({ error: "Crate not found" }, { status: 404 });
+    }
+
+    // Check authentication
+    const authHeader = req.headers.get("authorization");
+    let userId = "anonymous";
+    let isAuthenticated = false;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7);
+      try {
+        const decodedToken = await auth.verifyIdToken(token);
+        userId = decodedToken.uid;
+        isAuthenticated = true;
+      } catch (error) {
+        console.warn(`[DEBUG] Invalid authentication token:`, error);
+        return NextResponse.json(
+          { error: "Invalid authentication token" },
+          { status: 401 },
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { error: "Authentication required to update a crate" },
+        { status: 401 },
+      );
+    }
+
+    // Only the owner can update the crate
+    if (crate.ownerId !== userId) {
+      return NextResponse.json(
+        { error: "You don't have permission to update this crate" },
+        { status: 403 },
+      );
+    }
+
+    // Parse the request body
+    const body = await req.json();
+    const updateData: Partial<typeof crate> = {};
+
+    // Fields that can be updated
+    if (body.title !== undefined && typeof body.title === "string") {
+      updateData.title = body.title.trim();
+    }
+
+    if (body.description !== undefined) {
+      updateData.description =
+        typeof body.description === "string"
+          ? body.description.trim()
+          : body.description;
+    }
+
+    if (body.tags !== undefined && Array.isArray(body.tags)) {
+      updateData.tags = body.tags.filter(
+        (tag: any) => typeof tag === "string" && tag.trim().length > 0,
+      );
+    }
+
+    if (body.metadata !== undefined && typeof body.metadata === "object") {
+      updateData.metadata = body.metadata;
+    }
+
+    // Skip update if no fields were changed
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No changes to apply",
+      });
+    }
+
+    // Update the crate metadata in Firestore
+    const updatedCrate = await updateCrateMetadata(id, updateData);
+
+    // Log the update event
+    await logEvent("crate_update", id, undefined, { userId });
+
+    // Return success response
+    return NextResponse.json({
+      success: true,
+      message: "Crate updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating crate:", error);
+    return NextResponse.json(
+      { error: "Failed to update crate" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * API endpoint to update a crate's metadata (PATCH method)
  */
 export async function PATCH(
   req: NextRequest,

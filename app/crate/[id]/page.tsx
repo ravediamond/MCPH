@@ -31,6 +31,17 @@ import {
   FaTasks,
   FaTable,
   FaComments,
+  FaTwitter,
+  FaReddit,
+  FaLinkedin,
+  FaDiscord,
+  FaTelegram,
+  FaEnvelope,
+  FaLink,
+  FaEdit,
+  FaSave,
+  FaTimes,
+  FaPlus,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -123,6 +134,20 @@ export default function CratePage() {
   const [copyLoading, setCopyLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
+
+  // Social sharing state variables
+  const [socialShareMessage, setSocialShareMessage] = useState("");
+  const [socialLinkCopied, setSocialLinkCopied] = useState(false);
+
+  // Editing state variables
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
 
   // Fetch crate metadata only when crateId changes or when auth state changes
   useEffect(() => {
@@ -426,6 +451,224 @@ export default function CratePage() {
       });
   };
 
+  // Convert markdown to platform-specific formats
+  const convertMarkdownForPlatform = (
+    markdown: string,
+    platform: string,
+  ): string => {
+    if (!markdown) return markdown;
+
+    let converted = markdown;
+
+    switch (platform) {
+      case "discord":
+      case "reddit":
+        // These platforms support markdown natively, so keep it as-is
+        return converted;
+
+      case "telegram":
+        // Telegram supports basic markdown but with different syntax
+        converted = converted
+          // Bold: **text** or __text__ -> *text*
+          .replace(/\*\*(.*?)\*\*/g, "*$1*")
+          .replace(/__(.*?)__/g, "*$1*")
+          // Italic: *text* or _text_ -> _text_
+          .replace(/(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)/g, "_$1_");
+        // Code: `text` -> `text` (same)
+        // Links: [text](url) -> [text](url) (same)
+        return converted;
+
+      case "twitter":
+      case "linkedin":
+      case "email":
+      default:
+        // Convert markdown to plain text for platforms that don't support it
+        converted = converted
+          // Remove bold/italic formatting but keep the text
+          .replace(/\*\*(.*?)\*\*/g, "$1") // **bold** -> bold
+          .replace(/__(.*?)__/g, "$1") // __bold__ -> bold
+          .replace(/\*(.*?)\*/g, "$1") // *italic* -> italic
+          .replace(/_(.*?)_/g, "$1") // _italic_ -> italic
+          // Convert links to just the URL or "text (url)" format
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)") // [text](url) -> text (url)
+          // Remove code formatting
+          .replace(/`([^`]+)`/g, "$1") // `code` -> code
+          // Remove headers
+          .replace(/^#+\s*/gm, ""); // # Header -> Header
+        return converted;
+    }
+  };
+
+  // Social sharing functions
+  const generateShareUrl = (platform: string, customMessage?: string) => {
+    const currentUrl = `${window.location.origin}/crate/${crateId}`;
+    const rawMessage =
+      customMessage ||
+      socialShareMessage ||
+      `Check out this AI artifact: ${crateInfo?.title} - ${currentUrl}`;
+
+    // Convert markdown based on platform
+    const message = convertMarkdownForPlatform(rawMessage, platform);
+    const encodedMessage = encodeURIComponent(message);
+    const encodedUrl = encodeURIComponent(currentUrl);
+    const encodedTitle = encodeURIComponent(
+      crateInfo?.title || `Crate ${crateId}`,
+    );
+
+    switch (platform) {
+      case "twitter":
+        return `https://twitter.com/intent/tweet?text=${encodedMessage}`;
+      case "reddit":
+        // For Reddit, use text post format with title and body
+        const redditTitle = encodeURIComponent(
+          crateInfo?.title || `Check out this AI artifact`,
+        );
+        const redditBody = encodeURIComponent(
+          `${message}\n\nLink: ${currentUrl}`,
+        );
+        return `https://www.reddit.com/submit?selftext=true&title=${redditTitle}&selftext=${redditBody}`;
+      case "linkedin":
+        // LinkedIn doesn't accept custom text via URL, so just share the URL
+        // The user will need to add their custom message manually in LinkedIn
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+      case "discord":
+        return null; // Discord doesn't have a direct share URL
+      case "telegram":
+        return `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`;
+      case "email":
+        return `mailto:?subject=${encodedTitle}&body=${encodedMessage}`;
+      default:
+        return null;
+    }
+  };
+
+  const handleSocialShare = (platform: string) => {
+    const customMessage = socialShareMessage.trim() || undefined;
+    const shareUrl = generateShareUrl(platform, customMessage);
+
+    if (platform === "discord") {
+      // For Discord, copy the markdown-formatted message to clipboard
+      const rawMessage =
+        customMessage ||
+        `Check out this AI artifact: **${crateInfo?.title}** - ${window.location.origin}/crate/${crateId}`;
+      const formattedMessage = convertMarkdownForPlatform(rawMessage, platform);
+      navigator.clipboard.writeText(formattedMessage);
+      setSocialLinkCopied(true);
+      setTimeout(() => setSocialLinkCopied(false), 2000);
+    } else if (platform === "linkedin") {
+      // For LinkedIn, open the share dialog and show a message about adding custom text
+      if (shareUrl) {
+        window.open(shareUrl, "_blank", "noopener,noreferrer");
+        // Show a brief message about manually adding the custom text
+        if (customMessage) {
+          // Copy the message to clipboard for easy pasting
+          navigator.clipboard.writeText(
+            convertMarkdownForPlatform(customMessage, platform),
+          );
+          setSocialLinkCopied(true);
+          setTimeout(() => setSocialLinkCopied(false), 3000);
+        }
+      }
+    } else if (shareUrl) {
+      window.open(shareUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleCopySocialLink = async () => {
+    try {
+      const currentUrl = `${window.location.origin}/crate/${crateId}`;
+      await navigator.clipboard.writeText(currentUrl);
+      setSocialLinkCopied(true);
+      setTimeout(() => setSocialLinkCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+    }
+  };
+
+  // Editing functions
+  const handleEditStart = () => {
+    if (!crateInfo) return;
+    setEditTitle(crateInfo.title || "");
+    setEditDescription(crateInfo.description || "");
+    setEditTags(crateInfo.tags || []);
+    setNewTag("");
+    setEditError(null);
+    setEditSuccess(null);
+    setIsEditing(true);
+  };
+
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditTitle("");
+    setEditDescription("");
+    setEditTags([]);
+    setNewTag("");
+    setEditError(null);
+    setEditSuccess(null);
+  };
+
+  const handleAddTag = () => {
+    if (!newTag.trim() || editTags.includes(newTag.trim())) {
+      setNewTag("");
+      return;
+    }
+    setEditTags([...editTags, newTag.trim()]);
+    setNewTag("");
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setEditTags(editTags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!crateInfo) return;
+
+    setEditLoading(true);
+    setEditError(null);
+
+    try {
+      const idToken = await getIdToken();
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (idToken) {
+        headers["Authorization"] = `Bearer ${idToken}`;
+      }
+
+      const response = await fetch(`/api/crates/${crateId}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+          tags: editTags,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update crate");
+      }
+
+      // Update local state
+      setCrateInfo({
+        ...crateInfo,
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        tags: editTags,
+      });
+
+      setEditSuccess("Crate updated successfully!");
+      setIsEditing(false);
+      setTimeout(() => setEditSuccess(null), 3000);
+    } catch (error: any) {
+      setEditError(error.message || "Failed to update crate");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   // New function to handle opening the sharing modal
   const handleOpenSharingModal = () => {
     if (!crateInfo) return;
@@ -442,6 +685,9 @@ export default function CratePage() {
     setSharingError(null);
     setSharingSuccess(null);
     setShareUrl(`${window.location.origin}/crate/${crateId}`);
+    setSocialShareMessage(
+      `Check out this AI artifact: ${crateInfo.title} - ${window.location.origin}/crate/${crateId}`,
+    );
     setShowSharingModal(true);
   };
 
@@ -713,7 +959,55 @@ export default function CratePage() {
 
   // Render tags for the crate
   const renderTags = (tags?: string[] | any) => {
-    // Process tags to ensure we have a usable array
+    if (isEditing) {
+      return (
+        <div className="mb-4 border border-blue-200 p-3 rounded">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">
+            Tags ({editTags.length})
+          </h3>
+
+          {/* Existing tags */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {editTags.map((tag, index) => (
+              <span
+                key={index}
+                className={`inline-flex items-center ${getTagStyle(tag)} text-sm px-3 py-1.5 rounded-full shadow-sm`}
+              >
+                {formatTagDisplay(tag)}
+                <button
+                  onClick={() => handleRemoveTag(tag)}
+                  className="ml-2 text-xs hover:text-red-500"
+                  title="Remove tag"
+                >
+                  <FaTimes size={10} />
+                </button>
+              </span>
+            ))}
+          </div>
+
+          {/* Add new tag */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleAddTag()}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add a tag (e.g., project:myapp, status:draft)"
+            />
+            <button
+              onClick={handleAddTag}
+              className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title="Add tag"
+            >
+              <FaPlus size={12} />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Process tags to ensure we have a usable array (non-editing mode)
     let processedTags: string[] = [];
 
     if (Array.isArray(tags)) {
@@ -1313,7 +1607,7 @@ export default function CratePage() {
       {/* Sharing Modal */}
       {showSharingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-900">
                 Manage Sharing
@@ -1370,90 +1664,84 @@ export default function CratePage() {
 
               {/* Password Protection Toggle - only shown when public */}
               {isPublic && (
-                <div className="ml-4 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-medium text-gray-900">
+                      Password Protection
+                    </h4>
+                    <p className="text-sm text-gray-500">
+                      {isPasswordProtected
+                        ? "Viewers must enter a password to access"
+                        : "No password required for access"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordProtected(!isPasswordProtected)}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
+                      isPasswordProtected ? "bg-yellow-600" : "bg-gray-200"
+                    }`}
+                    role="switch"
+                    aria-checked={isPasswordProtected}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        isPasswordProtected ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
+
+              {/* Password Input - only shown when password protection is enabled */}
+              {isPublic && isPasswordProtected && (
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Set Password
+                  </label>
+                  <input
+                    type="password"
+                    value={sharingPassword}
+                    onChange={(e) => setSharingPassword(e.target.value)}
+                    placeholder="Enter a secure password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Choose a strong password to protect your crate
+                  </p>
+                </div>
+              )}
+
+              {/* Discoverable Toggle - only shown when public and not password protected */}
+              {isPublic && !isPasswordProtected && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-gray-900">
-                        Password Protection
+                        Make Discoverable
                       </h4>
                       <p className="text-sm text-gray-500">
-                        {isPasswordProtected
-                          ? "Viewers must enter a password to access"
-                          : "No password required for access"}
+                        {isDiscoverable
+                          ? "This crate will appear in the public gallery"
+                          : "This crate will not appear in the public gallery"}
                       </p>
                     </div>
                     <button
                       type="button"
-                      onClick={() =>
-                        setIsPasswordProtected(!isPasswordProtected)
-                      }
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
-                        isPasswordProtected ? "bg-yellow-600" : "bg-gray-200"
+                      onClick={() => setIsDiscoverable(!isDiscoverable)}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                        isDiscoverable ? "bg-blue-600" : "bg-gray-200"
                       }`}
                       role="switch"
-                      aria-checked={isPasswordProtected}
+                      aria-checked={isDiscoverable}
                     >
                       <span
                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          isPasswordProtected
-                            ? "translate-x-5"
-                            : "translate-x-0"
+                          isDiscoverable ? "translate-x-5" : "translate-x-0"
                         }`}
                       />
                     </button>
                   </div>
-
-                  {/* Password Input - only shown when password protection is enabled */}
-                  {isPasswordProtected && (
-                    <div className="ml-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Set Password
-                      </label>
-                      <input
-                        type="password"
-                        value={sharingPassword}
-                        onChange={(e) => setSharingPassword(e.target.value)}
-                        placeholder="Enter a secure password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Choose a strong password to protect your crate
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Discoverable Toggle - only shown when public and not password protected */}
-                  {!isPasswordProtected && (
-                    <div className="ml-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-gray-900">
-                            Make Discoverable
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            {isDiscoverable
-                              ? "This crate will appear in the public gallery"
-                              : "This crate will not appear in the public gallery"}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsDiscoverable(!isDiscoverable)}
-                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                            isDiscoverable ? "bg-blue-600" : "bg-gray-200"
-                          }`}
-                          role="switch"
-                          aria-checked={isDiscoverable}
-                        >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                              isDiscoverable ? "translate-x-5" : "translate-x-0"
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1501,6 +1789,128 @@ export default function CratePage() {
                   {isPasswordProtected
                     ? "view your crate (with password)"
                     : "view your crate"}
+                </p>
+              </div>
+            )}
+
+            {/* Social Sharing Section - Only shown when public */}
+            {isPublic && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">
+                  Share on Social Media
+                </h4>
+
+                {/* Custom Message Editor */}
+                <div className="mb-4">
+                  <label className="block text-xs font-medium text-gray-700 mb-2">
+                    Customize Share Message
+                    <span className="text-gray-500 font-normal ml-1">
+                      (Markdown supported)
+                    </span>
+                  </label>
+                  <textarea
+                    value={socialShareMessage}
+                    onChange={(e) => setSocialShareMessage(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={3}
+                    placeholder="**Bold text**, *italic text*, [link text](url), `code`..."
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    ✓ Discord: Copies formatted message • Reddit: Creates text
+                    post with title & body • LinkedIn: Opens share dialog +
+                    copies message for pasting • Twitter/Telegram/Email: Full
+                    support
+                  </p>
+                </div>
+
+                {/* Social Platform Buttons */}
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <button
+                    onClick={() => handleSocialShare("twitter")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-500 hover:text-blue-600 hover:border-blue-300"
+                    title="Share on Twitter/X"
+                  >
+                    <FaTwitter className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">Twitter/X</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSocialShare("reddit")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-orange-50 text-orange-500 hover:text-orange-600 hover:border-orange-300"
+                    title="Create Reddit text post with title and body"
+                  >
+                    <FaReddit className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">Reddit</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSocialShare("linkedin")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-700 hover:text-blue-800 hover:border-blue-300"
+                    title="Open LinkedIn share dialog (copies message for manual pasting)"
+                  >
+                    <FaLinkedin className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">LinkedIn</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSocialShare("discord")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-indigo-50 text-indigo-500 hover:text-indigo-600 hover:border-indigo-300"
+                    title="Copy formatted message to clipboard for Discord"
+                  >
+                    <FaDiscord className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">Discord</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSocialShare("telegram")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-400 hover:text-blue-500 hover:border-blue-300"
+                    title="Share on Telegram"
+                  >
+                    <FaTelegram className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">Telegram</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSocialShare("email")}
+                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-gray-50 text-gray-500 hover:text-gray-600 hover:border-gray-300"
+                    title="Share via Email"
+                  >
+                    <FaEnvelope className="mr-2 text-lg" />
+                    <span className="text-sm font-medium">Email</span>
+                  </button>
+                </div>
+
+                {/* Copy Link Button */}
+                <button
+                  onClick={handleCopySocialLink}
+                  className={`w-full flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    socialLinkCopied
+                      ? "bg-green-500 text-white hover:bg-green-600"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  {socialLinkCopied ? (
+                    <>
+                      <FaCheck className="mr-2" />
+                      Link Copied!
+                    </>
+                  ) : (
+                    <>
+                      <FaLink className="mr-2" />
+                      Copy Link
+                    </>
+                  )}
+                </button>
+
+                <p className="mt-2 text-xs text-gray-500">
+                  • <strong>Discord:</strong> Copies formatted message to
+                  clipboard
+                  <br />• <strong>Reddit:</strong> Creates text post with title
+                  & body
+                  <br />• <strong>LinkedIn:</strong> Opens share dialog + copies
+                  message for pasting
+                  <br />• <strong>Twitter/Telegram/Email:</strong> Opens with
+                  custom message
                 </p>
               </div>
             )}
@@ -1569,17 +1979,27 @@ export default function CratePage() {
         {/* Main Info Card */}
         <Card className="mb-4">
           <Card.Header className="flex justify-between items-center">
-            <div className="flex items-center">
+            <div className="flex items-center flex-1">
               <span className="p-2 bg-gray-50 rounded-full mr-3">
                 {getCrateIcon()}
               </span>
-              <div>
-                <h1
-                  className="font-medium text-gray-800 mb-0.5"
-                  title={crateInfo.title}
-                >
-                  {crateInfo.title}
-                </h1>
+              <div className="flex-1">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="font-medium text-gray-800 mb-0.5 w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Crate title"
+                  />
+                ) : (
+                  <h1
+                    className="font-medium text-gray-800 mb-0.5"
+                    title={crateInfo.title}
+                  >
+                    {crateInfo.title}
+                  </h1>
+                )}
                 <div className="text-xs text-gray-500">
                   {formatBytes(crateInfo.size || 0)} • {crateInfo.mimeType} •
                   <span className="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
@@ -1589,11 +2009,47 @@ export default function CratePage() {
               </div>
             </div>
 
-            {timeRemaining && (
-              <div className="text-xs px-2 py-1 rounded bg-primary-50 text-primary-700 flex items-center">
-                <FaClock className="mr-1" /> {timeRemaining} remaining
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              {/* Edit controls */}
+              {crateInfo.isOwner && (
+                <div className="flex items-center space-x-2">
+                  {isEditing ? (
+                    <>
+                      <button
+                        onClick={handleSaveEdit}
+                        disabled={editLoading}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                        title="Save changes"
+                      >
+                        <FaSave size={16} />
+                      </button>
+                      <button
+                        onClick={handleEditCancel}
+                        disabled={editLoading}
+                        className="p-2 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+                        title="Cancel editing"
+                      >
+                        <FaTimes size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleEditStart}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                      title="Edit crate details"
+                    >
+                      <FaEdit size={16} />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {timeRemaining && (
+                <div className="text-xs px-2 py-1 rounded bg-primary-50 text-primary-700 flex items-center">
+                  <FaClock className="mr-1" /> {timeRemaining} remaining
+                </div>
+              )}
+            </div>
           </Card.Header>
 
           <Card.Body>
@@ -1616,9 +2072,26 @@ export default function CratePage() {
             </div>
 
             {/* Description */}
-            {crateInfo.description && (
-              <div className="text-sm text-gray-700 mb-4 pb-3 border-b border-gray-100">
-                {crateInfo.description}
+            {(crateInfo.description || isEditing) && (
+              <div className="mb-4 pb-3 border-b border-gray-100">
+                {isEditing ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                      placeholder="Add a description for this crate..."
+                    />
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-700">
+                    {crateInfo.description}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1669,6 +2142,16 @@ export default function CratePage() {
             {copyError && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 {copyError}
+              </div>
+            )}
+            {editSuccess && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                {editSuccess}
+              </div>
+            )}
+            {editError && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {editError}
               </div>
             )}
 

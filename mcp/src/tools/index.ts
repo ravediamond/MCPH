@@ -14,6 +14,7 @@ import { registerFeedbackTemplateCreateTool } from "./feedback_template_create";
 import { registerFeedbackSubmitTool } from "./feedback_submit";
 import { registerFeedbackResponsesGetTool } from "./feedback_responses_get";
 import { registerCratesGalleryTool } from "./crates_gallery";
+import { registerCratesShareSocialTool } from "./crates_share_social";
 
 /**
  * Register all tools with the provided MCP server
@@ -34,4 +35,5 @@ export function registerAllTools(server: McpServer): void {
   registerFeedbackSubmitTool(server);
   registerFeedbackResponsesGetTool(server);
   registerCratesGalleryTool(server);
+  registerCratesShareSocialTool(server);
 }

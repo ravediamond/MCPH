@@ -1,13 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import {
-  FaShareAlt,
-  FaEye,
-  FaDownload,
-  FaTrash,
-  FaEdit,
-  FaChartBar,
-} from "react-icons/fa";
+import { FaTrash, FaCopy, FaChartBar, FaDownload } from "react-icons/fa";
 import Card from "../ui/Card";
 import CrateTag from "./CrateTag";
 import { Crate } from "@/app/types/crate";
@@ -113,15 +106,18 @@ const CrateCard: React.FC<CrateCardProps> = ({
               className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
               title="Copy link"
             >
-              <FaShareAlt size={12} />
+              <FaCopy size={12} />
             </button>
-            <Link
-              href={`/crate/${file.id}`}
-              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-              title="View details"
+            <button
+              onClick={() => {
+                setFileToDelete(file.id);
+                setDeleteModalVisible(true);
+              }}
+              className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+              title="Delete"
             >
-              <FaEye size={12} />
-            </Link>
+              <FaTrash size={12} />
+            </button>
           </div>
         </div>
       </Card>
@@ -311,54 +307,15 @@ const CrateCard: React.FC<CrateCardProps> = ({
         )}
 
         {/* Action Buttons - Quick Actions */}
-        <div className="flex justify-between mt-3 pt-2 border-t border-gray-100">
-          {/* Quick tag buttons */}
-          <div className="flex space-x-1"></div>
-
-          {/* Main action buttons */}
+        <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">
           <div className="flex space-x-2">
             <button
               onClick={() => copyShareLink(file.id)}
               className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
               title="Copy link"
             >
-              <FaShareAlt size={14} />
+              <FaCopy size={14} />
             </button>
-
-            <Link
-              href={`/crate/${file.id}`}
-              className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-              title="View details"
-            >
-              <FaEye size={14} />
-            </Link>
-
-            {file.category === "feedback" ? (
-              <>
-                <Link
-                  href={`/feedback/responses/${file.id}`}
-                  className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                  title="View responses"
-                >
-                  <FaChartBar size={14} />
-                </Link>
-                <Link
-                  href={`/feedback/manage?edit=${file.id}`}
-                  className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                  title="Edit template"
-                >
-                  <FaEdit size={14} />
-                </Link>
-              </>
-            ) : (
-              <Link
-                href={`/download/${file.id}`}
-                className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-                title="Download"
-              >
-                <FaDownload size={14} />
-              </Link>
-            )}
 
             <button
               onClick={() => {
