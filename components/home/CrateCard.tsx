@@ -1,9 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { FaTrash, FaCopy, FaChartBar, FaDownload } from "react-icons/fa";
+import {
+  FaTrash,
+  FaCopy,
+  FaChartBar,
+  FaDownload,
+  FaFileAlt,
+  FaComments,
+  FaFileCode,
+  FaFileImage,
+  FaFilePdf,
+  FaProjectDiagram,
+  FaPlus,
+} from "react-icons/fa";
 import Card from "../ui/Card";
 import CrateTag from "./CrateTag";
-import { Crate } from "@/app/types/crate";
+import { Crate, CrateCategory } from "@/app/types/crate";
 
 interface CrateCardProps {
   file: Crate;
@@ -30,10 +42,47 @@ const CrateCard: React.FC<CrateCardProps> = ({
   isSearchResult = false,
   crateToFileMetadata,
 }) => {
+  const [showAllTags, setShowAllTags] = useState(false);
+
+  const renderTags = (tags: string[], maxVisible: number = 3) => {
+    if (!tags || tags.length === 0) return null;
+
+    const visibleTags = showAllTags ? tags : tags.slice(0, maxVisible);
+    const hiddenCount = tags.length - maxVisible;
+
+    return (
+      <div className="flex flex-wrap gap-1">
+        {visibleTags.map((tag: string, index: number) => (
+          <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
+        ))}
+        {!showAllTags && hiddenCount > 0 && (
+          <button
+            onClick={() => setShowAllTags(true)}
+            className="inline-flex items-center px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full transition-colors"
+          >
+            <FaPlus className="mr-1" size={8} />
+            {hiddenCount} more
+          </button>
+        )}
+        {showAllTags && tags.length > maxVisible && (
+          <button
+            onClick={() => setShowAllTags(false)}
+            className="inline-flex items-center px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full transition-colors"
+          >
+            Show less
+          </button>
+        )}
+      </div>
+    );
+  };
   // For search results, we use a more compact layout
   if (isSearchResult) {
     return (
-      <Card key={file.id} hoverable className="transition-all overflow-hidden">
+      <Card
+        key={file.id}
+        hoverable
+        className="transition-all duration-200 hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5 border border-gray-200 hover:border-gray-300 overflow-hidden"
+      >
         <div className="p-3">
           <div className="flex items-start space-x-3">
             <div className="mt-0.5">
@@ -80,12 +129,10 @@ const CrateCard: React.FC<CrateCardProps> = ({
                 </div>
               </div>
 
-              {/* Tags - if available - enhanced styling */}
+              {/* Tags - if available - enhanced styling with expandable */}
               {file.tags && file.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1 border-t border-gray-100 pt-1">
-                  {file.tags.map((tag: string, index: number) => (
-                    <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
-                  ))}
+                <div className="mt-2 border-t border-gray-100 pt-1">
+                  {renderTags(file.tags, 2)}
                 </div>
               )}
 
@@ -126,7 +173,11 @@ const CrateCard: React.FC<CrateCardProps> = ({
 
   // For regular display, we use a more detailed layout
   return (
-    <Card key={file.id} hoverable className="transition-all overflow-hidden">
+    <Card
+      key={file.id}
+      hoverable
+      className="transition-all duration-200 hover:shadow-xl hover:shadow-gray-200/60 hover:-translate-y-1 border border-gray-200 hover:border-gray-300 overflow-hidden"
+    >
       <div className="p-4">
         {/* File Header with Icon and Title */}
         <div className="flex items-start mb-3">
@@ -170,29 +221,102 @@ const CrateCard: React.FC<CrateCardProps> = ({
 
         {/* File Details Grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          {/* Category */}
+          {/* Category with icon */}
           <div className="text-xs">
             <span className="text-gray-500 mr-1">Category:</span>
-            <span className="font-medium text-gray-700">
-              {file.category
-                ? file.category.charAt(0).toUpperCase() +
-                  file.category.slice(1).toLowerCase()
-                : "Unknown"}
+            <span className="inline-flex items-center font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded-full">
+              {(() => {
+                const category = file.category;
+                switch (category) {
+                  case CrateCategory.FEEDBACK:
+                    return (
+                      <>
+                        <FaComments
+                          className="mr-1 text-purple-600"
+                          size={10}
+                        />{" "}
+                        Feedback
+                      </>
+                    );
+                  case CrateCategory.MARKDOWN:
+                    return (
+                      <>
+                        <FaFileAlt className="mr-1 text-purple-500" size={10} />{" "}
+                        Markdown
+                      </>
+                    );
+                  case CrateCategory.CODE:
+                    return (
+                      <>
+                        <FaFileCode
+                          className="mr-1 text-yellow-600"
+                          size={10}
+                        />{" "}
+                        Code
+                      </>
+                    );
+                  case CrateCategory.JSON:
+                    return (
+                      <>
+                        <FaFileCode className="mr-1 text-green-500" size={10} />{" "}
+                        JSON
+                      </>
+                    );
+                  case CrateCategory.YAML:
+                    return (
+                      <>
+                        <FaFileCode className="mr-1 text-blue-500" size={10} />{" "}
+                        YAML
+                      </>
+                    );
+                  case CrateCategory.IMAGE:
+                    return (
+                      <>
+                        <FaFileImage className="mr-1 text-blue-500" size={10} />{" "}
+                        Image
+                      </>
+                    );
+                  case CrateCategory.TEXT:
+                    return (
+                      <>
+                        <FaFileAlt className="mr-1 text-gray-600" size={10} />{" "}
+                        Text
+                      </>
+                    );
+                  case CrateCategory.BINARY:
+                    return (
+                      <>
+                        <FaFileAlt className="mr-1 text-gray-500" size={10} />{" "}
+                        Binary
+                      </>
+                    );
+                  default:
+                    return (
+                      <>
+                        <FaFileAlt className="mr-1 text-gray-500" size={10} />{" "}
+                        {category
+                          ? String(category).charAt(0).toUpperCase() +
+                            String(category).slice(1).toLowerCase()
+                          : "Unknown"}
+                      </>
+                    );
+                }
+              })()}
             </span>
           </div>
 
-          {/* Size */}
-          <div className="text-xs">
+          {/* Size with better styling */}
+          <div className="text-xs flex items-center">
             <span className="text-gray-500 mr-1">Size:</span>
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
               {formatFileSize(file.size)}
             </span>
           </div>
 
-          {/* Created Date - with better formatting */}
-          <div className="text-xs">
+          {/* Created Date - with better formatting and icon */}
+          <div className="text-xs flex items-center">
             <span className="text-gray-500 mr-1">Created:</span>
-            <span className="font-medium text-gray-700">
+            <span className="font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded">
               {file.createdAt
                 ? new Date(file.createdAt).toLocaleDateString(undefined, {
                     year: "numeric",
@@ -223,15 +347,11 @@ const CrateCard: React.FC<CrateCardProps> = ({
           </div>
         </div>
 
-        {/* Tags - if available - enhanced styling */}
+        {/* Tags - if available - enhanced styling with expandable */}
         {file.tags && file.tags.length > 0 && (
           <div className="mb-3 bg-gray-50 p-2 rounded border border-gray-100">
-            <div className="text-xs text-gray-600 mb-1 font-medium">Tags:</div>
-            <div className="flex flex-wrap gap-1.5">
-              {file.tags.map((tag: string, index: number) => (
-                <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
-              ))}
-            </div>
+            <div className="text-xs text-gray-600 mb-2 font-medium">Tags:</div>
+            {renderTags(file.tags, 3)}
           </div>
         )}
 
@@ -291,15 +411,35 @@ const CrateCard: React.FC<CrateCardProps> = ({
           )}
         </div>
 
-        {/* Custom Metadata - if available */}
+        {/* Custom Metadata - if available with improved styling */}
         {file.metadata && Object.keys(file.metadata).length > 0 && (
-          <div className="text-xs text-gray-600 mb-3">
-            <span className="font-medium block mb-1">Metadata:</span>
-            <div className="grid grid-cols-1 gap-1 ml-2">
+          <div className="mb-3 bg-blue-50 p-3 rounded border border-blue-100">
+            <div className="text-xs text-blue-700 mb-2 font-semibold flex items-center">
+              <svg
+                className="w-3 h-3 mr-1"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+              Metadata
+            </div>
+            <div className="grid grid-cols-1 gap-2">
               {Object.entries(file.metadata).map(([key, value]) => (
-                <div key={key} className="flex">
-                  <span className="font-medium mr-1">{key}:</span>
-                  <span className="truncate">{String(value)}</span>
+                <div
+                  key={key}
+                  className="flex items-start bg-white p-2 rounded border border-blue-200"
+                >
+                  <span className="font-semibold text-blue-800 mr-2 text-xs min-w-0 flex-shrink-0">
+                    {key}:
+                  </span>
+                  <span className="text-blue-700 text-xs truncate">
+                    {String(value)}
+                  </span>
                 </div>
               ))}
             </div>

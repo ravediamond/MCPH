@@ -3,6 +3,7 @@ export enum CrateCategory {
   CODE = "code",
   IMAGE = "image",
   JSON = "json",
+  YAML = "yaml",
   TEXT = "text",
   BINARY = "binary",
   FEEDBACK = "feedback",
