@@ -1,13 +1,113 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Home, Menu, X } from "lucide-react";
 
 export default function DocsPage() {
+  const [activeSection, setActiveSection] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Navigation items
+  const navItems = [
+    { id: 'what-is-mcph', title: 'What is MCPH?' },
+    { id: 'ai-assistants', title: 'Using with AI Assistants' },
+    { id: 'core-features', title: 'Core Platform Features' },
+    { id: 'features', title: 'Features' },
+    { id: 'users', title: 'Anonymous vs. Logged-in' },
+    { id: 'gallery', title: 'Gallery & Social Sharing' },
+    { id: 'getting-started', title: 'Getting Started' },
+    { id: 'mcp-tools', title: 'Available MCP Tools' },
+    { id: 'mcp-endpoint', title: 'How MCP Endpoint Works' },
+    { id: 'learn-more', title: 'Learn More' },
+  ];
+
+  // Smooth scroll to section
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setIsSidebarOpen(false); // Close mobile sidebar
+    }
+  };
+
+  // Track active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = navItems.map(item => document.getElementById(item.id));
+      const scrollPosition = window.scrollY + 100;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (section && section.offsetTop <= scrollPosition) {
+          setActiveSection(navItems[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Set initial active section
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [navItems]);
   return (
-    <div className="bg-gray-50 min-h-screen py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-gray-50 min-h-screen" style={{ scrollBehavior: 'smooth' }}>
+      {/* Mobile Sidebar Backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed top-0 left-0 h-full w-72 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}>
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Documentation</h2>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+        
+        <nav className="p-6 overflow-y-auto h-full pb-20">
+          <ul className="space-y-3">
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => scrollToSection(item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
+                    activeSection === item.id
+                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="lg:ml-72">
+        <div className="py-8 px-4 lg:px-8">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden fixed top-4 left-4 z-30 p-2 bg-white rounded-md shadow-md border border-gray-200 hover:bg-gray-50"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="max-w-4xl mx-auto">
         {/* Breadcrumb navigation */}
         <nav className="mb-8">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -25,31 +125,31 @@ export default function DocsPage() {
           </div>
         </nav>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">
-              MCPH Documentation
-            </h1>
-            <p className="text-lg text-gray-600">
-              Learn how to use MCPH to share AI-generated content with anyone,
-              anywhere.
-            </p>
-          </div>
-        </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                  MCPH Documentation
+                </h1>
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  Learn how to use MCPH to share AI-generated content with anyone,
+                  anywhere.
+                </p>
+              </div>
+            </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
-            What is MCPH?
-          </h2>
-          <p className="text-gray-600 mb-3">
-            <b>MCPH</b> is an AI artifact storage and sharing system that lets
-            you package your AI-generated content in crates. It provides
-            permanent storage for your artifacts and auto-expiry for guest
-            uploads. It works with ChatGPT, Claude, and other AI tools that
-            support the Model Context Protocol (MCP).
-          </p>
-          <p className="text-gray-600 mb-3">With MCPH, you can:</p>
-          <ul className="list-disc pl-5 text-gray-600 space-y-2 mb-3">
+            <div id="what-is-mcph" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                What is MCPH?
+              </h2>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                <b>MCPH</b> is an AI artifact storage and sharing system that lets
+                you package your AI-generated content in crates. It provides
+                permanent storage for your artifacts and auto-expiry for guest
+                uploads. It works with ChatGPT, Claude, and other AI tools that
+                support the Model Context Protocol (MCP).
+              </p>
+              <p className="text-lg text-gray-700 mb-4 leading-relaxed">With MCPH, you can:</p>
+              <ul className="list-disc pl-6 text-gray-700 space-y-3 mb-6 leading-relaxed">
             <li>
               <b>Share AI outputs</b> with anyone via a simple link - no login
               required to view
@@ -71,9 +171,7 @@ export default function DocsPage() {
           {/* Why crate? call-out box */}
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6 shadow-sm">
             <h3 className="text-lg font-bold text-amber-800 mb-3 flex items-center">
-              <span className="bg-amber-100 p-2 rounded-lg mr-3">
-                📦
-              </span>
+              <span className="bg-amber-100 p-2 rounded-lg mr-3">📦</span>
               Why "crate"?
             </h3>
             <p className="text-gray-700 mb-2">
@@ -119,23 +217,21 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
-            Using MCPH with AI Assistants
-          </h2>
-          <p className="text-gray-600 mb-3">
-            MCPH tools integrate with AI assistants like Claude and ChatGPT to
-            provide seamless file management through natural conversation. You
-            can manage your files without learning commands or APIs—just speak
-            naturally about what you want to do.
-          </p>
+            <div id="ai-assistants" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                Using MCPH with AI Assistants
+              </h2>
+              <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                MCPH tools integrate with AI assistants like Claude and ChatGPT to
+                provide seamless file management through natural conversation. You
+                can manage your files without learning commands or APIs—just speak
+                naturally about what you want to do.
+              </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                <span className="bg-blue-100 p-2 rounded-lg mr-3">
-                  💬
-                </span>
+                <span className="bg-blue-100 p-2 rounded-lg mr-3">💬</span>
                 Natural Language Commands
               </h3>
               <div className="space-y-3">
@@ -175,9 +271,7 @@ export default function DocsPage() {
 
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-4 flex items-center">
-                <span className="bg-green-100 p-2 rounded-lg mr-3">
-                  🧠
-                </span>
+                <span className="bg-green-100 p-2 rounded-lg mr-3">🧠</span>
                 Contextual Understanding
               </h3>
               <p className="text-gray-600 mb-2">
@@ -212,9 +306,7 @@ export default function DocsPage() {
 
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 mb-6 shadow-sm">
             <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
-              <span className="bg-purple-100 p-2 rounded-lg mr-3">
-                ⭐
-              </span>
+              <span className="bg-purple-100 p-2 rounded-lg mr-3">⭐</span>
               Key Benefits
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -250,10 +342,10 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 border-b border-gray-100 pb-4">
-            Core Platform Features
-          </h2>
+            <div id="core-features" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-8 border-b border-gray-100 pb-4 leading-tight">
+                Core Platform Features
+              </h2>
 
           {/* Context Engineering Hub */}
           <div className="mb-6 border-b border-gray-100 pb-6">
@@ -601,37 +693,59 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">Features</h2>
+            <div id="features" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">Features</h2>
           <ul className="list-disc pl-5 text-gray-600 space-y-4">
             <li>
-              <span className="font-medium">Content Type Support</span>
+              <span className="font-medium">AI Workflow Ecosystem</span>
               <p className="text-sm text-gray-600 mt-1">
-                Store and share multiple content types in a standardized format:
+                MCPH organizes content into 9 strategic categories that create a
+                complete AI workflow ecosystem:
               </p>
-              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1">
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-1 space-y-2">
                 <li>
-                  <b>Markdown</b> - documentation, notes, and formatted text
+                  <b>🖼️ Image</b> - Visual content: photos, diagrams,
+                  screenshots, artwork
                 </li>
                 <li>
-                  <b>Code</b> - source code with syntax highlighting
+                  <b>📊 Data</b> - Actual data files: CSVs, PDFs, Excel files,
+                  databases, datasets
                 </li>
                 <li>
-                  <b>JSON</b> - structured data for easy parsing
+                  <b>🔗 Data Source</b> - Information access points: API docs,
+                  database guides, data feed info
                 </li>
                 <li>
-                  <b>YAML</b> - configuration files and structured data
+                  <b>📈 Visualization</b> - Charts & graphs: plots, dashboards,
+                  visual data representations
                 </li>
                 <li>
-                  <b>Text</b> - plain text files (.txt)
+                  <b>📝 Recipe</b> - AI agent instructions: workflows, prompt
+                  templates, automation guides
                 </li>
                 <li>
-                  <b>Images</b> - diagrams, screenshots, and visual content
+                  <b>📚 Knowledge</b> - Documentation & guides: tutorials,
+                  references, educational content
                 </li>
                 <li>
-                  <b>Binary files</b> - PDFs, spreadsheets, and other documents
+                  <b>🛠️ Tools</b> - Available resources: MCP servers, APIs,
+                  services, software tools
+                </li>
+                <li>
+                  <b>💻 Code</b> - Code snippets & examples: scripts, functions,
+                  programming content
+                </li>
+                <li>
+                  <b>❓ Others</b> - Everything else: any content that doesn't
+                  fit the above categories
                 </li>
               </ul>
+              <p className="text-sm text-blue-600 mt-2 italic">
+                This ecosystem enables users to find: <b>what to do</b>{" "}
+                (Recipes), <b>how to do it</b> (Code, Knowledge),
+                <b>what tools to use</b> (Tools), <b>where to get data</b> (Data
+                Source), and <b>actual data</b> (Data).
+              </p>
             </li>
 
             <li>
@@ -686,9 +800,9 @@ export default function DocsPage() {
           </ul>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Anonymous vs. Logged-in Users
+            <div id="users" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                Anonymous vs. Logged-in Users
           </h2>
           <p className="text-gray-600 mb-3">
             MCPH offers different capabilities depending on whether you are
@@ -738,9 +852,9 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Gallery & Social Sharing
+            <div id="gallery" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                Gallery & Social Sharing
           </h2>
 
           {/* Public Gallery */}
@@ -971,9 +1085,9 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Getting Started
+            <div id="getting-started" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                Getting Started
           </h2>
 
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
@@ -1181,9 +1295,9 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            Available MCP Tools
+            <div id="mcp-tools" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                Available MCP Tools
           </h2>
           <p className="text-gray-600 mb-4">
             MCPH provides a comprehensive set of powerful tools that enable you
@@ -1422,6 +1536,49 @@ export default function DocsPage() {
                   </ul>
                 </div>
               </div>
+
+              <div className="border-l-4 border-purple-500 pl-3 mt-3">
+                <h4 className="font-medium text-gray-700">crates_gallery</h4>
+                <p className="text-sm text-gray-600">
+                  Browse discoverable public crates from the community
+                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-500">
+                    <strong>Features:</strong>
+                  </p>
+                  <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
+                    <li>
+                      Paginated browsing of public discoverable crates
+                    </li>
+                    <li>
+                      Category filtering across the ecosystem (image, data, visualization, recipe, knowledge, tools, code, etc.)
+                    </li>
+                    <li>
+                      Pagination support with configurable limits (1-50 results)
+                    </li>
+                    <li>Essential metadata display (title, description, category, tags, download count)</li>
+                  </ul>
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  <strong>AI Usage:</strong> "Show me public crates", "Browse visualization examples", "Find recipe templates from the community"
+                </p>
+                <div className="bg-white p-2 rounded border border-gray-200 mt-2">
+                  <p className="text-xs font-semibold text-gray-700">
+                    Discovery Tips:
+                  </p>
+                  <ul className="text-xs text-gray-600 mt-1 space-y-1">
+                    <li>
+                      • Filter by category to find specific types of content
+                    </li>
+                    <li>
+                      • Use pagination to explore all available public crates
+                    </li>
+                    <li>
+                      • Check download counts to find popular community content
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Feedback Collection System Section */}
@@ -1541,9 +1698,9 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
-            How the MCP Endpoint Works
+            <div id="mcp-endpoint" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
+                How the MCP Endpoint Works
           </h2>
           <p className="text-gray-600 mb-3">
             The <b>MCP endpoint</b> (<code>/mcp</code>) is the only supported
@@ -1606,8 +1763,8 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">Learn More</h2>
+            <div id="learn-more" className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">Learn More</h2>
           <ul className="list-disc pl-5 text-gray-600 space-y-1">
             <li>
               <a
@@ -1633,7 +1790,9 @@ export default function DocsPage() {
                 mcph.io
               </a>
             </li>
-          </ul>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>

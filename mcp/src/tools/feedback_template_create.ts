@@ -169,7 +169,7 @@ export function registerFeedbackTemplateCreateTool(server: McpServer): void {
           ownerId: uid,
           createdAt: now,
           mimeType: "application/json",
-          category: CrateCategory.FEEDBACK,
+          category: CrateCategory.RECIPE,
           gcsPath: `feedback/${templateId}`, // Virtual path for feedback templates
           shared: {
             public: Boolean(isPublic),

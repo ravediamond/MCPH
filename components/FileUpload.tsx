@@ -40,15 +40,27 @@ const TEXT_FILE_EXTENSIONS = [
   ".text",
 ];
 
-// Available crate categories that users can select (simplified for v1)
+// Available crate categories that users can select
 const CRATE_CATEGORIES = [
-  { value: CrateCategory.BINARY, label: "Generic File" },
-  { value: CrateCategory.IMAGE, label: "Image" },
-  { value: CrateCategory.MARKDOWN, label: "Markdown" },
-  { value: CrateCategory.CODE, label: "Code" },
-  { value: CrateCategory.JSON, label: "JSON" },
-  { value: CrateCategory.YAML, label: "YAML" },
-  { value: CrateCategory.TEXT, label: "Text" },
+  { value: CrateCategory.IMAGE, label: "Image - Visual content" },
+  { value: CrateCategory.DATA, label: "Data - CSVs, PDFs, datasets" },
+  {
+    value: CrateCategory.DATA_SOURCE,
+    label: "Data Source - APIs, databases, feeds",
+  },
+  {
+    value: CrateCategory.VISUALIZATION,
+    label: "Visualization - Charts, graphs",
+  },
+  { value: CrateCategory.RECIPE, label: "Recipe - AI agent instructions" },
+  {
+    value: CrateCategory.KNOWLEDGE,
+    label: "Knowledge - Documentation, guides",
+  },
+  { value: CrateCategory.TOOLS, label: "Tools - MCP servers, APIs, services" },
+  { value: CrateCategory.CODE, label: "Code - Code snippets/examples" },
+  { value: CrateCategory.OTHERS, label: "Others - Everything else" },
+  { value: CrateCategory.KNOWLEDGE, label: "Text" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -58,14 +70,14 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/gif": CrateCategory.IMAGE,
   "image/webp": CrateCategory.IMAGE,
   "image/svg+xml": CrateCategory.IMAGE,
-  "text/markdown": CrateCategory.MARKDOWN,
-  "text/x-markdown": CrateCategory.MARKDOWN,
-  "application/json": CrateCategory.JSON,
-  "application/yaml": CrateCategory.YAML,
-  "text/yaml": CrateCategory.YAML,
-  "text/x-yaml": CrateCategory.YAML,
-  "application/x-yaml": CrateCategory.YAML,
-  "text/plain": CrateCategory.TEXT,
+  "text/markdown": CrateCategory.KNOWLEDGE,
+  "text/x-markdown": CrateCategory.KNOWLEDGE,
+  "application/json": CrateCategory.DATA,
+  "application/yaml": CrateCategory.DATA,
+  "text/yaml": CrateCategory.DATA,
+  "text/x-yaml": CrateCategory.DATA,
+  "application/x-yaml": CrateCategory.DATA,
+  "text/plain": CrateCategory.KNOWLEDGE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
@@ -80,16 +92,16 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".gif": CrateCategory.IMAGE,
   ".webp": CrateCategory.IMAGE,
   ".svg": CrateCategory.IMAGE,
-  ".md": CrateCategory.MARKDOWN,
-  ".markdown": CrateCategory.MARKDOWN,
-  ".json": CrateCategory.JSON,
-  ".yaml": CrateCategory.YAML,
-  ".yml": CrateCategory.YAML,
+  ".md": CrateCategory.KNOWLEDGE,
+  ".markdown": CrateCategory.KNOWLEDGE,
+  ".json": CrateCategory.DATA,
+  ".yaml": CrateCategory.DATA,
+  ".yml": CrateCategory.DATA,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
-  ".txt": CrateCategory.TEXT,
+  ".txt": CrateCategory.KNOWLEDGE,
 };
 
 // Type definition update to include new Crate fields
@@ -131,7 +143,7 @@ export default function FileUpload({
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [tagsInput, setTagsInput] = useState<string>("");
-  const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.BINARY); // Default crate type
+  const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.OTHERS); // Default crate type
   const [isShared, setIsShared] = useState<boolean>(false); // Default to private
   const [isDiscoverable, setIsDiscoverable] = useState<boolean>(false); // Default to not discoverable
 
@@ -187,7 +199,7 @@ export default function FileUpload({
       setTitle(fileNameWithoutExtension);
 
       // Automatically detect crate type based on content type or extension
-      let detectedCategory: CrateCategory = CrateCategory.BINARY; // Default type
+      let detectedCategory: CrateCategory = CrateCategory.OTHERS; // Default type
 
       // First check MIME type
       if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {

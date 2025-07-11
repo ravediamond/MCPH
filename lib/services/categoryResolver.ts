@@ -14,35 +14,37 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/gif": CrateCategory.IMAGE,
   "image/webp": CrateCategory.IMAGE,
   "image/svg+xml": CrateCategory.IMAGE,
+  "image/bmp": CrateCategory.IMAGE,
+  "image/tiff": CrateCategory.IMAGE,
 
-  // Markdown
-  "text/markdown": CrateCategory.MARKDOWN,
-  "text/x-markdown": CrateCategory.MARKDOWN,
+  // Data files
+  "text/csv": CrateCategory.DATA,
+  "application/pdf": CrateCategory.DATA,
+  "application/vnd.ms-excel": CrateCategory.DATA,
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+    CrateCategory.DATA,
+  "application/json": CrateCategory.DATA,
+  "text/x-json": CrateCategory.DATA,
+  "application/x-json": CrateCategory.DATA,
+  "application/yaml": CrateCategory.DATA,
+  "text/yaml": CrateCategory.DATA,
+  "text/x-yaml": CrateCategory.DATA,
+  "application/x-yaml": CrateCategory.DATA,
+  "application/xml": CrateCategory.DATA,
+  "text/xml": CrateCategory.DATA,
 
-  // JSON
-  "application/json": CrateCategory.JSON,
-  "text/x-json": CrateCategory.JSON,
-  "application/x-json": CrateCategory.JSON,
-
-  // YAML
-  "application/yaml": CrateCategory.YAML,
-  "text/yaml": CrateCategory.YAML,
-  "text/x-yaml": CrateCategory.YAML,
-  "application/x-yaml": CrateCategory.YAML,
+  // Knowledge/Documentation
+  "text/markdown": CrateCategory.KNOWLEDGE,
+  "text/x-markdown": CrateCategory.KNOWLEDGE,
+  "text/plain": CrateCategory.KNOWLEDGE,
 
   // Code
-  "text/csv": CrateCategory.CODE,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
   "text/css": CrateCategory.CODE,
   "text/typescript": CrateCategory.CODE,
   "application/typescript": CrateCategory.CODE,
-  "application/xml": CrateCategory.CODE,
-  "text/xml": CrateCategory.CODE,
-
-  // Text
-  "text/plain": CrateCategory.TEXT,
 };
 
 /**
@@ -56,33 +58,58 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".gif": CrateCategory.IMAGE,
   ".webp": CrateCategory.IMAGE,
   ".svg": CrateCategory.IMAGE,
+  ".bmp": CrateCategory.IMAGE,
+  ".tiff": CrateCategory.IMAGE,
+  ".ico": CrateCategory.IMAGE,
 
-  // Markdown
-  ".md": CrateCategory.MARKDOWN,
-  ".markdown": CrateCategory.MARKDOWN,
+  // Data files
+  ".csv": CrateCategory.DATA,
+  ".pdf": CrateCategory.DATA,
+  ".xls": CrateCategory.DATA,
+  ".xlsx": CrateCategory.DATA,
+  ".json": CrateCategory.DATA,
+  ".yaml": CrateCategory.DATA,
+  ".yml": CrateCategory.DATA,
+  ".xml": CrateCategory.DATA,
+  ".parquet": CrateCategory.DATA,
+  ".db": CrateCategory.DATA,
+  ".sqlite": CrateCategory.DATA,
 
-  // JSON
-  ".json": CrateCategory.JSON,
-
-  // YAML
-  ".yaml": CrateCategory.YAML,
-  ".yml": CrateCategory.YAML,
+  // Knowledge/Documentation
+  ".md": CrateCategory.KNOWLEDGE,
+  ".markdown": CrateCategory.KNOWLEDGE,
+  ".txt": CrateCategory.KNOWLEDGE,
+  ".doc": CrateCategory.KNOWLEDGE,
+  ".docx": CrateCategory.KNOWLEDGE,
+  ".rtf": CrateCategory.KNOWLEDGE,
 
   // Code
-  ".csv": CrateCategory.CODE,
   ".js": CrateCategory.CODE,
   ".ts": CrateCategory.CODE,
+  ".tsx": CrateCategory.CODE,
+  ".jsx": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
   ".py": CrateCategory.CODE,
   ".java": CrateCategory.CODE,
-  ".xml": CrateCategory.CODE,
+  ".cpp": CrateCategory.CODE,
+  ".c": CrateCategory.CODE,
+  ".go": CrateCategory.CODE,
+  ".rs": CrateCategory.CODE,
+  ".php": CrateCategory.CODE,
+  ".rb": CrateCategory.CODE,
+  ".swift": CrateCategory.CODE,
+  ".kt": CrateCategory.CODE,
+  ".scala": CrateCategory.CODE,
+  ".sh": CrateCategory.CODE,
+  ".bat": CrateCategory.CODE,
+  ".sql": CrateCategory.CODE,
   ".log": CrateCategory.CODE,
 
-  // Text
-  ".txt": CrateCategory.TEXT,
-  ".tsx": CrateCategory.CODE,
-  ".jsx": CrateCategory.CODE,
+  // Visualization
+  ".chart": CrateCategory.VISUALIZATION,
+  ".graph": CrateCategory.VISUALIZATION,
+  ".plot": CrateCategory.VISUALIZATION,
 };
 
 /**
@@ -106,8 +133,8 @@ export function resolveCategory(
     return EXTENSION_TO_CATEGORY[extension];
   }
 
-  // Default to binary if we can't determine the category
-  return CrateCategory.BINARY;
+  // Default to others if we can't determine the category
+  return CrateCategory.OTHERS;
 }
 
 /**

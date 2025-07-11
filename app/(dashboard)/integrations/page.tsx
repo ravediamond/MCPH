@@ -45,7 +45,8 @@ export default function IntegrationsPage() {
               AI Platform Integrations
             </h1>
             <p className="text-lg text-gray-600">
-              Connect MCPH with your favorite AI tools for seamless artifact management
+              Connect MCPH with your favorite AI tools for seamless artifact
+              management
             </p>
           </div>
         </div>
@@ -98,8 +99,8 @@ export default function IntegrationsPage() {
             <div className="p-8">
               <div className="mb-8">
                 <p className="text-gray-700 mb-6 text-lg leading-relaxed">
-                  Connect MCPH to Claude Code to enhance your AI coding assistant
-                  with access to your stored artifacts and crates.
+                  Connect MCPH to Claude Code to enhance your AI coding
+                  assistant with access to your stored artifacts and crates.
                 </p>
 
                 <div className="space-y-5 mb-8">
@@ -108,10 +109,15 @@ export default function IntegrationsPage() {
                       1
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Create Configuration File</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Create Configuration File
+                      </h4>
                       <span className="text-gray-700">
-                        Create a <code className="bg-gray-200 px-2 py-1 rounded text-sm">claude-code.toml</code> configuration file in
-                        your project
+                        Create a{" "}
+                        <code className="bg-gray-200 px-2 py-1 rounded text-sm">
+                          claude-code.toml
+                        </code>{" "}
+                        configuration file in your project
                       </span>
                     </div>
                   </div>
@@ -120,7 +126,9 @@ export default function IntegrationsPage() {
                       2
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Configure MCP Server</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Configure MCP Server
+                      </h4>
                       <span className="text-gray-700">
                         Configure MCPH as an MCP server with your API key
                       </span>
@@ -131,7 +139,9 @@ export default function IntegrationsPage() {
                       3
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Access Contexts</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Access Contexts
+                      </h4>
                       <span className="text-gray-700">
                         Access your MCPH contexts directly in Claude Code
                       </span>
@@ -152,7 +162,8 @@ export default function IntegrationsPage() {
                       <br />
                       url = "https://api.mcph.io/mcp"
                       <br />
-                      headers = {"{"} "Authorization" = "Bearer YOUR_API_KEY" {"}"}
+                      headers = {"{"} "Authorization" = "Bearer YOUR_API_KEY"{" "}
+                      {"}"}
                     </code>
                   </div>
                 </div>
@@ -227,7 +238,9 @@ export default function IntegrationsPage() {
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white">Claude AI Integration</h2>
+                  <h2 className="text-2xl font-bold text-white">
+                    Claude AI Integration
+                  </h2>
                   <p className="text-purple-100 mt-1">
                     Advanced AI assistant with custom integrations
                   </p>
@@ -247,9 +260,12 @@ export default function IntegrationsPage() {
                       1
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Open Integrations</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Open Integrations
+                      </h4>
                       <span className="text-gray-700">
-                        In Claude AI, click "Integrations" in the bottom left corner
+                        In Claude AI, click "Integrations" in the bottom left
+                        corner
                       </span>
                     </div>
                   </div>
@@ -258,10 +274,14 @@ export default function IntegrationsPage() {
                       2
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Add Custom Integration</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Add Custom Integration
+                      </h4>
                       <span className="text-gray-700">
                         Click "Add custom integration" and enter:{" "}
-                        <code className="bg-gray-200 px-2 py-1 rounded text-sm">https://api.mcph.io/mcp</code>
+                        <code className="bg-gray-200 px-2 py-1 rounded text-sm">
+                          https://api.mcph.io/mcp
+                        </code>
                       </span>
                     </div>
                   </div>
@@ -270,7 +290,9 @@ export default function IntegrationsPage() {
                       3
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">Choose Authentication</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1">
+                        Choose Authentication
+                      </h4>
                       <span className="text-gray-700">
                         Choose authentication: OAuth (recommended) or API key
                       </span>
@@ -280,17 +302,17 @@ export default function IntegrationsPage() {
 
                 <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-6 mb-8 shadow-sm">
                   <h4 className="font-bold text-blue-800 mb-3 flex items-center">
-                    <span className="bg-blue-100 p-2 rounded-lg mr-3">
-                      🔑
-                    </span>
+                    <span className="bg-blue-100 p-2 rounded-lg mr-3">🔑</span>
                     Authentication Options:
                   </h4>
                   <div className="space-y-3 text-blue-700">
                     <div>
-                      <strong>OAuth:</strong> Sign in with your MCPH account for automatic authentication
+                      <strong>OAuth:</strong> Sign in with your MCPH account for
+                      automatic authentication
                     </div>
                     <div>
-                      <strong>API Key:</strong> Use your API key from the "My API keys" section
+                      <strong>API Key:</strong> Use your API key from the "My
+                      API keys" section
                     </div>
                   </div>
                 </div>
@@ -319,7 +341,8 @@ export default function IntegrationsPage() {
                 Custom Integrations Guide
               </a>
               <p className="text-sm text-gray-600 mt-4 text-center bg-gray-50 p-3 rounded-lg">
-                Custom integrations are available to all Claude Pro and Team users
+                Custom integrations are available to all Claude Pro and Team
+                users
               </p>
             </div>
           </Card>

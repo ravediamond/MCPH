@@ -139,12 +139,12 @@ export const useUploadService = () => {
       fileName.endsWith(".md") ||
       fileName.endsWith(".markdown")
     ) {
-      return CrateCategory.MARKDOWN;
+      return CrateCategory.KNOWLEDGE;
     }
 
     // JSON detection
     if (mimeType === "application/json" || fileName.endsWith(".json")) {
-      return CrateCategory.JSON;
+      return CrateCategory.DATA;
     }
 
     // YAML detection
@@ -156,12 +156,12 @@ export const useUploadService = () => {
       fileName.endsWith(".yaml") ||
       fileName.endsWith(".yml")
     ) {
-      return CrateCategory.YAML;
+      return CrateCategory.DATA;
     }
 
     // Text detection
     if (mimeType === "text/plain" || fileName.endsWith(".txt")) {
-      return CrateCategory.TEXT;
+      return CrateCategory.KNOWLEDGE;
     }
 
     // Code detection (simplistic)
@@ -182,7 +182,7 @@ export const useUploadService = () => {
     }
 
     // Default to binary for unknown types
-    return CrateCategory.BINARY;
+    return CrateCategory.OTHERS;
   };
 
   return { uploadCrate, detectCrateCategory };

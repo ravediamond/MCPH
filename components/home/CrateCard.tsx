@@ -12,6 +12,11 @@ import {
   FaFilePdf,
   FaProjectDiagram,
   FaPlus,
+  FaDatabase,
+  FaFolderOpen,
+  FaBook,
+  FaTools,
+  FaQuestionCircle,
 } from "react-icons/fa";
 import Card from "../ui/Card";
 import CrateTag from "./CrateTag";
@@ -110,12 +115,12 @@ const CrateCard: React.FC<CrateCardProps> = ({
 
               <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
                 <div className="truncate mr-2">
-                  {file.category === "feedback"
+                  {file.category === "recipe"
                     ? "Feedback Template"
                     : formatFileSize(file.size)}
                 </div>
                 <div className="flex items-center whitespace-nowrap">
-                  {file.category === "feedback" ? (
+                  {file.category === "recipe" ? (
                     <>
                       <FaChartBar className="mr-1" size={10} />
                       {file.metadata?.submissionCount || 0} responses
@@ -228,21 +233,59 @@ const CrateCard: React.FC<CrateCardProps> = ({
               {(() => {
                 const category = file.category;
                 switch (category) {
-                  case CrateCategory.FEEDBACK:
+                  case CrateCategory.IMAGE:
                     return (
                       <>
-                        <FaComments
+                        <FaFileImage className="mr-1 text-blue-500" size={10} />{" "}
+                        Image
+                      </>
+                    );
+                  case CrateCategory.DATA:
+                    return (
+                      <>
+                        <FaDatabase className="mr-1 text-green-600" size={10} />{" "}
+                        Data
+                      </>
+                    );
+                  case CrateCategory.DATA_SOURCE:
+                    return (
+                      <>
+                        <FaFolderOpen
+                          className="mr-1 text-teal-600"
+                          size={10}
+                        />{" "}
+                        Data Source
+                      </>
+                    );
+                  case CrateCategory.VISUALIZATION:
+                    return (
+                      <>
+                        <FaChartBar
                           className="mr-1 text-purple-600"
                           size={10}
                         />{" "}
-                        Feedback
+                        Visualization
                       </>
                     );
-                  case CrateCategory.MARKDOWN:
+                  case CrateCategory.RECIPE:
                     return (
                       <>
-                        <FaFileAlt className="mr-1 text-purple-500" size={10} />{" "}
-                        Markdown
+                        <FaFileAlt className="mr-1 text-orange-600" size={10} />{" "}
+                        Recipe
+                      </>
+                    );
+                  case CrateCategory.KNOWLEDGE:
+                    return (
+                      <>
+                        <FaBook className="mr-1 text-indigo-600" size={10} />{" "}
+                        Knowledge
+                      </>
+                    );
+                  case CrateCategory.TOOLS:
+                    return (
+                      <>
+                        <FaTools className="mr-1 text-gray-700" size={10} />{" "}
+                        Tools
                       </>
                     );
                   case CrateCategory.CODE:
@@ -255,39 +298,14 @@ const CrateCard: React.FC<CrateCardProps> = ({
                         Code
                       </>
                     );
-                  case CrateCategory.JSON:
+                  case CrateCategory.OTHERS:
                     return (
                       <>
-                        <FaFileCode className="mr-1 text-green-500" size={10} />{" "}
-                        JSON
-                      </>
-                    );
-                  case CrateCategory.YAML:
-                    return (
-                      <>
-                        <FaFileCode className="mr-1 text-blue-500" size={10} />{" "}
-                        YAML
-                      </>
-                    );
-                  case CrateCategory.IMAGE:
-                    return (
-                      <>
-                        <FaFileImage className="mr-1 text-blue-500" size={10} />{" "}
-                        Image
-                      </>
-                    );
-                  case CrateCategory.TEXT:
-                    return (
-                      <>
-                        <FaFileAlt className="mr-1 text-gray-600" size={10} />{" "}
-                        Text
-                      </>
-                    );
-                  case CrateCategory.BINARY:
-                    return (
-                      <>
-                        <FaFileAlt className="mr-1 text-gray-500" size={10} />{" "}
-                        Binary
+                        <FaQuestionCircle
+                          className="mr-1 text-gray-500"
+                          size={10}
+                        />{" "}
+                        Others
                       </>
                     );
                   default:
@@ -329,7 +347,7 @@ const CrateCard: React.FC<CrateCardProps> = ({
 
           {/* Downloads or Responses */}
           <div className="text-xs">
-            {file.category === "feedback" ? (
+            {file.category === "recipe" ? (
               <>
                 <span className="text-gray-500 mr-1">Responses:</span>
                 <span className="font-medium text-gray-700">

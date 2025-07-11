@@ -27,7 +27,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• contentType: MIME type (see allowed types below)\n\n" +
         "OPTIONAL PARAMETERS:\n" +
         "• fileName: File name (auto-generated if not provided)\n" +
-        "• category: Content category (markdown, json, yaml, code, etc.)\n" +
+        "• category: Content category (see ecosystem categories below)\n" +
         "• description: Description of the content\n" +
         '• tags: ARRAY of strings (not a single string!) - e.g. ["project:website", "type:requirements"]\n' +
         "• metadata: Key-value pairs for additional info\n" +
@@ -39,10 +39,20 @@ export function registerCratesUploadTool(server: McpServer): void {
         '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
         '• Include context tags: ["context:user-research", "context:specs"]\n' +
         '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
+        "ECOSYSTEM CATEGORIES:\n" +
+        "• image: 🖼️ Visual content (photos, diagrams, screenshots)\n" +
+        "• data: 📊 Actual data files (CSVs, PDFs, datasets, JSON/YAML)\n" +
+        "• data_source: 🔗 Information access points (API docs, database guides)\n" +
+        "• visualization: 📈 Charts & graphs (plots, dashboards)\n" +
+        "• recipe: 📝 AI agent instructions (workflows, prompt templates)\n" +
+        "• knowledge: 📚 Documentation & guides (tutorials, references)\n" +
+        "• tools: 🛠️ Available resources (MCP servers, APIs, services)\n" +
+        "• code: 💻 Code snippets & examples (scripts, functions)\n" +
+        "• others: ❓ Everything else\n\n" +
         "ALLOWED CONTENT TYPES:\n" +
         "• Text: text/plain, text/markdown, text/csv, text/html\n" +
         "• Code: text/javascript, text/typescript, text/python, application/json\n" +
-        "• Data: application/yaml, text/yaml, text/x-yaml\n" +
+        "• Data: application/yaml, text/yaml, text/x-yaml, text/csv\n" +
         "• Images: image/png, image/jpeg, image/jpg, image/gif, image/webp, image/svg+xml\n" +
         "• Binary: application/octet-stream, binary/octet-stream\n\n" +
         "IMPORTANT: tags must be an ARRAY, not a string!\n" +
@@ -101,22 +111,22 @@ export function registerCratesUploadTool(server: McpServer): void {
         let extension = "";
         if (category) {
           switch (category) {
-            case CrateCategory.JSON:
+            case CrateCategory.DATA:
               extension = ".json";
               break;
-            case CrateCategory.YAML:
+            case CrateCategory.DATA:
               extension = ".yaml";
               break;
             case CrateCategory.IMAGE:
               extension = ".png";
               break;
-            case CrateCategory.MARKDOWN:
+            case CrateCategory.KNOWLEDGE:
               extension = ".md";
               break;
             case CrateCategory.CODE:
               extension = ".txt";
               break;
-            case CrateCategory.BINARY:
+            case CrateCategory.OTHERS:
               extension = ".bin";
               break;
             default:
@@ -227,13 +237,13 @@ export function registerCratesUploadTool(server: McpServer): void {
       }
 
       // Determine if we should return a presigned URL or directly upload
-      const isBinaryCategory = category === CrateCategory.BINARY;
+      const isBinaryCategory = category === CrateCategory.OTHERS;
       const isBinaryContentType =
         contentType.startsWith("application/") ||
         contentType === "binary/octet-stream";
 
       const isBigDataType =
-        category === CrateCategory.BINARY ||
+        category === CrateCategory.OTHERS ||
         contentType === "text/csv" ||
         contentType.startsWith("application/octet-stream") ||
         contentType.startsWith("binary/");

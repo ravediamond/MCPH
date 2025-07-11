@@ -79,17 +79,17 @@ export async function POST(req: NextRequest) {
       if (file.type.startsWith("image/")) {
         category = CrateCategory.IMAGE;
       } else if (file.name.endsWith(".md") || file.name.endsWith(".markdown")) {
-        category = CrateCategory.MARKDOWN;
+        category = CrateCategory.KNOWLEDGE;
       } else if (file.type.includes("json") || file.name.endsWith(".json")) {
         // Added check for .json extension
-        category = CrateCategory.JSON;
+        category = CrateCategory.DATA;
       } else if (
         file.type.includes("yaml") ||
         file.name.endsWith(".yaml") ||
         file.name.endsWith(".yml")
       ) {
         // Added check for YAML files
-        category = CrateCategory.YAML;
+        category = CrateCategory.DATA;
       } else if (
         file.type.includes("text") || // Broader check for text-based files
         file.name.endsWith(".txt") ||
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       ) {
         category = CrateCategory.CODE;
       } else {
-        category = CrateCategory.BINARY;
+        category = CrateCategory.OTHERS;
       }
     }
 

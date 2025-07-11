@@ -19,8 +19,16 @@ export function registerCratesGalleryTool(server: McpServer): void {
         "• limit: Number of crates to return (default: 12, max: 50)\n" +
         "• startAfter: ID of the last crate from previous page for pagination\n" +
         "• category: Filter by specific category (optional)\n\n" +
-        "CATEGORIES:\n" +
-        "• markdown, code, image, json, yaml, text, binary, feedback\n\n" +
+        "ECOSYSTEM CATEGORIES:\n" +
+        "• image: 🖼️ Visual content\n" +
+        "• data: 📊 Actual data files\n" +
+        "• data_source: 🔗 Information access points\n" +
+        "• visualization: 📈 Charts & graphs\n" +
+        "• recipe: 📝 AI agent instructions\n" +
+        "• knowledge: 📚 Documentation & guides\n" +
+        "• tools: 🛠️ Available resources\n" +
+        "• code: 💻 Code snippets & examples\n" +
+        "• others: ❓ Everything else\n\n" +
         "RESPONSE FORMAT:\n" +
         "Returns crates with basic info (id, title, description, category, tags, createdAt, downloadCount)",
       inputSchema: CratesGalleryParams.shape,

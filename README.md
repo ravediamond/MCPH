@@ -22,13 +22,63 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Seamless Share Links**: Share your AI artifacts with a single, universal link that works for both humans and AI systems
 - **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
 - **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
-- **Multiple Content Types**: Store and share markdown, code, images, JSON, YAML, text, and binary files
+- **Comprehensive Ecosystem**: Organize content across 9 strategic categories designed to create a complete AI workflow ecosystem
 - **Security Features**: Private by default with optional password protection, 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
 - **Feedback Collection System**: Create custom feedback templates with various field types (text, rating, select, etc.) to collect structured feedback on your projects
 - **Public Gallery**: Discover and explore community-shared crates in a beautiful, categorized gallery
 - **Social Sharing**: Share your crates across social platforms with smart markdown formatting for Twitter, Reddit, LinkedIn, Discord, Telegram, and Email
 - **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
+
+## 🗂️ Category Ecosystem
+
+MCPH organizes content into 9 strategic categories that create a comprehensive AI workflow ecosystem:
+
+### **🖼️ Image** - Visual Content
+
+Photos, diagrams, screenshots, artwork, and any visual media files.
+
+### **📊 Data** - Actual Data Files
+
+CSVs, PDFs, Excel files, databases, datasets, JSON/YAML files, and other structured data.
+
+### **🔗 Data Source** - Information Access Points
+
+API documentation, database connection guides, data feed information, and instructions on where to get data.
+
+### **📈 Visualization** - Charts & Graphs
+
+Charts, graphs, plots, dashboards, and visual representations of data.
+
+### **📝 Recipe** - AI Agent Instructions
+
+Step-by-step instructions for AI agents, workflows, prompt templates, and automation guides.
+
+### **📚 Knowledge** - Documentation & Guides
+
+Documentation, tutorials, reference materials, guides, and educational content.
+
+### **🛠️ Tools** - Available Resources
+
+Directories of MCP servers, APIs, services, software tools, and available resources.
+
+### **💻 Code** - Code Snippets & Examples
+
+Pure code snippets, examples, scripts, functions, and programming content.
+
+### **❓ Others** - Everything Else
+
+Any content that doesn't fit into the above categories.
+
+**This ecosystem enables users to find:**
+
+- **What to do** (Recipes)
+- **How to do it** (Code, Knowledge)
+- **What tools to use** (Tools)
+- **Where to get data** (Data Source)
+- **Actual data** (Data)
+- **Visual content** (Image, Visualization)
+- **Everything else** (Others)
 
 ## Quick Start
 
