@@ -51,12 +51,12 @@ export default function AdminFeedback() {
         let feedbackQuery;
         if (filter === "all") {
           feedbackQuery = query(
-            collection(firestore, "feedback"),
+            collection(firestore, "recipe"),
             orderBy("timestamp", "desc"),
           );
         } else {
           feedbackQuery = query(
-            collection(firestore, "feedback"),
+            collection(firestore, "recipe"),
             where("status", "==", filter),
             orderBy("timestamp", "desc"),
           );
@@ -93,7 +93,7 @@ export default function AdminFeedback() {
     newStatus: FeedbackItem["status"],
   ) => {
     try {
-      const feedbackRef = doc(firestore, "feedback", id);
+      const feedbackRef = doc(firestore, "recipe", id);
       await updateDoc(feedbackRef, {
         status: newStatus,
       });
@@ -120,7 +120,7 @@ export default function AdminFeedback() {
     }
 
     try {
-      const feedbackRef = doc(firestore, "feedback", id);
+      const feedbackRef = doc(firestore, "recipe", id);
       await deleteDoc(feedbackRef);
 
       // Update local state

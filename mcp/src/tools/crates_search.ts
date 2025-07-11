@@ -41,11 +41,28 @@ export function registerCratesSearchTool(server: McpServer): void {
       title: "Search Crates",
       description:
         "Searches your crates using a hybrid approach combining embedding-based semantic search and text search. The search covers title, description, tags, and metadata fields. Results are merged and deduplicated for the most relevant matches.\n\n" +
+        "SEARCH PARAMETERS:\n" +
+        "• query: Search terms for content matching\n" +
+        "• tags: Array of tags to filter by (optional)\n" +
+        "• category: Filter by ecosystem category (optional)\n" +
+        "• limit: Maximum results to return (1-50, default: 10)\n\n" +
+        "CATEGORY FILTERING:\n" +
+        "Filter by ecosystem categories:\n" +
+        "• image: Visual content\n" +
+        "• data: Actual data files\n" +
+        "• data_source: Information access points\n" +
+        "• visualization: Charts & graphs\n" +
+        "• recipe: AI agent instructions\n" +
+        "• knowledge: Documentation & guides\n" +
+        "• tools: Available resources\n" +
+        "• code: Code snippets & examples\n" +
+        "• others: Everything else\n\n" +
         "SEARCH TIPS for AI tools:\n" +
         "• Search by project: 'project:website-redesign' using tags parameter\n" +
         '• Combine tags: "project:chatbot type:code" or use tags parameter\n' +
         "• Find by context: 'context:user-research'\n" +
-        "• Search workflow: 'status:final priority:high'\n\n" +
+        "• Search workflow: 'status:final priority:high'\n" +
+        "• Filter by category: use category parameter for specific content types\n\n" +
         "The search uses:\n" +
         "• Vector embeddings (768-dimensional) for semantic understanding of metadata\n" +
         "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +
@@ -61,10 +78,12 @@ export function registerCratesSearchTool(server: McpServer): void {
       {
         query,
         tags,
+        category,
         limit = 10,
       }: {
         query: string;
         tags?: string[];
+        category?: CrateCategory;
         limit?: number;
       },
       extra?: any,
@@ -109,6 +128,12 @@ export function registerCratesSearchTool(server: McpServer): void {
       let query_ref = db
         .collection(CRATES_COLLECTION)
         .where("ownerId", "==", uid);
+
+      // Add category filter if provided
+      if (category) {
+        console.log(`[crates_search] Filtering by category: ${category}`);
+        query_ref = query_ref.where("category", "==", category);
+      }
 
       // Build query with tag filters if provided
       if (tags && tags.length > 0) {

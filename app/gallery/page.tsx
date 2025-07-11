@@ -16,6 +16,11 @@ import {
   FileIcon,
   ChevronRight,
   Home,
+  BarChart3,
+  BookOpen,
+  Wrench,
+  FolderOpen,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -30,14 +35,15 @@ interface GalleryResponse {
 }
 
 const categoryIcons = {
-  [CrateCategory.MARKDOWN]: <FileText className="w-4 h-4" />,
-  [CrateCategory.CODE]: <Code className="w-4 h-4" />,
   [CrateCategory.IMAGE]: <Image className="w-4 h-4" />,
-  [CrateCategory.JSON]: <Database className="w-4 h-4" />,
-  [CrateCategory.YAML]: <Database className="w-4 h-4" />,
-  [CrateCategory.TEXT]: <FileText className="w-4 h-4" />,
-  [CrateCategory.BINARY]: <FileIcon className="w-4 h-4" />,
-  [CrateCategory.FEEDBACK]: <FileText className="w-4 h-4" />,
+  [CrateCategory.DATA]: <Database className="w-4 h-4" />,
+  [CrateCategory.DATA_SOURCE]: <FolderOpen className="w-4 h-4" />,
+  [CrateCategory.VISUALIZATION]: <BarChart3 className="w-4 h-4" />,
+  [CrateCategory.RECIPE]: <FileText className="w-4 h-4" />,
+  [CrateCategory.KNOWLEDGE]: <BookOpen className="w-4 h-4" />,
+  [CrateCategory.TOOLS]: <Wrench className="w-4 h-4" />,
+  [CrateCategory.CODE]: <Code className="w-4 h-4" />,
+  [CrateCategory.OTHERS]: <HelpCircle className="w-4 h-4" />,
 };
 
 export default function GalleryPage() {
@@ -154,7 +160,9 @@ export default function GalleryPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) =>
-                      setSelectedCategory(e.target.value as CrateCategory | "all")
+                      setSelectedCategory(
+                        e.target.value as CrateCategory | "all",
+                      )
                     }
                     className="border border-gray-300 rounded-lg px-4 py-2.5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm hover:border-gray-400 transition-colors w-52"
                   >
@@ -175,7 +183,7 @@ export default function GalleryPage() {
                 )}
               </div>
             </div>
-        </div>
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm">
@@ -194,7 +202,8 @@ export default function GalleryPage() {
               <div className="text-center">
                 <p className="text-gray-500 text-lg">
                   No discoverable crates found
-                  {selectedCategory !== "all" && ` in ${selectedCategory} category`}
+                  {selectedCategory !== "all" &&
+                    ` in ${selectedCategory} category`}
                   .
                 </p>
               </div>
@@ -256,7 +265,9 @@ export default function GalleryPage() {
                               (() => {
                                 const date = new Date(crate.createdAt);
                                 return !isNaN(date.getTime())
-                                  ? formatDistanceToNow(date, { addSuffix: true })
+                                  ? formatDistanceToNow(date, {
+                                      addSuffix: true,
+                                    })
                                   : "Unknown date";
                               })()}
                           </span>
@@ -264,7 +275,9 @@ export default function GalleryPage() {
 
                         <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
                           <Download className="w-4 h-4 text-gray-500" />
-                          <span className="text-gray-700 font-medium">{crate.downloadCount || 0}</span>
+                          <span className="text-gray-700 font-medium">
+                            {crate.downloadCount || 0}
+                          </span>
                         </div>
 
                         <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
@@ -275,26 +288,36 @@ export default function GalleryPage() {
                         </div>
 
                         <div className="flex items-center space-x-2 bg-gray-50 p-2 rounded-lg">
-                          <span className="text-gray-700 font-medium">{crate.size && formatFileSize(crate.size)}</span>
+                          <span className="text-gray-700 font-medium">
+                            {crate.size && formatFileSize(crate.size)}
+                          </span>
                         </div>
                       </div>
 
                       <div className="flex space-x-3 pt-2 border-t border-gray-100">
                         <Link href={`/crate/${crate.id}`} className="flex-1">
-                          <Button variant="outline" fullWidth className="hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                          <Button
+                            variant="outline"
+                            fullWidth
+                            className="hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                          >
                             View Details
                           </Button>
                         </Link>
                         <Link href={`/download/${crate.id}`}>
-                          <Button variant="primary" size="sm" className="px-4 hover:shadow-md transition-shadow">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="px-4 hover:shadow-md transition-shadow"
+                          >
                             <Download className="w-4 h-4" />
                           </Button>
                         </Link>
                       </div>
-                  </Card.Body>
-                </Card>
-              ))}
-            </div>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
 
               {pagination.hasMore && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">

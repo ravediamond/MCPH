@@ -259,12 +259,12 @@ export default function CratePage() {
 
     const shouldFetchContent = () => {
       switch (crateInfo.category) {
-        case CrateCategory.MARKDOWN:
+        case CrateCategory.KNOWLEDGE:
         case CrateCategory.CODE:
-        case CrateCategory.JSON:
-        case CrateCategory.YAML:
-        case CrateCategory.TEXT:
-        case CrateCategory.FEEDBACK:
+        case CrateCategory.DATA:
+        case CrateCategory.DATA:
+        case CrateCategory.KNOWLEDGE:
+        case CrateCategory.RECIPE:
           return true;
         default:
           return false;
@@ -880,19 +880,19 @@ export default function CratePage() {
     if (!crateInfo) return <FaFile className="text-gray-500" />;
 
     switch (crateInfo.category) {
-      case CrateCategory.MARKDOWN:
+      case CrateCategory.KNOWLEDGE:
         return <FaFileAlt className="text-purple-500" />;
       case CrateCategory.CODE:
         return <FaFileCode className="text-yellow-500" />;
       case CrateCategory.IMAGE:
         return <FaFileImage className="text-blue-500" />;
-      case CrateCategory.JSON:
+      case CrateCategory.DATA:
         return <FaFileCode className="text-orange-500" />;
-      case CrateCategory.YAML:
+      case CrateCategory.DATA:
         return <FaFileCode className="text-green-500" />;
-      case CrateCategory.FEEDBACK:
+      case CrateCategory.RECIPE:
         return <FaComments className="text-purple-600" />;
-      case CrateCategory.BINARY:
+      case CrateCategory.OTHERS:
       default:
         // Fallback to mime type checking for legacy or unknown types
         const mimeType = crateInfo.mimeType?.toLowerCase() || "";
@@ -911,14 +911,23 @@ export default function CratePage() {
     if (!crateInfo) return "text";
 
     // Removed DIAGRAM, TODOLIST for v1 simplification
-    if (crateInfo.category === CrateCategory.MARKDOWN) {
+    if (crateInfo.category === CrateCategory.KNOWLEDGE) {
       return "markdown";
-    } else if (crateInfo.category === CrateCategory.JSON) {
-      // Check if it's JSON
-      return "json";
-    } else if (crateInfo.category === CrateCategory.YAML) {
-      // YAML files
-      return "yaml";
+    } else if (crateInfo.category === CrateCategory.DATA) {
+      // Check if it's JSON or YAML based on file content/type
+      const mimeType = crateInfo.mimeType?.toLowerCase() || "";
+      const fileName = crateInfo.fileName?.toLowerCase() || "";
+      if (mimeType.includes("json") || fileName.endsWith(".json")) {
+        return "json";
+      } else if (
+        mimeType.includes("yaml") ||
+        fileName.endsWith(".yaml") ||
+        fileName.endsWith(".yml")
+      ) {
+        return "yaml";
+      } else {
+        return "text";
+      }
     } else if (crateInfo.category === CrateCategory.CODE) {
       // Try to determine the language from the mime type or file extension
       const mimeType = crateInfo.mimeType?.toLowerCase() || "";
@@ -1155,7 +1164,7 @@ export default function CratePage() {
     if (!crateContent || !crateInfo) return null;
 
     switch (crateInfo.category) {
-      case CrateCategory.JSON: // Enhanced JSON rendering
+      case CrateCategory.DATA: // Enhanced JSON rendering
         try {
           // Try to parse JSON for better rendering
           const jsonData = JSON.parse(crateContent);
@@ -1203,7 +1212,7 @@ export default function CratePage() {
           );
         }
 
-      case CrateCategory.YAML: // Enhanced YAML rendering
+      case CrateCategory.DATA: // Enhanced YAML rendering
         return (
           <div className="text-sm">
             <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
@@ -1235,7 +1244,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.MARKDOWN: // Enhanced markdown rendering
+      case CrateCategory.KNOWLEDGE: // Enhanced markdown rendering
         return (
           <div className="text-sm">
             <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
@@ -1338,7 +1347,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.TEXT: // Enhanced text rendering
+      case CrateCategory.KNOWLEDGE: // Enhanced text rendering
         return (
           <div className="text-sm">
             <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
@@ -1384,7 +1393,7 @@ export default function CratePage() {
     if (!crateInfo || !crateContent) return null;
 
     switch (crateInfo.category) {
-      case CrateCategory.MARKDOWN:
+      case CrateCategory.KNOWLEDGE:
         return (
           <div className="p-4 prose max-w-none">
             <ReactMarkdown>{crateContent}</ReactMarkdown>
@@ -1402,7 +1411,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.JSON: // Added JSON category
+      case CrateCategory.DATA: // Added JSON category
         return (
           <div className="text-sm">
             <EnhancedSyntaxHighlighter language={getLanguage()} title="JSON">
@@ -1411,7 +1420,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.TEXT: // Added TEXT category
+      case CrateCategory.KNOWLEDGE: // Added TEXT category
         return (
           <div className="text-sm">
             <pre className="whitespace-pre-wrap p-4 font-mono text-gray-800 bg-gray-50 rounded border border-gray-200">
@@ -1420,7 +1429,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.YAML: // Added YAML category
+      case CrateCategory.DATA: // Added YAML category
         return (
           <div className="text-sm">
             <EnhancedSyntaxHighlighter language={getLanguage()} title="YAML">
@@ -1429,7 +1438,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.FEEDBACK:
+      case CrateCategory.RECIPE:
         // For feedback templates, show the template structure and fields
         let feedbackData;
         try {
@@ -2118,13 +2127,13 @@ export default function CratePage() {
                   <span className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
                     {(() => {
                       switch (crateInfo.category) {
-                        case CrateCategory.FEEDBACK:
+                        case CrateCategory.RECIPE:
                           return (
                             <>
                               <FaComments className="mr-1" size={12} /> Feedback
                             </>
                           );
-                        case CrateCategory.MARKDOWN:
+                        case CrateCategory.KNOWLEDGE:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Markdown
@@ -2136,13 +2145,13 @@ export default function CratePage() {
                               <FaFileCode className="mr-1" size={12} /> Code
                             </>
                           );
-                        case CrateCategory.JSON:
+                        case CrateCategory.DATA:
                           return (
                             <>
                               <FaFileCode className="mr-1" size={12} /> JSON
                             </>
                           );
-                        case CrateCategory.YAML:
+                        case CrateCategory.DATA:
                           return (
                             <>
                               <FaFileCode className="mr-1" size={12} /> YAML
@@ -2154,13 +2163,13 @@ export default function CratePage() {
                               <FaFileImage className="mr-1" size={12} /> Image
                             </>
                           );
-                        case CrateCategory.TEXT:
+                        case CrateCategory.KNOWLEDGE:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Text
                             </>
                           );
-                        case CrateCategory.BINARY:
+                        case CrateCategory.OTHERS:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Binary
@@ -2286,21 +2295,21 @@ export default function CratePage() {
                 <div className="font-semibold text-gray-900">
                   {(() => {
                     switch (crateInfo.category) {
-                      case CrateCategory.FEEDBACK:
+                      case CrateCategory.RECIPE:
                         return "Feedback";
-                      case CrateCategory.MARKDOWN:
+                      case CrateCategory.KNOWLEDGE:
                         return "Markdown";
                       case CrateCategory.CODE:
                         return "Code";
-                      case CrateCategory.JSON:
+                      case CrateCategory.DATA:
                         return "JSON";
-                      case CrateCategory.YAML:
+                      case CrateCategory.DATA:
                         return "YAML";
                       case CrateCategory.IMAGE:
                         return "Image";
-                      case CrateCategory.TEXT:
+                      case CrateCategory.KNOWLEDGE:
                         return "Text";
-                      case CrateCategory.BINARY:
+                      case CrateCategory.OTHERS:
                         return "Binary";
                       default:
                         return crateInfo.category;
@@ -2311,12 +2320,12 @@ export default function CratePage() {
 
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                  {crateInfo.category === CrateCategory.FEEDBACK
+                  {crateInfo.category === CrateCategory.RECIPE
                     ? "Responses"
                     : "Downloads"}
                 </div>
                 <div className="font-semibold text-gray-900 flex items-center">
-                  {crateInfo.category === CrateCategory.FEEDBACK ? (
+                  {crateInfo.category === CrateCategory.RECIPE ? (
                     <>
                       <FaChartBar className="mr-2 text-purple-600" size={16} />
                       {crateInfo.metadata?.submissionCount || 0}
@@ -2377,7 +2386,7 @@ export default function CratePage() {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
               {/* Primary Actions */}
-              {crateInfo.category === CrateCategory.FEEDBACK ? (
+              {crateInfo.category === CrateCategory.RECIPE ? (
                 // Feedback template specific actions
                 <>
                   {!crateInfo.isOwner && (
@@ -2438,11 +2447,9 @@ export default function CratePage() {
               {/* Secondary Actions */}
 
               {/* Show preview button for supported categories (excluding feedback) */}
-              {(crateInfo.category === CrateCategory.MARKDOWN ||
+              {(crateInfo.category === CrateCategory.KNOWLEDGE ||
                 crateInfo.category === CrateCategory.CODE ||
-                crateInfo.category === CrateCategory.JSON ||
-                crateInfo.category === CrateCategory.YAML ||
-                crateInfo.category === CrateCategory.TEXT ||
+                crateInfo.category === CrateCategory.DATA ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
                   onClick={() => setShowPreview(!showPreview)}
@@ -2497,21 +2504,21 @@ export default function CratePage() {
                   Content Preview •{" "}
                   {(() => {
                     switch (crateInfo.category) {
-                      case CrateCategory.FEEDBACK:
+                      case CrateCategory.RECIPE:
                         return "Feedback Template";
-                      case CrateCategory.MARKDOWN:
+                      case CrateCategory.KNOWLEDGE:
                         return "Markdown";
                       case CrateCategory.CODE:
                         return "Code";
-                      case CrateCategory.JSON:
+                      case CrateCategory.DATA:
                         return "JSON";
-                      case CrateCategory.YAML:
+                      case CrateCategory.DATA:
                         return "YAML";
                       case CrateCategory.IMAGE:
                         return "Image";
-                      case CrateCategory.TEXT:
+                      case CrateCategory.KNOWLEDGE:
                         return "Text";
-                      case CrateCategory.BINARY:
+                      case CrateCategory.OTHERS:
                         return "Binary";
                       default:
                         return crateInfo.category;

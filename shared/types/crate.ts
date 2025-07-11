@@ -1,12 +1,13 @@
 export enum CrateCategory {
-  MARKDOWN = "markdown",
-  CODE = "code",
   IMAGE = "image",
-  JSON = "json",
-  YAML = "yaml",
-  TEXT = "text",
-  BINARY = "binary",
-  FEEDBACK = "feedback",
+  DATA = "data",
+  DATA_SOURCE = "data_source",
+  VISUALIZATION = "visualization",
+  RECIPE = "recipe",
+  KNOWLEDGE = "knowledge",
+  TOOLS = "tools",
+  CODE = "code",
+  OTHERS = "others",
 }
 
 export interface CrateSharing {

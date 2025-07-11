@@ -151,7 +151,7 @@ export async function GET(
     }
 
     // Handle feedback templates differently - get data from Firestore
-    if (crate.category === CrateCategory.FEEDBACK) {
+    if (crate.category === CrateCategory.RECIPE) {
       console.log(
         `[Content Route] Fetching feedback template data for ID: ${id}`,
       );
@@ -307,7 +307,7 @@ export async function POST(
     }
 
     // Handle feedback templates differently - get data from Firestore
-    if (crate.category === CrateCategory.FEEDBACK) {
+    if (crate.category === CrateCategory.RECIPE) {
       console.log(
         `[Content Route] POST Fetching feedback template data for ID: ${id}`,
       );

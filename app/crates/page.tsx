@@ -288,7 +288,7 @@ export default function CratesPage() {
     const fileName = file.title?.toLowerCase() || "";
 
     // Check if it's a feedback template
-    if (file.category === "feedback") {
+    if (file.category === "recipe") {
       return <FaComments size={18} className="text-purple-600" />;
     }
 

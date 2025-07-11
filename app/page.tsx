@@ -35,11 +35,12 @@ export default function Home() {
               Test it without creating an account.
             </p>
             <p className="text-xl text-gray-600 max-w-xl mx-auto mt-4">
-              One link for every AI output—store, search & share crates with
-              ChatGPT, Claude, and your own agents.
+              Complete AI workflow ecosystem—organize what to do, how to do it,
+              what tools to use, and where to get data.
             </p>
             <p className="text-base text-gray-500 max-w-xl mx-auto mt-2">
-              No account required—upload instantly and get started right away.
+              From recipes and code to data sources and
+              visualizations—everything AI needs in one place.
             </p>
             <div className="mt-6">
               <Link
@@ -149,6 +150,35 @@ export default function Home() {
               </svg>
               Permanent for members
             </span>
+          </div>
+
+          {/* Ecosystem Highlights */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
+              🗂️ Complete AI Workflow Ecosystem
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-2xl mb-1">📝</div>
+                <div className="font-medium text-gray-700">Recipes</div>
+                <div className="text-gray-500">What to do</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-1">📚</div>
+                <div className="font-medium text-gray-700">Knowledge</div>
+                <div className="text-gray-500">How to do it</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-1">🛠️</div>
+                <div className="font-medium text-gray-700">Tools</div>
+                <div className="text-gray-500">What to use</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl mb-1">📊</div>
+                <div className="font-medium text-gray-700">Data</div>
+                <div className="text-gray-500">Where to find it</div>
+              </div>
+            </div>
           </div>
 
           {/* Benefits Tag Line - simplified */}
@@ -880,165 +910,110 @@ export default function Home() {
       {/* Content Types Section - Simplified */}
       <section className="py-12 px-4 bg-gray-50 border-t border-gray-100">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            What Can You Store and Share?
+          <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
+            Complete AI Workflow Ecosystem
           </h2>
+          <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+            Organize your AI workflow across 9 strategic categories designed to
+            create a comprehensive ecosystem
+          </p>
 
           {/* First row - 3 blocks */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                  <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
-                  <path d="M9 17h6" />
-                  <path d="M9 13h6" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">Markdown</p>
+              <div className="text-2xl mb-3">🖼️</div>
+              <p className="font-medium text-gray-800">Image</p>
+              <p className="text-xs text-gray-500 mt-1">Visual content</p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">Code</p>
+              <div className="text-2xl mb-3">📊</div>
+              <p className="font-medium text-gray-800">Data</p>
+              <p className="text-xs text-gray-500 mt-1">CSVs, PDFs, datasets</p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">Images</p>
+              <div className="text-2xl mb-3">🔗</div>
+              <p className="font-medium text-gray-800">Data Source</p>
+              <p className="text-xs text-gray-500 mt-1">
+                APIs, databases, feeds
+              </p>
             </div>
           </div>
 
-          {/* Second row - 4 blocks */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+          {/* Second row - 3 blocks */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                  <line x1="9" y1="9" x2="9.01" y2="9" />
-                  <line x1="15" y1="9" x2="15.01" y2="9" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">JSON</p>
+              <div className="text-2xl mb-3">📈</div>
+              <p className="font-medium text-gray-800">Visualization</p>
+              <p className="text-xs text-gray-500 mt-1">Charts, graphs</p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M4 6l16 0"></path>
-                  <path d="M4 12l16 0"></path>
-                  <path d="M4 18l12 0"></path>
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">YAML</p>
-            </div>
-
-            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <path d="M16 13H8" />
-                  <path d="M16 17H8" />
-                  <path d="M10 9H8" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">Text</p>
+              <div className="text-2xl mb-3">📝</div>
+              <p className="font-medium text-gray-800">Recipe</p>
               <p className="text-xs text-gray-500 mt-1">
-                Plain text files (.txt)
+                AI agent instructions
               </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="text-orange-500 mb-3">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-8 w-8 mx-auto"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <path d="M16 13H8" />
-                  <path d="M16 17H8" />
-                  <path d="M10 9H8" />
-                </svg>
-              </div>
-              <p className="font-medium text-gray-800">Binary Files</p>
+              <div className="text-2xl mb-3">📚</div>
+              <p className="font-medium text-gray-800">Knowledge</p>
               <p className="text-xs text-gray-500 mt-1">
-                PDFs, images, and more
+                Documentation, guides
               </p>
             </div>
+          </div>
+
+          {/* Third row - 3 blocks */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-2xl mb-3">🛠️</div>
+              <p className="font-medium text-gray-800">Tools</p>
+              <p className="text-xs text-gray-500 mt-1">
+                MCP servers, APIs, services
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-2xl mb-3">💻</div>
+              <p className="font-medium text-gray-800">Code</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Code snippets/examples
+              </p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-2xl mb-3">❓</div>
+              <p className="font-medium text-gray-800">Others</p>
+              <p className="text-xs text-gray-500 mt-1">Everything else</p>
+            </div>
+          </div>
+
+          {/* Ecosystem explanation */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600 max-w-3xl mx-auto">
+              This ecosystem enables users to find:{" "}
+              <span className="font-medium text-gray-800">what to do</span>{" "}
+              (Recipes),
+              <span className="font-medium text-gray-800">
+                how to do it
+              </span>{" "}
+              (Code, Knowledge),
+              <span className="font-medium text-gray-800">
+                what tools to use
+              </span>{" "}
+              (Tools),
+              <span className="font-medium text-gray-800">
+                where to get data
+              </span>{" "}
+              (Data Source), and
+              <span className="font-medium text-gray-800">
+                actual data
+              </span>{" "}
+              (Data).
+            </p>
           </div>
         </div>
       </section>

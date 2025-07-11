@@ -933,7 +933,7 @@ export async function updateCrateSharing(
     await docRef.update(updateData);
 
     // For feedback crates, also update the feedback template record
-    if (crate.category === "feedback") {
+    if (crate.category === "recipe") {
       const templateUpdateData: any = {};
 
       if (sharingSettings.hasOwnProperty("public")) {

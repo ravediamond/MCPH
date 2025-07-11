@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Add to Firestore
     console.log("[FeedbackAPI] Adding feedback to Firestore");
-    await db.collection("feedback").add({
+    await db.collection("recipe").add({
       message: payload.message,
       type: payload.type,
       email: payload.email || null,

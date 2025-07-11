@@ -105,7 +105,7 @@ export function registerCratesGetTool(server: McpServer): void {
       }
 
       // Special handling for BINARY category - direct user to use crates_get_download_link instead
-      if (meta.category === CrateCategory.BINARY) {
+      if (meta.category === CrateCategory.OTHERS) {
         return {
           content: [
             {

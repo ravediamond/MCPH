@@ -68,6 +68,7 @@ export const CopyCrateParams = z.object({
 export const SearchParams = z.object({
   query: z.string(),
   tags: z.array(z.string()).optional(),
+  category: z.nativeEnum(CrateCategory).optional(),
   limit: z.number().int().min(1).max(50).optional().default(10),
 });
 
