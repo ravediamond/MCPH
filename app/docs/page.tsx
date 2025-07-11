@@ -2,23 +2,43 @@
 
 import React from "react";
 import Link from "next/link";
+import { ChevronRight, Home } from "lucide-react";
 
 export default function DocsPage() {
   return (
     <div className="bg-gray-50 min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            MCPH Documentation
-          </h1>
-          <p className="text-gray-600">
-            Learn how to use MCPH to share AI-generated content with anyone,
-            anywhere.
-          </p>
+        {/* Breadcrumb navigation */}
+        <nav className="mb-8">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link
+              href="/"
+              className="inline-flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-primary-600 transition-all duration-200 hover:shadow-sm"
+            >
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </Link>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <span className="inline-flex items-center px-3 py-2 text-gray-600 bg-gray-100 rounded-lg font-medium">
+              Documentation
+            </span>
+          </div>
+        </nav>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              MCPH Documentation
+            </h1>
+            <p className="text-lg text-gray-600">
+              Learn how to use MCPH to share AI-generated content with anyone,
+              anywhere.
+            </p>
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
             What is MCPH?
           </h2>
           <p className="text-gray-600 mb-3">
@@ -49,8 +69,11 @@ export default function DocsPage() {
           </ul>
 
           {/* Why crate? call-out box */}
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-6 shadow-sm">
+            <h3 className="text-lg font-bold text-amber-800 mb-3 flex items-center">
+              <span className="bg-amber-100 p-2 rounded-lg mr-3">
+                📦
+              </span>
               Why "crate"?
             </h3>
             <p className="text-gray-700 mb-2">
@@ -96,8 +119,8 @@ export default function DocsPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">
             Using MCPH with AI Assistants
           </h2>
           <p className="text-gray-600 mb-3">
@@ -108,8 +131,11 @@ export default function DocsPage() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-blue-100 p-2 rounded-lg mr-3">
+                  💬
+                </span>
                 Natural Language Commands
               </h3>
               <div className="space-y-3">
@@ -147,14 +173,17 @@ export default function DocsPage() {
               </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-800 mb-2">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+                <span className="bg-green-100 p-2 rounded-lg mr-3">
+                  🧠
+                </span>
                 Contextual Understanding
               </h3>
               <p className="text-gray-600 mb-2">
                 The AI remembers what you're working on within conversations:
               </p>
-              <div className="bg-white p-3 rounded border border-gray-200 text-sm">
+              <div className="bg-white p-4 rounded-xl border border-green-200 text-sm shadow-sm">
                 <p className="text-gray-700">
                   <span className="font-medium">User:</span> "Write a meeting
                   summary"
@@ -181,8 +210,11 @@ export default function DocsPage() {
             </div>
           </div>
 
-          <div className="bg-beige-100 border border-amber-200 rounded-lg p-4 mb-4">
-            <h3 className="text-lg font-medium text-amber-800 mb-2">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 mb-6 shadow-sm">
+            <h3 className="text-xl font-bold text-purple-800 mb-4 flex items-center">
+              <span className="bg-purple-100 p-2 rounded-lg mr-3">
+                ⭐
+              </span>
               Key Benefits
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -218,8 +250,8 @@ export default function DocsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-xl font-medium text-gray-800 mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 border-b border-gray-100 pb-4">
             Core Platform Features
           </h2>
 

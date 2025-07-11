@@ -42,6 +42,7 @@ import {
   FaSave,
   FaTimes,
   FaPlus,
+  FaCopy,
 } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -55,6 +56,9 @@ const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 const SyntaxHighlighter = dynamic(() => import("react-syntax-highlighter"), {
   ssr: false,
 });
+
+// Import syntax highlighting theme
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 // Dynamic import for mermaid diagram rendering
 const MermaidDiagram = dynamic(
@@ -934,6 +938,57 @@ export default function CratePage() {
     }
   };
 
+  // Copy content to clipboard
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess("Content copied to clipboard!");
+      setTimeout(() => setCopySuccess(null), 2000);
+    } catch (err) {
+      setCopyError("Failed to copy content");
+      setTimeout(() => setCopyError(null), 2000);
+    }
+  };
+
+  // Enhanced SyntaxHighlighter component with copy button
+  const EnhancedSyntaxHighlighter: React.FC<{
+    children: string;
+    language: string;
+    title?: string;
+  }> = ({ children, language, title }) => {
+    return (
+      <div className="relative group">
+        {title && (
+          <div className="bg-gray-100 px-4 py-2 border-b border-gray-200 rounded-t text-sm font-medium text-gray-700">
+            {title}
+          </div>
+        )}
+        <div className="relative">
+          <SyntaxHighlighter
+            language={language}
+            showLineNumbers
+            style={oneLight}
+            customStyle={{
+              margin: 0,
+              borderRadius: title ? "0 0 0.5rem 0.5rem" : "0.5rem",
+              fontSize: "0.875rem",
+              lineHeight: "1.5",
+            }}
+          >
+            {children}
+          </SyntaxHighlighter>
+          <button
+            onClick={() => copyToClipboard(children)}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white hover:bg-gray-50 border border-gray-300 rounded p-2 shadow-sm"
+            title="Copy to clipboard"
+          >
+            <FaCopy className="text-gray-600 hover:text-gray-800" size={14} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Format tag display - similar to home page tag formatting
   const formatTagDisplay = (tag: string, fullDisplay = true) => {
     if (!tag.includes(":")) return tag;
@@ -1025,15 +1080,28 @@ export default function CratePage() {
     }
 
     return (
-      <div className="mb-4 border border-blue-200 p-2 rounded">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">
-          Tags ({processedTags.length})
-        </h3>
+      <div className="mb-6 bg-gray-50 border border-gray-200 p-4 rounded-lg">
+        <div className="flex items-center mb-3">
+          <svg
+            className="w-4 h-4 mr-2 text-gray-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <h3 className="text-sm font-semibold text-gray-700">
+            Tags ({processedTags.length})
+          </h3>
+        </div>
         <div className="flex flex-wrap gap-2">
           {processedTags.map((tag, index) => (
             <span
               key={index}
-              className={`inline-block ${getTagStyle(tag)} text-sm px-3 py-1.5 rounded-full shadow-sm`}
+              className={`inline-flex items-center ${getTagStyle(tag)} text-sm px-3 py-2 rounded-full shadow-sm font-medium border`}
               title={tag}
             >
               {formatTagDisplay(tag)}
@@ -1048,15 +1116,34 @@ export default function CratePage() {
   const renderMetadata = (metadata?: Record<string, string>) => {
     if (!metadata || Object.keys(metadata).length === 0) return null;
     return (
-      <div className="mt-2 text-xs text-gray-600">
-        <div className="font-semibold mb-1">Metadata:</div>
-        <ul className="list-disc ml-4">
+      <div className="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg">
+        <div className="flex items-center mb-3">
+          <svg
+            className="w-4 h-4 mr-2 text-blue-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <h3 className="text-sm font-semibold text-blue-700">Metadata</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-3">
           {Object.entries(metadata).map(([key, value]) => (
-            <li key={key}>
-              <span className="font-medium">{key}:</span> {value}
-            </li>
+            <div
+              key={key}
+              className="bg-white p-3 rounded border border-blue-200"
+            >
+              <div className="text-xs font-semibold text-blue-800 mb-1 uppercase tracking-wide">
+                {key}
+              </div>
+              <div className="text-sm text-blue-700">{value}</div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     );
   };
@@ -1106,9 +1193,12 @@ export default function CratePage() {
           // Fallback to regular code highlighting if JSON parsing fails
           return (
             <div className="text-sm">
-              <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              <EnhancedSyntaxHighlighter
+                language={getLanguage()}
+                title="Content"
+              >
                 {crateContent}
-              </SyntaxHighlighter>
+              </EnhancedSyntaxHighlighter>
             </div>
           );
         }
@@ -1138,9 +1228,9 @@ export default function CratePage() {
               </div>
             </div>
             <div className="overflow-auto max-h-[500px] rounded border border-gray-200">
-              <SyntaxHighlighter language="yaml" showLineNumbers>
+              <EnhancedSyntaxHighlighter language="yaml" title="YAML Content">
                 {crateContent}
-              </SyntaxHighlighter>
+              </EnhancedSyntaxHighlighter>
             </div>
           </div>
         );
@@ -1204,9 +1294,12 @@ export default function CratePage() {
               </div>
             </div>
             <div className="overflow-auto max-h-[500px] rounded border border-gray-200">
-              <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+              <EnhancedSyntaxHighlighter
+                language={getLanguage()}
+                title="Code Content"
+              >
                 {crateContent}
-              </SyntaxHighlighter>
+              </EnhancedSyntaxHighlighter>
             </div>
           </div>
         );
@@ -1303,18 +1396,18 @@ export default function CratePage() {
       case CrateCategory.CODE:
         return (
           <div className="text-sm">
-            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+            <EnhancedSyntaxHighlighter language={getLanguage()} title="Code">
               {crateContent}
-            </SyntaxHighlighter>
+            </EnhancedSyntaxHighlighter>
           </div>
         );
 
       case CrateCategory.JSON: // Added JSON category
         return (
           <div className="text-sm">
-            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+            <EnhancedSyntaxHighlighter language={getLanguage()} title="JSON">
               {crateContent}
-            </SyntaxHighlighter>
+            </EnhancedSyntaxHighlighter>
           </div>
         );
 
@@ -1330,9 +1423,9 @@ export default function CratePage() {
       case CrateCategory.YAML: // Added YAML category
         return (
           <div className="text-sm">
-            <SyntaxHighlighter language={getLanguage()} showLineNumbers>
+            <EnhancedSyntaxHighlighter language={getLanguage()} title="YAML">
               {crateContent}
-            </SyntaxHighlighter>
+            </EnhancedSyntaxHighlighter>
           </div>
         );
 
@@ -1604,6 +1697,33 @@ export default function CratePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
+      {/* Breadcrumb Navigation */}
+      <div className="max-w-6xl mx-auto mb-4">
+        <nav className="flex items-center space-x-2 text-sm text-gray-600">
+          <Link
+            href="/home"
+            className="hover:text-primary-600 transition-colors duration-200 flex items-center"
+          >
+            <FaArrowLeft className="mr-1" size={12} />
+            Home
+          </Link>
+          <span className="text-gray-400">/</span>
+          <Link
+            href="/crates"
+            className="hover:text-primary-600 transition-colors duration-200"
+          >
+            My Crates
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span
+            className="text-gray-800 font-medium truncate max-w-xs"
+            title={crateInfo?.title}
+          >
+            {crateInfo?.title || "Crate"}
+          </span>
+        </nav>
+      </div>
+
       {/* Sharing Modal */}
       {showSharingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
@@ -1964,23 +2084,11 @@ export default function CratePage() {
       )}
 
       <div className="max-w-5xl mx-auto">
-        {/* Breadcrumb navigation */}
-        <div className="mb-3 flex items-center text-sm">
-          <Link
-            href="/"
-            className="text-gray-500 hover:text-primary-500 transition-colors"
-          >
-            Home
-          </Link>
-          <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-700">Crate Details</span>
-        </div>
-
         {/* Main Info Card */}
-        <Card className="mb-4">
-          <Card.Header className="flex justify-between items-center">
+        <Card className="mb-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+          <Card.Header className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6">
             <div className="flex items-center flex-1">
-              <span className="p-2 bg-gray-50 rounded-full mr-3">
+              <span className="p-3 bg-white rounded-xl shadow-md border border-gray-200 mr-4">
                 {getCrateIcon()}
               </span>
               <div className="flex-1">
@@ -1994,16 +2102,79 @@ export default function CratePage() {
                   />
                 ) : (
                   <h1
-                    className="font-medium text-gray-800 mb-0.5"
+                    className="text-2xl font-semibold text-gray-900 mb-2"
                     title={crateInfo.title}
                   >
                     {crateInfo.title}
                   </h1>
                 )}
-                <div className="text-xs text-gray-500">
-                  {formatBytes(crateInfo.size || 0)} • {crateInfo.mimeType} •
-                  <span className="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
-                    {crateInfo.category}
+                <div className="flex items-center gap-3 text-sm text-gray-600">
+                  <span className="bg-gray-100 px-2 py-1 rounded">
+                    {formatBytes(crateInfo.size || 0)}
+                  </span>
+                  <span className="bg-gray-100 px-2 py-1 rounded">
+                    {crateInfo.mimeType}
+                  </span>
+                  <span className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
+                    {(() => {
+                      switch (crateInfo.category) {
+                        case CrateCategory.FEEDBACK:
+                          return (
+                            <>
+                              <FaComments className="mr-1" size={12} /> Feedback
+                            </>
+                          );
+                        case CrateCategory.MARKDOWN:
+                          return (
+                            <>
+                              <FaFileAlt className="mr-1" size={12} /> Markdown
+                            </>
+                          );
+                        case CrateCategory.CODE:
+                          return (
+                            <>
+                              <FaFileCode className="mr-1" size={12} /> Code
+                            </>
+                          );
+                        case CrateCategory.JSON:
+                          return (
+                            <>
+                              <FaFileCode className="mr-1" size={12} /> JSON
+                            </>
+                          );
+                        case CrateCategory.YAML:
+                          return (
+                            <>
+                              <FaFileCode className="mr-1" size={12} /> YAML
+                            </>
+                          );
+                        case CrateCategory.IMAGE:
+                          return (
+                            <>
+                              <FaFileImage className="mr-1" size={12} /> Image
+                            </>
+                          );
+                        case CrateCategory.TEXT:
+                          return (
+                            <>
+                              <FaFileAlt className="mr-1" size={12} /> Text
+                            </>
+                          );
+                        case CrateCategory.BINARY:
+                          return (
+                            <>
+                              <FaFileAlt className="mr-1" size={12} /> Binary
+                            </>
+                          );
+                        default:
+                          return (
+                            <>
+                              <FaFileAlt className="mr-1" size={12} />{" "}
+                              {crateInfo.category}
+                            </>
+                          );
+                      }
+                    })()}
                   </span>
                 </div>
               </div>
@@ -2052,44 +2223,50 @@ export default function CratePage() {
             </div>
           </Card.Header>
 
-          <Card.Body>
+          <Card.Body className="p-6">
             {/* Sharing status and password protection */}
-            <div className="mb-4 flex items-center gap-3">
+            <div className="mb-6 flex items-center gap-3">
               {crateInfo.isPublic ? (
-                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-green-100 text-green-700">
-                  <FaShareAlt className="mr-1" /> Public (anyone with link)
+                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-green-100 text-green-800 border border-green-200 font-medium">
+                  <FaShareAlt className="mr-2" size={14} /> Public (anyone with
+                  link)
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-gray-200 text-gray-700">
-                  <FaLock className="mr-1" /> Private (only you)
+                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 border border-gray-200 font-medium">
+                  <FaLock className="mr-2" size={14} /> Private (only you)
                 </span>
               )}
               {crateInfo.isPasswordProtected && (
-                <span className="inline-flex items-center px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
-                  <FaLock className="mr-1" /> Password protected
+                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium">
+                  <FaLock className="mr-2" size={14} /> Password protected
                 </span>
               )}
             </div>
 
             {/* Description */}
             {(crateInfo.description || isEditing) && (
-              <div className="mb-4 pb-3 border-b border-gray-100">
+              <div className="mb-6 pb-4 border-b border-gray-200">
                 {isEditing ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       Description
                     </label>
                     <textarea
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      rows={3}
+                      className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      rows={4}
                       placeholder="Add a description for this crate..."
                     />
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-700">
-                    {crateInfo.description}
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                      Description
+                    </h3>
+                    <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      {crateInfo.description}
+                    </div>
                   </div>
                 )}
               </div>
@@ -2101,35 +2278,77 @@ export default function CratePage() {
             {/* Metadata display */}
             {renderMetadata(crateInfo.metadata)}
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm mt-4">
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Category</div>
-                <div className="font-medium">{crateInfo.category}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 mt-6">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                  Category
+                </div>
+                <div className="font-semibold text-gray-900">
+                  {(() => {
+                    switch (crateInfo.category) {
+                      case CrateCategory.FEEDBACK:
+                        return "Feedback";
+                      case CrateCategory.MARKDOWN:
+                        return "Markdown";
+                      case CrateCategory.CODE:
+                        return "Code";
+                      case CrateCategory.JSON:
+                        return "JSON";
+                      case CrateCategory.YAML:
+                        return "YAML";
+                      case CrateCategory.IMAGE:
+                        return "Image";
+                      case CrateCategory.TEXT:
+                        return "Text";
+                      case CrateCategory.BINARY:
+                        return "Binary";
+                      default:
+                        return crateInfo.category;
+                    }
+                  })()}
+                </div>
               </div>
 
-              <div>
-                <div className="text-xs text-gray-500 mb-1">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
                   {crateInfo.category === CrateCategory.FEEDBACK
                     ? "Responses"
                     : "Downloads"}
                 </div>
-                <div className="font-medium">
-                  {crateInfo.category === CrateCategory.FEEDBACK
-                    ? crateInfo.metadata?.submissionCount || 0
-                    : crateInfo.downloadCount}
+                <div className="font-semibold text-gray-900 flex items-center">
+                  {crateInfo.category === CrateCategory.FEEDBACK ? (
+                    <>
+                      <FaChartBar className="mr-2 text-purple-600" size={16} />
+                      {crateInfo.metadata?.submissionCount || 0}
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload className="mr-2 text-blue-600" size={16} />
+                      {crateInfo.downloadCount}
+                    </>
+                  )}
                 </div>
               </div>
 
               {crateInfo.expiresAt && (
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Expiration</div>
-                  <div>{formatDate(crateInfo.expiresAt)}</div>
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                    Expiration
+                  </div>
+                  <div className="font-semibold text-gray-900 flex items-center">
+                    <FaClock className="mr-2 text-orange-600" size={14} />
+                    {formatDate(crateInfo.expiresAt)}
+                  </div>
                 </div>
               )}
 
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Size</div>
-                <div>{formatBytes(crateInfo.size || 0)}</div>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
+                  Size
+                </div>
+                <div className="font-semibold text-gray-900">
+                  {formatBytes(crateInfo.size || 0)}
+                </div>
               </div>
             </div>
 
@@ -2156,7 +2375,7 @@ export default function CratePage() {
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
               {/* Primary Actions */}
               {crateInfo.category === CrateCategory.FEEDBACK ? (
                 // Feedback template specific actions
@@ -2164,7 +2383,7 @@ export default function CratePage() {
                   {!crateInfo.isOwner && (
                     <Link
                       href={`/feedback/submit/${crateId}`}
-                      className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600"
+                      className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       <FaFileDownload className="mr-2 text-lg" />
                       <span>Submit Feedback</span>
@@ -2173,7 +2392,7 @@ export default function CratePage() {
                   {crateInfo.isOwner && (
                     <Link
                       href={`/feedback/responses/${crateId}`}
-                      className="flex items-center justify-center px-4 py-2 bg-green-500 text-white text-base font-medium rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 transition-colors border border-green-600"
+                      className="flex items-center justify-center px-6 py-3 bg-green-500 text-white text-base font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-3 focus:ring-green-300 focus:ring-offset-2 transition-all duration-200 border border-green-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       <FaChartBar className="mr-2 text-lg" />
                       <span>View Responses</span>
@@ -2184,7 +2403,7 @@ export default function CratePage() {
                 // Regular file download
                 <button
                   onClick={handleDownload}
-                  className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600"
+                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   <FaFileDownload className="mr-2 text-lg" />
                   <span>Download</span>
@@ -2196,7 +2415,7 @@ export default function CratePage() {
                 <button
                   onClick={handleCopyCrate}
                   disabled={copyLoading}
-                  className="flex items-center justify-center px-4 py-2 bg-purple-500 text-white text-base font-medium rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:ring-offset-2 transition-colors border border-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center px-6 py-3 bg-purple-500 text-white text-base font-semibold rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-3 focus:ring-purple-300 focus:ring-offset-2 transition-all duration-200 border border-purple-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
                 >
                   <FaUpload className="mr-2 text-lg" />
                   <span>
@@ -2270,30 +2489,78 @@ export default function CratePage() {
 
         {/* Preview Card - Only shown when preview is toggled */}
         {showPreview && (
-          <Card className="mb-4">
-            <Card.Header className="flex justify-between items-center">
-              <h2 className="font-medium text-gray-700">
-                Crate Preview - {crateInfo.category}
-              </h2>
+          <Card className="mb-6 shadow-lg border border-gray-200">
+            <Card.Header className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6">
+              <div className="flex items-center">
+                <FaEye className="mr-2 text-blue-600" size={18} />
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Content Preview •{" "}
+                  {(() => {
+                    switch (crateInfo.category) {
+                      case CrateCategory.FEEDBACK:
+                        return "Feedback Template";
+                      case CrateCategory.MARKDOWN:
+                        return "Markdown";
+                      case CrateCategory.CODE:
+                        return "Code";
+                      case CrateCategory.JSON:
+                        return "JSON";
+                      case CrateCategory.YAML:
+                        return "YAML";
+                      case CrateCategory.IMAGE:
+                        return "Image";
+                      case CrateCategory.TEXT:
+                        return "Text";
+                      case CrateCategory.BINARY:
+                        return "Binary";
+                      default:
+                        return crateInfo.category;
+                    }
+                  })()}
+                </h2>
+              </div>
               <button
                 onClick={() => setShowPreview(false)}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                title="Close preview"
               >
-                Close
+                <FaTimes size={16} />
               </button>
             </Card.Header>
 
-            <Card.Body>
+            <Card.Body className="p-6">
               {contentLoading ? (
-                <div className="h-48 flex items-center justify-center">
-                  <div className="animate-pulse">Loading content...</div>
+                <div className="h-48 flex items-center justify-center bg-gray-50 rounded-lg">
+                  <div className="flex items-center text-gray-600">
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Loading content...
+                  </div>
                 </div>
               ) : crateInfo.category === CrateCategory.IMAGE ? (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center bg-gray-50 rounded-lg p-8">
                   <img
                     src={`/api/crates/${crateId}/content`}
                     alt={crateInfo.title}
-                    className="max-w-full max-h-96 object-contain"
+                    className="max-w-full max-h-96 object-contain rounded shadow-md"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = "/icon.png";
@@ -2303,7 +2570,7 @@ export default function CratePage() {
                   />
                 </div>
               ) : (
-                <div className="bg-gray-50 rounded border overflow-auto max-h-96">
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                   {renderPreview()}
                 </div>
               )}
@@ -2312,12 +2579,13 @@ export default function CratePage() {
         )}
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {/* Usage Stats Card */}
           <StatsCard
             title="Usage Statistics"
-            icon={<FaChartBar className="text-primary-500" />}
+            icon={<FaChartBar className="text-blue-600" />}
             tooltip="Crate access statistics over time"
+            className="shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
           >
             <div className="mb-5">
               <StatsCard.Grid columns={3} className="mb-4">
