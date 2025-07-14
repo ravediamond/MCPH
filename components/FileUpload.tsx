@@ -42,6 +42,7 @@ const TEXT_FILE_EXTENSIONS = [
 
 // Available crate categories that users can select (excluding POLL - only created via MCP tools)
 const CRATE_CATEGORIES = [
+  { value: CrateCategory.RECIPE, label: "Recipe - AI task instructions" },
   { value: CrateCategory.TEXT, label: "Text - Any written content" },
   { value: CrateCategory.IMAGE, label: "Images - Pictures, charts, diagrams" },
   { value: CrateCategory.CODE, label: "Code - Scripts and programming" },
