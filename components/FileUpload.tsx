@@ -40,27 +40,12 @@ const TEXT_FILE_EXTENSIONS = [
   ".text",
 ];
 
-// Available crate categories that users can select
+// Available crate categories that users can select (excluding POLL - only created via MCP tools)
 const CRATE_CATEGORIES = [
-  { value: CrateCategory.IMAGE, label: "Image - Visual content" },
-  { value: CrateCategory.DATA, label: "Data - CSVs, PDFs, datasets" },
-  {
-    value: CrateCategory.DATA_SOURCE,
-    label: "Data Source - APIs, databases, feeds",
-  },
-  {
-    value: CrateCategory.VISUALIZATION,
-    label: "Visualization - Charts, graphs",
-  },
-  { value: CrateCategory.RECIPE, label: "Recipe - AI agent instructions" },
-  {
-    value: CrateCategory.KNOWLEDGE,
-    label: "Knowledge - Documentation, guides",
-  },
-  { value: CrateCategory.TOOLS, label: "Tools - MCP servers, APIs, services" },
-  { value: CrateCategory.CODE, label: "Code - Code snippets/examples" },
-  { value: CrateCategory.OTHERS, label: "Others - Everything else" },
-  { value: CrateCategory.KNOWLEDGE, label: "Text" },
+  { value: CrateCategory.TEXT, label: "Text - Any written content" },
+  { value: CrateCategory.IMAGE, label: "Images - Pictures, charts, diagrams" },
+  { value: CrateCategory.CODE, label: "Code - Scripts and programming" },
+  { value: CrateCategory.DATA, label: "Data - Spreadsheets, JSONs, CSVs" },
 ];
 
 // Mapping of MIME types to crate categories (simplified for v1)
@@ -70,14 +55,14 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "image/gif": CrateCategory.IMAGE,
   "image/webp": CrateCategory.IMAGE,
   "image/svg+xml": CrateCategory.IMAGE,
-  "text/markdown": CrateCategory.KNOWLEDGE,
-  "text/x-markdown": CrateCategory.KNOWLEDGE,
+  "text/markdown": CrateCategory.TEXT,
+  "text/x-markdown": CrateCategory.TEXT,
   "application/json": CrateCategory.DATA,
   "application/yaml": CrateCategory.DATA,
   "text/yaml": CrateCategory.DATA,
   "text/x-yaml": CrateCategory.DATA,
   "application/x-yaml": CrateCategory.DATA,
-  "text/plain": CrateCategory.KNOWLEDGE,
+  "text/plain": CrateCategory.TEXT,
   "application/javascript": CrateCategory.CODE,
   "text/javascript": CrateCategory.CODE,
   "text/html": CrateCategory.CODE,
@@ -92,8 +77,8 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".gif": CrateCategory.IMAGE,
   ".webp": CrateCategory.IMAGE,
   ".svg": CrateCategory.IMAGE,
-  ".md": CrateCategory.KNOWLEDGE,
-  ".markdown": CrateCategory.KNOWLEDGE,
+  ".md": CrateCategory.TEXT,
+  ".markdown": CrateCategory.TEXT,
   ".json": CrateCategory.DATA,
   ".yaml": CrateCategory.DATA,
   ".yml": CrateCategory.DATA,
@@ -101,7 +86,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".ts": CrateCategory.CODE,
   ".html": CrateCategory.CODE,
   ".css": CrateCategory.CODE,
-  ".txt": CrateCategory.KNOWLEDGE,
+  ".txt": CrateCategory.TEXT,
 };
 
 // Type definition update to include new Crate fields
@@ -143,9 +128,8 @@ export default function FileUpload({
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [tagsInput, setTagsInput] = useState<string>("");
-  const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.OTHERS); // Default crate type
+  const [fileType, setFileType] = useState<CrateCategory>(CrateCategory.TEXT); // Default crate type
   const [isShared, setIsShared] = useState<boolean>(false); // Default to private
-  const [isDiscoverable, setIsDiscoverable] = useState<boolean>(false); // Default to not discoverable
 
   // Format bytes to human-readable size
   const formatBytes = (bytes: number): string => {
@@ -199,7 +183,7 @@ export default function FileUpload({
       setTitle(fileNameWithoutExtension);
 
       // Automatically detect crate type based on content type or extension
-      let detectedCategory: CrateCategory = CrateCategory.OTHERS; // Default type
+      let detectedCategory: CrateCategory = CrateCategory.TEXT; // Default type
 
       // First check MIME type
       if (MIME_TYPE_TO_CATEGORY[selectedFile.type]) {
@@ -303,7 +287,6 @@ export default function FileUpload({
       formData.append("fileType", fileType);
       formData.append("category", fileType); // Explicitly add the selected category
       formData.append("isShared", isShared ? "true" : "false");
-      formData.append("isDiscoverable", isDiscoverable ? "true" : "false");
 
       // Add tags if present
       if (tagsInput.trim()) {
@@ -759,36 +742,6 @@ export default function FileUpload({
                   </div>
                 </div>
               </div>
-
-              {/* Discoverable Settings - only show if crate is public */}
-              {isShared && (
-                <div className="mb-4">
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="isDiscoverable"
-                        type="checkbox"
-                        checked={isDiscoverable}
-                        onChange={(e) => setIsDiscoverable(e.target.checked)}
-                        className="focus:ring-[#ff7a32] h-4 w-4 text-[#ff7a32] border-gray-300 rounded"
-                        disabled={isUploading}
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label
-                        htmlFor="isDiscoverable"
-                        className="font-medium text-gray-700"
-                      >
-                        Make this crate discoverable
-                      </label>
-                      <p className="text-gray-500">
-                        When enabled, this crate will appear in the public
-                        gallery for others to discover.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
 

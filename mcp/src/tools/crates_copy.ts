@@ -33,7 +33,7 @@ export function registerCratesCopyTool(server: McpServer): void {
       }
 
       // Require authentication for this operation
-      if (!userUid || userUid === "anonymous") {
+      if (!userUid) {
         return {
           content: [
             {
@@ -74,9 +74,8 @@ export function registerCratesCopyTool(server: McpServer): void {
 
         // Check if the crate is accessible to the user
         const isPublic = sourceCrate.shared?.public === true;
-        const isAnonymous = sourceCrate.ownerId === "anonymous";
 
-        if (!isPublic && !isAnonymous) {
+        if (!isPublic) {
           return {
             content: [
               {

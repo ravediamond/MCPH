@@ -103,7 +103,6 @@ export async function GET(
       downloadCount: crate.downloadCount,
       isPublic: crate.shared?.public || false,
       isPasswordProtected: Boolean(crate.shared.passwordHash),
-      isDiscoverable: crate.shared?.isDiscoverable || false,
       isOwner,
       metadata: crate.metadata,
       tags: processTags(crate.tags),

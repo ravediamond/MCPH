@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       ownerId: userId,
       createdAt: now,
       mimeType: "application/json",
-      category: CrateCategory.RECIPE,
+      category: CrateCategory.POLL,
       gcsPath: `feedback/${templateId}`, // Virtual path for feedback templates
       shared: {
         public: Boolean(isPublic),

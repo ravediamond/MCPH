@@ -1,19 +1,14 @@
 export enum CrateCategory {
-  IMAGE = "image",
-  DATA = "data",
-  DATA_SOURCE = "data_source",
-  VISUALIZATION = "visualization",
-  RECIPE = "recipe",
-  KNOWLEDGE = "knowledge",
-  TOOLS = "tools",
+  TEXT = "text",
+  IMAGE = "image", 
   CODE = "code",
-  OTHERS = "others",
+  DATA = "data",
+  POLL = "poll",
 }
 
 export interface CrateSharing {
   public: boolean;
   passwordHash?: string | null;
-  isDiscoverable?: boolean;
 }
 
 export interface Crate {

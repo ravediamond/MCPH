@@ -83,7 +83,6 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   expiresAt?: string;
   isPublic: boolean;
   isPasswordProtected: boolean;
-  isDiscoverable?: boolean;
   isOwner: boolean;
   viewCount?: number;
   tags?: string[];
@@ -127,7 +126,6 @@ export default function CratePage() {
   const [showSharingModal, setShowSharingModal] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
   const [isPasswordProtected, setIsPasswordProtected] = useState(false);
-  const [isDiscoverable, setIsDiscoverable] = useState(false);
   const [sharingPassword, setSharingPassword] = useState("");
   const [sharingError, setSharingError] = useState<string | null>(null);
   const [sharingSuccess, setSharingSuccess] = useState<string | null>(null);
@@ -259,12 +257,12 @@ export default function CratePage() {
 
     const shouldFetchContent = () => {
       switch (crateInfo.category) {
-        case CrateCategory.KNOWLEDGE:
+        case CrateCategory.TEXT:
         case CrateCategory.CODE:
         case CrateCategory.DATA:
         case CrateCategory.DATA:
-        case CrateCategory.KNOWLEDGE:
-        case CrateCategory.RECIPE:
+        case CrateCategory.TEXT:
+        case CrateCategory.POLL:
           return true;
         default:
           return false;
@@ -684,7 +682,6 @@ export default function CratePage() {
 
     setIsPublic(crateInfo.isPublic);
     setIsPasswordProtected(crateInfo.isPasswordProtected);
-    setIsDiscoverable(crateInfo.isDiscoverable || false);
     setSharingPassword("");
     setSharingError(null);
     setSharingSuccess(null);
@@ -767,7 +764,6 @@ export default function CratePage() {
       const body: any = {
         public: isPublic,
         passwordProtected: isPasswordProtected,
-        isDiscoverable: isDiscoverable,
       };
 
       // Include password if it's set and the crate is password protected
@@ -799,7 +795,6 @@ export default function CratePage() {
         ...crateInfo,
         isPublic: data.isShared,
         isPasswordProtected: data.passwordProtected,
-        isDiscoverable: data.isDiscoverable,
       };
 
       console.log("[DEBUG] Updating crate info:", updatedCrateInfo);
@@ -880,7 +875,7 @@ export default function CratePage() {
     if (!crateInfo) return <FaFile className="text-gray-500" />;
 
     switch (crateInfo.category) {
-      case CrateCategory.KNOWLEDGE:
+      case CrateCategory.TEXT:
         return <FaFileAlt className="text-purple-500" />;
       case CrateCategory.CODE:
         return <FaFileCode className="text-yellow-500" />;
@@ -890,9 +885,9 @@ export default function CratePage() {
         return <FaFileCode className="text-orange-500" />;
       case CrateCategory.DATA:
         return <FaFileCode className="text-green-500" />;
-      case CrateCategory.RECIPE:
+      case CrateCategory.POLL:
         return <FaComments className="text-purple-600" />;
-      case CrateCategory.OTHERS:
+      case CrateCategory.TEXT:
       default:
         // Fallback to mime type checking for legacy or unknown types
         const mimeType = crateInfo.mimeType?.toLowerCase() || "";
@@ -911,7 +906,7 @@ export default function CratePage() {
     if (!crateInfo) return "text";
 
     // Removed DIAGRAM, TODOLIST for v1 simplification
-    if (crateInfo.category === CrateCategory.KNOWLEDGE) {
+    if (crateInfo.category === CrateCategory.TEXT) {
       return "markdown";
     } else if (crateInfo.category === CrateCategory.DATA) {
       // Check if it's JSON or YAML based on file content/type
@@ -1244,7 +1239,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.KNOWLEDGE: // Enhanced markdown rendering
+      case CrateCategory.TEXT: // Enhanced markdown rendering
         return (
           <div className="text-sm">
             <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
@@ -1347,7 +1342,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.KNOWLEDGE: // Enhanced text rendering
+      case CrateCategory.TEXT: // Enhanced text rendering
         return (
           <div className="text-sm">
             <div className="bg-gray-50 p-2 mb-2 flex justify-between items-center rounded border border-gray-200">
@@ -1393,7 +1388,7 @@ export default function CratePage() {
     if (!crateInfo || !crateContent) return null;
 
     switch (crateInfo.category) {
-      case CrateCategory.KNOWLEDGE:
+      case CrateCategory.TEXT:
         return (
           <div className="p-4 prose max-w-none">
             <ReactMarkdown>{crateContent}</ReactMarkdown>
@@ -1420,7 +1415,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.KNOWLEDGE: // Added TEXT category
+      case CrateCategory.TEXT: // Added TEXT category
         return (
           <div className="text-sm">
             <pre className="whitespace-pre-wrap p-4 font-mono text-gray-800 bg-gray-50 rounded border border-gray-200">
@@ -1438,7 +1433,7 @@ export default function CratePage() {
           </div>
         );
 
-      case CrateCategory.RECIPE:
+      case CrateCategory.POLL:
         // For feedback templates, show the template structure and fields
         let feedbackData;
         try {
@@ -1840,39 +1835,6 @@ export default function CratePage() {
                   </p>
                 </div>
               )}
-
-              {/* Discoverable Toggle - only shown when public and not password protected */}
-              {isPublic && !isPasswordProtected && (
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-gray-900">
-                        Make Discoverable
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        {isDiscoverable
-                          ? "This crate will appear in the public gallery"
-                          : "This crate will not appear in the public gallery"}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsDiscoverable(!isDiscoverable)}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                        isDiscoverable ? "bg-blue-600" : "bg-gray-200"
-                      }`}
-                      role="switch"
-                      aria-checked={isDiscoverable}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          isDiscoverable ? "translate-x-5" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {isPublic && (
@@ -2127,13 +2089,13 @@ export default function CratePage() {
                   <span className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
                     {(() => {
                       switch (crateInfo.category) {
-                        case CrateCategory.RECIPE:
+                        case CrateCategory.POLL:
                           return (
                             <>
                               <FaComments className="mr-1" size={12} /> Feedback
                             </>
                           );
-                        case CrateCategory.KNOWLEDGE:
+                        case CrateCategory.TEXT:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Markdown
@@ -2163,13 +2125,13 @@ export default function CratePage() {
                               <FaFileImage className="mr-1" size={12} /> Image
                             </>
                           );
-                        case CrateCategory.KNOWLEDGE:
+                        case CrateCategory.TEXT:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Text
                             </>
                           );
-                        case CrateCategory.OTHERS:
+                        case CrateCategory.TEXT:
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} /> Binary
@@ -2295,9 +2257,9 @@ export default function CratePage() {
                 <div className="font-semibold text-gray-900">
                   {(() => {
                     switch (crateInfo.category) {
-                      case CrateCategory.RECIPE:
+                      case CrateCategory.POLL:
                         return "Feedback";
-                      case CrateCategory.KNOWLEDGE:
+                      case CrateCategory.TEXT:
                         return "Markdown";
                       case CrateCategory.CODE:
                         return "Code";
@@ -2307,9 +2269,9 @@ export default function CratePage() {
                         return "YAML";
                       case CrateCategory.IMAGE:
                         return "Image";
-                      case CrateCategory.KNOWLEDGE:
+                      case CrateCategory.TEXT:
                         return "Text";
-                      case CrateCategory.OTHERS:
+                      case CrateCategory.TEXT:
                         return "Binary";
                       default:
                         return crateInfo.category;
@@ -2320,12 +2282,12 @@ export default function CratePage() {
 
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                  {crateInfo.category === CrateCategory.RECIPE
+                  {crateInfo.category === CrateCategory.POLL
                     ? "Responses"
                     : "Downloads"}
                 </div>
                 <div className="font-semibold text-gray-900 flex items-center">
-                  {crateInfo.category === CrateCategory.RECIPE ? (
+                  {crateInfo.category === CrateCategory.POLL ? (
                     <>
                       <FaChartBar className="mr-2 text-purple-600" size={16} />
                       {crateInfo.metadata?.submissionCount || 0}
@@ -2386,7 +2348,7 @@ export default function CratePage() {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
               {/* Primary Actions */}
-              {crateInfo.category === CrateCategory.RECIPE ? (
+              {crateInfo.category === CrateCategory.POLL ? (
                 // Feedback template specific actions
                 <>
                   {!crateInfo.isOwner && (
@@ -2447,7 +2409,7 @@ export default function CratePage() {
               {/* Secondary Actions */}
 
               {/* Show preview button for supported categories (excluding feedback) */}
-              {(crateInfo.category === CrateCategory.KNOWLEDGE ||
+              {(crateInfo.category === CrateCategory.TEXT ||
                 crateInfo.category === CrateCategory.CODE ||
                 crateInfo.category === CrateCategory.DATA ||
                 crateInfo.category === CrateCategory.IMAGE) && (
@@ -2504,9 +2466,9 @@ export default function CratePage() {
                   Content Preview •{" "}
                   {(() => {
                     switch (crateInfo.category) {
-                      case CrateCategory.RECIPE:
+                      case CrateCategory.POLL:
                         return "Feedback Template";
-                      case CrateCategory.KNOWLEDGE:
+                      case CrateCategory.TEXT:
                         return "Markdown";
                       case CrateCategory.CODE:
                         return "Code";
@@ -2516,9 +2478,9 @@ export default function CratePage() {
                         return "YAML";
                       case CrateCategory.IMAGE:
                         return "Image";
-                      case CrateCategory.KNOWLEDGE:
+                      case CrateCategory.TEXT:
                         return "Text";
-                      case CrateCategory.OTHERS:
+                      case CrateCategory.TEXT:
                         return "Binary";
                       default:
                         return crateInfo.category;

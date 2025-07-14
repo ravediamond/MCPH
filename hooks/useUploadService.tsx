@@ -39,6 +39,15 @@ export const useUploadService = () => {
     options: UploadOptions = {},
   ): Promise<UploadResult> => {
     try {
+      // Require authentication for uploads
+      if (!user) {
+        return {
+          success: false,
+          id: "",
+          url: "",
+          error: "Authentication required. Please sign in to upload files.",
+        };
+      }
       // Apply defaults for missing options
       const finalOptions = {
         title: options.title || file.name,
@@ -46,8 +55,8 @@ export const useUploadService = () => {
         category: options.category || detectCrateCategory(file),
         password: options.password || "",
         tags: options.tags || [],
-        // For anonymous uploads (when user is not logged in), make public by default
-        sharing: options.sharing || { public: !user ? true : false },
+        // Default to private sharing
+        sharing: options.sharing || { public: false },
       };
 
       // Create form data for the API call
@@ -139,7 +148,7 @@ export const useUploadService = () => {
       fileName.endsWith(".md") ||
       fileName.endsWith(".markdown")
     ) {
-      return CrateCategory.KNOWLEDGE;
+      return CrateCategory.TEXT;
     }
 
     // JSON detection
@@ -161,7 +170,7 @@ export const useUploadService = () => {
 
     // Text detection
     if (mimeType === "text/plain" || fileName.endsWith(".txt")) {
-      return CrateCategory.KNOWLEDGE;
+      return CrateCategory.TEXT;
     }
 
     // Code detection (simplistic)
@@ -182,7 +191,7 @@ export const useUploadService = () => {
     }
 
     // Default to binary for unknown types
-    return CrateCategory.OTHERS;
+    return CrateCategory.TEXT;
   };
 
   return { uploadCrate, detectCrateCategory };
