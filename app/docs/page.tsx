@@ -12,7 +12,6 @@ export default function DocsPage() {
   const navItems = [
     { id: "what-is-mcph", title: "What is MCPH?" },
     { id: "ai-assistants", title: "Using with AI Assistants" },
-    { id: "core-features", title: "Real Examples from Users" },
     { id: "features", title: "Features" },
     { id: "getting-started", title: "Getting Started" },
     { id: "mcp-tools", title: "Available MCP Tools" },
@@ -351,52 +350,6 @@ export default function DocsPage() {
               </div>
             </div>
 
-            <div
-              id="core-features"
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6"
-            >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
-                Real Examples from Our Users
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Developer</div>
-                  <p className="text-gray-700 mb-4">"I save all my AI-generated code snippets here. Now I can instantly share working examples with my team instead of copy-pasting from chat history."</p>
-                  <div className="text-xs text-gray-500">— Sarah K., Frontend Developer</div>
-                </div>
-                
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Student</div>
-                  <p className="text-gray-700 mb-4">"Perfect for group projects! I save AI-generated study guides and share them with classmates. No more sending huge text messages."</p>
-                  <div className="text-xs text-gray-500">— Alex Chen, Computer Science Student</div>
-                </div>
-                
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Teacher</div>
-                  <p className="text-gray-700 mb-4">"I create lesson plans with ChatGPT and share them with other teachers. No accounts needed - they just click and view."</p>
-                  <div className="text-xs text-gray-500">— Maria Santos, High School Teacher</div>
-                </div>
-                
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Small Business Owner</div>
-                  <p className="text-gray-700 mb-4">"I use AI to write product descriptions and store them here. Easy to share with my team and update our website."</p>
-                  <div className="text-xs text-gray-500">— David Park, Craft Store Owner</div>
-                </div>
-                
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Content Creator</div>
-                  <p className="text-gray-700 mb-4">"Claude helped me create marketing copy, and now I can save the best versions as templates. One click and I have shareable links for my clients."</p>
-                  <div className="text-xs text-gray-500">— Mike R., Marketing Agency</div>
-                </div>
-                
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <div className="text-sm text-gray-500 mb-2">Writer</div>
-                  <p className="text-gray-700 mb-4">"I save character backstories and plot outlines from my AI brainstorming sessions. Great for sharing with beta readers and editors."</p>
-                  <div className="text-xs text-gray-500">— Emma Wilson, Freelance Writer</div>
-                </div>
-              </div>
-            </div>
 
             <div
               id="features"
@@ -633,16 +586,9 @@ export default function DocsPage() {
                   <li>All generated download links expire in 24 hours</li>
                 </ul>
                 <p className="mt-3 text-sm">
-                  For detailed, tool-specific configuration instructions, please
-                  visit our{" "}
-                  <Link
-                    href="/integrations"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Integrations page
-                  </Link>
-                  . There you'll find step-by-step guides for all major AI tools
-                  that support MCP.
+                  For detailed, tool-specific configuration instructions, 
+                  refer to your AI tool's documentation for MCP setup. 
+                  Most major AI tools that support MCP have similar configuration processes.
                 </p>
               </div>
 
