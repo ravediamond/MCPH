@@ -199,26 +199,31 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
               🗂️ Complete AI Workflow Ecosystem
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+              <div className="text-center">
+                <div className="text-2xl mb-1">🧾</div>
+                <div className="font-medium text-gray-700">Recipe</div>
+                <div className="text-gray-500">AI task instructions</div>
+              </div>
               <div className="text-center">
                 <div className="text-2xl mb-1">📝</div>
-                <div className="font-medium text-gray-700">Recipes</div>
-                <div className="text-gray-500">What to do</div>
+                <div className="font-medium text-gray-700">Text</div>
+                <div className="text-gray-500">Any written content</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl mb-1">📚</div>
-                <div className="font-medium text-gray-700">Knowledge</div>
-                <div className="text-gray-500">How to do it</div>
+                <div className="text-2xl mb-1">🖼️</div>
+                <div className="font-medium text-gray-700">Images</div>
+                <div className="text-gray-500">Pictures, charts, diagrams</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl mb-1">🛠️</div>
-                <div className="font-medium text-gray-700">Tools</div>
-                <div className="text-gray-500">What to use</div>
+                <div className="text-2xl mb-1">💻</div>
+                <div className="font-medium text-gray-700">Code</div>
+                <div className="text-gray-500">Scripts and programming</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl mb-1">📊</div>
                 <div className="font-medium text-gray-700">Data</div>
-                <div className="text-gray-500">Where to find it</div>
+                <div className="text-gray-500">Spreadsheets, JSONs, CSVs</div>
               </div>
             </div>
           </div>
@@ -463,7 +468,7 @@ export default function Home() {
           </p>
 
           {/* File upload categories */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-4xl mx-auto mb-8">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-2xl mb-3">📝</div>
               <p className="font-medium text-gray-800">Text</p>
@@ -486,6 +491,46 @@ export default function Home() {
               <div className="text-2xl mb-3">📊</div>
               <p className="font-medium text-gray-800">Data</p>
               <p className="text-xs text-gray-500 mt-1">Spreadsheets, JSONs, CSVs</p>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-2xl mb-3">🧾</div>
+              <p className="font-medium text-gray-800">Recipe</p>
+              <p className="text-xs text-gray-500 mt-1">AI task instructions</p>
+            </div>
+          </div>
+
+          {/* Recipe explanation */}
+          <div className="max-w-3xl mx-auto mb-8">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 shadow-sm">
+              <div className="text-center mb-4">
+                <div className="text-3xl mb-2">🧾</div>
+                <h3 className="text-lg font-semibold text-gray-800">Recipe: AI Task Instructions</h3>
+              </div>
+              <p className="text-gray-700 mb-4 text-center">
+                Recipes are step-by-step instructions that tell AI agents exactly how to execute complex tasks. 
+                Think of them as detailed workflows that can be shared and reused across different AI tools.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="bg-white p-4 rounded-lg border border-green-100">
+                  <h4 className="font-semibold text-gray-800 mb-2">📋 Perfect for:</h4>
+                  <ul className="list-disc pl-4 text-gray-600 space-y-1">
+                    <li>Multi-step workflows</li>
+                    <li>Data processing pipelines</li>
+                    <li>Content creation templates</li>
+                    <li>Quality assurance checklists</li>
+                  </ul>
+                </div>
+                <div className="bg-white p-4 rounded-lg border border-green-100">
+                  <h4 className="font-semibold text-gray-800 mb-2">🎯 Example uses:</h4>
+                  <ul className="list-disc pl-4 text-gray-600 space-y-1">
+                    <li>"Blog post creation process"</li>
+                    <li>"Customer onboarding flow"</li>
+                    <li>"Code review checklist"</li>
+                    <li>"Research methodology"</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 

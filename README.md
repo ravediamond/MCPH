@@ -22,7 +22,7 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Seamless Share Links**: Share your AI artifacts with a single, universal link that works for both humans and AI systems
 - **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
 - **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
-- **Simple Categories**: Organize content across 5 intuitive categories: Text, Images, Code, Data, and Polls
+- **Simple Categories**: Organize content across 6 intuitive categories: Recipe, Text, Images, Code, Data, and Polls
 - **Security Features**: Private by default with optional password protection (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
 - **Poll Collection System**: Create custom poll templates with various field types (text, rating, select, etc.) to collect structured responses on your projects
@@ -31,7 +31,13 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 
 ## 🗂️ Simple Categories
 
-MCPH organizes content into 5 intuitive categories that cover all use cases:
+MCPH organizes content into 6 intuitive categories that cover all use cases:
+
+### **🧾 Recipe** - AI Task Instructions
+
+Step-by-step instructions that tell AI agents exactly how to execute complex tasks. Think of them as detailed workflows that can be shared and reused across different AI tools.
+
+Examples: Multi-step workflows, data processing pipelines, content creation templates, quality assurance checklists, research methodologies.
 
 ### **📝 Text** - Any Written Content
 
