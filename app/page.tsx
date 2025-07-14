@@ -194,34 +194,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Ecosystem Highlights */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-              🗂️ Complete AI Workflow Ecosystem
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="text-center">
-                <div className="text-2xl mb-1">📝</div>
-                <div className="font-medium text-gray-700">Recipes</div>
-                <div className="text-gray-500">What to do</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">📚</div>
-                <div className="font-medium text-gray-700">Knowledge</div>
-                <div className="text-gray-500">How to do it</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">🛠️</div>
-                <div className="font-medium text-gray-700">Tools</div>
-                <div className="text-gray-500">What to use</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">📊</div>
-                <div className="font-medium text-gray-700">Data</div>
-                <div className="text-gray-500">Where to find it</div>
-              </div>
-            </div>
-          </div>
 
           {/* Benefits Tag Line - simplified */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4">
@@ -463,7 +435,7 @@ export default function Home() {
           </p>
 
           {/* File upload categories */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-4xl mx-auto mb-8">
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-2xl mb-3">📝</div>
               <p className="font-medium text-gray-800">Text</p>
@@ -487,7 +459,14 @@ export default function Home() {
               <p className="font-medium text-gray-800">Data</p>
               <p className="text-xs text-gray-500 mt-1">Spreadsheets, JSONs, CSVs</p>
             </div>
+
+            <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="text-2xl mb-3">🧾</div>
+              <p className="font-medium text-gray-800">Recipe</p>
+              <p className="text-xs text-gray-500 mt-1">AI task instructions</p>
+            </div>
           </div>
+
 
           {/* Special AI-only category */}
           <div className="max-w-md mx-auto">
@@ -886,37 +865,6 @@ export default function Home() {
         onClose={() => setWaitingListModalOpen(false)}
       />
 
-      {/* Call to Action */}
-      <section className="py-16 px-4 text-center">
-        <div className="max-w-3xl mx-auto bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200 shadow-sm">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800">
-            Ready to store your AI artifacts in crates?
-          </h2>
-          <p className="text-gray-700 mb-8 text-xl">
-            Sign up for permanent storage and advanced AI workflow features.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-orange-500 rounded-lg shadow hover:bg-orange-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Sign in with Google
-            </Link>
-            <button
-              onClick={() => setWaitingListModalOpen(true)}
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Get Early Access
-            </button>
-            <Link
-              href="/docs"
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-orange-600 bg-white rounded-lg shadow hover:bg-gray-50 transition-all duration-300 border border-orange-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

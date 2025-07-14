@@ -39,6 +39,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         '• Include context tags: ["context:user-research", "context:specs"]\n' +
         '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
         "SIMPLE CATEGORIES:\n" +
+        "• recipe: 🧾 AI task instructions (step-by-step workflows for AI agents)\n" +
         "• text: 📝 Any written content (notes, docs, markdown)\n" +
         "• image: 🖼️ Pictures, charts, diagrams\n" +
         "• code: 💻 Scripts and programming (JS, Python, HTML, CSS)\n" +
@@ -105,6 +106,9 @@ export function registerCratesUploadTool(server: McpServer): void {
         let extension = "";
         if (category) {
           switch (category) {
+            case CrateCategory.RECIPE:
+              extension = ".md";
+              break;
             case CrateCategory.TEXT:
               extension = ".txt";
               break;

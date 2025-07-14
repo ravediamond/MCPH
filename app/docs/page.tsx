@@ -167,7 +167,7 @@ export default function DocsPage() {
                   <b>Simple access model</b> - Upload requires login, viewing doesn't
                 </li>
                 <li>
-                  <b>Complete AI workflow ecosystem</b> - Text, Images, Code, Data, and Polls
+                  <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images, Code, Data, and Polls
                 </li>
               </ul>
 
@@ -403,10 +403,48 @@ export default function DocsPage() {
                     <div className="text-gray-500">Spreadsheets, JSONs, CSVs</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl mb-1">🎯</div>
-                    <div className="font-medium text-gray-700">Polls</div>
-                    <div className="text-gray-500">Interactive feedback forms</div>
+                    <div className="text-2xl mb-1">🧾</div>
+                    <div className="font-medium text-gray-700">Recipe</div>
+                    <div className="text-gray-500">AI task instructions</div>
                   </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6 mb-6">
+                <h3 className="font-bold text-green-800 mb-3 flex items-center">
+                  <span className="bg-green-100 p-2 rounded-lg mr-3">🧾</span>
+                  Recipe: AI Task Instructions
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Recipes are structured, step-by-step instructions that tell AI agents exactly how to execute complex tasks. 
+                  They serve as reusable workflows that can be shared across different AI tools and team members.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">🎯 Key Benefits:</h4>
+                    <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
+                      <li>Consistent task execution across AI tools</li>
+                      <li>Reusable workflows for complex processes</li>
+                      <li>Team knowledge sharing and standardization</li>
+                      <li>Reduced setup time for repetitive tasks</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">📋 Common Examples:</h4>
+                    <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
+                      <li>Content creation workflows</li>
+                      <li>Data analysis procedures</li>
+                      <li>Code review checklists</li>
+                      <li>Customer support protocols</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-white rounded-lg border border-green-100">
+                  <p className="text-sm text-gray-600">
+                    <strong>Example:</strong> A "Blog Post Creation Recipe" might include steps for research, 
+                    outline creation, writing, SEO optimization, and publishing - all documented in a way 
+                    that any AI tool can follow consistently.
+                  </p>
                 </div>
               </div>
 
