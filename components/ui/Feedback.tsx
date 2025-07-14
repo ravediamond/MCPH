@@ -73,12 +73,12 @@ const Feedback: React.FC = () => {
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
-          <span className="hidden md:inline">Support</span>
+          <span className="hidden md:inline">Contact Us</span>
         </button>
       ) : (
         <div className="bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 w-[320px]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-white">Support</h3>
+            <h3 className="text-lg font-medium text-white">Contact Us</h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-400 hover:text-white"

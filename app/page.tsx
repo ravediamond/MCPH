@@ -194,39 +194,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Ecosystem Highlights */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-              🗂️ Complete AI Workflow Ecosystem
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-              <div className="text-center">
-                <div className="text-2xl mb-1">🧾</div>
-                <div className="font-medium text-gray-700">Recipe</div>
-                <div className="text-gray-500">AI task instructions</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">📝</div>
-                <div className="font-medium text-gray-700">Text</div>
-                <div className="text-gray-500">Any written content</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">🖼️</div>
-                <div className="font-medium text-gray-700">Images</div>
-                <div className="text-gray-500">Pictures, charts, diagrams</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">💻</div>
-                <div className="font-medium text-gray-700">Code</div>
-                <div className="text-gray-500">Scripts and programming</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-1">📊</div>
-                <div className="font-medium text-gray-700">Data</div>
-                <div className="text-gray-500">Spreadsheets, JSONs, CSVs</div>
-              </div>
-            </div>
-          </div>
 
           {/* Benefits Tag Line - simplified */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4">
@@ -500,39 +467,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recipe explanation */}
-          <div className="max-w-3xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 shadow-sm">
-              <div className="text-center mb-4">
-                <div className="text-3xl mb-2">🧾</div>
-                <h3 className="text-lg font-semibold text-gray-800">Recipe: AI Task Instructions</h3>
-              </div>
-              <p className="text-gray-700 mb-4 text-center">
-                Recipes are step-by-step instructions that tell AI agents exactly how to execute complex tasks. 
-                Think of them as detailed workflows that can be shared and reused across different AI tools.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="bg-white p-4 rounded-lg border border-green-100">
-                  <h4 className="font-semibold text-gray-800 mb-2">📋 Perfect for:</h4>
-                  <ul className="list-disc pl-4 text-gray-600 space-y-1">
-                    <li>Multi-step workflows</li>
-                    <li>Data processing pipelines</li>
-                    <li>Content creation templates</li>
-                    <li>Quality assurance checklists</li>
-                  </ul>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-green-100">
-                  <h4 className="font-semibold text-gray-800 mb-2">🎯 Example uses:</h4>
-                  <ul className="list-disc pl-4 text-gray-600 space-y-1">
-                    <li>"Blog post creation process"</li>
-                    <li>"Customer onboarding flow"</li>
-                    <li>"Code review checklist"</li>
-                    <li>"Research methodology"</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Special AI-only category */}
           <div className="max-w-md mx-auto">
@@ -931,37 +865,6 @@ export default function Home() {
         onClose={() => setWaitingListModalOpen(false)}
       />
 
-      {/* Call to Action */}
-      <section className="py-16 px-4 text-center">
-        <div className="max-w-3xl mx-auto bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8 border border-orange-200 shadow-sm">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-gray-800">
-            Ready to store your AI artifacts in crates?
-          </h2>
-          <p className="text-gray-700 mb-8 text-xl">
-            Sign up for permanent storage and advanced AI workflow features.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-orange-500 rounded-lg shadow hover:bg-orange-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Sign in with Google
-            </Link>
-            <button
-              onClick={() => setWaitingListModalOpen(true)}
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Get Early Access
-            </button>
-            <Link
-              href="/docs"
-              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-orange-600 bg-white rounded-lg shadow hover:bg-gray-50 transition-all duration-300 border border-orange-300 hover:-translate-y-1 hover:shadow-md"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
