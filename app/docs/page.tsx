@@ -586,16 +586,9 @@ export default function DocsPage() {
                   <li>All generated download links expire in 24 hours</li>
                 </ul>
                 <p className="mt-3 text-sm">
-                  For detailed, tool-specific configuration instructions, please
-                  visit our{" "}
-                  <Link
-                    href="/integrations"
-                    className="text-blue-500 hover:underline"
-                  >
-                    Integrations page
-                  </Link>
-                  . There you'll find step-by-step guides for all major AI tools
-                  that support MCP.
+                  For detailed, tool-specific configuration instructions, 
+                  refer to your AI tool's documentation for MCP setup. 
+                  Most major AI tools that support MCP have similar configuration processes.
                 </p>
               </div>
 
