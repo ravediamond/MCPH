@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FaCheck, FaCopy, FaUpload } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 import { useAuthRedirect } from "../contexts/useAuthRedirect";
 import WaitingListModal from "../components/WaitingListModal";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 
 export default function Home() {
   // Redirect authenticated users to their dashboard if needed
@@ -282,52 +281,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Social Proof / Real Examples */}
-      <section className="py-12 px-4 bg-white border-t border-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-semibold mb-8 text-center text-gray-800">
-            Real examples from our users
-          </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Developer</div>
-              <p className="text-gray-700 mb-4">"I save all my AI-generated code snippets here. Now I can instantly share working examples with my team instead of copy-pasting from chat history."</p>
-              <div className="text-xs text-gray-500">— Sarah K., Frontend Developer</div>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Student</div>
-              <p className="text-gray-700 mb-4">"Perfect for group projects! I save AI-generated study guides and share them with classmates. No more sending huge text messages."</p>
-              <div className="text-xs text-gray-500">— Alex Chen, Computer Science Student</div>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Teacher</div>
-              <p className="text-gray-700 mb-4">"I create lesson plans with ChatGPT and share them with other teachers. No accounts needed - they just click and view."</p>
-              <div className="text-xs text-gray-500">— Maria Santos, High School Teacher</div>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Small Business Owner</div>
-              <p className="text-gray-700 mb-4">"I use AI to write product descriptions and store them here. Easy to share with my team and update our website."</p>
-              <div className="text-xs text-gray-500">— David Park, Craft Store Owner</div>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Content Creator</div>
-              <p className="text-gray-700 mb-4">"Claude helped me create marketing copy, and now I can save the best versions as templates. One click and I have shareable links for my clients."</p>
-              <div className="text-xs text-gray-500">— Mike R., Marketing Agency</div>
-            </div>
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <div className="text-sm text-gray-500 mb-2">Writer</div>
-              <p className="text-gray-700 mb-4">"I save character backstories and plot outlines from my AI brainstorming sessions. Great for sharing with beta readers and editors."</p>
-              <div className="text-xs text-gray-500">— Emma Wilson, Freelance Writer</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Demo Section */}
       <section className="py-16 px-4 bg-gradient-to-br from-orange-50 to-blue-50 border-t border-gray-100">
@@ -769,6 +722,23 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
+                  <span className="text-gray-700">
+                    <strong>50</strong> feedback templates
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   <span className="text-gray-700">Custom expiry dates</span>
                 </li>
                 <li className="flex items-start">
@@ -799,7 +769,7 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-gray-700">Priority support</span>
+                  <span className="text-gray-700">Contact Us support</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -846,23 +816,6 @@ export default function Home() {
                   </svg>
                   <span className="text-gray-700">API access</span>
                 </li>
-                <li className="flex items-start">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2 mt-0.5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-gray-700">
-                    <strong>50</strong> feedback templates
-                  </span>
-                </li>
               </ul>
 
               <div className="text-center">
@@ -870,10 +823,59 @@ export default function Home() {
                   onClick={() => setWaitingListModalOpen(true)}
                   className="inline-block w-full px-6 py-3 text-center font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
-                  Join Waiting List
+                  Get Early Access
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Be an Early Adopter Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-purple-50 to-indigo-50 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Be an Early Adopter
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Join the first wave of users to experience the future of AI content management
+          </p>
+          
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-indigo-200 mb-8">
+            <div className="flex items-center justify-center mb-6">
+              <span className="bg-indigo-100 text-indigo-800 text-sm font-semibold px-4 py-2 rounded-full">
+                ⭐ Limited Time Offer
+              </span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              First 100 Users Get Pro Features Free for 3 Months
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="text-center">
+                <div className="text-3xl mb-2">💎</div>
+                <h4 className="font-semibold text-gray-800 mb-1">100MB File Size</h4>
+                <p className="text-sm text-gray-600">10x larger than free tier</p>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl mb-2">🚀</div>
+                <h4 className="font-semibold text-gray-800 mb-1">10GB Storage</h4>
+                <p className="text-sm text-gray-600">20x more space</p>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl mb-2">⚡</div>
+                <h4 className="font-semibold text-gray-800 mb-1">Priority Features</h4>
+                <p className="text-sm text-gray-600">Advanced analytics & faster API</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setWaitingListModalOpen(true)}
+              className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-sm hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+              🎯 Get Early Access Now
+            </button>
+            <p className="text-sm text-gray-500 mt-4">
+              No credit card required • Pro features activate automatically when available
+            </p>
           </div>
         </div>
       </section>
@@ -900,11 +902,17 @@ export default function Home() {
             >
               Sign in with Google
             </Link>
+            <button
+              onClick={() => setWaitingListModalOpen(true)}
+              className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+              Get Early Access
+            </button>
             <Link
               href="/docs"
               className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-orange-600 bg-white rounded-lg shadow hover:bg-gray-50 transition-all duration-300 border border-orange-300 hover:-translate-y-1 hover:shadow-md"
             >
-              View Documentation
+              Contact Us
             </Link>
           </div>
         </div>
