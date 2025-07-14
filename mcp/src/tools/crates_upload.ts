@@ -33,22 +33,17 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• metadata: Key-value pairs for additional info\n" +
         "• isPublic: Make crate publicly accessible (default: false)\n" +
         "• password: Password protect the crate\n" +
-        "• isDiscoverable: Make crate discoverable in gallery (default: false)\n\n" +
         "TAGGING BEST PRACTICES:\n" +
         '• Use project tags: ["project:website-redesign", "project:chatbot-v2"]\n' +
         '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
         '• Include context tags: ["context:user-research", "context:specs"]\n' +
         '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
-        "ECOSYSTEM CATEGORIES:\n" +
-        "• image: 🖼️ Visual content (photos, diagrams, screenshots)\n" +
-        "• data: 📊 Actual data files (CSVs, PDFs, datasets, JSON/YAML)\n" +
-        "• data_source: 🔗 Information access points (API docs, database guides)\n" +
-        "• visualization: 📈 Charts & graphs (plots, dashboards)\n" +
-        "• recipe: 📝 AI agent instructions (workflows, prompt templates)\n" +
-        "• knowledge: 📚 Documentation & guides (tutorials, references)\n" +
-        "• tools: 🛠️ Available resources (MCP servers, APIs, services)\n" +
-        "• code: 💻 Code snippets & examples (scripts, functions)\n" +
-        "• others: ❓ Everything else\n\n" +
+        "SIMPLE CATEGORIES:\n" +
+        "• text: 📝 Any written content (notes, docs, markdown)\n" +
+        "• image: 🖼️ Pictures, charts, diagrams\n" +
+        "• code: 💻 Scripts and programming (JS, Python, HTML, CSS)\n" +
+        "• data: 📊 Spreadsheets, JSONs, CSVs\n" +
+        "• poll: 🎯 Interactive polls\n\n" +
         "ALLOWED CONTENT TYPES:\n" +
         "• Text: text/plain, text/markdown, text/csv, text/html\n" +
         "• Code: text/javascript, text/typescript, text/python, application/json\n" +
@@ -90,7 +85,6 @@ export function registerCratesUploadTool(server: McpServer): void {
         metadata,
         isPublic,
         password,
-        isDiscoverable,
       } = validationResult.data;
 
       // Ensure we have a proper fileName for JSON content
@@ -111,23 +105,20 @@ export function registerCratesUploadTool(server: McpServer): void {
         let extension = "";
         if (category) {
           switch (category) {
-            case CrateCategory.DATA:
-              extension = ".json";
-              break;
-            case CrateCategory.DATA:
-              extension = ".yaml";
+            case CrateCategory.TEXT:
+              extension = ".txt";
               break;
             case CrateCategory.IMAGE:
               extension = ".png";
               break;
-            case CrateCategory.KNOWLEDGE:
-              extension = ".md";
-              break;
             case CrateCategory.CODE:
-              extension = ".txt";
+              extension = ".js";
               break;
-            case CrateCategory.OTHERS:
-              extension = ".bin";
+            case CrateCategory.DATA:
+              extension = ".json";
+              break;
+            case CrateCategory.POLL:
+              extension = ".json";
               break;
             default:
               extension = ".dat";
@@ -169,8 +160,14 @@ export function registerCratesUploadTool(server: McpServer): void {
       const req = extra?.req as AuthenticatedRequest | undefined;
       const authInfo = extra?.authInfo;
 
-      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-      let ownerId = authInfo?.clientId ?? req?.user?.userId ?? "anonymous";
+      // Require authentication - no anonymous uploads allowed
+      let ownerId = authInfo?.clientId ?? req?.user?.userId;
+
+      if (!ownerId || ownerId === "anonymous") {
+        throw new Error(
+          "Authentication required. Please provide valid API credentials to upload crates.",
+        );
+      }
 
       // If using OAuth authentication (firebase_auth), get the user's email
       if (
@@ -208,7 +205,6 @@ export function registerCratesUploadTool(server: McpServer): void {
         ownerId,
         shared: {
           public: isPublic,
-          isDiscoverable,
           ...(password
             ? { passwordHash: await bcrypt.hash(password, 10) }
             : {}),
@@ -229,21 +225,12 @@ export function registerCratesUploadTool(server: McpServer): void {
         partialCrate.category = category;
       }
 
-      // Add expiration date for anonymous uploads (30 days from now)
-      if (ownerId === "anonymous") {
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 30);
-        partialCrate.expiresAt = expiresAt;
-      }
-
       // Determine if we should return a presigned URL or directly upload
-      const isBinaryCategory = category === CrateCategory.OTHERS;
       const isBinaryContentType =
-        contentType.startsWith("application/") ||
+        contentType.startsWith("application/octet-stream") ||
         contentType === "binary/octet-stream";
 
       const isBigDataType =
-        category === CrateCategory.OTHERS ||
         contentType === "text/csv" ||
         contentType.startsWith("application/octet-stream") ||
         contentType.startsWith("binary/");

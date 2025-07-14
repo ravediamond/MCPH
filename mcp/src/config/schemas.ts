@@ -35,7 +35,6 @@ const UploadCrateBaseParams = z.object({
   metadata: z.record(z.string(), z.string()).optional(),
   isPublic: z.boolean().optional().default(false),
   password: z.string().optional(),
-  isDiscoverable: z.boolean().optional().default(false),
 });
 
 export const UploadCrateParams = UploadCrateBaseParams.refine(
@@ -82,7 +81,6 @@ export const UpdateCrateParams = z.object({
   category: z.nativeEnum(CrateCategory).optional(),
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
-  isDiscoverable: z.boolean().optional(),
 });
 
 // Feedback schemas
@@ -116,12 +114,6 @@ export const GetFeedbackResponsesParams = z.object({
   templateId: z.string(),
   limit: z.number().int().min(1).max(100).optional(),
   startAfter: z.string().optional(),
-});
-
-export const CratesGalleryParams = z.object({
-  limit: z.number().int().min(1).max(50).optional().default(12),
-  startAfter: z.string().optional(),
-  category: z.nativeEnum(CrateCategory).optional(),
 });
 
 export const SocialShareParams = z.object({

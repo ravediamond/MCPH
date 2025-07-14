@@ -43,7 +43,7 @@ export function registerCratesGetTool(server: McpServer): void {
             id: meta.id,
             ownerId: meta.ownerId,
             shared: meta.shared,
-            isAnonymous: meta.ownerId === "anonymous",
+            isAnonymous: false,
           },
           null,
           2,
@@ -64,7 +64,7 @@ export function registerCratesGetTool(server: McpServer): void {
       // Check access permissions
       const isOwner = userUid && userUid === meta.ownerId;
       const isShared = meta.shared?.public === true;
-      const isAnonymous = meta.ownerId === "anonymous";
+      const isAnonymous = false;
 
       // Log permissions for debugging
       console.log("Permission check:", {
@@ -78,19 +78,14 @@ export function registerCratesGetTool(server: McpServer): void {
 
       // Apply access rules:
       // 1. Owner can always access
-      // 2. If shared.public is true, anyone can access (anonymous uploads are public by default)
-      // 3. Anonymous uploads should be public (fail-safe)
-      // 4. If shared.passwordHash exists and caller is not owner, require password
-      if (!isOwner && !isShared && !isAnonymous) {
+      // 2. If shared.public is true, anyone can access
+      // 3. If shared.passwordHash exists and caller is not owner, require password
+      if (!isOwner && !isShared) {
         throw new Error("You don't have permission to access this crate");
       }
 
-      // Password gate for non-owners (skip for anonymous uploads)
-      if (
-        !isOwner &&
-        meta.shared?.passwordHash &&
-        meta.ownerId !== "anonymous"
-      ) {
+      // Password gate for non-owners
+      if (!isOwner && meta.shared?.passwordHash) {
         if (!password) {
           throw new Error("Password required to access this crate");
         }

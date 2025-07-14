@@ -13,7 +13,7 @@
 
 ![MCPH Demo](https://mcph.io/assets/demo.gif)
 
-MCPH is an AI artifact storage and sharing system that lets you package your AI-generated content in crates. It provides permanent storage for your artifacts and auto-expiry for guest uploads. It works with ChatGPT, Claude, and other AI tools that support the Model Context Protocol (MCP).
+MCPH is an AI artifact storage and sharing system that lets you package your AI-generated content in crates. It provides permanent storage for your artifacts. It works with ChatGPT, Claude, and other AI tools that support the Model Context Protocol (MCP).
 
 ## Features at a Glance
 
@@ -22,63 +22,43 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Seamless Share Links**: Share your AI artifacts with a single, universal link that works for both humans and AI systems
 - **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
 - **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
-- **Comprehensive Ecosystem**: Organize content across 9 strategic categories designed to create a complete AI workflow ecosystem
-- **Security Features**: Private by default with optional password protection, 30-day expiration for anonymous uploads (authenticated users' crates have no expiration)
+- **Simple Categories**: Organize content across 5 intuitive categories: Text, Images, Code, Data, and Polls
+- **Security Features**: Private by default with optional password protection (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
-- **Feedback Collection System**: Create custom feedback templates with various field types (text, rating, select, etc.) to collect structured feedback on your projects
-- **Public Gallery**: Discover and explore community-shared crates in a beautiful, categorized gallery
+- **Poll Collection System**: Create custom poll templates with various field types (text, rating, select, etc.) to collect structured responses on your projects
 - **Social Sharing**: Share your crates across social platforms with smart markdown formatting for Twitter, Reddit, LinkedIn, Discord, Telegram, and Email
 - **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
 
-## 🗂️ Category Ecosystem
+## 🗂️ Simple Categories
 
-MCPH organizes content into 9 strategic categories that create a comprehensive AI workflow ecosystem:
+MCPH organizes content into 5 intuitive categories that cover all use cases:
 
-### **🖼️ Image** - Visual Content
+### **📝 Text** - Any Written Content
 
-Photos, diagrams, screenshots, artwork, and any visual media files.
+Notes, documentation, markdown files, guides, tutorials, and any text-based content.
 
-### **📊 Data** - Actual Data Files
+### **🖼️ Images** - Pictures, Charts, Diagrams
 
-CSVs, PDFs, Excel files, databases, datasets, JSON/YAML files, and other structured data.
+Photos, diagrams, screenshots, charts, graphs, and any visual media files.
 
-### **🔗 Data Source** - Information Access Points
+### **💻 Code** - Scripts and Programming
 
-API documentation, database connection guides, data feed information, and instructions on where to get data.
+Code snippets, scripts, functions, HTML, CSS, JavaScript, Python, and any programming content.
 
-### **📈 Visualization** - Charts & Graphs
+### **📊 Data** - Spreadsheets, JSONs, CSVs
 
-Charts, graphs, plots, dashboards, and visual representations of data.
+CSVs, JSON files, YAML, Excel files, databases, datasets, and structured data.
 
-### **📝 Recipe** - AI Agent Instructions
+### **🎯 Polls** - Interactive Polls
 
-Step-by-step instructions for AI agents, workflows, prompt templates, and automation guides.
+Poll forms, surveys, interactive forms, and data collection templates.
 
-### **📚 Knowledge** - Documentation & Guides
+**Benefits of Simplified Categories:**
 
-Documentation, tutorials, reference materials, guides, and educational content.
-
-### **🛠️ Tools** - Available Resources
-
-Directories of MCP servers, APIs, services, software tools, and available resources.
-
-### **💻 Code** - Code Snippets & Examples
-
-Pure code snippets, examples, scripts, functions, and programming content.
-
-### **❓ Others** - Everything Else
-
-Any content that doesn't fit into the above categories.
-
-**This ecosystem enables users to find:**
-
-- **What to do** (Recipes)
-- **How to do it** (Code, Knowledge)
-- **What tools to use** (Tools)
-- **Where to get data** (Data Source)
-- **Actual data** (Data)
-- **Visual content** (Image, Visualization)
-- **Everything else** (Others)
+- **No confusion** - each category is immediately understood
+- **No overlap** - clear boundaries between types
+- **Covers everything** - Text is broad enough for all written content
+- **User-friendly** - non-technical users know exactly where things go
 
 ## Quick Start
 
@@ -99,6 +79,27 @@ Any content that doesn't fit into the above categories.
    "Create a markdown guide explaining user authentication best practices and share it via MCPH."
    ```
    The AI will create the content and provide you with a shareable link that looks like: `https://mcph.io/crate/abc123`
+
+## 🔓 Simple Access Model
+
+MCPH uses a simple, intuitive access model that balances security with convenience:
+
+### **Upload = Login Required** 🔒
+- You need a Google account to save and organize your AI creations
+- Prevents spam and ensures proper ownership
+- Free accounts get permanent storage (no expiration for authenticated users)
+
+### **View = No Login Needed** 🌐
+- Anyone with a public link can view shared content instantly
+- Perfect for sharing with clients, team members, or the public
+- No barriers for people viewing your shared content
+- Works everywhere - email, Slack, social media, etc.
+
+### **Benefits**
+- **For creators**: Organized, secure storage with proper attribution
+- **For viewers**: Instant access without signup friction
+- **For professionals**: Share with clients who don't need accounts
+- **For viral content**: Public links work anywhere without barriers
 
 ## 🚀 6 Power Use Cases for MCPH
 
@@ -154,16 +155,16 @@ Switch between projects instantly with full context. Each project has its own "b
 
 **Real Example:** "Switch to the e-commerce project" → AI immediately knows to use Next.js, Stripe APIs, and your custom auth flow.
 
-### 5. Dynamic Feedback Collection System 📊
+### 5. Dynamic Poll Collection System 📊
 
-Build smart surveys that adapt based on responses, with AI analyzing feedback in real-time.
+Build smart surveys that adapt based on responses, with AI analyzing poll data in real-time.
 
 **Implementation Steps:**
 
-1. **Create feedback template**: Rating + select + text fields
+1. **Create poll template**: Rating + select + text fields
 2. **Share form link**: Send to users or embed in your app
 3. **Collect responses**: All data stored in your account
-4. **AI analyzes**: "What patterns do you see in user feedback?"
+4. **AI analyzes**: "What patterns do you see in user responses?"
 5. **Iterate**: Update product based on insights
 
 **Real Example:** Create a bug report form that AI monitors. When similar bugs are reported, AI can suggest known fixes or escalate critical issues.
@@ -181,79 +182,6 @@ Connect ideas, research, and insights into a searchable knowledge network that r
 5. **AI synthesizes**: "Summarize my thinking evolution on AI ethics"
 
 **Real Example:** Research competitive products → store findings in tagged crates → AI reveals market gaps you hadn't noticed.
-
-## 🎨 Gallery & Sharing Features
-
-### Public Gallery
-
-Discover amazing AI artifacts created by the community! The MCPH gallery showcases public crates that creators have chosen to make discoverable.
-
-**Key Features:**
-
-- **Category Filtering**: Browse by content type (Markdown, Code, Images, JSON, etc.)
-- **Beautiful Grid Layout**: Clean, responsive design that showcases content previews
-- **Creator Attribution**: See who created each crate with proper attribution
-- **One-Click Access**: Instantly view or copy any public crate to your collection
-- **Responsive Design**: Perfect experience on desktop and mobile
-
-**How to Make Your Crates Discoverable:**
-
-1. Create a crate and make it public
-2. Enable "Make Discoverable" in the sharing settings
-3. Your crate appears in the public gallery for others to find
-
-Visit the gallery at: [mcph.io/gallery](https://mcph.io/gallery)
-
-### Social Sharing
-
-Share your crates across all major social platforms with intelligent formatting that adapts to each platform's capabilities.
-
-**Supported Platforms:**
-
-- **Twitter/X**: Direct tweet composition with custom messages
-- **Reddit**: Creates text posts with proper title and body formatting
-- **LinkedIn**: Opens share dialog with message copied for easy pasting
-- **Discord**: Copies formatted markdown message to clipboard
-- **Telegram**: Direct sharing with custom message support
-- **Email**: Composes email with subject and body
-
-**Smart Markdown Conversion:**
-
-- **Discord & Reddit**: Full markdown support (bold, italic, links, code blocks)
-- **Telegram**: Converts to Telegram's markdown syntax automatically
-- **Twitter, LinkedIn, Email**: Strips markdown and converts to clean plain text
-
-**How to Use:**
-
-1. Open any crate you own
-2. Click "Manage Sharing" and make it public
-3. Use the social sharing section to customize your message with markdown
-4. Click any platform button to share instantly
-
-### Anonymous vs. Logged-in Users
-
-MCPH offers different capabilities depending on whether you are logged in or using the service anonymously:
-
-| Feature           | Anonymous Users | Logged-in Users |
-| ----------------- | --------------- | --------------- |
-| Download Crates   | ✓               | ✓               |
-| Upload Crates     | ✗               | ✓               |
-| Search Crates     | ✗               | ✓               |
-| Delete Crates     | ✗               | ✓               |
-| Manage API Keys   | ✗               | ✓               |
-| Create Feedback   | ✗               | ✓ (5 templates) |
-| Submit Feedback   | ✓               | ✓               |
-| Browse Gallery    | ✓               | ✓               |
-| Social Sharing    | ✗               | ✓               |
-| Inline Editing    | ✗               | ✓ (own crates)  |
-| Make Discoverable | ✗               | ✓               |
-
-For anonymous users:
-
-- **Anonymous uploads** are available through AI assistants that support MCP
-- **30-day expiration** - your content will be automatically deleted after 30 days
-- **Limited management** - you can't search, organize, or manage your files
-- **No MCP all tools access** - you can only use the crates_get tool to get a crate by its ID. You cannot use the other tools.
 
 ## Development
 
@@ -320,9 +248,9 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
 - **crates_list**: List and discover your stored crates
   - **Input**: `{ limit?: number, startAfter?: string, category?: string }`
   - **Output**: `{ crates: [ { id, title, description, category, tags, shared, ... }, ... ], lastCrateId, hasMore }`
-  - **Features**: Pagination support, category filtering (including 'feedback' templates), tag-based organization
+  - **Features**: Pagination support, category filtering (including 'poll' templates), tag-based organization
   - **Permissions**: Requires authentication; shows only user's crates
-  - **AI Usage**: "List my crates", "Show my feedback templates", "Find my recent uploads"
+  - **AI Usage**: "List my crates", "Show my poll templates", "Find my recent uploads"
 
 - **crates_get**: Retrieve and display crate contents
   - **Input**: `{ id: string, password?: string }`
@@ -335,7 +263,7 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
   - **Input**: `{ fileName: string, contentType: string, data: string, title?: string, description?: string, tags?: string[], category?: string, isPublic?: boolean, password?: string }`
   - **Output**: `{ crate: CrateObject, content: [...] }` or `{ uploadUrl, crateId }` (for large files)
   - **Features**: Intelligent categorization, tagging best practices, dual upload methods, expiration handling
-  - **Permissions**: Authenticated users get permanent storage; anonymous uploads expire in 30 days
+  - **Permissions**: Authenticated users get permanent storage
   - **AI Usage**: "Upload this file as a crate titled 'Project Requirements'", "Save this with tags project:webapp, type:specs"
 
 - **crates_update**: Modify existing crate metadata and content
@@ -386,7 +314,7 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
   - **Input**: `{ id: string }`
   - **Output**: `{ crate: NewCrateObject, content: [...] }`
   - **Features**: Complete duplication, removes "Copy of" prefix, converts to private ownership
-  - **Permissions**: Can copy public crates and anonymous uploads; removes expiration on copy
+  - **Permissions**: Can copy public crates
   - **AI Usage**: "Copy this public crate", "Save a copy of crate abc123 to my collection"
 
 ### Advanced Search & Discovery
@@ -397,37 +325,37 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
   - **Features**:
     - Semantic search with vector embeddings for metadata understanding
     - Tag-based filtering with hierarchical support (`project:webapp`, `type:docs`)
-    - Category filtering (including feedback templates: `category: 'feedback'`)
+    - Category filtering (including poll templates: `category: 'poll'`)
     - Relevance scoring and intelligent ranking
     - Full-text search across titles, descriptions, and tags
   - **Permissions**: Searches only user's crates; requires authentication
-  - **AI Usage**: "Find my React components", "Search for project documentation", "Find feedback templates about mobile apps"
+  - **AI Usage**: "Find my React components", "Search for project documentation", "Find poll templates about mobile apps"
 
-### Feedback Collection System
+### Poll Collection System
 
-- **feedback_template_create**: Build custom feedback forms with validation
+- **poll_template_create**: Build custom poll forms with validation
   - **Input**: `{ title: string, description?: string, fields: Array<FieldConfig>, isPublic?: boolean, tags?: string[], linkedCrates?: string[] }`
-  - **Output**: `{ success: true, template: FeedbackTemplate, content: [...] }`
+  - **Output**: `{ success: true, template: PollTemplate, content: [...] }`
   - **Features**:
     - 6 field types: text, number, boolean, select, multiselect, rating
     - Custom validation rules, required/optional fields, dropdown options
-    - Automatic storage as both feedback template AND crate (category: 'feedback')
+    - Automatic storage as both poll template AND crate (category: 'poll')
     - Tag-based organization, public/private templates, linked crate references
   - **Limits**: 5 templates per user (Free), 50 templates (Pro)
-  - **AI Usage**: "Create feedback form for product reviews", "Build survey with rating and text fields"
+  - **AI Usage**: "Create poll form for product reviews", "Build survey with rating and text fields"
 
-- **feedback_submit**: Submit responses to feedback templates with validation
+- **poll_submit**: Submit responses to poll templates with validation
   - **Input**: `{ templateId: string, responses: Record<string, any>, metadata?: Record<string, any> }`
-  - **Output**: `{ success: true, response: FeedbackResponse, content: [...] }`
+  - **Output**: `{ success: true, response: PollResponse, content: [...] }`
   - **Features**:
     - Field-specific validation (type checking, required fields, option validation)
     - Support for all field types with proper formatting
-    - Anonymous submissions supported, metadata tracking
+    - User submissions with metadata tracking
     - Real-time validation with helpful error messages
   - **Permissions**: Anyone can submit to open public templates
-  - **AI Usage**: "Submit feedback to template abc123", "Fill out the product survey"
+  - **AI Usage**: "Submit response to template abc123", "Fill out the product survey"
 
-- **feedback_responses_get**: Analyze feedback data with comprehensive analytics
+- **poll_responses_get**: Analyze poll data with comprehensive analytics
   - **Input**: `{ templateId: string, limit?: number, startAfter?: string }`
   - **Output**: `{ success: true, template: TemplateInfo, responses: [...], statistics: {...}, pagination: {...}, content: [...] }`
   - **Features**:
@@ -437,7 +365,7 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
     - Pagination support for large datasets, export-ready format
     - Comprehensive insights for data-driven decisions
   - **Permissions**: Only template owners can access response data
-  - **AI Usage**: "Show responses for my feedback template", "Analyze survey results", "Get feedback analytics"
+  - **AI Usage**: "Show responses for my poll template", "Analyze survey results", "Get poll analytics"
 
 ## How the MCP Endpoint Works
 
@@ -473,16 +401,16 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 - **Managing Files**: "Show me my files", "Save this document", "Delete that old file"
 - **Sharing Content**: "Make this public", "Give me a shareable link", "Make this private again"
 - **Viewing Content**: "Show me that document", "What's in that file?"
-- **Collecting Feedback**: "Create a feedback form for my product", "Show me responses to my survey", "Close this feedback template"
+- **Collecting Poll Data**: "Create a poll form for my product", "Show me responses to my survey", "Close this poll template"
 
 ### Key Benefits
 
 - **No learning curve** - talk about files naturally
-- **Persistent storage** - files remain accessible across sessions indefinitely for authenticated users, 30 days for anonymous uploads
+- **Persistent storage** - files remain accessible across sessions indefinitely for authenticated users
 - **Smart search** - AI finds files using keywords and context
 - **Instant sharing** - generate public links with simple requests
 - **Cross-session continuity** - reference files from previous conversations
-- **Feedback collection** - create structured forms and collect responses with analytics
+- **Poll collection** - create structured forms and collect responses with analytics
 
 ### Getting Started with AI Assistants
 
@@ -517,4 +445,4 @@ For detailed, tool-specific configuration instructions, please visit our [Integr
 
 ---
 
-MCPH is open for public use. For questions or feedback, visit [mcph.io](https://mcph.io).
+MCPH is open for public use. For questions or support, visit [mcph.io](https://mcph.io).

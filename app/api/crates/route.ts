@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       if (file.type.startsWith("image/")) {
         category = CrateCategory.IMAGE;
       } else if (file.name.endsWith(".md") || file.name.endsWith(".markdown")) {
-        category = CrateCategory.KNOWLEDGE;
+        category = CrateCategory.TEXT;
       } else if (file.type.includes("json") || file.name.endsWith(".json")) {
         // Added check for .json extension
         category = CrateCategory.DATA;
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       ) {
         category = CrateCategory.CODE;
       } else {
-        category = CrateCategory.OTHERS;
+        category = CrateCategory.TEXT;
       }
     }
 

@@ -27,7 +27,6 @@ import {
   FaComments,
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
-import RecentlyClaimedCrates from "../../components/RecentlyClaimedCrates";
 import DeleteModal from "../../components/home/DeleteModal";
 import APIQuotaInfo from "../../components/home/APIQuotaInfo";
 import SearchBar from "../../components/home/SearchBar";
@@ -660,7 +659,6 @@ export default function CratesPage() {
         )}
 
         {/* Recently Claimed Crates */}
-        {user && <RecentlyClaimedCrates />}
 
         {/* File Grid */}
         <div>

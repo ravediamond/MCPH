@@ -11,7 +11,6 @@ import {
   FaHome,
   FaPuzzlePiece,
   FaCommentDots,
-  FaImages,
 } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,13 +79,7 @@ export default function Header() {
                 </Link>
               </>
             )}
-            {/* Always show Gallery, Integrations and Documentation */}
-            <Link
-              href="/gallery"
-              className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/gallery") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
-            >
-              <FaImages className="mr-1 h-4 w-4" /> Gallery
-            </Link>
+            {/* Always show Integrations and Documentation */}
             <Link
               href="/integrations"
               className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isActive("/integrations") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
@@ -187,14 +180,7 @@ export default function Header() {
                   </Link>
                 </>
               )}
-              {/* Always show Gallery, Integrations and Documentation */}
-              <Link
-                href="/gallery"
-                className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/gallery") ? "bg-gray-100 text-gray-900" : ""}`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <FaImages className="mr-2 h-4 w-4" /> Gallery
-              </Link>
+              {/* Always show Integrations and Documentation */}
               <Link
                 href="/integrations"
                 className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/integrations") ? "bg-gray-100 text-gray-900" : ""}`}

@@ -15,8 +15,14 @@ import bcrypt from "bcrypt";
  */
 export async function POST(req: NextRequest) {
   try {
-    // Check for authenticated user
+    // Require authentication - no more anonymous uploads
     const userInfo = await getUserFromRequest(req);
+    if (!userInfo?.uid) {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in to upload files." },
+        { status: 401 },
+      );
+    }
 
     const formData = await req.formData();
 
@@ -47,16 +53,14 @@ export async function POST(req: NextRequest) {
     // If a category is explicitly provided, use it; otherwise, fall back to fileType or undefined
     const fileType = categoryParam || fileTypeParam || undefined;
 
-    // Use authenticated user ID if available, otherwise use form userId or "anonymous"
-    const userId = userInfo?.uid || formUserId || "anonymous";
+    // Use authenticated user ID
+    const userId = userInfo.uid;
 
     // New: Read sharing options from formData
     const isSharedStr = formData.get("isShared") as string | null;
-    const isDiscoverableStr = formData.get("isDiscoverable") as string | null;
     const passwordStr = formData.get("password") as string | null;
 
     const isPublic = isSharedStr === "true";
-    const isDiscoverable = isDiscoverableStr === "true";
     let passwordHash: string | null = null;
 
     if (isPublic && passwordStr && passwordStr.length > 0) {
@@ -65,7 +69,6 @@ export async function POST(req: NextRequest) {
 
     const sharingOptions: CrateSharing = {
       public: isPublic,
-      isDiscoverable,
       ...(passwordHash ? { passwordHash } : {}),
     };
 

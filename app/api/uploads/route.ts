@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
+import { getUserFromRequest } from "@/lib/apiKeyAuth";
 
 // Helper to get client IP
 function getClientIp(req: NextRequest): string {
@@ -12,6 +13,14 @@ function getClientIp(req: NextRequest): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Require authentication - no more anonymous uploads
+    const userInfo = await getUserFromRequest(req);
+    if (!userInfo?.uid) {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in to upload files." },
+        { status: 401 },
+      );
+    }
     // Check if the request is multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
@@ -118,9 +127,9 @@ export async function POST(req: NextRequest) {
       metadata,
       category: fileType ? (fileType as any) : undefined,
       tags: tags, // Add the parsed tags
-      // Set anonymous uploads to public by default
-      ownerId: "anonymous", // Ensure it's marked as anonymous
-      shared: { public: true }, // Make sure it's public
+      // Use authenticated user ID
+      ownerId: userInfo.uid,
+      shared: { public: false }, // Private by default
     });
 
     // Generate crate page URL

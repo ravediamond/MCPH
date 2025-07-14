@@ -33,10 +33,10 @@ const MIME_TYPE_TO_CATEGORY: Record<string, CrateCategory> = {
   "application/xml": CrateCategory.DATA,
   "text/xml": CrateCategory.DATA,
 
-  // Knowledge/Documentation
-  "text/markdown": CrateCategory.KNOWLEDGE,
-  "text/x-markdown": CrateCategory.KNOWLEDGE,
-  "text/plain": CrateCategory.KNOWLEDGE,
+  // Text/Documentation
+  "text/markdown": CrateCategory.TEXT,
+  "text/x-markdown": CrateCategory.TEXT,
+  "text/plain": CrateCategory.TEXT,
 
   // Code
   "application/javascript": CrateCategory.CODE,
@@ -75,13 +75,13 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".db": CrateCategory.DATA,
   ".sqlite": CrateCategory.DATA,
 
-  // Knowledge/Documentation
-  ".md": CrateCategory.KNOWLEDGE,
-  ".markdown": CrateCategory.KNOWLEDGE,
-  ".txt": CrateCategory.KNOWLEDGE,
-  ".doc": CrateCategory.KNOWLEDGE,
-  ".docx": CrateCategory.KNOWLEDGE,
-  ".rtf": CrateCategory.KNOWLEDGE,
+  // Text/Documentation
+  ".md": CrateCategory.TEXT,
+  ".markdown": CrateCategory.TEXT,
+  ".txt": CrateCategory.TEXT,
+  ".doc": CrateCategory.TEXT,
+  ".docx": CrateCategory.TEXT,
+  ".rtf": CrateCategory.TEXT,
 
   // Code
   ".js": CrateCategory.CODE,
@@ -106,10 +106,10 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   ".sql": CrateCategory.CODE,
   ".log": CrateCategory.CODE,
 
-  // Visualization
-  ".chart": CrateCategory.VISUALIZATION,
-  ".graph": CrateCategory.VISUALIZATION,
-  ".plot": CrateCategory.VISUALIZATION,
+  // Chart files -> Images
+  ".chart": CrateCategory.IMAGE,
+  ".graph": CrateCategory.IMAGE,
+  ".plot": CrateCategory.IMAGE,
 };
 
 /**
@@ -133,8 +133,8 @@ export function resolveCategory(
     return EXTENSION_TO_CATEGORY[extension];
   }
 
-  // Default to others if we can't determine the category
-  return CrateCategory.OTHERS;
+  // Default to text if we can't determine the category
+  return CrateCategory.TEXT;
 }
 
 /**
