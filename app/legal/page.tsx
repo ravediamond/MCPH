@@ -81,8 +81,8 @@ export default function LegalHubPage() {
                 <p className="text-gray-600 mb-4">
                   MCPH is committed to protecting your privacy. This Privacy
                   Policy explains how we collect, use, and safeguard your
-                  information when you use our AI artifact sharing service. We've
-                  designed our service with privacy as a core principle,
+                  information when you use our AI artifact sharing service.
+                  We've designed our service with privacy as a core principle,
                   minimizing data collection and giving you full control over
                   your data retention.
                 </p>
@@ -100,10 +100,7 @@ export default function LegalHubPage() {
                     service operation
                   </li>
                   <li>Files are encrypted at rest in Google Cloud Storage</li>
-                  <li>
-                    We don't track users or require account creation for basic
-                    usage
-                  </li>
+                  <li>We don't track users</li>
                   <li>
                     We maintain minimal logs with a short retention period (7
                     days)
@@ -167,10 +164,10 @@ export default function LegalHubPage() {
                   About MCPH
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  MCPH was built with a simple mission: to make secure AI artifact
-                  sharing effortless while prioritizing privacy through
-                  user-controlled storage. We believe that crate sharing should be
-                  simple, secure, and respect your privacy by default.
+                  MCPH was built with a simple mission: to make secure AI
+                  artifact sharing effortless while prioritizing privacy through
+                  user-controlled storage. We believe that crate sharing should
+                  be simple, secure, and respect your privacy by default.
                 </p>
 
                 <h3 className="text-xl font-semibold text-primary-500 mb-3">

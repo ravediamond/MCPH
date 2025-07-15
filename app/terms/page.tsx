@@ -10,7 +10,7 @@ export default function TermsPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Terms of Service
           </h1>
-          <p className="text-gray-600">Last updated: June 19, 2025</p>
+          <p className="text-gray-600">Last updated: July 15, 2025</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
@@ -23,8 +23,8 @@ export default function TermsPage() {
               sharing copyrighted material you don't own.
             </li>
             <li>
-              Authenticated user crates are stored indefinitely until you
-              choose to delete them.
+              Uploading requires an authenticated account. Links remain active
+              until you delete the file.
             </li>
             <li>
               We can remove content and block users who violate these terms.
@@ -62,12 +62,18 @@ export default function TermsPage() {
           </p>
 
           <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
-            <li>Google account required for authenticated storage</li>
             <li>
-              Authenticated user crates are stored indefinitely until you
-              delete them
+              To upload or otherwise add content to MCPH you must authenticate
+              using an approved OAuth provider (Google or GitHub).
             </li>
-            <li>Maximum file size limit of 10MB per upload for free accounts</li>
+            <li>
+              Your crates remain stored indefinitely. You may delete a crate at
+              any time via the dashboard or API; deletion is permanent after 30
+              days in cold backup.
+            </li>
+            <li>
+              Maximum file size limit of 10MB per upload for free accounts
+            </li>
             <li>Rate limits to prevent abuse</li>
           </ul>
 
@@ -211,6 +217,16 @@ export default function TermsPage() {
             contact us at:
           </p>
           <p className="text-primary-500">legal@mcph.io</p>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            Change Log
+          </h2>
+          <p className="text-gray-600 mb-2">
+            <strong>15 Jul 2025</strong> – Removed guest-upload language;
+            clarified indefinite retention.
+          </p>
         </div>
       </div>
     </div>

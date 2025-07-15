@@ -21,19 +21,19 @@ export const metadata = {
   metadataBase: new URL("https://mcph.io"),
   title: "MCPH | Secure, Simple Crate Sharing",
   description:
-    "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage for you and auto-expiry for guests.",
+    "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage. Authentication required to upload; anyone can view shared links.",
   keywords: [
     "crate sharing",
-    "temporary crates",
+    "permanent storage",
     "secure crate transfer",
     "crate upload",
-    "auto-expiring",
+    "AI artifacts",
   ],
   authors: [{ name: "MCPH Team" }],
   openGraph: {
     title: "MCPH | Secure, Simple Crate Sharing",
     description:
-      "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage for you and auto-expiry for guests.",
+      "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage. Authentication required to upload; anyone can view shared links.",
     url: "https://mcph.io",
     siteName: "MCPH",
     images: [

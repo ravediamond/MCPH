@@ -10,7 +10,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Privacy Policy
           </h1>
-          <p className="text-gray-600">Last updated: June 19, 2025</p>
+          <p className="text-gray-600">Last updated: July 15, 2025</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
@@ -19,13 +19,12 @@ export default function PrivacyPage() {
           </h2>
           <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
             <li>
-              We collect minimal technical information (like your IP address for
-              security) and keep it for 7 days.
+              We store your email, OAuth provider ID, and crate metadata. We do{" "}
+              <strong>not</strong> store IPs for more than 7 days (abuse
+              prevention).
             </li>
             <li>
-              For authenticated users, crates are stored indefinitely until you
-              choose to delete them. Guest uploads may have temporary storage
-              limitations.
+              Crates are stored indefinitely until you choose to delete them.
             </li>
             <li>We do not track you or sell your data.</li>
           </ul>
@@ -66,12 +65,11 @@ export default function PrivacyPage() {
                 The crate itself (encrypted at rest in Google Cloud Storage)
               </li>
               <li>Basic metadata such as filename, file type, and size</li>
-              <li>For authenticated users: indefinite storage until deletion</li>
+              <li>Retained until the authenticated owner deletes it</li>
             </ul>
             <p className="text-gray-600 font-medium">
-              Authenticated user crates are stored indefinitely until you
-              choose to delete them, giving you full control over your data
-              retention.
+              Crates are stored indefinitely until you choose to delete them,
+              giving you full control over your data retention.
             </p>
           </div>
 
@@ -90,8 +88,8 @@ export default function PrivacyPage() {
               <li>Error information (if something goes wrong)</li>
             </ul>
             <p className="text-gray-600 mt-3">
-              All logs have a short retention period (7 days) after which they
-              are automatically purged.
+              We log IP addresses for a maximum of 7 days solely to detect
+              abuse; we do not use them for marketing or analytics.
             </p>
           </div>
         </div>
@@ -110,7 +108,7 @@ export default function PrivacyPage() {
               crates available for download)
             </li>
             <li>
-              To provide data management capabilities and user-controlled 
+              To provide data management capabilities and user-controlled
               content deletion
             </li>
             <li>
@@ -141,8 +139,8 @@ export default function PrivacyPage() {
           </ul>
 
           <p className="text-gray-600 mb-4">
-            Metadata is stored in Firebase/Firestore with persistent storage
-            for authenticated users and appropriate access controls.
+            Metadata is stored in Firebase/Firestore with persistent storage for
+            authenticated users and appropriate access controls.
           </p>
 
           <p className="text-gray-600 font-medium">

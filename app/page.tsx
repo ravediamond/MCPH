@@ -23,7 +23,8 @@ export default function Home() {
               Save and share anything from your AI chats
             </h1>
             <p className="text-xl text-gray-600 max-w-xl mx-auto mt-4">
-              One click in Claude or ChatGPT → Permanent link to share
+              Upload with one click after you sign in—anyone can open the link,
+              no account needed.
             </p>
             <div className="mt-6">
               <Link
@@ -124,76 +125,118 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
               <div className="text-3xl mb-3">💾</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Never lose AI creations</h3>
-              <p className="text-gray-600">Everything you create in AI chats, saved permanently and searchable</p>
+              <h3 className="font-semibold text-gray-800 mb-2">
+                Never lose AI creations
+              </h3>
+              <p className="text-gray-600">
+                Everything you create in AI chats, saved permanently and
+                searchable
+              </p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
               <div className="text-3xl mb-3">🔗</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Share with one link</h3>
-              <p className="text-gray-600">Turn any AI creation into a shareable link. No login required for viewers!</p>
+              <h3 className="font-semibold text-gray-800 mb-2">
+                Share with one link
+              </h3>
+              <p className="text-gray-600">
+                Turn any AI creation into a shareable link. No login required
+                for viewers!
+              </p>
             </div>
             <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
               <div className="text-3xl mb-3">🤖</div>
-              <h3 className="font-semibold text-gray-800 mb-2">Works in Claude & ChatGPT</h3>
-              <p className="text-gray-600">One command in your favorite AI tool saves everything instantly</p>
+              <h3 className="font-semibold text-gray-800 mb-2">
+                Works in Claude & ChatGPT
+              </h3>
+              <p className="text-gray-600">
+                One command in your favorite AI tool saves everything instantly
+              </p>
             </div>
           </div>
 
           {/* How It Works in 3 Steps */}
           <div className="bg-gradient-to-r from-green-50 to-blue-50 p-8 rounded-xl border border-green-100 mb-8">
-            <h3 className="text-2xl font-semibold text-center text-gray-800 mb-8">How It Works</h3>
+            <h3 className="text-2xl font-semibold text-center text-gray-800 mb-8">
+              How It Works
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-sm">
                   <span className="text-2xl">🔑</span>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">1. Sign in with Google</h4>
-                <p className="text-gray-600">Quick setup with your Google account - no passwords to remember</p>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  1. Sign in with Google
+                </h4>
+                <p className="text-gray-600">
+                  Quick setup with your Google account - no passwords to
+                  remember
+                </p>
               </div>
               <div className="text-center">
                 <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-sm">
                   <span className="text-2xl">🔌</span>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">2. Connect to AI tools</h4>
-                <p className="text-gray-600">Works with Claude, ChatGPT, and other AI assistants you already use</p>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  2. Connect to AI tools
+                </h4>
+                <p className="text-gray-600">
+                  Works with Claude, ChatGPT, and other AI assistants you
+                  already use
+                </p>
               </div>
               <div className="text-center">
                 <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 shadow-sm">
                   <span className="text-2xl">💫</span>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">3. Save & share anything</h4>
-                <p className="text-gray-600">One command saves your work and creates a shareable link instantly</p>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  3. Save & share anything
+                </h4>
+                <p className="text-gray-600">
+                  One command saves your work and creates a shareable link
+                  instantly
+                </p>
               </div>
             </div>
           </div>
 
           {/* Access Model Explanation */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-xl border border-blue-100 mb-8">
-            <h3 className="text-2xl font-semibold text-center text-gray-800 mb-6">Simple Access Model</h3>
+            <h3 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+              Simple Access Model
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
                 <div className="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl">🔒</span>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">Upload = Login Required</h4>
-                <p className="text-gray-600">You need a Google account to save and organize your AI creations</p>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  Upload = Login Required
+                </h4>
+                <p className="text-gray-600">
+                  You need a Google account to save and organize your AI
+                  creations
+                </p>
               </div>
               <div className="text-center">
                 <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl">🌐</span>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">View = No Login Needed</h4>
-                <p className="text-gray-600">Anyone with a public link can view shared content instantly</p>
+                <h4 className="font-semibold text-gray-800 mb-2">
+                  View = No Login Needed
+                </h4>
+                <p className="text-gray-600">
+                  Anyone with a public link can view shared content instantly
+                </p>
               </div>
             </div>
             <div className="text-center mt-6">
               <p className="text-sm text-gray-600 max-w-2xl mx-auto">
-                Perfect for sharing AI-generated content with clients, team members, or the public - 
-                they don't need accounts to access your shared links!
+                Perfect for sharing AI-generated content with clients, team
+                members, or the public - they don't need accounts to access your
+                shared links!
               </p>
             </div>
           </div>
-
 
           {/* Benefits Tag Line - simplified */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4">
@@ -252,7 +295,6 @@ export default function Home() {
           </svg>
         </div>
       </section>
-
 
       {/* Demo Section */}
       <section className="py-16 px-4 bg-gradient-to-br from-orange-50 to-blue-50 border-t border-gray-100">
@@ -339,7 +381,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Never lose important chats again. Save that perfect code solution or brilliant explanation with one click.
+                Never lose important chats again. Save that perfect code
+                solution or brilliant explanation with one click.
               </p>
             </div>
 
@@ -352,7 +395,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Anyone can view, no signup needed. Send the link in email, Slack, or anywhere.
+                Anyone can view, no signup needed. Send the link in email,
+                Slack, or anywhere.
               </p>
             </div>
 
@@ -365,7 +409,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Your AI creations, sorted automatically by type. Find what you need instantly.
+                Your AI creations, sorted automatically by type. Find what you
+                need instantly.
               </p>
             </div>
 
@@ -378,7 +423,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                All your work, right where you left it. Jump between different projects without losing context.
+                All your work, right where you left it. Jump between different
+                projects without losing context.
               </p>
             </div>
 
@@ -391,7 +437,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Get feedback from your audience with simple, shareable forms that work everywhere.
+                Get feedback from your audience with simple, shareable forms
+                that work everywhere.
               </p>
             </div>
 
@@ -404,7 +451,8 @@ export default function Home() {
                 </h3>
               </div>
               <p className="text-gray-600 leading-relaxed">
-                Share with colleagues across any AI tool. Everyone stays on the same page.
+                Share with colleagues across any AI tool. Everyone stays on the
+                same page.
               </p>
             </div>
           </div>
@@ -418,7 +466,7 @@ export default function Home() {
               Get Started Free →
             </Link>
             <p className="text-sm text-gray-500 mt-3">
-              Free account • No credit card required • 30-second setup
+              *Uploading requires sign-in; viewing is always free.
             </p>
           </div>
         </div>
@@ -431,7 +479,8 @@ export default function Home() {
             Save anything from AI
           </h2>
           <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-            No matter what you create with AI, we can save it and make it shareable
+            No matter what you create with AI, we can save it and make it
+            shareable
           </p>
 
           {/* File upload categories */}
@@ -445,19 +494,25 @@ export default function Home() {
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-2xl mb-3">🖼️</div>
               <p className="font-medium text-gray-800">Images</p>
-              <p className="text-xs text-gray-500 mt-1">Pictures, charts, diagrams</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Pictures, charts, diagrams
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-2xl mb-3">💻</div>
               <p className="font-medium text-gray-800">Code</p>
-              <p className="text-xs text-gray-500 mt-1">Scripts and programming</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Scripts and programming
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="text-2xl mb-3">📊</div>
               <p className="font-medium text-gray-800">Data</p>
-              <p className="text-xs text-gray-500 mt-1">Spreadsheets, JSONs, CSVs</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Spreadsheets, JSONs, CSVs
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-xl text-center shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
@@ -467,14 +522,17 @@ export default function Home() {
             </div>
           </div>
 
-
           {/* Special AI-only category */}
           <div className="max-w-md mx-auto">
             <div className="bg-gradient-to-r from-orange-50 to-blue-50 p-5 rounded-xl text-center border-2 border-dashed border-orange-200">
               <div className="text-2xl mb-3">🎯</div>
               <p className="font-medium text-gray-800">Polls</p>
-              <p className="text-xs text-gray-500 mt-1">Created via AI tools only</p>
-              <p className="text-xs text-orange-600 mt-2 font-medium">Ask Claude: "Create a poll about..."</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Created via AI tools only
+              </p>
+              <p className="text-xs text-orange-600 mt-2 font-medium">
+                Ask Claude: "Create a poll about..."
+              </p>
             </div>
           </div>
         </div>
@@ -573,7 +631,7 @@ export default function Home() {
                     />
                   </svg>
                   <span className="text-gray-600">
-                    Securely stored until you delete them
+                    Stored forever (until you delete)
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -785,9 +843,10 @@ export default function Home() {
             Be an Early Adopter
           </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join the first wave of users to experience the future of AI content management
+            Join the first wave of users to experience the future of AI content
+            management
           </p>
-          
+
           <div className="bg-white rounded-xl p-8 shadow-sm border border-indigo-200 mb-8">
             <div className="flex items-center justify-center mb-6">
               <span className="bg-indigo-100 text-indigo-800 text-sm font-semibold px-4 py-2 rounded-full">
@@ -800,18 +859,28 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-3xl mb-2">💎</div>
-                <h4 className="font-semibold text-gray-800 mb-1">100MB File Size</h4>
-                <p className="text-sm text-gray-600">10x larger than free tier</p>
+                <h4 className="font-semibold text-gray-800 mb-1">
+                  100MB File Size
+                </h4>
+                <p className="text-sm text-gray-600">
+                  10x larger than free tier
+                </p>
               </div>
               <div className="text-center">
                 <div className="text-3xl mb-2">🚀</div>
-                <h4 className="font-semibold text-gray-800 mb-1">10GB Storage</h4>
+                <h4 className="font-semibold text-gray-800 mb-1">
+                  10GB Storage
+                </h4>
                 <p className="text-sm text-gray-600">20x more space</p>
               </div>
               <div className="text-center">
                 <div className="text-3xl mb-2">⚡</div>
-                <h4 className="font-semibold text-gray-800 mb-1">Priority Features</h4>
-                <p className="text-sm text-gray-600">Advanced analytics & faster API</p>
+                <h4 className="font-semibold text-gray-800 mb-1">
+                  Priority Features
+                </h4>
+                <p className="text-sm text-gray-600">
+                  Advanced analytics & faster API
+                </p>
               </div>
             </div>
             <button
@@ -821,7 +890,8 @@ export default function Home() {
               🎯 Get Early Access Now
             </button>
             <p className="text-sm text-gray-500 mt-4">
-              No credit card required • Pro features activate automatically when available
+              No credit card required • Pro features activate automatically when
+              available
             </p>
           </div>
         </div>
@@ -832,7 +902,6 @@ export default function Home() {
         isOpen={waitingListModalOpen}
         onClose={() => setWaitingListModalOpen(false)}
       />
-
     </div>
   );
 }

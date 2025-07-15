@@ -11,7 +11,7 @@ export default function SecurityPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Security at MCPH
           </h1>
-          <p className="text-gray-600">Last updated: July 4, 2025</p>
+          <p className="text-gray-600">Last updated: July 15, 2025</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-8 mb-8 shadow-sm">
@@ -126,7 +126,7 @@ export default function SecurityPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  User-controlled data retention
+                  Indefinite, user-controlled deletion
                 </li>
               </ul>
             </div>
@@ -230,7 +230,7 @@ export default function SecurityPage() {
             additional information for your organization's security review,
             please contact us at:
           </p>
-          <p className="text-blue-600 font-medium">security@mcph.com</p>
+          <p className="text-blue-600 font-medium">security@mcph.io</p>
         </div>
       </div>
     </div>
