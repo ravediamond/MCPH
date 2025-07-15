@@ -23,9 +23,9 @@ export default function PrivacyPage() {
               security) and keep it for 7 days.
             </li>
             <li>
-              For guest users, crates you upload are automatically deleted after
-              30 days. For logged-in users, crates are stored until you delete
-              them.
+              For authenticated users, crates are stored indefinitely until you
+              choose to delete them. Guest uploads may have temporary storage
+              limitations.
             </li>
             <li>We do not track you or sell your data.</li>
           </ul>
@@ -39,10 +39,8 @@ export default function PrivacyPage() {
             MCPH is committed to protecting your privacy. This Privacy Policy
             explains how we collect, use, and safeguard your information when
             you use our crate-sharing service. We've designed our service with
-            privacy as a core principle, minimizing data collection and ensuring
-            guest uploads are automatically deleted after 7 days, while
-            logged-in users can store their crates until they choose to delete
-            them.
+            privacy as a core principle, minimizing data collection and giving
+            authenticated users full control over their data retention.
           </p>
 
           <p className="text-gray-600">
@@ -68,12 +66,12 @@ export default function PrivacyPage() {
                 The crate itself (encrypted at rest in Google Cloud Storage)
               </li>
               <li>Basic metadata such as filename, file type, and size</li>
-              <li>For guest users: expiration time of 30 days</li>
+              <li>For authenticated users: indefinite storage until deletion</li>
             </ul>
             <p className="text-gray-600 font-medium">
-              Guest crates and associated metadata are automatically and
-              permanently deleted after 30 days. Crates uploaded by logged-in
-              users are stored until the user deletes them.
+              Authenticated user crates are stored indefinitely until you
+              choose to delete them, giving you full control over your data
+              retention.
             </p>
           </div>
 
@@ -112,8 +110,8 @@ export default function PrivacyPage() {
               crates available for download)
             </li>
             <li>
-              To enforce expiration times and automatically delete expired
-              content
+              To provide data management capabilities and user-controlled 
+              content deletion
             </li>
             <li>
               To prevent abuse of our service (rate limiting, blocking malicious
@@ -143,8 +141,8 @@ export default function PrivacyPage() {
           </ul>
 
           <p className="text-gray-600 mb-4">
-            Metadata is stored in Upstash Redis with automatic time-based
-            expiration to match crate TTLs.
+            Metadata is stored in Firebase/Firestore with persistent storage
+            for authenticated users and appropriate access controls.
           </p>
 
           <p className="text-gray-600 font-medium">
@@ -181,7 +179,7 @@ export default function PrivacyPage() {
               <strong>Google Cloud Storage</strong> - For crate storage
             </li>
             <li>
-              <strong>Upstash Redis</strong> - For metadata and rate limiting
+              <strong>Firebase/Firestore</strong> - For metadata and user data
             </li>
             <li>
               <strong>Vercel</strong> - For hosting our application

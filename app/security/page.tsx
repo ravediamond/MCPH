@@ -126,7 +126,7 @@ export default function SecurityPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Automatic file expiration controls
+                  User-controlled data retention
                 </li>
               </ul>
             </div>

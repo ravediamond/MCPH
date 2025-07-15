@@ -41,7 +41,7 @@
     },
     {
       "type": "text",
-      "content": "Store, share, and auto-expire prompts, files, & model outputs with a single chat command.",
+      "content": "Store, share, and manage prompts, files, & model outputs with a single chat command.",
       "style": {
         "fontSize": "24px",
         "color": "#666666",

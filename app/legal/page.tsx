@@ -81,10 +81,10 @@ export default function LegalHubPage() {
                 <p className="text-gray-600 mb-4">
                   MCPH is committed to protecting your privacy. This Privacy
                   Policy explains how we collect, use, and safeguard your
-                  information when you use our file-sharing service. We've
+                  information when you use our AI artifact sharing service. We've
                   designed our service with privacy as a core principle,
-                  minimizing data collection and ensuring all files are
-                  automatically deleted after their expiration period.
+                  minimizing data collection and giving you full control over
+                  your data retention.
                 </p>
 
                 <h3 className="text-xl font-semibold text-primary-500 mb-3">
@@ -92,8 +92,8 @@ export default function LegalHubPage() {
                 </h3>
                 <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
                   <li>
-                    Files are automatically deleted after their expiration
-                    period
+                    Authenticated user crates are stored indefinitely until you
+                    choose to delete them
                   </li>
                   <li>
                     We collect minimal technical information necessary for
@@ -138,7 +138,8 @@ export default function LegalHubPage() {
                 </h3>
                 <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-6">
                   <li>
-                    Files are automatically deleted after the expiration period
+                    Authenticated user crates persist indefinitely until you
+                    delete them
                   </li>
                   <li>Maximum file size limit of 500MB per upload</li>
                   <li>You must not upload illegal or prohibited content</li>
@@ -166,9 +167,9 @@ export default function LegalHubPage() {
                   About MCPH
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  MCPH was built with a simple mission: to make secure file
+                  MCPH was built with a simple mission: to make secure AI artifact
                   sharing effortless while prioritizing privacy through
-                  ephemeral storage. We believe that crate sharing should be
+                  user-controlled storage. We believe that crate sharing should be
                   simple, secure, and respect your privacy by default.
                 </p>
 
