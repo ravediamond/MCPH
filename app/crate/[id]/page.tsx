@@ -901,6 +901,29 @@ export default function CratePage() {
     }
   };
 
+  // Format category for display
+  const formatCategoryForDisplay = (category: string | undefined) => {
+    if (!category) return "Unknown";
+    
+    switch (category) {
+      case CrateCategory.POLL:
+        return "Feedback";
+      case CrateCategory.TEXT:
+        return "Text";
+      case CrateCategory.CODE:
+        return "Code";
+      case CrateCategory.DATA:
+        return "Data";
+      case CrateCategory.IMAGE:
+        return "Image";
+      case CrateCategory.RECIPE:
+        return "Recipe";
+      default:
+        // Capitalize first letter for any other categories
+        return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
+
   // Get appropriate syntax highlighting language
   const getLanguage = () => {
     if (!crateInfo) return "text";
@@ -2141,7 +2164,7 @@ export default function CratePage() {
                           return (
                             <>
                               <FaFileAlt className="mr-1" size={12} />{" "}
-                              {crateInfo.category}
+                              {formatCategoryForDisplay(crateInfo.category)}
                             </>
                           );
                       }
@@ -2255,28 +2278,7 @@ export default function CratePage() {
                   Category
                 </div>
                 <div className="font-semibold text-gray-900">
-                  {(() => {
-                    switch (crateInfo.category) {
-                      case CrateCategory.POLL:
-                        return "Feedback";
-                      case CrateCategory.TEXT:
-                        return "Markdown";
-                      case CrateCategory.CODE:
-                        return "Code";
-                      case CrateCategory.DATA:
-                        return "JSON";
-                      case CrateCategory.DATA:
-                        return "YAML";
-                      case CrateCategory.IMAGE:
-                        return "Image";
-                      case CrateCategory.TEXT:
-                        return "Text";
-                      case CrateCategory.TEXT:
-                        return "Binary";
-                      default:
-                        return crateInfo.category;
-                    }
-                  })()}
+                  {formatCategoryForDisplay(crateInfo.category)}
                 </div>
               </div>
 
@@ -2463,29 +2465,7 @@ export default function CratePage() {
               <div className="flex items-center">
                 <FaEye className="mr-2 text-blue-600" size={18} />
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Content Preview •{" "}
-                  {(() => {
-                    switch (crateInfo.category) {
-                      case CrateCategory.POLL:
-                        return "Feedback Template";
-                      case CrateCategory.TEXT:
-                        return "Markdown";
-                      case CrateCategory.CODE:
-                        return "Code";
-                      case CrateCategory.DATA:
-                        return "JSON";
-                      case CrateCategory.DATA:
-                        return "YAML";
-                      case CrateCategory.IMAGE:
-                        return "Image";
-                      case CrateCategory.TEXT:
-                        return "Text";
-                      case CrateCategory.TEXT:
-                        return "Binary";
-                      default:
-                        return crateInfo.category;
-                    }
-                  })()}
+                  Content Preview • {formatCategoryForDisplay(crateInfo.category)}
                 </h2>
               </div>
               <button
@@ -2611,7 +2591,7 @@ export default function CratePage() {
               </StatsCard.Grid>
               <StatsCard.Stat
                 label="Category"
-                value={crateInfo.category || "Unknown"}
+                value={formatCategoryForDisplay(crateInfo.category)}
                 icon={getCrateIcon()}
                 className="mb-2"
               />
