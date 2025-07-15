@@ -879,6 +879,21 @@ export default function DocsPage() {
                     </div>
 
                     <div className="border-l-4 border-green-500 pl-3">
+                      <h4 className="font-medium text-gray-700">
+                        crates_share_social
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        Generate social media share URLs and content for crates
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        <strong>Features:</strong> Supports Twitter/X, Reddit, LinkedIn, Discord, Telegram, and Email sharing, custom messages, platform-specific formatting
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        <strong>AI Usage:</strong> "Share crate abc123 on Twitter", "Get all social sharing links for this crate", "Generate Discord share message"
+                      </p>
+                    </div>
+
+                    <div className="border-l-4 border-green-500 pl-3">
                       <h4 className="font-medium text-gray-700">crates_copy</h4>
                       <p className="text-sm text-gray-600">
                         Duplicate public crates to your collection
