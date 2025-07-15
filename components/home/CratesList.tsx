@@ -124,7 +124,7 @@ const CratesList: React.FC<CratesListProps> = ({
             href="/upload"
             className="inline-flex items-center mt-4 text-primary-500"
           >
-            <FaUpload className="mr-1" /> Upload your first crate
+            <FaUpload className="mr-1" /> Create your first crate
           </Link>
         )}
       </Card>

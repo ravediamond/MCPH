@@ -107,9 +107,8 @@ export default function AboutPage() {
             Our service is designed for those moments when you need to quickly
             store and share artifacts created by AI tools. Like shipping
             containers in a harbor, our crates are standardized, secure, and
-            persistent. Authenticated user crates are stored indefinitely until
-            you choose to delete them, while guest uploads provide temporary
-            storage for quick sharing.
+            persistent. Creators authenticate once to upload; anyone with the
+            link can read, no account needed.
           </p>
 
           <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">
@@ -122,8 +121,7 @@ export default function AboutPage() {
               you full control over your data.
             </li>
             <li>
-              <strong>Open Harbor Policy</strong> - We don't track visitors or
-              require registration to dock at our harbor.
+              <strong>Open Harbor Policy</strong> - We don't track visitors.
             </li>
             <li>
               <strong>Streamlined Operations</strong> - Upload, share, done. No
@@ -223,11 +221,12 @@ export default function AboutPage() {
             <li>
               <strong>Persistent by Design:</strong> Authenticated user crates
               remain in our harbor indefinitely until you decide to remove them,
-              ensuring your AI artifacts are always available when you need them.
+              ensuring your AI artifacts are always available when you need
+              them.
             </li>
             <li>
-              <strong>No User Tracking:</strong> We do not require accounts or
-              track personal information.
+              <strong>No User Tracking:</strong> We do not track personal
+              information.
             </li>
           </ul>
         </div>

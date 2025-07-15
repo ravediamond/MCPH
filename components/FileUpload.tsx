@@ -767,7 +767,7 @@ export default function FileUpload({
           </button>
 
           <p className="text-xs text-gray-500 text-center mt-4">
-            Your crates are stored until you delete them.{" "}
+            Your crates are stored indefinitely until you delete them.{" "}
             {isShared ? "Public crates" : "Download links"} expire after 24
             hours.
           </p>
