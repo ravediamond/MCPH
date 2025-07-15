@@ -23,8 +23,8 @@ export default function TermsPage() {
               sharing copyrighted material you don't own.
             </li>
             <li>
-              Crates are deleted automatically after an expiration time
-              (default: 30 days).
+              Authenticated user crates are stored indefinitely until you
+              choose to delete them.
             </li>
             <li>
               We can remove content and block users who violate these terms.
@@ -44,9 +44,9 @@ export default function TermsPage() {
           </p>
 
           <p className="text-gray-600">
-            MCPH provides a temporary crate-sharing service with automatic
-            expiration. All crates uploaded to our service are subject to
-            automatic deletion after their expiration period.
+            MCPH provides an AI artifact sharing service with persistent storage
+            for authenticated users. Authenticated user crates are stored
+            indefinitely until you choose to delete them.
           </p>
         </div>
 
@@ -62,16 +62,13 @@ export default function TermsPage() {
           </p>
 
           <ul className="list-disc pl-6 text-gray-600 space-y-2 mb-4">
-            <li>No account or registration required</li>
+            <li>Google account required for authenticated storage</li>
             <li>
-              Crates are automatically deleted after a set expiration period
-              (default: 30 days)
+              Authenticated user crates are stored indefinitely until you
+              delete them
             </li>
-            <li>Maximum file size limit of 10MB per upload</li>
-            <li>Maximum expiration period of 30 days</li>
-            <li>
-              Rate limits to prevent abuse (20 uploads per 10 minutes per IP)
-            </li>
+            <li>Maximum file size limit of 10MB per upload for free accounts</li>
+            <li>Rate limits to prevent abuse</li>
           </ul>
 
           <p className="text-gray-600">
@@ -124,9 +121,8 @@ export default function TermsPage() {
           <p className="text-gray-600 mb-4">
             You retain all ownership rights to the crates you upload. By
             uploading crates to MCPH, you grant us a limited license to store
-            and make your crates available for download. For guest users, crates
-            will be automatically deleted after 30 days. For logged-in users,
-            crates are stored until you delete them.
+            and make your crates available for download. Authenticated user
+            crates are stored indefinitely until you choose to delete them.
           </p>
 
           <p className="text-gray-600 mb-4">
@@ -155,14 +151,14 @@ export default function TermsPage() {
 
           <p className="text-gray-600 mb-4">
             We do not guarantee that our service will be uninterrupted, timely,
-            secure, or error-free. Crates may be deleted before their scheduled
-            expiration time in case of service issues or maintenance.
+            secure, or error-free. Crates may be lost in case of service issues
+            or maintenance.
           </p>
 
           <p className="text-gray-600 font-medium">
             We strongly recommend keeping backup copies of any important crates
             you upload to our service, as we cannot guarantee their availability
-            for the full duration of the specified expiration period.
+            indefinitely despite our persistent storage policy.
           </p>
         </div>
 
@@ -181,7 +177,7 @@ export default function TermsPage() {
 
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>Your use or inability to use our service</li>
-            <li>Early deletion or loss of your uploaded crates</li>
+            <li>Accidental deletion or loss of your uploaded crates</li>
             <li>Unauthorized access to or alteration of your uploads</li>
             <li>Any third party conduct or content on our service</li>
             <li>Any other matter relating to our service</li>

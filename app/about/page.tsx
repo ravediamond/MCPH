@@ -105,12 +105,11 @@ export default function AboutPage() {
 
           <p className="text-gray-600 mb-6">
             Our service is designed for those moments when you need to quickly
-            store and share artifacts created by AI tools without the overhead
-            of creating accounts or managing complex permissions. Like shipping
+            store and share artifacts created by AI tools. Like shipping
             containers in a harbor, our crates are standardized, secure, and
-            temporary. Guest crates are automatically deleted after their
-            expiration time, ensuring that data doesn't persist longer than
-            needed.
+            persistent. Authenticated user crates are stored indefinitely until
+            you choose to delete them, while guest uploads provide temporary
+            storage for quick sharing.
           </p>
 
           <h3 className="text-xl font-semibold text-gray-800 mb-3 mt-6">
@@ -118,9 +117,9 @@ export default function AboutPage() {
           </h3>
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>
-              <strong>Transient Storage</strong> - All crates automatically
-              expire and are completely purged from our harbor when their time
-              is up.
+              <strong>Persistent Storage</strong> - Authenticated user crates
+              are stored indefinitely until you choose to delete them, giving
+              you full control over your data.
             </li>
             <li>
               <strong>Open Harbor Policy</strong> - We don't track visitors or
@@ -222,9 +221,9 @@ export default function AboutPage() {
               rest.
             </li>{" "}
             <li>
-              <strong>Ephemeral by Design:</strong> Like cargo that doesn't stay
-              in port forever, our crates are automatically and permanently
-              deleted after their expiration time.
+              <strong>Persistent by Design:</strong> Authenticated user crates
+              remain in our harbor indefinitely until you decide to remove them,
+              ensuring your AI artifacts are always available when you need them.
             </li>
             <li>
               <strong>No User Tracking:</strong> We do not require accounts or
