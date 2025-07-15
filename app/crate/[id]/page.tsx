@@ -902,7 +902,9 @@ export default function CratePage() {
   };
 
   // Format category for display
-  const formatCategoryForDisplay = (category: string) => {
+  const formatCategoryForDisplay = (category: string | undefined) => {
+    if (!category) return "Unknown";
+    
     switch (category) {
       case CrateCategory.POLL:
         return "Feedback";
@@ -2589,7 +2591,7 @@ export default function CratePage() {
               </StatsCard.Grid>
               <StatsCard.Stat
                 label="Category"
-                value={formatCategoryForDisplay(crateInfo.category) || "Unknown"}
+                value={formatCategoryForDisplay(crateInfo.category)}
                 icon={getCrateIcon()}
                 className="mb-2"
               />
