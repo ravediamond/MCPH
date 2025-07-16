@@ -133,7 +133,8 @@ export default function DocsPage() {
                   MCPH Documentation
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                  Save and share anything from your AI chats with permanent links
+                  Save and share anything from your AI chats with permanent
+                  links
                 </p>
               </div>
             </div>
@@ -146,28 +147,35 @@ export default function DocsPage() {
                 What is MCPH?
               </h2>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                <b>MCPH</b> (Model Context Protocol Hub) is an AI artifact storage and sharing platform that 
-                lets you save and share anything from your AI chats with permanent links. One click in Claude 
-                or ChatGPT creates a shareable link that works everywhere.
+                <b>MCPH</b> (Model Context Protocol Hub) is an AI artifact
+                storage and sharing platform that lets you save and share
+                anything from your AI chats with permanent links. One click in
+                Claude or ChatGPT creates a shareable link that works
+                everywhere.
               </p>
               <p className="text-lg text-gray-700 mb-4 leading-relaxed">
                 Key benefits:
               </p>
               <ul className="list-disc pl-6 text-gray-700 space-y-3 mb-6 leading-relaxed">
                 <li>
-                  <b>Never lose AI creations</b> - Everything saved permanently and searchable
+                  <b>Never lose AI creations</b> - Everything saved permanently
+                  and searchable
                 </li>
                 <li>
-                  <b>Share with one link</b> - No login required for viewers to access content
+                  <b>Share with one link</b> - No login required for viewers to
+                  access content
                 </li>
                 <li>
-                  <b>Works in Claude & ChatGPT</b> - Direct integration with your favorite AI tools
+                  <b>Works in Claude & ChatGPT</b> - Direct integration with
+                  your favorite AI tools
                 </li>
                 <li>
-                  <b>Simple access model</b> - Upload requires login, viewing doesn't
+                  <b>Simple access model</b> - Upload requires login, viewing
+                  doesn't
                 </li>
                 <li>
-                  <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images, Code, Data, and Polls
+                  <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images,
+                  Code, Data, and Polls
                 </li>
               </ul>
 
@@ -180,18 +188,30 @@ export default function DocsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <div className="text-2xl mb-2">🔑</div>
-                    <h4 className="font-semibold text-gray-800 mb-1">1. Sign in with Google</h4>
-                    <p className="text-sm text-gray-600">Quick setup - no passwords to remember</p>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      1. Sign in with Google
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Quick setup - no passwords to remember
+                    </p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-2">🔌</div>
-                    <h4 className="font-semibold text-gray-800 mb-1">2. Connect to AI tools</h4>
-                    <p className="text-sm text-gray-600">Works with Claude, ChatGPT, and others</p>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      2. Connect to AI tools
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Works with Claude, ChatGPT, and others
+                    </p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-2">💫</div>
-                    <h4 className="font-semibold text-gray-800 mb-1">3. Save & share anything</h4>
-                    <p className="text-sm text-gray-600">One command creates shareable links instantly</p>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      3. Save & share anything
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      One command creates shareable links instantly
+                    </p>
                   </div>
                 </div>
               </div>
@@ -350,7 +370,6 @@ export default function DocsPage() {
               </div>
             </div>
 
-
             <div
               id="features"
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6"
@@ -358,22 +377,37 @@ export default function DocsPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
                 Features
               </h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
                   <div className="text-3xl mb-3">💾</div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Never lose AI creations</h3>
-                  <p className="text-gray-600">Everything you create in AI chats, saved permanently and searchable</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    Never lose AI creations
+                  </h3>
+                  <p className="text-gray-600">
+                    Everything you create in AI chats, saved permanently and
+                    searchable
+                  </p>
                 </div>
                 <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
                   <div className="text-3xl mb-3">🔗</div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Share with one link</h3>
-                  <p className="text-gray-600">Turn any AI creation into a shareable link. No login required for viewers!</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    Share with one link
+                  </h3>
+                  <p className="text-gray-600">
+                    Turn any AI creation into a shareable link. No login
+                    required for viewers!
+                  </p>
                 </div>
                 <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
                   <div className="text-3xl mb-3">🤖</div>
-                  <h3 className="font-semibold text-gray-800 mb-2">Works in Claude & ChatGPT</h3>
-                  <p className="text-gray-600">One command in your favorite AI tool saves everything instantly</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">
+                    Works in Claude & ChatGPT
+                  </h3>
+                  <p className="text-gray-600">
+                    One command in your favorite AI tool saves everything
+                    instantly
+                  </p>
                 </div>
               </div>
 
@@ -390,7 +424,9 @@ export default function DocsPage() {
                   <div className="text-center">
                     <div className="text-2xl mb-1">🖼️</div>
                     <div className="font-medium text-gray-700">Images</div>
-                    <div className="text-gray-500">Pictures, charts, diagrams</div>
+                    <div className="text-gray-500">
+                      Pictures, charts, diagrams
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-1">💻</div>
@@ -400,7 +436,9 @@ export default function DocsPage() {
                   <div className="text-center">
                     <div className="text-2xl mb-1">📊</div>
                     <div className="font-medium text-gray-700">Data</div>
-                    <div className="text-gray-500">Spreadsheets, JSONs, CSVs</div>
+                    <div className="text-gray-500">
+                      Spreadsheets, JSONs, CSVs
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-1">🧾</div>
@@ -416,12 +454,16 @@ export default function DocsPage() {
                   Recipe: AI Task Instructions
                 </h3>
                 <p className="text-gray-700 mb-4">
-                  Recipes are structured, step-by-step instructions that tell AI agents exactly how to execute complex tasks. 
-                  They serve as reusable workflows that can be shared across different AI tools and team members.
+                  Recipes are structured, step-by-step instructions that tell AI
+                  agents exactly how to execute complex tasks. They serve as
+                  reusable workflows that can be shared across different AI
+                  tools and team members.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">🎯 Key Benefits:</h4>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      🎯 Key Benefits:
+                    </h4>
                     <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
                       <li>Consistent task execution across AI tools</li>
                       <li>Reusable workflows for complex processes</li>
@@ -430,7 +472,9 @@ export default function DocsPage() {
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">📋 Common Examples:</h4>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      📋 Common Examples:
+                    </h4>
                     <ul className="list-disc pl-5 text-gray-700 space-y-1 text-sm">
                       <li>Content creation workflows</li>
                       <li>Data analysis procedures</li>
@@ -441,8 +485,9 @@ export default function DocsPage() {
                 </div>
                 <div className="mt-4 p-3 bg-white rounded-lg border border-green-100">
                   <p className="text-sm text-gray-600">
-                    <strong>Example:</strong> A "Blog Post Creation Recipe" might include steps for research, 
-                    outline creation, writing, SEO optimization, and publishing - all documented in a way 
+                    <strong>Example:</strong> A "Blog Post Creation Recipe"
+                    might include steps for research, outline creation, writing,
+                    SEO optimization, and publishing - all documented in a way
                     that any AI tool can follow consistently.
                   </p>
                 </div>
@@ -476,12 +521,22 @@ export default function DocsPage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2">🔒 Upload = Login Required</h4>
-                    <p className="text-sm text-gray-600">You need a Google account to save and organize your AI creations</p>
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      🔒 Upload = Login Required
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      You need a Google account to save and organize your AI
+                      creations
+                    </p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-700 mb-2">🌐 View = No Login Needed</h4>
-                    <p className="text-sm text-gray-600">Anyone with a public link can view shared content instantly</p>
+                    <h4 className="font-medium text-gray-700 mb-2">
+                      🌐 View = No Login Needed
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Anyone with a public link can view shared content
+                      instantly
+                    </p>
                   </div>
                 </div>
               </div>
@@ -624,9 +679,9 @@ export default function DocsPage() {
                   <li>All generated download links expire in 24 hours</li>
                 </ul>
                 <p className="mt-3 text-sm">
-                  For detailed, tool-specific configuration instructions, 
-                  refer to your AI tool's documentation for MCP setup. 
-                  Most major AI tools that support MCP have similar configuration processes.
+                  For detailed, tool-specific configuration instructions, refer
+                  to your AI tool's documentation for MCP setup. Most major AI
+                  tools that support MCP have similar configuration processes.
                 </p>
               </div>
 
@@ -691,7 +746,6 @@ export default function DocsPage() {
                 </div>
               </div>
             </div>
-
 
             <div
               id="mcp-tools"
@@ -886,10 +940,14 @@ export default function DocsPage() {
                         Generate social media share URLs and content for crates
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        <strong>Features:</strong> Supports Twitter/X, Reddit, LinkedIn, Discord, Telegram, and Email sharing, custom messages, platform-specific formatting
+                        <strong>Features:</strong> Supports Twitter/X, Reddit,
+                        LinkedIn, Discord, Telegram, and Email sharing, custom
+                        messages, platform-specific formatting
                       </p>
                       <p className="text-xs text-blue-600 mt-1">
-                        <strong>AI Usage:</strong> "Share crate abc123 on Twitter", "Get all social sharing links for this crate", "Generate Discord share message"
+                        <strong>AI Usage:</strong> "Share crate abc123 on
+                        Twitter", "Get all social sharing links for this crate",
+                        "Generate Discord share message"
                       </p>
                     </div>
 
@@ -945,8 +1003,8 @@ export default function DocsPage() {
                     </div>
                     <p className="text-xs text-blue-600 mt-2">
                       <strong>AI Usage:</strong> "Find my React components",
-                      "Search for project documentation", "Find poll
-                      templates about mobile apps"
+                      "Search for project documentation", "Find poll templates
+                      about mobile apps"
                     </p>
                     <div className="bg-white p-2 rounded border border-gray-200 mt-2">
                       <p className="text-xs font-semibold text-gray-700">
@@ -993,8 +1051,8 @@ export default function DocsPage() {
                             dropdown options
                           </li>
                           <li>
-                            Automatic storage as both poll template AND
-                            crate (category: 'poll')
+                            Automatic storage as both poll template AND crate
+                            (category: 'poll')
                           </li>
                           <li>
                             Tag-based organization, public/private templates,
@@ -1007,16 +1065,13 @@ export default function DocsPage() {
                         </p>
                       </div>
                       <p className="text-xs text-blue-600 mt-2">
-                        <strong>AI Usage:</strong> "Create poll form for
-                        product reviews", "Build survey with rating and text
-                        fields"
+                        <strong>AI Usage:</strong> "Create poll form for product
+                        reviews", "Build survey with rating and text fields"
                       </p>
                     </div>
 
                     <div className="border-l-4 border-orange-500 pl-3">
-                      <h4 className="font-medium text-gray-700">
-                        poll_submit
-                      </h4>
+                      <h4 className="font-medium text-gray-700">poll_submit</h4>
                       <p className="text-sm text-gray-600">
                         Submit responses to poll templates with validation
                       </p>
@@ -1078,9 +1133,9 @@ export default function DocsPage() {
                         </ul>
                       </div>
                       <p className="text-xs text-blue-600 mt-2">
-                        <strong>AI Usage:</strong> "Show responses for my
-                        poll template", "Analyze survey results", "Get
-                        poll analytics"
+                        <strong>AI Usage:</strong> "Show responses for my poll
+                        template", "Analyze survey results", "Get poll
+                        analytics"
                       </p>
                     </div>
                   </div>

@@ -904,7 +904,7 @@ export default function CratePage() {
   // Format category for display
   const formatCategoryForDisplay = (category: string | undefined) => {
     if (!category) return "Unknown";
-    
+
     switch (category) {
       case CrateCategory.POLL:
         return "Feedback";
@@ -2465,7 +2465,8 @@ export default function CratePage() {
               <div className="flex items-center">
                 <FaEye className="mr-2 text-blue-600" size={18} />
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Content Preview • {formatCategoryForDisplay(crateInfo.category)}
+                  Content Preview •{" "}
+                  {formatCategoryForDisplay(crateInfo.category)}
                 </h2>
               </div>
               <button

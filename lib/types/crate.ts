@@ -1,7 +1,7 @@
 export enum CrateCategory {
   RECIPE = "recipe",
   TEXT = "text",
-  IMAGE = "image", 
+  IMAGE = "image",
   CODE = "code",
   DATA = "data",
   POLL = "poll",
