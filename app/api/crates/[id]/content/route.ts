@@ -4,7 +4,7 @@ import {
   db,
   FEEDBACK_TEMPLATES_COLLECTION,
 } from "@/services/firebaseService";
-import { getCrateContent } from "@/services/storageService";
+import { getCrateContentForViewing } from "@/services/storageService";
 import { auth } from "@/lib/firebaseAdmin";
 import { CrateCategory } from "@/shared/types/crate";
 import bcrypt from "bcrypt";
@@ -201,7 +201,7 @@ export async function GET(
     }
 
     // Get crate content based on its category (for regular files)
-    const { buffer, crate: updatedCrate } = await getCrateContent(id);
+    const { buffer, crate: updatedCrate } = await getCrateContentForViewing(id);
     console.log(
       `[Content Route] Content retrieved successfully, size: ${buffer.length} bytes`,
     );
@@ -358,7 +358,7 @@ export async function POST(
     }
 
     // Get crate content based on its category (for regular files)
-    const { buffer, crate: updatedCrate } = await getCrateContent(id);
+    const { buffer, crate: updatedCrate } = await getCrateContentForViewing(id);
 
     // Set cache headers for better performance
     const headers = new Headers({

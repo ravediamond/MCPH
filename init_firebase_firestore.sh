@@ -245,6 +245,14 @@ gcloud firestore indexes composite create \
   --field-config="field-path=templateId,order=ASCENDING" \
   --field-config="field-path=submittedAt,order=DESCENDING"
 
+# Add indexes for crateAccess collection (for real usage statistics)
+echo "--- Creating composite index for crateAccess (crateId + date) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crateAccess" \
+  --field-config="field-path=crateId,order=ASCENDING" \
+  --field-config="field-path=date,order=DESCENDING"
+
 # Add indexes for discoverable gallery feature
 echo "--- Creating composite index for discoverable gallery (isDiscoverable + public + createdAt) ---"
 gcloud firestore indexes composite create \
@@ -276,4 +284,5 @@ echo "- feedback: For storing user feedback submissions"
 echo "- waitingList: For Pro version waiting list subscribers"
 echo "- feedbackTemplates: For storing feedback form templates"
 echo "- feedbackResponses: For storing feedback responses"
+echo "- crateAccess: For storing daily access statistics (views and downloads)"
 echo ""

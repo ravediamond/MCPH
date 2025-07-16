@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../lib/gcpStorageClient";
 import { Crate, CrateCategory, CrateSharing } from "../shared/types/crate";
-import { logEvent, deleteCrateMetadata } from "./firebaseService";
+import { logEvent, deleteCrateMetadata, incrementCrateDownloadCount } from "./firebaseService";
 
 // Import our new modular services
 import {
@@ -344,7 +344,7 @@ export async function getFileStream(fileId: string): Promise<{
 }
 
 /**
- * Get a crate's content as a buffer
+ * Get a crate's content as a buffer (increments download count)
  */
 export async function getCrateContent(crateId: string): Promise<{
   buffer: Buffer;
@@ -372,12 +372,49 @@ export async function getCrateContent(crateId: string): Promise<{
     console.log(`Retrieved crate: ${crate.id} - Size: ${content.length} bytes`);
 
     // Increment download count
-    await getCrateMetadata(crateId, true);
+    await incrementCrateDownloadCount(crateId);
 
     return { buffer: content, crate };
   } catch (error) {
     console.error("Error getting crate content:", error);
     throw new Error("Failed to get crate content");
+  }
+}
+
+/**
+ * Get a crate's content as a buffer (does NOT increment download count)
+ */
+export async function getCrateContentForViewing(crateId: string): Promise<{
+  buffer: Buffer;
+  crate: Crate;
+}> {
+  try {
+    // Get crate metadata from Firestore
+    const crate = await getCrateMetadata(crateId);
+    if (!crate) {
+      throw new Error("Crate not found");
+    }
+
+    // Get the file
+    const file = bucket.file(crate.gcsPath);
+
+    // Check if file exists
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new Error("Crate not found in storage");
+    }
+
+    // Download the file content
+    const [content] = await file.download();
+
+    console.log(`Retrieved crate for viewing: ${crate.id} - Size: ${content.length} bytes`);
+
+    // Do NOT increment download count for viewing
+
+    return { buffer: content, crate };
+  } catch (error) {
+    console.error("Error getting crate content for viewing:", error);
+    throw new Error("Failed to get crate content for viewing");
   }
 }
 

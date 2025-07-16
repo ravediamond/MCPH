@@ -78,12 +78,18 @@ export default function Header() {
                 </Link>
               </>
             )}
-            {/* Always show Documentation */}
+            {/* Always show Documentation and FAQ */}
             <Link
               href="/docs"
               className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/docs") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
             >
               Documentation
+            </Link>
+            <Link
+              href="/faq"
+              className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/faq") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+            >
+              FAQ
             </Link>
             {/* Auth Buttons Desktop */}
             {user ? (
@@ -173,13 +179,20 @@ export default function Header() {
                   </Link>
                 </>
               )}
-              {/* Always show Documentation */}
+              {/* Always show Documentation and FAQ */}
               <Link
                 href="/docs"
                 className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/docs") ? "bg-gray-100 text-gray-900" : ""}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 API Docs
+              </Link>
+              <Link
+                href="/faq"
+                className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/faq") ? "bg-gray-100 text-gray-900" : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                FAQ
               </Link>
               {/* Auth Buttons Mobile Menu */}
               <div className="px-4 py-2">

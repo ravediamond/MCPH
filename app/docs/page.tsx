@@ -166,7 +166,7 @@ export default function DocsPage() {
                   access content
                 </li>
                 <li>
-                  <b>Works in Claude & ChatGPT</b> - Direct integration with
+                  <b>Works in Claude & ChatGPT Pro+</b> - Direct integration with
                   your favorite AI tools
                 </li>
                 <li>
@@ -201,7 +201,7 @@ export default function DocsPage() {
                       2. Connect to AI tools
                     </h4>
                     <p className="text-sm text-gray-600">
-                      Works with Claude, ChatGPT, and others
+                      Works with Claude, ChatGPT Pro+, and others
                     </p>
                   </div>
                   <div className="text-center">
@@ -402,7 +402,7 @@ export default function DocsPage() {
                 <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
                   <div className="text-3xl mb-3">🤖</div>
                   <h3 className="font-semibold text-gray-800 mb-2">
-                    Works in Claude & ChatGPT
+                    Works in Claude & ChatGPT Pro+
                   </h3>
                   <p className="text-gray-600">
                     One command in your favorite AI tool saves everything
@@ -622,7 +622,7 @@ export default function DocsPage() {
               </h3>
               <p className="text-gray-600 mb-3">
                 MCPH works with any AI tool that supports the Model Context
-                Protocol (MCP). The basic steps for connecting any AI tool are:
+                Protocol (MCP). For ChatGPT, this requires Pro or higher plans. The basic steps for connecting any AI tool are:
               </p>
 
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
@@ -758,7 +758,7 @@ export default function DocsPage() {
                 MCPH provides a comprehensive set of powerful tools that enable
                 you to manage your content through the Model Context Protocol
                 (MCP). These tools can be used programmatically or through AI
-                assistants using natural language commands.
+                assistants using natural language commands. For ChatGPT, custom connectors require Pro or higher plans.
               </p>
 
               <div className="space-y-6">
