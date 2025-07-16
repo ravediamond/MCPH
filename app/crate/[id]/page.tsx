@@ -49,6 +49,11 @@ import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
 import SmartCallToAction from "../../../components/SmartCallToAction";
+import PasswordPrompt from "../../../components/crate/PasswordPrompt";
+import CrateSharingModal from "../../../components/crate/CrateSharingModal";
+import CrateHeader from "../../../components/crate/CrateHeader";
+import CrateStats from "../../../components/crate/CrateStats";
+import CrateContentPreview from "../../../components/crate/CrateContentPreview";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
 import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
 
@@ -1671,61 +1676,13 @@ export default function CratePage() {
   // Password form for protected crates
   const renderPasswordForm = () => {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
-        <Card className="w-full max-w-md p-6">
-          <div className="flex items-center justify-center mb-4">
-            <FaLock className="text-primary-500 text-3xl" />
-          </div>
-          <h1 className="text-xl font-medium text-center text-gray-800 mb-4">
-            Password Protected Crate
-          </h1>
-          <p className="text-gray-600 mb-4 text-center">
-            This crate requires a password to access.
-          </p>
-
-          <form onSubmit={handlePasswordSubmit}>
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-primary-500 focus:border-primary-500"
-                required
-              />
-            </div>
-
-            {passwordError && (
-              <div className="mb-4 text-red-600 text-sm">{passwordError}</div>
-            )}
-
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                disabled={contentLoading}
-                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-base font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 transition-colors border border-blue-600 disabled:opacity-50"
-              >
-                {contentLoading ? "Loading..." : "Access Crate"}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/"
-              className="text-primary-500 hover:text-primary-600 text-sm"
-            >
-              Return to Home
-            </Link>
-          </div>
-        </Card>
-      </div>
+      <PasswordPrompt
+        passwordInput={passwordInput}
+        setPasswordInput={setPasswordInput}
+        passwordError={passwordError}
+        contentLoading={contentLoading}
+        onSubmit={handlePasswordSubmit}
+      />
     );
   };
 
@@ -1830,954 +1787,94 @@ export default function CratePage() {
       </div>
 
       {/* Sharing Modal */}
-      {showSharingModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Manage Sharing
-              </h3>
-              <button
-                onClick={() => setShowSharingModal(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <span className="text-xl">&times;</span>
-              </button>
-            </div>
+      <CrateSharingModal
+        showSharingModal={showSharingModal}
+        setShowSharingModal={setShowSharingModal}
+        sharingError={sharingError}
+        sharingSuccess={sharingSuccess}
+        isPublic={isPublic}
+        setIsPublic={setIsPublic}
+        isPasswordProtected={isPasswordProtected}
+        setIsPasswordProtected={setIsPasswordProtected}
+        sharingPassword={sharingPassword}
+        setSharingPassword={setSharingPassword}
+        shareUrl={shareUrl}
+        linkCopied={linkCopied}
+        setLinkCopied={setLinkCopied}
+        crateId={crateId}
+        socialLinkCopied={socialLinkCopied}
+        setSocialLinkCopied={setSocialLinkCopied}
+        socialShareMessage={socialShareMessage}
+        setSocialShareMessage={setSocialShareMessage}
+        handleSocialShare={handleSocialShare}
+        handleCopySocialLink={handleCopySocialLink}
+        handleUpdateSharing={handleUpdateSharing}
+        sharingLoading={sharingLoading}
+      />
 
-            {sharingError && (
-              <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
-                {sharingError}
-              </div>
-            )}
-
-            {sharingSuccess && (
-              <div className="mb-4 p-2 bg-green-100 text-green-700 text-sm rounded">
-                {sharingSuccess}
-              </div>
-            )}
-
-            <div className="space-y-4">
-              {/* Public/Private Toggle */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    Public Access
-                  </h4>
-                  <p className="text-sm text-gray-500">
-                    {isPublic
-                      ? "Anyone with the link can view this crate"
-                      : "Only you can access this crate"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsPublic(!isPublic)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                    isPublic ? "bg-primary-600" : "bg-gray-200"
-                  }`}
-                  role="switch"
-                  aria-checked={isPublic}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      isPublic ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* Password Protection Toggle - only shown when public */}
-              {isPublic && (
-                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      Password Protection
-                    </h4>
-                    <p className="text-sm text-gray-500">
-                      {isPasswordProtected
-                        ? "Viewers must enter a password to access"
-                        : "No password required for access"}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsPasswordProtected(!isPasswordProtected)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
-                      isPasswordProtected ? "bg-yellow-600" : "bg-gray-200"
-                    }`}
-                    role="switch"
-                    aria-checked={isPasswordProtected}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        isPasswordProtected ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-              )}
-
-              {/* Password Input - only shown when password protection is enabled */}
-              {isPublic && isPasswordProtected && (
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Set Password
-                  </label>
-                  <input
-                    type="password"
-                    value={sharingPassword}
-                    onChange={(e) => setSharingPassword(e.target.value)}
-                    placeholder="Enter a secure password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    Choose a strong password to protect your crate
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {isPublic && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Share URL
-                </label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    value={shareUrl}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
-                  />
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(shareUrl);
-                      setLinkCopied(true);
-                      setTimeout(() => setLinkCopied(false), 2000);
-                    }}
-                    className={`px-4 py-2 text-white rounded-r-md transition-colors ${
-                      linkCopied
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-primary-600 hover:bg-primary-700"
-                    }`}
-                  >
-                    {linkCopied ? (
-                      <>
-                        <FaCheck className="inline mr-1" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <FaShareAlt className="inline mr-1" />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-                <p className="mt-2 text-xs text-blue-600">
-                  <FaInfoCircle className="inline mr-1" />
-                  Anyone with this link can{" "}
-                  {isPasswordProtected
-                    ? "view your crate (with password)"
-                    : "view your crate"}
-                </p>
-              </div>
-            )}
-
-            {/* View Badge Section - Only shown when public */}
-            {isPublic && (
-              <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">
-                  📊 View Counter Badge
-                </h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  Add a view counter badge to your README or blog posts to show
-                  how popular your crate is!
-                </p>
-
-                {/* Badge Preview */}
-                <div className="mb-3">
-                  <img
-                    src={`/api/crates/${crateId}/badge`}
-                    alt="View counter badge"
-                    className="inline-block"
-                  />
-                </div>
-
-                {/* Markdown Code */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-700">
-                    Markdown:
-                  </label>
-                  <div className="relative">
-                    <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
-                      [![Views](https://mcphub.com/api/crates/{crateId}
-                      /badge)](https://mcphub.com/crate/{crateId})
-                    </code>
-                    <button
-                      onClick={() => {
-                        const markdown = `[![Views](https://mcphub.com/api/crates/${crateId}/badge)](https://mcphub.com/crate/${crateId})`;
-                        navigator.clipboard.writeText(markdown);
-                        setSocialLinkCopied(true);
-                        setTimeout(() => setSocialLinkCopied(false), 2000);
-                      }}
-                      className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Copy markdown"
-                    >
-                      <FaCopy className="text-xs" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* HTML Code */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-700">
-                    HTML:
-                  </label>
-                  <div className="relative">
-                    <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
-                      &lt;a href="https://mcphub.com/crate/{crateId}"&gt;&lt;img
-                      src="https://mcphub.com/api/crates/{crateId}/badge"
-                      alt="Views"&gt;&lt;/a&gt;
-                    </code>
-                    <button
-                      onClick={() => {
-                        const html = `<a href="https://mcphub.com/crate/${crateId}"><img src="https://mcphub.com/api/crates/${crateId}/badge" alt="Views"></a>`;
-                        navigator.clipboard.writeText(html);
-                        setSocialLinkCopied(true);
-                        setTimeout(() => setSocialLinkCopied(false), 2000);
-                      }}
-                      className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                      title="Copy HTML"
-                    >
-                      <FaCopy className="text-xs" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Social Sharing Section - Only shown when public */}
-            {isPublic && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">
-                  Share on Social Media
-                </h4>
-
-                {/* Custom Message Editor */}
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-700 mb-2">
-                    Customize Share Message
-                    <span className="text-gray-500 font-normal ml-1">
-                      (Markdown supported)
-                    </span>
-                  </label>
-                  <textarea
-                    value={socialShareMessage}
-                    onChange={(e) => setSocialShareMessage(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows={3}
-                    placeholder="**Bold text**, *italic text*, [link text](url), `code`..."
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    ✓ Discord: Copies formatted message • Reddit: Creates text
-                    post with title & body • LinkedIn: Opens share dialog +
-                    copies message for pasting • Twitter/Telegram/Email: Full
-                    support
-                  </p>
-                </div>
-
-                {/* Social Platform Buttons */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <button
-                    onClick={() => handleSocialShare("twitter")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-500 hover:text-blue-600 hover:border-blue-300"
-                    title="Share on Twitter/X"
-                  >
-                    <FaTwitter className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">Twitter/X</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSocialShare("reddit")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-orange-50 text-orange-500 hover:text-orange-600 hover:border-orange-300"
-                    title="Create Reddit text post with title and body"
-                  >
-                    <FaReddit className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">Reddit</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSocialShare("linkedin")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-700 hover:text-blue-800 hover:border-blue-300"
-                    title="Open LinkedIn share dialog (copies message for manual pasting)"
-                  >
-                    <FaLinkedin className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">LinkedIn</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSocialShare("discord")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-indigo-50 text-indigo-500 hover:text-indigo-600 hover:border-indigo-300"
-                    title="Copy formatted message to clipboard for Discord"
-                  >
-                    <FaDiscord className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">Discord</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSocialShare("telegram")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-400 hover:text-blue-500 hover:border-blue-300"
-                    title="Share on Telegram"
-                  >
-                    <FaTelegram className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">Telegram</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSocialShare("email")}
-                    className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-gray-50 text-gray-500 hover:text-gray-600 hover:border-gray-300"
-                    title="Share via Email"
-                  >
-                    <FaEnvelope className="mr-2 text-lg" />
-                    <span className="text-sm font-medium">Email</span>
-                  </button>
-                </div>
-
-                {/* Copy Link Button */}
-                <button
-                  onClick={handleCopySocialLink}
-                  className={`w-full flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    socialLinkCopied
-                      ? "bg-green-500 text-white hover:bg-green-600"
-                      : "bg-blue-500 text-white hover:bg-blue-600"
-                  }`}
-                >
-                  {socialLinkCopied ? (
-                    <>
-                      <FaCheck className="mr-2" />
-                      Link Copied!
-                    </>
-                  ) : (
-                    <>
-                      <FaLink className="mr-2" />
-                      Copy Link
-                    </>
-                  )}
-                </button>
-
-                <p className="mt-2 text-xs text-gray-500">
-                  • <strong>Discord:</strong> Copies formatted message to
-                  clipboard
-                  <br />• <strong>Reddit:</strong> Creates text post with title
-                  & body
-                  <br />• <strong>LinkedIn:</strong> Opens share dialog + copies
-                  message for pasting
-                  <br />• <strong>Twitter/Telegram/Email:</strong> Opens with
-                  custom message
-                </p>
-              </div>
-            )}
-
-            <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-              <button
-                onClick={() => setShowSharingModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleUpdateSharing}
-                disabled={
-                  sharingLoading ||
-                  (isPasswordProtected && isPublic && !sharingPassword)
-                }
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
-              >
-                {sharingLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Updating...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="max-w-5xl mx-auto">
         {/* Main Info Card */}
-        <Card className="mb-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200">
-          <Card.Header className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6">
-            <div className="flex items-center flex-1">
-              <span className="p-3 bg-white rounded-xl shadow-md border border-gray-200 mr-4">
-                {getCrateIcon()}
-              </span>
-              <div className="flex-1">
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="font-medium text-gray-800 mb-0.5 w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Crate title"
-                  />
-                ) : (
-                  <h1
-                    className="text-2xl font-semibold text-gray-900 mb-2"
-                    title={crateInfo.title}
-                  >
-                    {crateInfo.title}
-                  </h1>
-                )}
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bg-gray-100 px-2 py-1 rounded">
-                    {formatBytes(crateInfo.size || 0)}
-                  </span>
-                  <span className="bg-gray-100 px-2 py-1 rounded">
-                    {crateInfo.mimeType}
-                  </span>
-                  <span className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
-                    {(() => {
-                      switch (crateInfo.category) {
-                        case CrateCategory.POLL:
-                          return (
-                            <>
-                              <FaComments className="mr-1" size={12} /> Feedback
-                            </>
-                          );
-                        case CrateCategory.TEXT:
-                          return (
-                            <>
-                              <FaFileAlt className="mr-1" size={12} /> Markdown
-                            </>
-                          );
-                        case CrateCategory.CODE:
-                          return (
-                            <>
-                              <FaFileCode className="mr-1" size={12} /> Code
-                            </>
-                          );
-                        case CrateCategory.DATA:
-                          return (
-                            <>
-                              <FaFileCode className="mr-1" size={12} /> JSON
-                            </>
-                          );
-                        case CrateCategory.DATA:
-                          return (
-                            <>
-                              <FaFileCode className="mr-1" size={12} /> YAML
-                            </>
-                          );
-                        case CrateCategory.IMAGE:
-                          return (
-                            <>
-                              <FaFileImage className="mr-1" size={12} /> Image
-                            </>
-                          );
-                        case CrateCategory.TEXT:
-                          return (
-                            <>
-                              <FaFileAlt className="mr-1" size={12} /> Text
-                            </>
-                          );
-                        case CrateCategory.TEXT:
-                          return (
-                            <>
-                              <FaFileAlt className="mr-1" size={12} /> Binary
-                            </>
-                          );
-                        default:
-                          return (
-                            <>
-                              <FaFileAlt className="mr-1" size={12} />{" "}
-                              {formatCategoryForDisplay(crateInfo.category)}
-                            </>
-                          );
-                      }
-                    })()}
-                  </span>
-                </div>
-              </div>
-            </div>
+        <CrateHeader
+          crateInfo={crateInfo}
+          isEditing={isEditing}
+          editTitle={editTitle}
+          setEditTitle={setEditTitle}
+          editDescription={editDescription}
+          setEditDescription={setEditDescription}
+          editLoading={editLoading}
+          timeRemaining={timeRemaining}
+          copySuccess={copySuccess}
+          copyError={copyError}
+          editSuccess={editSuccess}
+          editError={editError}
+          deleteError={deleteError}
+          deleteLoading={deleteLoading}
+          copyLoading={copyLoading}
+          showPreview={showPreview}
+          user={user}
+          handleSaveEdit={handleSaveEdit}
+          handleEditCancel={handleEditCancel}
+          handleEditStart={handleEditStart}
+          handleDownload={handleDownload}
+          handleCopyCrate={handleCopyCrate}
+          handleViewContent={handleViewContent}
+          handleOpenSharingModal={handleOpenSharingModal}
+          handleDelete={handleDelete}
+          signInWithGoogle={signInWithGoogle}
+          getCrateIcon={getCrateIcon}
+          formatBytes={formatBytes}
+          formatCategoryForDisplay={formatCategoryForDisplay}
+          formatDate={formatDate}
+          renderTags={renderTags}
+          renderMetadata={renderMetadata}
+          crateId={crateId}
+        />
 
-            <div className="flex items-center space-x-2">
-              {/* Edit controls */}
-              {crateInfo.isOwner && (
-                <div className="flex items-center space-x-2">
-                  {isEditing ? (
-                    <>
-                      <button
-                        onClick={handleSaveEdit}
-                        disabled={editLoading}
-                        className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                        title="Save changes"
-                      >
-                        <FaSave size={16} />
-                      </button>
-                      <button
-                        onClick={handleEditCancel}
-                        disabled={editLoading}
-                        className="p-2 text-gray-600 hover:bg-gray-50 rounded transition-colors"
-                        title="Cancel editing"
-                      >
-                        <FaTimes size={16} />
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={handleEditStart}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                      title="Edit crate details"
-                    >
-                      <FaEdit size={16} />
-                    </button>
-                  )}
-                </div>
-              )}
+        {/* Content Preview */}
+        <CrateContentPreview
+          showPreview={showPreview}
+          setShowPreview={setShowPreview}
+          crateInfo={crateInfo}
+          contentLoading={contentLoading}
+          crateId={crateId}
+          formatCategoryForDisplay={formatCategoryForDisplay}
+          renderPreview={renderPreview}
+        />
 
-              {timeRemaining && (
-                <div className="text-xs px-2 py-1 rounded bg-primary-50 text-primary-700 flex items-center">
-                  <FaClock className="mr-1" /> {timeRemaining} remaining
-                </div>
-              )}
-            </div>
-          </Card.Header>
+        {/* Stats Section */}
+        <CrateStats
+          crateInfo={crateInfo}
+          accessStats={accessStats}
+          usageChartData={usageChartData}
+          formatBytes={formatBytes}
+          formatCategoryForDisplay={formatCategoryForDisplay}
+          formatDate={formatDate}
+          getCrateIcon={getCrateIcon}
+        />
 
-          <Card.Body className="p-6">
-            {/* Sharing status and password protection */}
-            <div className="mb-6 flex items-center gap-3">
-              {crateInfo.isPublic ? (
-                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-green-100 text-green-800 border border-green-200 font-medium">
-                  <FaShareAlt className="mr-2" size={14} /> Public (anyone with
-                  link)
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 border border-gray-200 font-medium">
-                  <FaLock className="mr-2" size={14} /> Private (only you)
-                </span>
-              )}
-              {crateInfo.isPasswordProtected && (
-                <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium">
-                  <FaLock className="mr-2" size={14} /> Password protected
-                </span>
-              )}
-            </div>
 
-            {/* Description */}
-            {(crateInfo.description || isEditing) && (
-              <div className="mb-6 pb-4 border-b border-gray-200">
-                {isEditing ? (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">
-                      Description
-                    </label>
-                    <textarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                      rows={4}
-                      placeholder="Add a description for this crate..."
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                      Description
-                    </h3>
-                    <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      {crateInfo.description}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Tags */}
-            {renderTags(crateInfo.tags)}
-
-            {/* Metadata display */}
-            {renderMetadata(crateInfo.metadata)}
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 mt-6">
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                  Category
-                </div>
-                <div className="font-semibold text-gray-900">
-                  {formatCategoryForDisplay(crateInfo.category)}
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                  {crateInfo.category === CrateCategory.POLL
-                    ? "Responses"
-                    : "Downloads"}
-                </div>
-                <div className="font-semibold text-gray-900 flex items-center">
-                  {crateInfo.category === CrateCategory.POLL ? (
-                    <>
-                      <FaChartBar className="mr-2 text-purple-600" size={16} />
-                      {crateInfo.metadata?.submissionCount || 0}
-                    </>
-                  ) : (
-                    <>
-                      <FaDownload className="mr-2 text-blue-600" size={16} />
-                      {crateInfo.downloadCount}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {crateInfo.expiresAt && (
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                    Expiration
-                  </div>
-                  <div className="font-semibold text-gray-900 flex items-center">
-                    <FaClock className="mr-2 text-orange-600" size={14} />
-                    {formatDate(crateInfo.expiresAt)}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                  Size
-                </div>
-                <div className="font-semibold text-gray-900">
-                  {formatBytes(crateInfo.size || 0)}
-                </div>
-              </div>
-            </div>
-
-            {/* Success/Error Messages */}
-            {copySuccess && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {copySuccess}
-              </div>
-            )}
-            {copyError && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {copyError}
-              </div>
-            )}
-            {editSuccess && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {editSuccess}
-              </div>
-            )}
-            {editError && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {editError}
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-              {/* Primary Actions */}
-              {crateInfo.category === CrateCategory.POLL ? (
-                // Feedback template specific actions
-                <>
-                  {!crateInfo.isOwner && (
-                    <Link
-                      href={`/feedback/submit/${crateId}`}
-                      className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      <FaFileDownload className="mr-2 text-lg" />
-                      <span>Submit Feedback</span>
-                    </Link>
-                  )}
-                  {crateInfo.isOwner && (
-                    <Link
-                      href={`/feedback/responses/${crateId}`}
-                      className="flex items-center justify-center px-6 py-3 bg-green-500 text-white text-base font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-3 focus:ring-green-300 focus:ring-offset-2 transition-all duration-200 border border-green-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      <FaChartBar className="mr-2 text-lg" />
-                      <span>View Responses</span>
-                    </Link>
-                  )}
-                </>
-              ) : (
-                // Regular file download
-                <button
-                  onClick={handleDownload}
-                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  <FaFileDownload className="mr-2 text-lg" />
-                  <span>Download</span>
-                </button>
-              )}
-
-              {/* Copy to My Crates - show for non-owners who are signed in */}
-              {!crateInfo.isOwner && user && (
-                <button
-                  onClick={handleCopyCrate}
-                  disabled={copyLoading}
-                  className="flex items-center justify-center px-6 py-3 bg-purple-500 text-white text-base font-semibold rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-3 focus:ring-purple-300 focus:ring-offset-2 transition-all duration-200 border border-purple-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
-                >
-                  <FaUpload className="mr-2 text-lg" />
-                  <span>
-                    {copyLoading ? "Copying..." : "Copy to My Crates"}
-                  </span>
-                </button>
-              )}
-
-              {/* Sign in to Copy - show for non-owners who are not signed in */}
-              {!crateInfo.isOwner && !user && (
-                <button
-                  onClick={() => signInWithGoogle()}
-                  className="flex items-center justify-center px-4 py-2 bg-gray-500 text-white text-base font-medium rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors border border-gray-600"
-                >
-                  <FaUpload className="mr-2 text-lg" />
-                  <span>Sign in to Copy</span>
-                </button>
-              )}
-
-              {/* Secondary Actions */}
-
-              {/* Show preview button for supported categories (excluding feedback) */}
-              {(crateInfo.category === CrateCategory.TEXT ||
-                crateInfo.category === CrateCategory.CODE ||
-                crateInfo.category === CrateCategory.DATA ||
-                crateInfo.category === CrateCategory.IMAGE) && (
-                <button
-                  onClick={handleViewContent}
-                  className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                >
-                  <FaEye className="mr-1" />{" "}
-                  {showPreview ? "Hide Preview" : "View Content"}
-                </button>
-              )}
-
-              {/* Owner-only Actions */}
-              {crateInfo.isOwner && (
-                <>
-                  <button
-                    onClick={handleOpenSharingModal}
-                    className="flex items-center justify-center px-3 py-1.5 bg-green-100 text-sm text-green-700 rounded hover:bg-green-200 transition-colors"
-                  >
-                    <FaShareAlt className="mr-1" /> Manage Sharing
-                  </button>
-
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleteLoading}
-                    className="flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-700 border border-red-700 font-semibold shadow transition-colors"
-                    title="Delete Crate"
-                  >
-                    {deleteLoading ? (
-                      "Deleting..."
-                    ) : (
-                      <>
-                        <FaFile className="mr-1" /> Delete
-                      </>
-                    )}
-                  </button>
-                </>
-              )}
-
-              {deleteError && (
-                <div className="text-red-600 mt-2 text-sm">{deleteError}</div>
-              )}
-            </div>
-          </Card.Body>
-        </Card>
-
-        {/* Preview Card - Only shown when preview is toggled */}
-        {showPreview && (
-          <Card className="mb-6 shadow-lg border border-gray-200">
-            <Card.Header className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6">
-              <div className="flex items-center">
-                <FaEye className="mr-2 text-blue-600" size={18} />
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Content Preview •{" "}
-                  {formatCategoryForDisplay(crateInfo.category)}
-                </h2>
-              </div>
-              <button
-                onClick={() => setShowPreview(false)}
-                className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition-colors"
-                title="Close preview"
-              >
-                <FaTimes size={16} />
-              </button>
-            </Card.Header>
-
-            <Card.Body className="p-6">
-              {contentLoading ? (
-                <div className="h-48 flex items-center justify-center bg-gray-50 rounded-lg">
-                  <div className="flex items-center text-gray-600">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Loading content...
-                  </div>
-                </div>
-              ) : crateInfo.category === CrateCategory.IMAGE ? (
-                <div className="flex items-center justify-center bg-gray-50 rounded-lg p-8">
-                  <img
-                    src={`/api/crates/${crateId}/content`}
-                    alt={crateInfo.title}
-                    className="max-w-full max-h-96 object-contain rounded shadow-md"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/icon.png";
-                      target.style.height = "80px";
-                      target.style.width = "80px";
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                  {renderPreview()}
-                </div>
-              )}
-            </Card.Body>
-          </Card>
-        )}
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          {/* Usage Stats Card */}
-          <StatsCard
-            title="Usage Statistics"
-            icon={<FaChartBar className="text-blue-600" />}
-            tooltip="Crate access statistics over time"
-            className="shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
-          >
-            <div className="mb-5">
-              <StatsCard.Grid columns={3} className="mb-4">
-                <StatsCard.Stat
-                  label="Today"
-                  value={accessStats.today}
-                  icon={<FaEye />}
-                />
-                <StatsCard.Stat
-                  label="This week"
-                  value={accessStats.week}
-                  icon={<FaEye />}
-                />
-                <StatsCard.Stat
-                  label="Total views"
-                  value={crateInfo.viewCount || 0}
-                  icon={<FaEye />}
-                />
-              </StatsCard.Grid>
-
-              {usageChartData.length > 0 && (
-                <div>
-                  <div className="text-xs text-gray-500 mb-2">
-                    7-Day Access Trend
-                  </div>
-                  <StatsCard.Chart
-                    data={usageChartData}
-                    type="bar"
-                    height={100}
-                    color="#3b82f6"
-                  />
-                </div>
-              )}
-            </div>
-          </StatsCard>
-
-          {/* Storage Stats */}
-          <StatsCard
-            title="Storage Details"
-            icon={<FaDatabase className="text-blue-500" />}
-          >
-            <div className="mb-2">
-              <StatsCard.Grid columns={2} className="mb-4">
-                <StatsCard.Stat
-                  label="Size"
-                  value={formatBytes(crateInfo.size || 0)}
-                  icon={<FaFileAlt />}
-                />
-                <StatsCard.Stat
-                  label="Downloads"
-                  value={crateInfo.downloadCount || 0}
-                  icon={<FaDownload />}
-                />
-              </StatsCard.Grid>
-              <StatsCard.Stat
-                label="Category"
-                value={formatCategoryForDisplay(crateInfo.category)}
-                icon={getCrateIcon()}
-                className="mb-2"
-              />
-            </div>
-          </StatsCard>
-
-          {/* Time Related Stats */}
-          <StatsCard
-            title="Timeline"
-            icon={<FaHistory className="text-purple-500" />}
-          >
-            <div className="space-y-4">
-              <StatsCard.Stat
-                label="Created on"
-                value={formatDate(crateInfo.createdAt || new Date())}
-                icon={<FaCalendarAlt />}
-                className="mb-2"
-              />
-
-              {crateInfo.expiresAt && (
-                <>
-                  <StatsCard.Stat
-                    label="Expires on"
-                    value={formatDate(crateInfo.expiresAt)}
-                    icon={<FaClock />}
-                    className="mb-2"
-                  />
-
-                  {/* TTL display removed as ttlDays is no longer supported */}
-                </>
-              )}
-            </div>
-          </StatsCard>
-        </div>
 
         {/* Smart Call-to-Action - Only show for non-owners */}
         {crateInfo && crateInfo.isPublic && !crateInfo.isOwner && (

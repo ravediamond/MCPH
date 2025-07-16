@@ -59,13 +59,26 @@ export default function SmartCallToAction({
               )}
 
               {/* Make Your Own Crate Button */}
-              <Link
-                href={user ? "/upload" : "/login?next=/upload"}
-                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
-              >
-                <FaUpload className="text-sm" />
-                <span>Create your own crate</span>
-              </Link>
+              {user ? (
+                <Link
+                  href="/upload"
+                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                >
+                  <FaUpload className="text-sm" />
+                  <span>Create your own crate</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    // Redirect to login with next parameter
+                    window.location.href = "/login?next=/upload";
+                  }}
+                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                >
+                  <FaUpload className="text-sm" />
+                  <span>Sign in to create</span>
+                </button>
+              )}
             </div>
           </div>
 
