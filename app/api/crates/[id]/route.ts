@@ -101,6 +101,7 @@ export async function GET(
       createdAt: crate.createdAt,
       expiresAt: crate.expiresAt, // Include expiration date if set
       downloadCount: crate.downloadCount,
+      viewCount: crate.viewCount || 0,
       isPublic: crate.shared?.public || false,
       isPasswordProtected: Boolean(crate.shared.passwordHash),
       isOwner,

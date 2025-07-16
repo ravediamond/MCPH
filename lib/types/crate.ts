@@ -26,7 +26,9 @@ export interface Crate {
   searchField?: string; // title + tags + description (for hybrid search)
   size: number; // File size in bytes
   downloadCount: number; // Number of times the crate was downloaded
+  viewCount?: number; // Number of times the crate was viewed
   fileName: string; // Original filename of the uploaded file
+  expiresAt?: Date; // Optional expiration date, used for anonymous uploads (30 days)
 
   // Optional metadata
   metadata?: Record<string, string>; // Key-value user metadata

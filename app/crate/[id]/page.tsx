@@ -48,6 +48,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
+import SmartCallToAction from "../../../components/SmartCallToAction";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
 import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
 
@@ -150,6 +151,11 @@ export default function CratePage() {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
+
+  // Duplication state variables
+  const [duplicateLoading, setDuplicateLoading] = useState(false);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
+  const [duplicateSuccess, setDuplicateSuccess] = useState<string | null>(null);
 
   // Fetch crate metadata only when crateId changes or when auth state changes
   useEffect(() => {
@@ -962,6 +968,78 @@ export default function CratePage() {
       }
     } else {
       return "text";
+    }
+  };
+
+  // Handle view content action with tracking
+  const handleViewContent = async () => {
+    setShowPreview(!showPreview);
+
+    // Track view count when content is actually viewed (only on first view)
+    if (!showPreview && crateInfo?.isPublic) {
+      try {
+        const response = await fetch(`/api/crates/${crateId}/view`, {
+          method: "POST",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Update the local view count
+          if (crateInfo) {
+            setCrateInfo({
+              ...crateInfo,
+              viewCount: data.viewCount,
+            });
+          }
+        }
+      } catch (viewError) {
+        console.warn("Failed to track view:", viewError);
+      }
+    }
+  };
+
+  // Handle crate duplication
+  const handleDuplicateCrate = async () => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = `/login?next=/crate/${crateId}`;
+      return;
+    }
+
+    setDuplicateLoading(true);
+    setDuplicateError(null);
+    setDuplicateSuccess(null);
+
+    try {
+      const idToken = await getIdToken();
+      if (!idToken) {
+        throw new Error("Authentication failed");
+      }
+
+      const response = await fetch(`/api/crates/${crateId}/duplicate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to duplicate crate");
+      }
+
+      setDuplicateSuccess("Crate duplicated successfully! Redirecting...");
+
+      // Redirect to the new crate after a short delay
+      setTimeout(() => {
+        window.location.href = `/crate/${data.crateId}`;
+      }, 1500);
+    } catch (error: any) {
+      setDuplicateError(error.message || "Failed to duplicate crate");
+      setTimeout(() => setDuplicateError(null), 5000);
+    } finally {
+      setDuplicateLoading(false);
     }
   };
 
@@ -1907,6 +1985,79 @@ export default function CratePage() {
               </div>
             )}
 
+            {/* View Badge Section - Only shown when public */}
+            {isPublic && (
+              <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">
+                  📊 View Counter Badge
+                </h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Add a view counter badge to your README or blog posts to show
+                  how popular your crate is!
+                </p>
+
+                {/* Badge Preview */}
+                <div className="mb-3">
+                  <img
+                    src={`/api/crates/${crateId}/badge`}
+                    alt="View counter badge"
+                    className="inline-block"
+                  />
+                </div>
+
+                {/* Markdown Code */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">
+                    Markdown:
+                  </label>
+                  <div className="relative">
+                    <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
+                      [![Views](https://mcphub.com/api/crates/{crateId}
+                      /badge)](https://mcphub.com/crate/{crateId})
+                    </code>
+                    <button
+                      onClick={() => {
+                        const markdown = `[![Views](https://mcphub.com/api/crates/${crateId}/badge)](https://mcphub.com/crate/${crateId})`;
+                        navigator.clipboard.writeText(markdown);
+                        setSocialLinkCopied(true);
+                        setTimeout(() => setSocialLinkCopied(false), 2000);
+                      }}
+                      className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Copy markdown"
+                    >
+                      <FaCopy className="text-xs" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* HTML Code */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">
+                    HTML:
+                  </label>
+                  <div className="relative">
+                    <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
+                      &lt;a href="https://mcphub.com/crate/{crateId}"&gt;&lt;img
+                      src="https://mcphub.com/api/crates/{crateId}/badge"
+                      alt="Views"&gt;&lt;/a&gt;
+                    </code>
+                    <button
+                      onClick={() => {
+                        const html = `<a href="https://mcphub.com/crate/${crateId}"><img src="https://mcphub.com/api/crates/${crateId}/badge" alt="Views"></a>`;
+                        navigator.clipboard.writeText(html);
+                        setSocialLinkCopied(true);
+                        setTimeout(() => setSocialLinkCopied(false), 2000);
+                      }}
+                      className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Copy HTML"
+                    >
+                      <FaCopy className="text-xs" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Social Sharing Section - Only shown when public */}
             {isPublic && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -2416,7 +2567,7 @@ export default function CratePage() {
                 crateInfo.category === CrateCategory.DATA ||
                 crateInfo.category === CrateCategory.IMAGE) && (
                 <button
-                  onClick={() => setShowPreview(!showPreview)}
+                  onClick={handleViewContent}
                   className="flex items-center justify-center px-3 py-1.5 bg-gray-100 text-sm text-gray-700 rounded hover:bg-gray-200 transition-colors"
                 >
                   <FaEye className="mr-1" />{" "}
@@ -2628,6 +2779,18 @@ export default function CratePage() {
           </StatsCard>
         </div>
 
+        {/* Smart Call-to-Action - Only show for non-owners */}
+        {crateInfo && crateInfo.isPublic && !crateInfo.isOwner && (
+          <SmartCallToAction
+            crateId={crateId}
+            crateTitle={crateInfo.title}
+            viewCount={crateInfo.viewCount || 0}
+            isOwner={crateInfo.isOwner}
+            isPublic={crateInfo.isPublic}
+            onDuplicate={handleDuplicateCrate}
+          />
+        )}
+
         {/* Footer Navigation */}
         <div className="flex justify-between items-center text-sm mt-4 px-1">
           <Link
@@ -2644,6 +2807,18 @@ export default function CratePage() {
           </Link>
         </div>
       </div>
+
+      {/* Duplication Status Messages */}
+      {duplicateSuccess && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          {duplicateSuccess}
+        </div>
+      )}
+      {duplicateError && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          {duplicateError}
+        </div>
+      )}
     </div>
   );
 }
