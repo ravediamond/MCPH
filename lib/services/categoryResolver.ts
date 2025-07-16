@@ -78,7 +78,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
   // Text/Documentation
   ".md": CrateCategory.TEXT,
   ".markdown": CrateCategory.TEXT,
-  
+
   // Recipe/Workflow files - specific extensions that indicate AI task instructions
   ".recipe": CrateCategory.RECIPE,
   ".workflow": CrateCategory.RECIPE,

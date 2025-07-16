@@ -662,6 +662,101 @@ export async function incrementCrateDownloadCount(
   }
 }
 
+export async function incrementCrateViewCount(
+  crateId: string,
+): Promise<number> {
+  try {
+    const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
+    const doc = await docRef.get();
+
+    if (!doc.exists) {
+      console.warn(
+        `Crate metadata not found for ID: ${crateId} when incrementing view count.`,
+      );
+      return 0;
+    }
+
+    await docRef.update({
+      viewCount: FieldValue.increment(1),
+    });
+
+    await incrementMetric("views");
+
+    const updatedDoc = await docRef.get();
+    const viewCount = updatedDoc.data()?.viewCount || 0;
+
+    return viewCount;
+  } catch (error) {
+    console.error("Error incrementing crate view count in Firestore:", error);
+
+    try {
+      const doc = await db.collection(CRATES_COLLECTION).doc(crateId).get();
+      return doc.data()?.viewCount || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+}
+
+export async function duplicateCrate(
+  originalCrateId: string,
+  newOwnerId: string,
+): Promise<{ success: boolean; crateId?: string; error?: string }> {
+  try {
+    const originalCrate = await getCrateMetadata(originalCrateId);
+    if (!originalCrate) {
+      return { success: false, error: "Original crate not found" };
+    }
+
+    if (!originalCrate.shared.public) {
+      return { success: false, error: "Original crate is not public" };
+    }
+
+    const newCrateId = uuidv4();
+    const now = new Date();
+
+    const duplicatedCrate: Crate = {
+      ...originalCrate,
+      id: newCrateId,
+      ownerId: newOwnerId,
+      createdAt: now,
+      downloadCount: 0,
+      viewCount: 0,
+      shared: {
+        public: false,
+      },
+      title: `Copy of ${originalCrate.title}`,
+      gcsPath: `crates/${newCrateId}`,
+      metadata: {
+        ...originalCrate.metadata,
+        derivedFrom: originalCrateId,
+        derivedFromTitle: originalCrate.title,
+        derivedAt: now.toISOString(),
+      },
+    };
+
+    // Save metadata first
+    await saveCrateMetadata(duplicatedCrate);
+
+    // Copy the file content
+    const { copyFile } = await import("./storageService");
+    const fileCopySuccess = await copyFile(originalCrateId, newCrateId);
+
+    if (!fileCopySuccess) {
+      // If file copy fails, clean up the metadata
+      await deleteCrateMetadata(newCrateId);
+      return { success: false, error: "Failed to copy file content" };
+    }
+
+    await incrementMetric("duplications");
+
+    return { success: true, crateId: newCrateId };
+  } catch (error) {
+    console.error("Error duplicating crate:", error);
+    return { success: false, error: "Failed to duplicate crate" };
+  }
+}
+
 export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
   try {
     await db.collection(CRATES_COLLECTION).doc(crateId).delete();

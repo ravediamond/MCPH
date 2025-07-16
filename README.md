@@ -91,17 +91,20 @@ Poll forms, surveys, interactive forms, and data collection templates.
 MCPH uses a simple, intuitive access model that balances security with convenience:
 
 ### **Upload = Login Required** 🔒
+
 - You need a Google account to save and organize your AI creations
 - Prevents spam and ensures proper ownership
 - Free accounts get permanent storage (no expiration for authenticated users)
 
 ### **View = No Login Needed** 🌐
+
 - Anyone with a public link can view shared content instantly
 - Perfect for sharing with clients, team members, or the public
 - No barriers for people viewing your shared content
 - Works everywhere - email, Slack, social media, etc.
 
 ### **Benefits**
+
 - **For creators**: Organized, secure storage with proper attribution
 - **For viewers**: Instant access without signup friction
 - **For professionals**: Share with clients who don't need accounts

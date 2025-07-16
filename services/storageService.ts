@@ -449,3 +449,44 @@ export async function deleteCrate(
     return false;
   }
 }
+
+/**
+ * Copy a file from one location to another in GCS
+ */
+export async function copyFile(
+  sourceFileId: string,
+  destinationFileId: string,
+): Promise<boolean> {
+  try {
+    // Get source file metadata
+    const sourceMetadata = await getCrateMetadata(sourceFileId);
+    if (!sourceMetadata) {
+      throw new Error("Source file not found");
+    }
+
+    // Get source file
+    const sourceFile = bucket.file(sourceMetadata.gcsPath);
+
+    // Check if source exists
+    const [sourceExists] = await sourceFile.exists();
+    if (!sourceExists) {
+      throw new Error("Source file not found in storage");
+    }
+
+    // Set destination path
+    const destinationPath = `crates/${destinationFileId}`;
+    const destinationFile = bucket.file(destinationPath);
+
+    // Copy the file
+    await sourceFile.copy(destinationFile);
+
+    console.log(
+      `File copied from ${sourceMetadata.gcsPath} to ${destinationPath}`,
+    );
+
+    return true;
+  } catch (error) {
+    console.error("Error copying file:", error);
+    return false;
+  }
+}
