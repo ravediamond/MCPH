@@ -22,7 +22,7 @@ export default function SmartCallToAction({
   isPublic = false,
   onDuplicate,
 }: SmartCallToActionProps) {
-  const { user } = useAuth();
+  const { user, signInWithGoogle } = useAuth();
 
   if (!isPublic) return null;
 
@@ -69,9 +69,14 @@ export default function SmartCallToAction({
                 </Link>
               ) : (
                 <button
-                  onClick={() => {
-                    // Redirect to login with next parameter
-                    window.location.href = "/login?next=/upload";
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                      // After successful login, redirect to upload page
+                      window.location.href = "/upload";
+                    } catch (error) {
+                      console.error("Error signing in:", error);
+                    }
                   }}
                   className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
                 >

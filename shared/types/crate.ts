@@ -12,6 +12,12 @@ export interface CrateSharing {
   passwordHash?: string | null;
 }
 
+export interface AccessHistoryEntry {
+  date: string; // YYYY-MM-DD format
+  views: number; // View count for this day
+  downloads: number; // Download count for this day
+}
+
 export interface Crate {
   id: string; // Firestore doc ID (also GCS object key)
   title: string; // User-supplied title
@@ -29,6 +35,7 @@ export interface Crate {
   viewCount?: number; // Number of times the crate was viewed
   fileName: string; // Original filename of the uploaded file
   expiresAt?: Date; // Optional expiration date, used for anonymous uploads (30 days)
+  accessHistory?: AccessHistoryEntry[]; // Daily access statistics
 
   // Optional metadata
   metadata?: Record<string, string>; // Key-value user metadata

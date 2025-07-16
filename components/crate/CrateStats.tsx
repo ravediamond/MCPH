@@ -16,11 +16,6 @@ import { CrateCategory } from "../../shared/types/crate";
 
 interface CrateStatsProps {
   crateInfo: any;
-  accessStats: {
-    today: number;
-    week: number;
-  };
-  usageChartData: any[];
   formatBytes: (bytes: number) => string;
   formatCategoryForDisplay: (category: CrateCategory) => string;
   formatDate: (date: string | Date) => string;
@@ -29,8 +24,6 @@ interface CrateStatsProps {
 
 export default function CrateStats({
   crateInfo,
-  accessStats,
-  usageChartData,
   formatBytes,
   formatCategoryForDisplay,
   formatDate,
@@ -40,43 +33,20 @@ export default function CrateStats({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       {/* Usage Stats Card */}
       <StatsCard
-        title="Usage Statistics"
-        icon={<FaChartBar className="text-blue-600" />}
-        tooltip="Crate access statistics over time"
+        title="Engagement"
+        icon={<FaEye className="text-blue-600" />}
+        tooltip="Total views for this crate"
         className="shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200"
       >
-        <div className="mb-5">
-          <StatsCard.Grid columns={3} className="mb-4">
-            <StatsCard.Stat
-              label="Today"
-              value={accessStats.today}
-              icon={<FaEye />}
-            />
-            <StatsCard.Stat
-              label="This week"
-              value={accessStats.week}
-              icon={<FaEye />}
-            />
-            <StatsCard.Stat
-              label="Total views"
-              value={crateInfo.viewCount || 0}
-              icon={<FaEye />}
-            />
-          </StatsCard.Grid>
-
-          {usageChartData.length > 0 && (
-            <div>
-              <div className="text-xs text-gray-500 mb-2">
-                7-Day Access Trend
-              </div>
-              <StatsCard.Chart
-                data={usageChartData}
-                type="bar"
-                height={100}
-                color="#3b82f6"
-              />
+        <div className="flex items-center justify-center py-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-blue-600 mb-2">
+              {crateInfo.viewCount || 0}
             </div>
-          )}
+            <div className="text-sm text-gray-500">
+              Total Views
+            </div>
+          </div>
         </div>
       </StatsCard>
 

@@ -92,10 +92,6 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   isOwner: boolean;
   viewCount?: number;
   tags?: string[];
-  accessHistory?: {
-    date: string;
-    count: number;
-  }[];
 }
 
 export default function CratePage() {
@@ -116,11 +112,6 @@ export default function CratePage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
-  const [accessStats, setAccessStats] = useState({
-    today: 0,
-    week: 0,
-    month: 0,
-  });
   // No more expiry reset functionality as crates no longer expire when logged in
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -235,15 +226,34 @@ export default function CratePage() {
 
         setCrateInfo(processedData);
 
+        // Increment view count on page load (for all crates)
+        try {
+          const viewResponse = await fetch(`/api/crates/${crateId}/view`, {
+            method: "POST",
+          });
+
+          if (viewResponse.ok) {
+            const viewData = await viewResponse.json();
+            // Update the local view count
+            setCrateInfo(prevInfo => ({
+              ...processedData,
+              viewCount: viewData.viewCount,
+            }));
+          }
+        } catch (viewError) {
+          console.warn("Failed to track page view:", viewError);
+        }
+
         if (data.expiresAt) {
           updateTimeRemaining(data.expiresAt);
           timer = setInterval(() => updateTimeRemaining(data.expiresAt), 60000);
         }
 
-        if (!data.accessHistory) {
-          generateMockAccessStats(data.downloadCount || 0);
+        // Set access history (if available) for future use
+        if (data.accessHistory && data.accessHistory.length > 0) {
+          processedData.accessHistory = data.accessHistory;
         } else {
-          calculateAccessStats(data.accessHistory);
+          processedData.accessHistory = [];
         }
       } catch (err: any) {
         setError(err.message || "An error occurred");
@@ -346,67 +356,7 @@ export default function CratePage() {
       .finally(() => setContentLoading(false));
   };
 
-  // In a real app, this would come from server analytics
-  const generateMockAccessStats = (downloadCount: number) => {
-    const today = Math.floor(downloadCount * 0.2) || 1;
-    const week = Math.floor(downloadCount * 0.6) || 3;
-    const month = downloadCount;
 
-    setAccessStats({
-      today,
-      week,
-      month,
-    });
-
-    // Generate mock access history data (last 7 days)
-    const mockHistory = [];
-    const now = new Date();
-
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(now.getDate() - i);
-      const count =
-        i === 0 ? today : Math.floor(Math.random() * (week / 7) * 1.5);
-
-      mockHistory.push({
-        date: date.toISOString().split("T")[0],
-        count,
-      });
-    }
-
-    if (crateInfo) {
-      setCrateInfo({
-        ...crateInfo,
-        accessHistory: mockHistory,
-      });
-    }
-  };
-
-  const calculateAccessStats = (history: { date: string; count: number }[]) => {
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(now.getDate() - 7);
-
-    const todayCount =
-      history.find((entry) => entry.date === today)?.count || 0;
-
-    const weekCount = history.reduce((sum, entry) => {
-      const entryDate = new Date(entry.date);
-      if (entryDate >= oneWeekAgo) {
-        return sum + entry.count;
-      }
-      return sum;
-    }, 0);
-
-    const monthCount = history.reduce((sum, entry) => sum + entry.count, 0);
-
-    setAccessStats({
-      today: todayCount,
-      week: weekCount,
-      month: monthCount,
-    });
-  };
 
   // Simplified time remaining calculation
   const updateTimeRemaining = (expiresAt: string | number | Date) => {
@@ -976,29 +926,29 @@ export default function CratePage() {
     }
   };
 
-  // Handle view content action with tracking
+  // Handle view content action with download tracking
   const handleViewContent = async () => {
     setShowPreview(!showPreview);
 
-    // Track view count when content is actually viewed (only on first view)
-    if (!showPreview && crateInfo?.isPublic) {
+    // Track download count when content is actually viewed (only on first view)
+    if (!showPreview) {
       try {
-        const response = await fetch(`/api/crates/${crateId}/view`, {
+        const response = await fetch(`/api/crates/${crateId}/access`, {
           method: "POST",
         });
 
         if (response.ok) {
           const data = await response.json();
-          // Update the local view count
+          // Update the local download count
           if (crateInfo) {
             setCrateInfo({
               ...crateInfo,
-              viewCount: data.viewCount,
+              downloadCount: data.downloadCount,
             });
           }
         }
-      } catch (viewError) {
-        console.warn("Failed to track view:", viewError);
+      } catch (downloadError) {
+        console.warn("Failed to track download:", downloadError);
       }
     }
   };
@@ -1749,13 +1699,6 @@ export default function CratePage() {
     );
   }
 
-  // Prepare usage chart data from access history
-  const usageChartData = crateInfo.accessHistory
-    ? crateInfo.accessHistory.map((entry) => ({
-        label: entry.date.split("-").slice(1).join("/"), // Format as MM/DD
-        value: entry.count,
-      }))
-    : [];
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
@@ -1865,8 +1808,6 @@ export default function CratePage() {
         {/* Stats Section */}
         <CrateStats
           crateInfo={crateInfo}
-          accessStats={accessStats}
-          usageChartData={usageChartData}
           formatBytes={formatBytes}
           formatCategoryForDisplay={formatCategoryForDisplay}
           formatDate={formatDate}

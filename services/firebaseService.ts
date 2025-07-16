@@ -32,7 +32,7 @@ import {
   QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
 import { v4 as uuidv4 } from "uuid";
-import { Crate, CrateSharing } from "../shared/types/crate";
+import { Crate, CrateSharing, AccessHistoryEntry } from "../shared/types/crate";
 
 let firebaseApp: App;
 let db: Firestore;
@@ -140,6 +140,7 @@ const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
 const FEEDBACK_TEMPLATES_COLLECTION = "feedbackTemplates";
 const FEEDBACK_RESPONSES_COLLECTION = "feedbackResponses";
+const CRATE_ACCESS_COLLECTION = "crateAccess";
 
 export {
   CRATES_COLLECTION,
@@ -147,6 +148,7 @@ export {
   EVENTS_COLLECTION,
   FEEDBACK_TEMPLATES_COLLECTION,
   FEEDBACK_RESPONSES_COLLECTION,
+  CRATE_ACCESS_COLLECTION,
   db,
 };
 
@@ -579,10 +581,6 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
     }
 
     const data = doc.data();
-    console.log(
-      `[DEBUG] Firebase getCrateMetadata: Raw crate data for ${crateId}:`,
-      JSON.stringify(data, null, 2),
-    );
 
     // Ensure tags is always an array
     if (data && !Array.isArray(data.tags)) {
@@ -616,6 +614,15 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
       processedData.tags,
     );
 
+    // Add access history to the response
+    try {
+      const accessHistory = await getCrateAccessHistory(crateId, 30);
+      processedData.accessHistory = accessHistory;
+    } catch (accessError) {
+      console.warn(`Failed to get access history for crate ${crateId}:`, accessError);
+      processedData.accessHistory = [];
+    }
+
     return processedData;
   } catch (error) {
     console.error("Error getting crate metadata from Firestore:", error);
@@ -642,6 +649,9 @@ export async function incrementCrateDownloadCount(
     });
 
     await incrementMetric("downloads");
+
+    // Track daily access
+    await trackDailyAccess(crateId, "download");
 
     const updatedDoc = await docRef.get();
     const downloadCount = updatedDoc.data()?.downloadCount || 0;
@@ -681,6 +691,9 @@ export async function incrementCrateViewCount(
     });
 
     await incrementMetric("views");
+
+    // Track daily access
+    await trackDailyAccess(crateId, "view");
 
     const updatedDoc = await docRef.get();
     const viewCount = updatedDoc.data()?.viewCount || 0;
@@ -1135,5 +1148,135 @@ export async function listUserMcpClients(userId: string): Promise<McpClient[]> {
   } catch (error) {
     console.error("Error listing user MCP clients:", error);
     return [];
+  }
+}
+
+// Access Tracking Functions
+
+/**
+ * Track daily access (view or download) for a crate
+ */
+export async function trackDailyAccess(
+  crateId: string,
+  accessType: "view" | "download",
+): Promise<void> {
+  try {
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+    const docId = `${crateId}_${today}`;
+    const docRef = db.collection(CRATE_ACCESS_COLLECTION).doc(docId);
+
+    const updateData: Record<string, any> = {
+      crateId,
+      date: today,
+      updatedAt: new Date(),
+    };
+
+    if (accessType === "view") {
+      updateData.views = FieldValue.increment(1);
+    } else {
+      updateData.downloads = FieldValue.increment(1);
+    }
+
+    await docRef.set(updateData, { merge: true });
+  } catch (error) {
+    console.error(`Error tracking daily ${accessType} for crate ${crateId}:`, error);
+  }
+}
+
+/**
+ * Get access history for a crate over the last N days
+ */
+export async function getCrateAccessHistory(
+  crateId: string,
+  days: number = 30,
+): Promise<AccessHistoryEntry[]> {
+  try {
+    const result: AccessHistoryEntry[] = [];
+    const today = new Date();
+
+    // Generate date range
+    const dates = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      dates.push(date.toISOString().split("T")[0]);
+    }
+
+    // Fetch access data for all dates
+    const promises = dates.map(async (date) => {
+      const docId = `${crateId}_${date}`;
+      const doc = await db.collection(CRATE_ACCESS_COLLECTION).doc(docId).get();
+      
+      if (doc.exists) {
+        const data = doc.data();
+        return {
+          date,
+          views: data?.views || 0,
+          downloads: data?.downloads || 0,
+        };
+      } else {
+        return {
+          date,
+          views: 0,
+          downloads: 0,
+        };
+      }
+    });
+
+    const accessData = await Promise.all(promises);
+    result.push(...accessData);
+
+    return result;
+  } catch (error) {
+    console.error(`Error getting access history for crate ${crateId}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Get aggregated access statistics for a crate
+ */
+export async function getCrateAccessStats(
+  crateId: string,
+): Promise<{
+  today: { views: number; downloads: number };
+  week: { views: number; downloads: number };
+  month: { views: number; downloads: number };
+}> {
+  try {
+    const history = await getCrateAccessHistory(crateId, 30);
+    
+    const today = new Date().toISOString().split("T")[0];
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const monthAgo = new Date();
+    monthAgo.setDate(monthAgo.getDate() - 30);
+
+    const todayStats = history.find(entry => entry.date === today) || { views: 0, downloads: 0 };
+    
+    const weekStats = history
+      .filter(entry => new Date(entry.date) >= weekAgo)
+      .reduce((acc, entry) => ({
+        views: acc.views + entry.views,
+        downloads: acc.downloads + entry.downloads,
+      }), { views: 0, downloads: 0 });
+
+    const monthStats = history.reduce((acc, entry) => ({
+      views: acc.views + entry.views,
+      downloads: acc.downloads + entry.downloads,
+    }), { views: 0, downloads: 0 });
+
+    return {
+      today: todayStats,
+      week: weekStats,
+      month: monthStats,
+    };
+  } catch (error) {
+    console.error(`Error getting access stats for crate ${crateId}:`, error);
+    return {
+      today: { views: 0, downloads: 0 },
+      week: { views: 0, downloads: 0 },
+      month: { views: 0, downloads: 0 },
+    };
   }
 }

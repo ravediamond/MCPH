@@ -42,7 +42,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <span className="font-medium text-lg">🤖 Claude</span>
               <span className="text-gray-300">·</span>
-              <span className="font-medium text-lg">💬 ChatGPT</span>
+              <span className="font-medium text-lg">💬 ChatGPT Pro+</span>
             </div>
           </div>
 
