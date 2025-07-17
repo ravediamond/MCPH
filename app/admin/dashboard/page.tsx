@@ -239,7 +239,7 @@ const AdminDashboardPage: React.FC = () => {
                   {stats.totalMcpCalls?.toLocaleString() ?? "N/A"}
                 </p>
                 <div className="mt-2 text-xs text-gray-600">
-                  Lifetime MCP API calls
+                  Lifetime MCP calls
                 </div>
               </div>
               <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-5 border-l-4 border-orange-500">
@@ -302,9 +302,7 @@ const AdminDashboardPage: React.FC = () => {
               </h3>
               <div className="flex flex-col md:flex-row md:justify-between">
                 <div>
-                  <div className="text-sm text-gray-600">
-                    Total MCP API Calls
-                  </div>
+                  <div className="text-sm text-gray-600">Total MCP Calls</div>
                   <div className="text-2xl font-bold">
                     {stats.totalMcpCalls?.toLocaleString() ?? "N/A"}
                   </div>
