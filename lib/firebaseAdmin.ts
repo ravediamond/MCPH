@@ -63,36 +63,95 @@ if (!admin.apps.length) {
         throw new Error("Failed to parse Firebase Admin credentials JSON.");
       }
     } else {
-      // Local development environment - use service account file path
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      const serviceAccountPath =
-        process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-        "./service-account-credentials.json";
+      // Non-Vercel environment - could be local development or Cloud Run
+      const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-      // Handle both absolute and relative paths
-      const resolvedServiceAccountPath = serviceAccountPath.startsWith("/")
-        ? serviceAccountPath
-        : path.resolve(__dirname, "..", serviceAccountPath);
+      if (credentialsPath) {
+        // Check if it's a JSON string (for Cloud Run environments)
+        if (credentialsPath.trim().startsWith("{")) {
+          try {
+            console.log(
+              "[FirebaseAdmin] JSON credentials detected in environment variable",
+            );
+            const serviceAccount = JSON.parse(credentialsPath);
+            admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount),
+            });
+            console.log(
+              "[FirebaseAdmin] Initialized with JSON credentials from environment",
+            );
+          } catch (error) {
+            console.error(
+              "[FirebaseAdmin] Error parsing JSON credentials:",
+              error,
+            );
+            throw new Error("Failed to parse Firebase Admin credentials JSON.");
+          }
+        } else {
+          // Handle file path
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
 
-      if (!fs.existsSync(resolvedServiceAccountPath)) {
-        console.error(
-          `[FirebaseAdmin] Service account key file not found at: ${resolvedServiceAccountPath}`,
+          // Handle both absolute and relative paths
+          const resolvedServiceAccountPath = credentialsPath.startsWith("/")
+            ? credentialsPath
+            : path.resolve(__dirname, "..", credentialsPath);
+
+          if (!fs.existsSync(resolvedServiceAccountPath)) {
+            console.error(
+              `[FirebaseAdmin] Service account key file not found at: ${resolvedServiceAccountPath}`,
+            );
+            console.log(
+              "[FirebaseAdmin] Falling back to Application Default Credentials (ADC)",
+            );
+
+            // Fallback to ADC
+            admin.initializeApp({});
+            console.log(
+              "[FirebaseAdmin] Initialized with Application Default Credentials",
+            );
+          } else {
+            const serviceAccount = JSON.parse(
+              fs.readFileSync(resolvedServiceAccountPath, "utf8"),
+            );
+            admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount),
+            });
+            console.log(
+              `[FirebaseAdmin] Initialized with service account file: ${resolvedServiceAccountPath}`,
+            );
+          }
+        }
+      } else {
+        // No credentials path provided - use default service account file or ADC
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const defaultServiceAccountPath = path.resolve(
+          __dirname,
+          "..",
+          "./service-account-credentials.json",
         );
-        throw new Error(
-          `Service account key file not found at: ${resolvedServiceAccountPath}`,
-        );
+
+        if (fs.existsSync(defaultServiceAccountPath)) {
+          const serviceAccount = JSON.parse(
+            fs.readFileSync(defaultServiceAccountPath, "utf8"),
+          );
+          admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+          });
+          console.log(
+            `[FirebaseAdmin] Initialized with default service account file: ${defaultServiceAccountPath}`,
+          );
+        } else {
+          console.log(
+            "[FirebaseAdmin] No service account file found, using Application Default Credentials (ADC)",
+          );
+          admin.initializeApp({});
+          console.log(
+            "[FirebaseAdmin] Initialized with Application Default Credentials",
+          );
+        }
       }
-
-      const serviceAccount = JSON.parse(
-        fs.readFileSync(resolvedServiceAccountPath, "utf8"),
-      );
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-      console.log(
-        `[FirebaseAdmin] Initialized with service account file: ${resolvedServiceAccountPath}`,
-      );
     }
   } catch (error: any) {
     if (error.code === "app/duplicate-app") {
