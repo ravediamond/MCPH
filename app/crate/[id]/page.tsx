@@ -1785,6 +1785,8 @@ export default function CratePage() {
           handleOpenSharingModal={handleOpenSharingModal}
           handleDelete={handleDelete}
           signInWithGoogle={signInWithGoogle}
+          handleCopyLink={handleCopyLink}
+          linkCopied={linkCopied}
           getCrateIcon={getCrateIcon}
           formatBytes={formatBytes}
           formatCategoryForDisplay={formatCategoryForDisplay}
@@ -1792,6 +1794,8 @@ export default function CratePage() {
           renderTags={renderTags}
           renderMetadata={renderMetadata}
           crateId={crateId}
+          crateContent={crateContent}
+          contentLoading={contentLoading}
         />
 
         {/* Content Preview */}

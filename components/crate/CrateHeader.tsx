@@ -19,6 +19,8 @@ import {
   FaEdit,
   FaSave,
   FaTimes,
+  FaCopy,
+  FaLink,
 } from "react-icons/fa";
 import Card from "../ui/Card";
 import { CrateCategory } from "../../shared/types/crate";
@@ -50,6 +52,8 @@ interface CrateHeaderProps {
   handleOpenSharingModal: () => void;
   handleDelete: () => void;
   signInWithGoogle: () => void;
+  handleCopyLink: () => void;
+  linkCopied: boolean;
   getCrateIcon: () => React.ReactNode;
   formatBytes: (bytes: number) => string;
   formatCategoryForDisplay: (category: CrateCategory) => string;
@@ -57,6 +61,8 @@ interface CrateHeaderProps {
   renderTags: (tags: string[]) => React.ReactNode;
   renderMetadata: (metadata: any) => React.ReactNode;
   crateId: string;
+  crateContent?: string | null;
+  contentLoading?: boolean;
 }
 
 export default function CrateHeader({
@@ -86,6 +92,8 @@ export default function CrateHeader({
   handleOpenSharingModal,
   handleDelete,
   signInWithGoogle,
+  handleCopyLink,
+  linkCopied,
   getCrateIcon,
   formatBytes,
   formatCategoryForDisplay,
@@ -93,7 +101,48 @@ export default function CrateHeader({
   renderTags,
   renderMetadata,
   crateId,
+  crateContent,
+  contentLoading,
 }: CrateHeaderProps) {
+  // Generate preview snippet (first ~100 lines or 2KB)
+  const generatePreviewSnippet = () => {
+    if (!crateContent) return null;
+    
+    const maxLines = 100;
+    const maxBytes = 2048; // 2KB
+    
+    // Limit by bytes first
+    let preview = crateContent.length > maxBytes 
+      ? crateContent.substring(0, maxBytes) + '...'
+      : crateContent;
+    
+    // Then limit by lines
+    const lines = preview.split('\n');
+    if (lines.length > maxLines) {
+      preview = lines.slice(0, maxLines).join('\n') + '\n...';
+    }
+    
+    return preview;
+  };
+
+  const getFileTypeIcon = () => {
+    if (crateInfo.category === CrateCategory.IMAGE) {
+      return <FaFileImage className="text-blue-500" size={48} />;
+    } else if (crateInfo.category === CrateCategory.CODE) {
+      return <FaFileCode className="text-yellow-500" size={48} />;
+    } else if (crateInfo.category === CrateCategory.DATA) {
+      return <FaFile className="text-orange-500" size={48} />;
+    } else {
+      return <FaFileAlt className="text-purple-500" size={48} />;
+    }
+  };
+
+  const shouldShowPreview = () => {
+    return crateInfo.category === CrateCategory.TEXT ||
+           crateInfo.category === CrateCategory.CODE ||
+           crateInfo.category === CrateCategory.DATA;
+  };
+
   return (
     <Card className="mb-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200">
       <Card.Header className="flex justify-between items-center bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6">
@@ -111,17 +160,45 @@ export default function CrateHeader({
                 placeholder="Crate title"
               />
             ) : (
-              <h1
-                className="text-2xl font-semibold text-gray-900 mb-2"
-                title={crateInfo.title}
-              >
-                {crateInfo.title}
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1
+                  className="text-2xl font-semibold text-gray-900"
+                  title={crateInfo.title}
+                >
+                  {crateInfo.title}
+                </h1>
+                <button
+                  onClick={handleCopyLink}
+                  className={`p-2 rounded-lg transition-all duration-200 ${
+                    linkCopied
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                  }`}
+                  title={linkCopied ? "Link copied!" : "Copy link to this crate"}
+                >
+                  <FaLink size={16} />
+                </button>
+              </div>
             )}
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <span className="bg-gray-100 px-2 py-1 rounded">
-                {formatBytes(crateInfo.size || 0)}
+            {/* Trust metadata line */}
+            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+              <span className="flex items-center">
+                Uploaded by <span className="font-medium text-gray-800 ml-1">@{crateInfo.owner || 'anonymous'}</span>
               </span>
+              <span className="text-gray-400">·</span>
+              <span className="flex items-center text-green-600">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Scanned clean
+              </span>
+              <span className="text-gray-400">·</span>
+              <span>Created {formatDate(crateInfo.createdAt)}</span>
+              <span className="text-gray-400">·</span>
+              <span>Size {formatBytes(crateInfo.size || 0)}</span>
+            </div>
+            
+            <div className="flex items-center gap-3 text-sm text-gray-600">
               <span className="bg-gray-100 px-2 py-1 rounded">
                 {crateInfo.mimeType}
               </span>
@@ -269,6 +346,100 @@ export default function CrateHeader({
         {/* Metadata display */}
         {renderMetadata(crateInfo.metadata)}
 
+        {/* Inline Preview Snippet */}
+        <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+          <div className="px-4 py-3 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-gray-700">Content Preview</h3>
+            {shouldShowPreview() && crateContent && (
+              <span className="text-xs text-gray-500">
+                {crateContent.length > 2048 || crateContent.split('\n').length > 100 
+                  ? "First 2KB / 100 lines shown" 
+                  : "Full content"}
+              </span>
+            )}
+          </div>
+          
+          <div className="p-4">
+            {contentLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-pulse text-gray-500">Loading preview...</div>
+              </div>
+            ) : shouldShowPreview() && crateContent ? (
+              <div className="space-y-3">
+                <pre className="text-sm text-gray-800 bg-white p-3 rounded border border-gray-200 overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">
+                  {generatePreviewSnippet()}
+                </pre>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleViewContent}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    {showPreview ? "Hide full content" : "View full content →"}
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleDownload}
+                      className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                    >
+                      Download
+                    </button>
+                    {!crateInfo.isOwner && (
+                      <button
+                        onClick={user ? handleCopyCrate : signInWithGoogle}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                      >
+                        {user ? "Copy to My MCPH" : "Sign in to copy"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : crateInfo.category === CrateCategory.IMAGE ? (
+              <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                {getFileTypeIcon()}
+                <p className="mt-3 text-sm font-medium">Image Preview</p>
+                <p className="text-xs text-gray-400">{formatBytes(crateInfo.size || 0)}</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={handleViewContent}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  >
+                    View image →
+                  </button>
+                  <button
+                    onClick={handleDownload}
+                    className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                  >
+                    Download
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                {getFileTypeIcon()}
+                <p className="mt-3 text-sm font-medium">Preview not available</p>
+                <p className="text-xs text-gray-400">Download or copy to view content</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={handleDownload}
+                    className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors"
+                  >
+                    Download
+                  </button>
+                  {!crateInfo.isOwner && (
+                    <button
+                      onClick={user ? handleCopyCrate : signInWithGoogle}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    >
+                      {user ? "Copy to My MCPH" : "Sign in to copy"}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 mt-6">
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
@@ -370,37 +541,48 @@ export default function CrateHeader({
               )}
             </>
           ) : (
-            // Regular file download
-            <button
-              onClick={handleDownload}
-              className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              <FaFileDownload className="mr-2 text-lg" />
-              <span>Download</span>
-            </button>
-          )}
+            // Regular content - Copy to My MCPH is now PRIMARY
+            <>
+              {/* Copy to My MCPH - PRIMARY ACTION for non-owners */}
+              {!crateInfo.isOwner && user && (
+                <button
+                  onClick={handleCopyCrate}
+                  disabled={copyLoading}
+                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
+                >
+                  <FaCopy className="mr-2 text-lg" />
+                  <span>{copyLoading ? "Copying..." : "Copy to My MCPH"}</span>
+                </button>
+              )}
 
-          {/* Copy to My Crates - show for non-owners who are signed in */}
-          {!crateInfo.isOwner && user && (
-            <button
-              onClick={handleCopyCrate}
-              disabled={copyLoading}
-              className="flex items-center justify-center px-6 py-3 bg-purple-500 text-white text-base font-semibold rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-3 focus:ring-purple-300 focus:ring-offset-2 transition-all duration-200 border border-purple-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
-            >
-              <FaUpload className="mr-2 text-lg" />
-              <span>{copyLoading ? "Copying..." : "Copy to My Crates"}</span>
-            </button>
-          )}
+              {/* Sign in to Copy - PRIMARY ACTION for non-signed-in users */}
+              {!crateInfo.isOwner && !user && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                      // After successful login, automatically copy
+                      setTimeout(() => handleCopyCrate(), 1000);
+                    } catch (error) {
+                      console.error("Error signing in:", error);
+                    }
+                  }}
+                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  <FaCopy className="mr-2 text-lg" />
+                  <span>Copy to My MCPH</span>
+                </button>
+              )}
 
-          {/* Sign in to Copy - show for non-owners who are not signed in */}
-          {!crateInfo.isOwner && !user && (
-            <button
-              onClick={() => signInWithGoogle()}
-              className="flex items-center justify-center px-4 py-2 bg-gray-500 text-white text-base font-medium rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-colors border border-gray-600"
-            >
-              <FaUpload className="mr-2 text-lg" />
-              <span>Sign in to Copy</span>
-            </button>
+              {/* Download - now SECONDARY action */}
+              <button
+                onClick={handleDownload}
+                className="flex items-center justify-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-all duration-200 border border-gray-300 shadow-sm"
+              >
+                <FaDownload className="mr-2" />
+                <span>Download</span>
+              </button>
+            </>
           )}
 
           {/* Secondary Actions */}

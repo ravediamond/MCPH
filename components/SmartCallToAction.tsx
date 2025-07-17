@@ -28,76 +28,55 @@ export default function SmartCallToAction({
 
   return (
     <div className="mb-6">
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-6 shadow-sm">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-3">
-              <FaHeart className="text-orange-500" />
-              <h3 className="text-lg font-semibold text-gray-800">
-                Inspired by this crate?
-              </h3>
-            </div>
-
-            <p className="text-gray-600 mb-4 leading-relaxed">
-              This crate has been viewed{" "}
-              <span className="font-semibold text-orange-600">
-                {viewCount.toLocaleString()} times
-              </span>
-              . Join the community and create your own amazing content!
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Duplicate & Edit Button */}
-              {user && (
-                <button
-                  onClick={onDuplicate}
-                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 rounded-lg transition-colors border border-gray-300 shadow-sm"
-                >
-                  <FaCopy className="text-sm" />
-                  <span>Duplicate & edit</span>
-                </button>
-              )}
-
-              {/* Make Your Own Crate Button */}
-              {user ? (
-                <Link
-                  href="/upload"
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
-                >
-                  <FaUpload className="text-sm" />
-                  <span>Create your own crate</span>
-                </Link>
-              ) : (
-                <button
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                      // After successful login, redirect to upload page
-                      window.location.href = "/upload";
-                    } catch (error) {
-                      console.error("Error signing in:", error);
-                    }
-                  }}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
-                >
-                  <FaUpload className="text-sm" />
-                  <span>Sign in to create</span>
-                </button>
-              )}
-            </div>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <div className="text-center">
+          <div className="flex items-center justify-center space-x-2 mb-3">
+            <FaCopy className="text-blue-500" />
+            <h3 className="text-lg font-semibold text-gray-800">
+              Like this?
+            </h3>
           </div>
 
-          {/* View stats badge */}
-          <div className="ml-6 text-center">
-            <div className="bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
-              <div className="flex items-center justify-center space-x-2 text-orange-600 mb-1">
-                <FaEye className="text-sm" />
-                <span className="text-sm font-medium">Views</span>
-              </div>
-              <div className="text-xl font-bold text-gray-800">
-                {viewCount.toLocaleString()}
-              </div>
-            </div>
+          <p className="text-gray-600 mb-6 leading-relaxed max-w-lg mx-auto">
+            Duplicate it to your workspace {user ? "and start customizing" : "(sign in)"}. 
+            Make it your own with just one click.
+          </p>
+
+          {/* Primary Duplicate Button */}
+          {user ? (
+            <button
+              onClick={onDuplicate}
+              className="flex items-center justify-center space-x-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mx-auto"
+            >
+              <FaCopy className="text-lg" />
+              <span>Duplicate this crate</span>
+            </button>
+          ) : (
+            <button
+              onClick={async () => {
+                try {
+                  await signInWithGoogle();
+                  // After successful login, automatically trigger duplicate
+                  setTimeout(() => onDuplicate?.(), 1000);
+                } catch (error) {
+                  console.error("Error signing in:", error);
+                }
+              }}
+              className="flex items-center justify-center space-x-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mx-auto"
+            >
+              <FaCopy className="text-lg" />
+              <span>Duplicate this crate</span>
+            </button>
+          )}
+
+          {/* Secondary action for creating new */}
+          <div className="mt-4">
+            <Link
+              href="/upload"
+              className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              Or start from scratch →
+            </Link>
           </div>
         </div>
       </div>
