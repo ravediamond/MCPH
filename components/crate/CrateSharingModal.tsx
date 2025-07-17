@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   FaCheck,
   FaShareAlt,
@@ -13,7 +13,17 @@ import {
   FaTelegram,
   FaEnvelope,
   FaLink,
+  FaLock,
+  FaGlobe,
+  FaUser,
+  FaKey,
+  FaEye,
+  FaEyeSlash,
+  FaRandom,
+  FaExclamationTriangle,
 } from "react-icons/fa";
+
+type AccessLevel = "private" | "link-only" | "public" | "public-password";
 
 interface CrateSharingModalProps {
   showSharingModal: boolean;
@@ -38,6 +48,7 @@ interface CrateSharingModalProps {
   handleCopySocialLink: () => void;
   handleUpdateSharing: () => void;
   sharingLoading: boolean;
+  crateTitle?: string;
 }
 
 export default function CrateSharingModal({
@@ -63,7 +74,87 @@ export default function CrateSharingModal({
   handleCopySocialLink,
   handleUpdateSharing,
   sharingLoading,
+  crateTitle = "Untitled Crate",
 }: CrateSharingModalProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+
+  // Determine current access level based on props
+  const getCurrentAccessLevel = (): AccessLevel => {
+    if (!isPublic) return "private";
+    if (isPublic && isPasswordProtected) return "public-password";
+    if (isPublic) return "link-only"; // Default to link-only for public without password
+    return "link-only";
+  };
+
+  const [accessLevel, setAccessLevel] = useState<AccessLevel>(
+    getCurrentAccessLevel(),
+  );
+
+  // Update parent state when access level changes
+  const handleAccessLevelChange = (newLevel: AccessLevel) => {
+    setAccessLevel(newLevel);
+
+    switch (newLevel) {
+      case "private":
+        setIsPublic(false);
+        setIsPasswordProtected(false);
+        break;
+      case "link-only":
+        setIsPublic(true);
+        setIsPasswordProtected(false);
+        break;
+      case "public":
+        setIsPublic(true);
+        setIsPasswordProtected(false);
+        break;
+      case "public-password":
+        setIsPublic(true);
+        setIsPasswordProtected(true);
+        break;
+    }
+  };
+
+  // Generate a secure password
+  const generateSecurePassword = () => {
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setSharingPassword(password);
+  };
+
+  // Get password strength
+  const getPasswordStrength = (password: string) => {
+    if (!password) return { strength: 0, label: "No password", color: "gray" };
+    if (password.length < 6)
+      return { strength: 25, label: "Weak", color: "red" };
+    if (password.length < 8)
+      return { strength: 50, label: "Fair", color: "yellow" };
+    if (password.length < 12)
+      return { strength: 75, label: "Good", color: "blue" };
+    return { strength: 100, label: "Strong", color: "green" };
+  };
+
+  const passwordStrength = getPasswordStrength(sharingPassword);
+
+  // Copy link with success toast
+  const handleCopyLink = () => {
+    const canonicalUrl = shareUrl.replace(
+      /^https?:\/\/localhost:\d+/,
+      "https://mcph.io",
+    );
+    navigator.clipboard.writeText(canonicalUrl);
+    setLinkCopied(true);
+    setCopySuccess("Link copied (anyone with link can view)");
+    setTimeout(() => {
+      setLinkCopied(false);
+      setCopySuccess(null);
+    }, 3000);
+  };
+
   if (!showSharingModal) return null;
 
   return (
@@ -91,320 +182,373 @@ export default function CrateSharingModal({
           </div>
         )}
 
-        <div className="space-y-4">
-          {/* Public/Private Toggle */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex-1">
-              <h4 className="text-sm font-medium text-gray-900">Public Access</h4>
-              <p className="text-sm text-gray-500">
-                {isPublic
-                  ? "Anyone with the link can view this crate"
-                  : "Only you can access this crate"}
-              </p>
+        {/* Success Toast */}
+        {copySuccess && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center text-green-700">
+              <FaCheck className="mr-2" />
+              <span className="text-sm font-medium">{copySuccess}</span>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsPublic(!isPublic)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-                isPublic ? "bg-primary-600" : "bg-gray-200"
-              }`}
-              role="switch"
-              aria-checked={isPublic}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  isPublic ? "translate-x-5" : "translate-x-0"
-                }`}
-              />
-            </button>
           </div>
+        )}
 
-          {/* Password Protection Toggle - only shown when public */}
-          {isPublic && (
-            <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-gray-900">
-                  Password Protection
-                </h4>
-                <p className="text-sm text-gray-500">
-                  {isPasswordProtected
-                    ? "Viewers must enter a password to access"
-                    : "No password required for access"}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsPasswordProtected(!isPasswordProtected)}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 ${
-                  isPasswordProtected ? "bg-yellow-600" : "bg-gray-200"
-                }`}
-                role="switch"
-                aria-checked={isPasswordProtected}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    isPasswordProtected ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-          )}
-
-          {/* Password Input - only shown when password protection is enabled */}
-          {isPublic && isPasswordProtected && (
-            <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Set Password
-              </label>
-              <input
-                type="password"
-                value={sharingPassword}
-                onChange={(e) => setSharingPassword(e.target.value)}
-                placeholder="Enter a secure password"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Choose a strong password to protect your crate
-              </p>
-            </div>
-          )}
-        </div>
-
-        {isPublic && (
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <label className="block text-sm font-medium text-gray-900 mb-2">
-              Share URL
-            </label>
-            <div className="flex">
+        {/* Share Link Hero Section */}
+        <div className="mb-6">
+          <h4 className="text-lg font-medium text-gray-900 mb-3">Share Link</h4>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-3">
               <input
                 type="text"
-                value={shareUrl}
+                value={shareUrl.replace(
+                  /^https?:\/\/localhost:\d+/,
+                  "https://mcph.io",
+                )}
                 readOnly
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white font-mono text-sm"
               />
               <button
-                onClick={() => {
-                  navigator.clipboard.writeText(shareUrl);
-                  setLinkCopied(true);
-                  setTimeout(() => setLinkCopied(false), 2000);
-                }}
-                className={`px-4 py-2 text-white rounded-r-md transition-colors ${
+                onClick={handleCopyLink}
+                className={`px-6 py-2 text-white rounded-md transition-colors font-medium ${
                   linkCopied
                     ? "bg-green-600 hover:bg-green-700"
-                    : "bg-primary-600 hover:bg-primary-700"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
               >
                 {linkCopied ? (
                   <>
-                    <FaCheck className="inline mr-1" />
+                    <FaCheck className="inline mr-2" />
                     Copied!
                   </>
                 ) : (
                   <>
-                    <FaShareAlt className="inline mr-1" />
-                    Copy
+                    <FaCopy className="inline mr-2" />
+                    Copy Link
                   </>
                 )}
               </button>
             </div>
-            <p className="mt-2 text-xs text-blue-600">
-              <FaInfoCircle className="inline mr-1" />
-              Anyone with this link can{" "}
-              {isPasswordProtected
-                ? "view your crate (with password)"
-                : "view your crate"}
-            </p>
+
+            {/* Advanced: Regenerate Link */}
+            <div className="pt-2 border-t border-blue-200">
+              <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                <FaRandom className="inline mr-1" />
+                Regenerate link (invalidates old link)
+              </button>
+            </div>
           </div>
-        )}
+        </div>
 
-        {/* View Badge Section - Only shown when public */}
-        {isPublic && (
-          <div className="mt-4 p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">
-              📊 View Counter Badge
-            </h4>
-            <p className="text-sm text-gray-600 mb-3">
-              Add a view counter badge to your README or blog posts to show how
-              popular your crate is!
-            </p>
-
-            {/* Badge Preview */}
-            <div className="mb-3">
-              <img
-                src={`/api/crates/${crateId}/badge`}
-                alt="View counter badge"
-                className="inline-block"
+        {/* Access Level Control */}
+        <div className="mb-6">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Access Level
+          </h4>
+          <div className="space-y-2">
+            {/* Private */}
+            <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="access-level"
+                checked={accessLevel === "private"}
+                onChange={() => handleAccessLevelChange("private")}
+                className="mr-3 text-primary-600"
               />
-            </div>
+              <div className="flex items-center flex-1">
+                <FaUser className="text-gray-500 mr-3" />
+                <div>
+                  <div className="font-medium text-gray-900">Private</div>
+                  <div className="text-sm text-gray-500">
+                    Only you can access
+                  </div>
+                </div>
+              </div>
+            </label>
 
-            {/* Markdown Code */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">
-                Markdown:
-              </label>
-              <div className="relative">
-                <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
-                  [![Views](https://mcphub.com/api/crates/{crateId}
-                  /badge)](https://mcphub.com/crate/{crateId})
-                </code>
+            {/* Link-Only */}
+            <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="access-level"
+                checked={accessLevel === "link-only"}
+                onChange={() => handleAccessLevelChange("link-only")}
+                className="mr-3 text-primary-600"
+              />
+              <div className="flex items-center flex-1">
+                <FaLink className="text-blue-500 mr-3" />
+                <div>
+                  <div className="font-medium text-gray-900">Link-Only</div>
+                  <div className="text-sm text-gray-500">
+                    Anyone with link (unlisted)
+                  </div>
+                </div>
+              </div>
+            </label>
+
+            {/* Public */}
+            <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="access-level"
+                checked={accessLevel === "public"}
+                onChange={() => handleAccessLevelChange("public")}
+                className="mr-3 text-primary-600"
+              />
+              <div className="flex items-center flex-1">
+                <FaGlobe className="text-green-500 mr-3" />
+                <div>
+                  <div className="font-medium text-gray-900">Public</div>
+                  <div className="text-sm text-gray-500">Anyone can access</div>
+                </div>
+              </div>
+            </label>
+
+            {/* Public + Password */}
+            <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+              <input
+                type="radio"
+                name="access-level"
+                checked={accessLevel === "public-password"}
+                onChange={() => handleAccessLevelChange("public-password")}
+                className="mr-3 text-primary-600"
+              />
+              <div className="flex items-center flex-1">
+                <FaKey className="text-amber-500 mr-3" />
+                <div>
+                  <div className="font-medium text-gray-900">
+                    Public + Password
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Anyone with password
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Password Configuration - only shown when public-password is selected */}
+        {accessLevel === "public-password" && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <h5 className="text-sm font-medium text-gray-900 mb-3">
+              Password Configuration
+            </h5>
+
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className="flex-1 relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={sharingPassword}
+                    onChange={(e) => setSharingPassword(e.target.value)}
+                    placeholder="Enter a secure password"
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => {
-                    const markdown = `[![Views](https://mcphub.com/api/crates/${crateId}/badge)](https://mcphub.com/crate/${crateId})`;
-                    navigator.clipboard.writeText(markdown);
-                    setSocialLinkCopied(true);
-                    setTimeout(() => setSocialLinkCopied(false), 2000);
-                  }}
-                  className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                  title="Copy markdown"
+                  type="button"
+                  onClick={generateSecurePassword}
+                  className="px-3 py-2 text-sm text-amber-700 bg-amber-100 border border-amber-300 rounded-md hover:bg-amber-200 transition-colors"
                 >
-                  <FaCopy className="text-xs" />
+                  Generate
                 </button>
               </div>
-            </div>
 
-            {/* HTML Code */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-700">HTML:</label>
-              <div className="relative">
-                <code className="block text-xs bg-white p-2 rounded border text-gray-800 pr-8 font-mono">
-                  &lt;a href="https://mcphub.com/crate/{crateId}"&gt;&lt;img
-                  src="https://mcphub.com/api/crates/{crateId}/badge"
-                  alt="Views"&gt;&lt;/a&gt;
-                </code>
-                <button
-                  onClick={() => {
-                    const html = `<a href="https://mcphub.com/crate/${crateId}"><img src="https://mcphub.com/api/crates/${crateId}/badge" alt="Views"></a>`;
-                    navigator.clipboard.writeText(html);
-                    setSocialLinkCopied(true);
-                    setTimeout(() => setSocialLinkCopied(false), 2000);
-                  }}
-                  className="absolute right-1 top-1 p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                  title="Copy HTML"
-                >
-                  <FaCopy className="text-xs" />
-                </button>
-              </div>
+              {/* Password Strength Meter */}
+              {sharingPassword && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">
+                      Password strength
+                    </span>
+                    <span
+                      className={`text-xs font-medium text-${passwordStrength.color}-600`}
+                    >
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 bg-${passwordStrength.color}-500`}
+                      style={{ width: `${passwordStrength.strength}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-amber-700">
+                <FaInfoCircle className="inline mr-1" />
+                Users must enter this password once per browser.
+              </p>
             </div>
           </div>
         )}
 
-        {/* Social Sharing Section - Only shown when public */}
-        {isPublic && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        {/* Warning for private crates */}
+        {accessLevel === "private" && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center text-yellow-800">
+              <FaExclamationTriangle className="mr-2" />
+              <span className="text-sm font-medium">
+                This crate is private. Social sharing is disabled until you make
+                it public.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* View Badge Section - Only shown when not private */}
+        {accessLevel !== "private" && (
+          <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">
+              👁 View Counter Badge
+            </h4>
+
+            {/* Live Preview */}
+            <div className="mb-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <img
+                  src={`/api/crates/${crateId}/badge`}
+                  alt="View counter badge"
+                  className="inline-block"
+                />
+                <span className="text-sm text-gray-600">Live preview</span>
+              </div>
+
+              {/* Style Dropdown */}
+              <div className="mb-3">
+                <label className="text-xs font-medium text-gray-700 mb-1 block">
+                  Style:
+                </label>
+                <select className="text-sm border border-gray-300 rounded px-2 py-1">
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                  <option value="mini">Mini</option>
+                </select>
+              </div>
+            </div>
+
+            {/* One-click Copy Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  const markdown = `[![Views](https://mcph.io/api/crates/${crateId}/badge)](https://mcph.io/crate/${crateId})`;
+                  navigator.clipboard.writeText(markdown);
+                  setSocialLinkCopied(true);
+                  setTimeout(() => setSocialLinkCopied(false), 2000);
+                }}
+                className="flex items-center justify-center px-3 py-2 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                <FaCopy className="mr-2" />
+                Copy Markdown
+              </button>
+
+              <button
+                onClick={() => {
+                  const html = `<a href="https://mcph.io/crate/${crateId}"><img src="https://mcph.io/api/crates/${crateId}/badge" alt="Views"></a>`;
+                  navigator.clipboard.writeText(html);
+                  setSocialLinkCopied(true);
+                  setTimeout(() => setSocialLinkCopied(false), 2000);
+                }}
+                className="flex items-center justify-center px-3 py-2 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                <FaCopy className="mr-2" />
+                Copy HTML
+              </button>
+            </div>
+
+            {/* UTM Tracking Option */}
+            <div className="mt-3 pt-3 border-t border-orange-200">
+              <label className="flex items-center text-sm text-gray-700">
+                <input type="checkbox" className="mr-2" />
+                Track referrals (adds UTM parameters)
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Social Sharing Section - Only shown when not private */}
+        {accessLevel !== "private" && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="text-sm font-medium text-gray-900 mb-3">
               Share on Social Media
             </h4>
 
-            {/* Custom Message Editor */}
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-700 mb-2">
-                Customize Share Message
-                <span className="text-gray-500 font-normal ml-1">
-                  (Markdown supported)
-                </span>
-              </label>
-              <textarea
-                value={socialShareMessage}
-                onChange={(e) => setSocialShareMessage(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={3}
-                placeholder="**Bold text**, *italic text*, [link text](url), `code`..."
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                ✓ Discord: Copies formatted message • Reddit: Creates text post
-                with title & body • LinkedIn: Opens share dialog + copies message
-                for pasting • Twitter/Telegram/Email: Full support
+            {/* Auto-generated message */}
+            <div className="mb-4 p-3 bg-white border border-gray-300 rounded-md">
+              <p className="text-sm text-gray-700">
+                Check out this MCPH crate: <strong>{crateTitle}</strong>
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {shareUrl.replace(
+                  /^https?:\/\/localhost:\d+/,
+                  "https://mcph.io",
+                )}
               </p>
             </div>
 
-            {/* Social Platform Buttons */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            {/* Channel-specific copy buttons */}
+            <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => handleSocialShare("twitter")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-500 hover:text-blue-600 hover:border-blue-300"
-                title="Share on Twitter/X"
+                onClick={() => {
+                  const twitterText = `Check out this MCPH crate: ${crateTitle} ${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
+                  navigator.clipboard.writeText(twitterText);
+                  handleSocialShare("twitter");
+                }}
+                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-500 hover:text-blue-600 hover:border-blue-300"
+                title="Copy Twitter format"
               >
-                <FaTwitter className="mr-2 text-lg" />
-                <span className="text-sm font-medium">Twitter/X</span>
+                <FaTwitter className="mr-2" />
+                <span className="text-sm font-medium">Twitter</span>
               </button>
 
               <button
-                onClick={() => handleSocialShare("reddit")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-orange-50 text-orange-500 hover:text-orange-600 hover:border-orange-300"
-                title="Create Reddit text post with title and body"
+                onClick={() => {
+                  const linkedinText = `Check out this MCPH crate: ${crateTitle}\n${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
+                  navigator.clipboard.writeText(linkedinText);
+                  handleSocialShare("linkedin");
+                }}
+                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-700 hover:text-blue-800 hover:border-blue-300"
+                title="Copy LinkedIn format"
               >
-                <FaReddit className="mr-2 text-lg" />
-                <span className="text-sm font-medium">Reddit</span>
-              </button>
-
-              <button
-                onClick={() => handleSocialShare("linkedin")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-700 hover:text-blue-800 hover:border-blue-300"
-                title="Open LinkedIn share dialog (copies message for manual pasting)"
-              >
-                <FaLinkedin className="mr-2 text-lg" />
+                <FaLinkedin className="mr-2" />
                 <span className="text-sm font-medium">LinkedIn</span>
               </button>
 
               <button
-                onClick={() => handleSocialShare("discord")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-indigo-50 text-indigo-500 hover:text-indigo-600 hover:border-indigo-300"
-                title="Copy formatted message to clipboard for Discord"
+                onClick={() => {
+                  const redditText = `**${crateTitle}**\n\n${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
+                  navigator.clipboard.writeText(redditText);
+                  handleSocialShare("reddit");
+                }}
+                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-orange-50 text-orange-500 hover:text-orange-600 hover:border-orange-300"
+                title="Copy Reddit format"
               >
-                <FaDiscord className="mr-2 text-lg" />
-                <span className="text-sm font-medium">Discord</span>
+                <FaReddit className="mr-2" />
+                <span className="text-sm font-medium">Reddit</span>
               </button>
 
               <button
-                onClick={() => handleSocialShare("telegram")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-400 hover:text-blue-500 hover:border-blue-300"
-                title="Share on Telegram"
+                onClick={() => {
+                  const markdownText = `[${crateTitle}](${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")})`;
+                  navigator.clipboard.writeText(markdownText);
+                  setSocialLinkCopied(true);
+                  setTimeout(() => setSocialLinkCopied(false), 2000);
+                }}
+                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-purple-50 text-purple-500 hover:text-purple-600 hover:border-purple-300"
+                title="Copy Markdown format"
               >
-                <FaTelegram className="mr-2 text-lg" />
-                <span className="text-sm font-medium">Telegram</span>
-              </button>
-
-              <button
-                onClick={() => handleSocialShare("email")}
-                className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg transition-all hover:bg-gray-50 text-gray-500 hover:text-gray-600 hover:border-gray-300"
-                title="Share via Email"
-              >
-                <FaEnvelope className="mr-2 text-lg" />
-                <span className="text-sm font-medium">Email</span>
+                <FaLink className="mr-2" />
+                <span className="text-sm font-medium">Markdown</span>
               </button>
             </div>
-
-            {/* Copy Link Button */}
-            <button
-              onClick={handleCopySocialLink}
-              className={`w-full flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                socialLinkCopied
-                  ? "bg-green-500 text-white hover:bg-green-600"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
-            >
-              {socialLinkCopied ? (
-                <>
-                  <FaCheck className="mr-2" />
-                  Link Copied!
-                </>
-              ) : (
-                <>
-                  <FaLink className="mr-2" />
-                  Copy Link
-                </>
-              )}
-            </button>
-
-            <p className="mt-2 text-xs text-gray-500">
-              • <strong>Discord:</strong> Copies formatted message to clipboard
-              <br />• <strong>Reddit:</strong> Creates text post with title &
-              body
-              <br />• <strong>LinkedIn:</strong> Opens share dialog + copies
-              message for pasting
-              <br />• <strong>Twitter/Telegram/Email:</strong> Opens with custom
-              message
-            </p>
           </div>
         )}
 
@@ -419,7 +563,7 @@ export default function CrateSharingModal({
             onClick={handleUpdateSharing}
             disabled={
               sharingLoading ||
-              (isPasswordProtected && isPublic && !sharingPassword)
+              (accessLevel === "public-password" && !sharingPassword)
             }
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
           >

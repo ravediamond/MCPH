@@ -29,6 +29,7 @@ export interface Crate {
   searchField?: string; // title + tags + description (for hybrid search)
   size: number; // File size in bytes
   downloadCount: number; // Number of times the crate was downloaded
+  viewCount?: number; // Number of times the crate was viewed
   fileName: string; // Original filename of the uploaded file
   expiresAt?: Date; // Optional expiry date
   isExpiringSoon?: boolean; // Whether the crate is expiring soon

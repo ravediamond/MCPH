@@ -43,9 +43,7 @@ export default function CrateStats({
             <div className="text-3xl font-bold text-blue-600 mb-2">
               {crateInfo.viewCount || 0}
             </div>
-            <div className="text-sm text-gray-500">
-              Total Views
-            </div>
+            <div className="text-sm text-gray-500">Total Views</div>
           </div>
         </div>
       </StatsCard>

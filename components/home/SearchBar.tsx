@@ -37,7 +37,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <>
             <input
               type="text"
-              placeholder="Search your crates by title, description, or tags..."
+              placeholder="Search by title, tag…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -166,7 +166,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <button
           onClick={() => setIsAdvancedSearch(!isAdvancedSearch)}
           className="absolute right-4 top-4 text-gray-500 hover:text-primary-600 transition-colors duration-200 bg-white rounded-lg p-1 shadow-sm hover:shadow-md"
-          title={isAdvancedSearch ? "Simple search" : "Advanced search"}
+          title={isAdvancedSearch ? "Simple search" : "Filter / sort"}
         >
           {isAdvancedSearch ? (
             <svg

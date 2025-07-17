@@ -166,8 +166,8 @@ export default function DocsPage() {
                   access content
                 </li>
                 <li>
-                  <b>Works in Claude & ChatGPT Pro+</b> - Direct integration with
-                  your favorite AI tools
+                  <b>Works in Claude & ChatGPT Pro+</b> - Direct integration
+                  with your favorite AI tools
                 </li>
                 <li>
                   <b>Simple access model</b> - Upload requires login, viewing
@@ -622,7 +622,8 @@ export default function DocsPage() {
               </h3>
               <p className="text-gray-600 mb-3">
                 MCPH works with any AI tool that supports the Model Context
-                Protocol (MCP). For ChatGPT, this requires Pro or higher plans. The basic steps for connecting any AI tool are:
+                Protocol (MCP). For ChatGPT, this requires Pro or higher plans.
+                The basic steps for connecting any AI tool are:
               </p>
 
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
@@ -758,7 +759,8 @@ export default function DocsPage() {
                 MCPH provides a comprehensive set of powerful tools that enable
                 you to manage your content through the Model Context Protocol
                 (MCP). These tools can be used programmatically or through AI
-                assistants using natural language commands. For ChatGPT, custom connectors require Pro or higher plans.
+                assistants using natural language commands. For ChatGPT, custom
+                connectors require Pro or higher plans.
               </p>
 
               <div className="space-y-6">
