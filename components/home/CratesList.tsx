@@ -88,7 +88,10 @@ const CratesList: React.FC<CratesListProps> = ({
 
         {/* Stats for search results */}
         <div className="mt-4 text-sm text-gray-500 flex justify-between">
-          <span>Total: {searchResults.length} crates</span>
+          <span>
+            Total: {searchResults.length} crate
+            {searchResults.length === 1 ? "" : "s"}
+          </span>
           <span>
             {formatFileSize(
               searchResults.reduce((sum, file) => sum + file.size, 0),
@@ -154,7 +157,10 @@ const CratesList: React.FC<CratesListProps> = ({
       {/* File stats */}
       {filteredFiles.length > 0 && (
         <div className="mt-4 text-sm text-gray-500 flex justify-between">
-          <span>Total: {filteredFiles.length} crates</span>
+          <span>
+            Total: {filteredFiles.length} crate
+            {filteredFiles.length === 1 ? "" : "s"}
+          </span>
           <span>
             {formatFileSize(
               filteredFiles.reduce((sum, file) => sum + file.size, 0),

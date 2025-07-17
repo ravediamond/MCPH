@@ -107,21 +107,22 @@ export default function CrateHeader({
   // Generate preview snippet (first ~100 lines or 2KB)
   const generatePreviewSnippet = () => {
     if (!crateContent) return null;
-    
+
     const maxLines = 100;
     const maxBytes = 2048; // 2KB
-    
+
     // Limit by bytes first
-    let preview = crateContent.length > maxBytes 
-      ? crateContent.substring(0, maxBytes) + '...'
-      : crateContent;
-    
+    let preview =
+      crateContent.length > maxBytes
+        ? crateContent.substring(0, maxBytes) + "..."
+        : crateContent;
+
     // Then limit by lines
-    const lines = preview.split('\n');
+    const lines = preview.split("\n");
     if (lines.length > maxLines) {
-      preview = lines.slice(0, maxLines).join('\n') + '\n...';
+      preview = lines.slice(0, maxLines).join("\n") + "\n...";
     }
-    
+
     return preview;
   };
 
@@ -138,9 +139,11 @@ export default function CrateHeader({
   };
 
   const shouldShowPreview = () => {
-    return crateInfo.category === CrateCategory.TEXT ||
-           crateInfo.category === CrateCategory.CODE ||
-           crateInfo.category === CrateCategory.DATA;
+    return (
+      crateInfo.category === CrateCategory.TEXT ||
+      crateInfo.category === CrateCategory.CODE ||
+      crateInfo.category === CrateCategory.DATA
+    );
   };
 
   return (
@@ -174,7 +177,9 @@ export default function CrateHeader({
                       ? "bg-green-100 text-green-600"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                   }`}
-                  title={linkCopied ? "Link copied!" : "Copy link to this crate"}
+                  title={
+                    linkCopied ? "Link copied!" : "Copy link to this crate"
+                  }
                 >
                   <FaLink size={16} />
                 </button>
@@ -183,12 +188,23 @@ export default function CrateHeader({
             {/* Trust metadata line */}
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
               <span className="flex items-center">
-                Uploaded by <span className="font-medium text-gray-800 ml-1">@{crateInfo.owner || 'anonymous'}</span>
+                Uploaded by{" "}
+                <span className="font-medium text-gray-800 ml-1">
+                  @{crateInfo.owner || "anonymous"}
+                </span>
               </span>
               <span className="text-gray-400">·</span>
               <span className="flex items-center text-green-600">
-                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Scanned clean
               </span>
@@ -197,7 +213,7 @@ export default function CrateHeader({
               <span className="text-gray-400">·</span>
               <span>Size {formatBytes(crateInfo.size || 0)}</span>
             </div>
-            
+
             <div className="flex items-center gap-3 text-sm text-gray-600">
               <span className="bg-gray-100 px-2 py-1 rounded">
                 {crateInfo.mimeType}
@@ -297,7 +313,8 @@ export default function CrateHeader({
         <div className="mb-6 flex items-center gap-3">
           {crateInfo.isPublic ? (
             <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-green-100 text-green-800 border border-green-200 font-medium">
-              <FaShareAlt className="mr-2" size={14} /> Public (anyone with link)
+              <FaShareAlt className="mr-2" size={14} /> Public (anyone with
+              link)
             </span>
           ) : (
             <span className="inline-flex items-center px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 border border-gray-200 font-medium">
@@ -349,20 +366,25 @@ export default function CrateHeader({
         {/* Inline Preview Snippet */}
         <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-gray-100 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">Content Preview</h3>
+            <h3 className="text-sm font-semibold text-gray-700">
+              Content Preview
+            </h3>
             {shouldShowPreview() && crateContent && (
               <span className="text-xs text-gray-500">
-                {crateContent.length > 2048 || crateContent.split('\n').length > 100 
-                  ? "First 2KB / 100 lines shown" 
+                {crateContent.length > 2048 ||
+                crateContent.split("\n").length > 100
+                  ? "First 2KB / 100 lines shown"
                   : "Full content"}
               </span>
             )}
           </div>
-          
+
           <div className="p-4">
             {contentLoading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-pulse text-gray-500">Loading preview...</div>
+                <div className="animate-pulse text-gray-500">
+                  Loading preview...
+                </div>
               </div>
             ) : shouldShowPreview() && crateContent ? (
               <div className="space-y-3">
@@ -398,7 +420,9 @@ export default function CrateHeader({
               <div className="flex flex-col items-center justify-center py-8 text-gray-500">
                 {getFileTypeIcon()}
                 <p className="mt-3 text-sm font-medium">Image Preview</p>
-                <p className="text-xs text-gray-400">{formatBytes(crateInfo.size || 0)}</p>
+                <p className="text-xs text-gray-400">
+                  {formatBytes(crateInfo.size || 0)}
+                </p>
                 <div className="mt-4 flex items-center gap-3">
                   <button
                     onClick={handleViewContent}
@@ -417,8 +441,12 @@ export default function CrateHeader({
             ) : (
               <div className="flex flex-col items-center justify-center py-8 text-gray-500">
                 {getFileTypeIcon()}
-                <p className="mt-3 text-sm font-medium">Preview not available</p>
-                <p className="text-xs text-gray-400">Download or copy to view content</p>
+                <p className="mt-3 text-sm font-medium">
+                  Preview not available
+                </p>
+                <p className="text-xs text-gray-400">
+                  Download or copy to view content
+                </p>
                 <div className="mt-4 flex items-center gap-3">
                   <button
                     onClick={handleDownload}

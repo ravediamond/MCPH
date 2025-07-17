@@ -619,7 +619,10 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
       const accessHistory = await getCrateAccessHistory(crateId, 30);
       processedData.accessHistory = accessHistory;
     } catch (accessError) {
-      console.warn(`Failed to get access history for crate ${crateId}:`, accessError);
+      console.warn(
+        `Failed to get access history for crate ${crateId}:`,
+        accessError,
+      );
       processedData.accessHistory = [];
     }
 
@@ -1179,7 +1182,10 @@ export async function trackDailyAccess(
 
     await docRef.set(updateData, { merge: true });
   } catch (error) {
-    console.error(`Error tracking daily ${accessType} for crate ${crateId}:`, error);
+    console.error(
+      `Error tracking daily ${accessType} for crate ${crateId}:`,
+      error,
+    );
   }
 }
 
@@ -1206,7 +1212,7 @@ export async function getCrateAccessHistory(
     const promises = dates.map(async (date) => {
       const docId = `${crateId}_${date}`;
       const doc = await db.collection(CRATE_ACCESS_COLLECTION).doc(docId).get();
-      
+
       if (doc.exists) {
         const data = doc.data();
         return {
@@ -1236,35 +1242,42 @@ export async function getCrateAccessHistory(
 /**
  * Get aggregated access statistics for a crate
  */
-export async function getCrateAccessStats(
-  crateId: string,
-): Promise<{
+export async function getCrateAccessStats(crateId: string): Promise<{
   today: { views: number; downloads: number };
   week: { views: number; downloads: number };
   month: { views: number; downloads: number };
 }> {
   try {
     const history = await getCrateAccessHistory(crateId, 30);
-    
+
     const today = new Date().toISOString().split("T")[0];
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
 
-    const todayStats = history.find(entry => entry.date === today) || { views: 0, downloads: 0 };
-    
+    const todayStats = history.find((entry) => entry.date === today) || {
+      views: 0,
+      downloads: 0,
+    };
+
     const weekStats = history
-      .filter(entry => new Date(entry.date) >= weekAgo)
-      .reduce((acc, entry) => ({
+      .filter((entry) => new Date(entry.date) >= weekAgo)
+      .reduce(
+        (acc, entry) => ({
+          views: acc.views + entry.views,
+          downloads: acc.downloads + entry.downloads,
+        }),
+        { views: 0, downloads: 0 },
+      );
+
+    const monthStats = history.reduce(
+      (acc, entry) => ({
         views: acc.views + entry.views,
         downloads: acc.downloads + entry.downloads,
-      }), { views: 0, downloads: 0 });
-
-    const monthStats = history.reduce((acc, entry) => ({
-      views: acc.views + entry.views,
-      downloads: acc.downloads + entry.downloads,
-    }), { views: 0, downloads: 0 });
+      }),
+      { views: 0, downloads: 0 },
+    );
 
     return {
       today: todayStats,

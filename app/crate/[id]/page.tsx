@@ -235,7 +235,7 @@ export default function CratePage() {
           if (viewResponse.ok) {
             const viewData = await viewResponse.json();
             // Update the local view count
-            setCrateInfo(prevInfo => ({
+            setCrateInfo((prevInfo) => ({
               ...processedData,
               viewCount: viewData.viewCount,
             }));
@@ -355,8 +355,6 @@ export default function CratePage() {
       })
       .finally(() => setContentLoading(false));
   };
-
-
 
   // Simplified time remaining calculation
   const updateTimeRemaining = (expiresAt: string | number | Date) => {
@@ -1699,7 +1697,6 @@ export default function CratePage() {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       {/* Breadcrumb Navigation */}
@@ -1753,8 +1750,8 @@ export default function CratePage() {
         handleCopySocialLink={handleCopySocialLink}
         handleUpdateSharing={handleUpdateSharing}
         sharingLoading={sharingLoading}
+        crateTitle={crateInfo?.title || "Untitled Crate"}
       />
-
 
       <div className="max-w-5xl mx-auto">
         {/* Main Info Card */}
@@ -1817,9 +1814,6 @@ export default function CratePage() {
           formatDate={formatDate}
           getCrateIcon={getCrateIcon}
         />
-
-
-
 
         {/* Smart Call-to-Action - Only show for non-owners */}
         {crateInfo && crateInfo.isPublic && !crateInfo.isOwner && (

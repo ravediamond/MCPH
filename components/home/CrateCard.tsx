@@ -17,6 +17,10 @@ import {
   FaBook,
   FaTools,
   FaQuestionCircle,
+  FaEye,
+  FaShare,
+  FaClone,
+  FaEllipsisV,
 } from "react-icons/fa";
 import Card from "../ui/Card";
 import CrateTag from "./CrateTag";
@@ -48,6 +52,16 @@ const CrateCard: React.FC<CrateCardProps> = ({
   crateToFileMetadata,
 }) => {
   const [showAllTags, setShowAllTags] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  const duplicateCrate = () => {
+    // Navigate to the crate page with duplicate parameter
+    window.location.href = `/crate/${file.id}?duplicate=true`;
+  };
+
+  const viewCrate = () => {
+    window.location.href = `/crate/${file.id}`;
+  };
 
   const renderTags = (tags: string[], maxVisible: number = 3) => {
     if (!tags || tags.length === 0) return null;
@@ -152,24 +166,89 @@ const CrateCard: React.FC<CrateCardProps> = ({
               {renderMetadata(file.metadata)}
             </div>
           </div>
+          {/* Action buttons for search results */}
           <div className="flex justify-end mt-2 space-x-1">
-            <button
-              onClick={() => copyShareLink(file.id)}
-              className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
-              title="Copy link"
-            >
-              <FaCopy size={12} />
-            </button>
-            <button
-              onClick={() => {
-                setFileToDelete(file.id);
-                setDeleteModalVisible(true);
-              }}
-              className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
-              title="Delete"
-            >
-              <FaTrash size={12} />
-            </button>
+            <div className="hidden sm:flex space-x-1">
+              <button
+                onClick={viewCrate}
+                className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                View
+              </button>
+              <button
+                onClick={() => copyShareLink(file.id)}
+                className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+              >
+                Copy Link
+              </button>
+              <button
+                onClick={duplicateCrate}
+                className="px-2 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+              >
+                Duplicate
+              </button>
+              <button
+                onClick={() => {
+                  setFileToDelete(file.id);
+                  setDeleteModalVisible(true);
+                }}
+                className="p-1 hover:bg-red-50 rounded text-gray-500 hover:text-red-500"
+                title="Delete"
+              >
+                <FaTrash size={12} />
+              </button>
+            </div>
+
+            {/* Mobile menu */}
+            <div className="sm:hidden relative">
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
+              >
+                <FaEllipsisV size={12} />
+              </button>
+              {showMobileMenu && (
+                <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                  <button
+                    onClick={() => {
+                      viewCrate();
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => {
+                      copyShareLink(file.id);
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100"
+                  >
+                    Copy Link
+                  </button>
+                  <button
+                    onClick={() => {
+                      duplicateCrate();
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFileToDelete(file.id);
+                      setDeleteModalVisible(true);
+                      setShowMobileMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 text-red-500"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </Card>
@@ -373,60 +452,70 @@ const CrateCard: React.FC<CrateCardProps> = ({
           </div>
         )}
 
-        {/* Sharing Status */}
-        <div className="flex items-center text-xs mb-3">
-          {file.shared?.public ? (
-            <span className="inline-flex items-center text-green-600 font-medium">
-              <svg
-                className="w-3 h-3 mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                <path
-                  fillRule="evenodd"
-                  d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-              Public
-            </span>
-          ) : (
-            <span className="inline-flex items-center text-gray-500">
-              <svg
-                className="w-3 h-3 mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-              Private
-            </span>
-          )}
+        {/* Sharing Status - Enhanced visibility */}
+        <div className="flex items-center justify-between text-xs mb-3">
+          <div className="flex items-center space-x-2">
+            {file.shared?.public ? (
+              <span className="inline-flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                  <path
+                    fillRule="evenodd"
+                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+                Public
+              </span>
+            ) : (
+              <span className="inline-flex items-center bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+                Private
+              </span>
+            )}
 
-          {file.shared?.passwordHash && (
-            <span className="inline-flex items-center ml-2 text-amber-600">
-              <svg
-                className="w-3 h-3 mr-1"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
-                  clipRule="evenodd"
-                ></path>
-              </svg>
-              Password Protected
+            {file.shared?.passwordHash && (
+              <span className="inline-flex items-center bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+                Password
+              </span>
+            )}
+          </div>
+
+          {/* View count badge */}
+          <div className="flex items-center space-x-1">
+            <FaEye className="text-gray-400" size={12} />
+            <span className="text-gray-500 font-medium">
+              {file.viewCount || 0}
             </span>
-          )}
+          </div>
         </div>
 
         {/* Custom Metadata - if available with improved styling */}
@@ -464,17 +553,30 @@ const CrateCard: React.FC<CrateCardProps> = ({
           </div>
         )}
 
-        {/* Action Buttons - Quick Actions */}
+        {/* Action Buttons - Enhanced with labels */}
         <div className="flex justify-end mt-3 pt-2 border-t border-gray-100">
-          <div className="flex space-x-2">
+          <div className="hidden sm:flex space-x-2">
+            <button
+              onClick={viewCrate}
+              className="flex items-center px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              <FaEye className="mr-1" size={12} />
+              View
+            </button>
             <button
               onClick={() => copyShareLink(file.id)}
-              className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
-              title="Copy link"
+              className="flex items-center px-3 py-2 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
             >
-              <FaCopy size={14} />
+              <FaCopy className="mr-1" size={12} />
+              Copy Link
             </button>
-
+            <button
+              onClick={duplicateCrate}
+              className="flex items-center px-3 py-2 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+            >
+              <FaClone className="mr-1" size={12} />
+              Duplicate
+            </button>
             <button
               onClick={() => {
                 setFileToDelete(file.id);
@@ -485,6 +587,61 @@ const CrateCard: React.FC<CrateCardProps> = ({
             >
               <FaTrash size={14} />
             </button>
+          </div>
+
+          {/* Mobile menu */}
+          <div className="sm:hidden relative">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <FaEllipsisV size={14} />
+            </button>
+            {showMobileMenu && (
+              <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    viewCrate();
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 flex items-center"
+                >
+                  <FaEye className="mr-2" size={12} />
+                  View
+                </button>
+                <button
+                  onClick={() => {
+                    copyShareLink(file.id);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 flex items-center"
+                >
+                  <FaCopy className="mr-2" size={12} />
+                  Copy Link
+                </button>
+                <button
+                  onClick={() => {
+                    duplicateCrate();
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 flex items-center"
+                >
+                  <FaClone className="mr-2" size={12} />
+                  Duplicate
+                </button>
+                <button
+                  onClick={() => {
+                    setFileToDelete(file.id);
+                    setDeleteModalVisible(true);
+                    setShowMobileMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 text-red-500 flex items-center"
+                >
+                  <FaTrash className="mr-2" size={12} />
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

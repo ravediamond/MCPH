@@ -1,7 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 import { bucket } from "../lib/gcpStorageClient";
 import { Crate, CrateCategory, CrateSharing } from "../shared/types/crate";
-import { logEvent, deleteCrateMetadata, incrementCrateDownloadCount } from "./firebaseService";
+import {
+  logEvent,
+  deleteCrateMetadata,
+  incrementCrateDownloadCount,
+} from "./firebaseService";
 
 // Import our new modular services
 import {
@@ -407,7 +411,9 @@ export async function getCrateContentForViewing(crateId: string): Promise<{
     // Download the file content
     const [content] = await file.download();
 
-    console.log(`Retrieved crate for viewing: ${crate.id} - Size: ${content.length} bytes`);
+    console.log(
+      `Retrieved crate for viewing: ${crate.id} - Size: ${content.length} bytes`,
+    );
 
     // Do NOT increment download count for viewing
 

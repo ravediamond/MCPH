@@ -32,14 +32,13 @@ export default function SmartCallToAction({
         <div className="text-center">
           <div className="flex items-center justify-center space-x-2 mb-3">
             <FaCopy className="text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-800">
-              Like this?
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800">Like this?</h3>
           </div>
 
           <p className="text-gray-600 mb-6 leading-relaxed max-w-lg mx-auto">
-            Duplicate it to your workspace {user ? "and start customizing" : "(sign in)"}. 
-            Make it your own with just one click.
+            Duplicate it to your workspace{" "}
+            {user ? "and start customizing" : "(sign in)"}. Make it your own
+            with just one click.
           </p>
 
           {/* Primary Duplicate Button */}

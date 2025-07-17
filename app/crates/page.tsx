@@ -28,7 +28,7 @@ import {
 } from "react-icons/fa";
 import Card from "../../components/ui/Card";
 import DeleteModal from "../../components/home/DeleteModal";
-import APIQuotaInfo from "../../components/home/APIQuotaInfo";
+import UsagePills from "../../components/home/UsagePills";
 import SearchBar from "../../components/home/SearchBar";
 import CrateTag from "../../components/home/CrateTag";
 import CratesList from "../../components/home/CratesList";
@@ -588,25 +588,11 @@ export default function CratesPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-6xl mx-auto">
-        {/* MCP API Quota Info */}
-        {user && (
-          <APIQuotaInfo
-            userQuota={userQuota}
-            userStorage={userStorage}
-            userSharedCrates={userSharedCrates}
-            userFeedbackTemplates={userFeedbackTemplates}
-            quotaLoading={quotaLoading}
-            formatFileSize={formatFileSize}
-          />
-        )}
-
-        {/* Header with search and action buttons */}
+        {/* Header with primary actions */}
         <div className="flex flex-col items-center justify-center mb-8 mt-4">
           <div className="flex items-center justify-between w-full max-w-4xl mb-4">
-            <h1 className="text-2xl font-medium text-gray-800">My crates</h1>
-
-            {/* Action buttons */}
-            <div className="flex space-x-3">
+            <div className="flex items-center space-x-4">
+              <h1 className="text-2xl font-medium text-gray-800">My crates</h1>
               <button
                 onClick={() => setUploadModalOpen(true)}
                 className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
@@ -614,14 +600,39 @@ export default function CratesPage() {
                 <FaUpload className="mr-2" />
                 Upload
               </button>
+            </div>
+
+            {/* Secondary actions */}
+            <div className="flex space-x-3">
               <button
                 onClick={() => setFeedbackModalOpen(true)}
-                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="flex items-center px-3 py-2 bg-transparent border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors"
               >
                 <FaComments className="mr-2" />
                 Create Feedback
               </button>
+              <Link
+                href="/api-keys"
+                className="flex items-center px-3 py-2 bg-transparent border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                <FaKey className="mr-2" />
+                Manage API Keys
+              </Link>
             </div>
+          </div>
+
+          {/* Usage Pills */}
+          <div className="w-full max-w-4xl">
+            {user && (
+              <UsagePills
+                userQuota={userQuota}
+                userStorage={userStorage}
+                userSharedCrates={userSharedCrates}
+                userFeedbackTemplates={userFeedbackTemplates}
+                quotaLoading={quotaLoading}
+                formatFileSize={formatFileSize}
+              />
+            )}
           </div>
 
           {/* Search and filters container */}

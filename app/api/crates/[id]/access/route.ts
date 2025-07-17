@@ -7,7 +7,7 @@ import { incrementCrateDownloadCount } from "@/services/firebaseService";
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: crateId } = await params;
@@ -15,15 +15,18 @@ export async function POST(
     // Increment download count (content access counts as a download)
     const downloadCount = await incrementCrateDownloadCount(crateId);
 
-    return NextResponse.json({ 
-      success: true, 
-      downloadCount: downloadCount 
+    return NextResponse.json({
+      success: true,
+      downloadCount: downloadCount,
     });
   } catch (error) {
-    console.error("Error incrementing download count for content access:", error);
+    console.error(
+      "Error incrementing download count for content access:",
+      error,
+    );
     return NextResponse.json(
       { error: "Failed to increment download count" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
