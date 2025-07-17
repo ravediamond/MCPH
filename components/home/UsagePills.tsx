@@ -67,12 +67,12 @@ const UsageModal: React.FC<UsageModalProps> = ({
         </div>
 
         <div className="space-y-4">
-          {/* API Calls */}
+          {/* MCP Calls */}
           {userQuota && (
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span>API Calls</span>
-                <span>{userQuota.remaining}/1000</span>
+                <span>MCP Calls</span>
+                <span>{1000 - userQuota.remaining}/1000</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
@@ -233,7 +233,7 @@ const UsagePills: React.FC<UsagePillsProps> = ({
           </button>
         )}
 
-        {/* API Calls Pill */}
+        {/* MCP Calls Pill */}
         {userQuota && (
           <button
             onClick={() => setIsModalOpen(true)}
@@ -244,7 +244,7 @@ const UsagePills: React.FC<UsagePillsProps> = ({
             }`}
           >
             <FaPhone className="inline mr-1" />
-            API Calls {userQuota.remaining}/1000
+            MCP Calls {1000 - userQuota.remaining}/1000
           </button>
         )}
 

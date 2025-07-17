@@ -58,8 +58,8 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
   });
 
   // --- WRAP TOOL REGISTRATION FOR USAGE TRACKING ---
-  const originalTool = server.tool;
-  server.tool = function (...args: any[]) {
+  const originalRegisterTool = server.registerTool;
+  server.registerTool = function (...args: any[]) {
     const toolName = args[0];
     let handler: any;
     if (args.length === 3) {
@@ -67,7 +67,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
     } else if (args.length >= 4) {
       handler = args[args.length - 1];
     }
-    if (!handler) return (originalTool as any).apply(server, args);
+    if (!handler) return (originalRegisterTool as any).apply(server, args);
     const wrappedHandler = async (toolArgs: any, ...rest: any[]) => {
       try {
         if (req?.user && req.user.userId) {
@@ -95,7 +95,7 @@ export function createMcpServer(req?: AuthenticatedRequest): McpServer {
     } else {
       args[args.length - 1] = wrappedHandler;
     }
-    return (originalTool as any).apply(server, args);
+    return (originalRegisterTool as any).apply(server, args);
   };
 
   return server;

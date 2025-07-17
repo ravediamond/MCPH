@@ -59,6 +59,12 @@ const faqItems: FAQItem[] = [
     answer:
       "Content uploaded by authenticated users is stored permanently and never expires (until you delete it). However, download links generated for sharing expire after 24 hours for security reasons. The actual content remains accessible through the public sharing link.",
   },
+  {
+    id: "claude-ai-connection",
+    question: "How do I connect MCPH to Claude AI?",
+    answer:
+      "To connect MCPH to Claude AI, go to https://claude.ai/settings/connectors and add a custom connector. Set the name to 'MCPH' and use the MCP endpoint URL: https://api.mcph.io/mcp. You'll need your MCPH API key which you can generate from your account settings.",
+  },
 ];
 
 export default function FAQPage() {

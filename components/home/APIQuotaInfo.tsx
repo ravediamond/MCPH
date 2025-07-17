@@ -51,7 +51,7 @@ const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
         <div className="text-gray-500 text-sm">Loading quota...</div>
       ) : userQuota ? (
         <div className="text-sm text-gray-700">
-          Remaining MCP calls this month:{" "}
+          MCP calls this month:{" "}
           <span
             className={
               userQuota.remaining === 0
@@ -59,7 +59,7 @@ const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
                 : "font-semibold"
             }
           >
-            {userQuota.remaining}
+            {1000 - userQuota.remaining}
           </span>
           <span className="ml-2 text-gray-400">/ 1000</span>
         </div>
