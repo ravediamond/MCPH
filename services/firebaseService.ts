@@ -34,19 +34,20 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { Crate, CrateSharing, AccessHistoryEntry } from "../shared/types/crate";
 
-let firebaseApp: App;
+let firebaseApp: App | undefined;
 let db: Firestore;
 
 if (!getApps().length) {
   try {
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       console.log(
-        "Initializing Firebase Admin SDK with service account credentials file.",
+        "Initializing Firebase Admin SDK with service account credentials.",
       );
 
-      let serviceAccount: ServiceAccount;
+      let serviceAccount: ServiceAccount | undefined;
       const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
+      // Check if it's a JSON string (Vercel environment)
       if (
         process.env.VERCEL_ENV &&
         process.env.GOOGLE_APPLICATION_CREDENTIALS.trim().startsWith("{")
@@ -65,7 +66,22 @@ if (!getApps().length) {
           );
           throw new Error("Failed to parse service account credentials JSON.");
         }
+      } else if (credentialsPath.trim().startsWith("{")) {
+        // Handle JSON string in other environments (like Cloud Run)
+        try {
+          serviceAccount = JSON.parse(credentialsPath);
+          console.log(
+            "Using parsed JSON credentials from environment variable",
+          );
+        } catch (error) {
+          console.error(
+            "Error processing Firebase service account credentials JSON:",
+            error,
+          );
+          throw new Error("Failed to parse service account credentials JSON.");
+        }
       } else {
+        // Handle file path
         const resolvedPath = credentialsPath.startsWith("/")
           ? credentialsPath
           : path.resolve(process.cwd(), credentialsPath);
@@ -74,19 +90,28 @@ if (!getApps().length) {
 
         if (!fs.existsSync(resolvedPath)) {
           console.error(`Service account file not found at: ${resolvedPath}`);
-          throw new Error(`Service account file not found at: ${resolvedPath}`);
-        }
+          console.log("Falling back to Application Default Credentials (ADC).");
 
-        serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
+          firebaseApp = initializeApp({});
+
+          console.log(
+            "Firebase Admin SDK initialized with Application Default Credentials.",
+          );
+        } else {
+          serviceAccount = JSON.parse(fs.readFileSync(resolvedPath, "utf8"));
+        }
       }
 
-      firebaseApp = initializeApp({
-        credential: cert(serviceAccount),
-      });
+      // Only initialize with service account if we successfully parsed it
+      if (serviceAccount) {
+        firebaseApp = initializeApp({
+          credential: cert(serviceAccount),
+        });
 
-      console.log(
-        "Firebase Admin SDK initialized successfully with service account credentials.",
-      );
+        console.log(
+          "Firebase Admin SDK initialized successfully with service account credentials.",
+        );
+      }
     } else {
       console.log(
         "GOOGLE_APPLICATION_CREDENTIALS not found, falling back to Application Default Credentials (ADC).",
@@ -97,6 +122,14 @@ if (!getApps().length) {
       console.log(
         "Firebase Admin SDK initialized with Application Default Credentials.",
       );
+    }
+
+    // Ensure firebaseApp is initialized, fallback to ADC if not
+    if (!firebaseApp) {
+      console.log(
+        "No Firebase app initialized, falling back to Application Default Credentials (ADC).",
+      );
+      firebaseApp = initializeApp({});
     }
 
     db = getFirestore(firebaseApp);
@@ -420,7 +453,7 @@ export async function incrementApiKeyToolUsage(
   )}`; // e.g. 202505
   const docId = `${apiKeyId}_${yearMonth}`;
   const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
-  const res = await docRef.set(
+  await docRef.set(
     {
       apiKeyId,
       yearMonth,
