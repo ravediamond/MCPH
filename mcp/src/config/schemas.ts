@@ -10,7 +10,6 @@ export const ListCratesParams = z.object({
 
 export const GetCrateParams = z.object({
   id: z.string(),
-  password: z.string().optional(),
 });
 
 export const GetCrateDownloadLinkParams = z.object({
@@ -34,23 +33,15 @@ const UploadCrateBaseParams = z.object({
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
   isPublic: z.boolean().optional().default(false),
-  password: z.string().optional(),
 });
 
-export const UploadCrateParams = UploadCrateBaseParams.refine(
-  (data) => !(data.isPublic && data.password),
-  {
-    message: "A crate cannot be both public and password-protected",
-    path: ["isPublic", "password"],
-  },
-);
+export const UploadCrateParams = UploadCrateBaseParams;
 
 export const UploadCrateParamsShape = UploadCrateBaseParams;
 
 export const ShareCrateParams = z.object({
   id: z.string(),
   editKey: z.string(),
-  password: z.string().optional(),
 });
 
 export const UnshareCrateParams = z.object({

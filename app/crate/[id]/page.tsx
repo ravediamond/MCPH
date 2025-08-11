@@ -49,7 +49,6 @@ import Image from "next/image";
 import Card from "../../../components/ui/Card";
 import StatsCard from "../../../components/ui/StatsCard";
 import SmartCallToAction from "../../../components/SmartCallToAction";
-import PasswordPrompt from "../../../components/crate/PasswordPrompt";
 import CrateSharingModal from "../../../components/crate/CrateSharingModal";
 import CrateHeader from "../../../components/crate/CrateHeader";
 import CrateStats from "../../../components/crate/CrateStats";
@@ -88,7 +87,6 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
   title: string;
   expiresAt?: string;
   isPublic: boolean;
-  isPasswordProtected: boolean;
   isOwner: boolean;
   viewCount?: number;
   tags?: string[];
@@ -112,15 +110,10 @@ export default function CratePage() {
   // No more expiry reset functionality as crates no longer expire when logged in
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [passwordInput, setPasswordInput] = useState<string>("");
-  const [passwordRequired, setPasswordRequired] = useState<boolean>(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // New sharing-related state variables
   const [showSharingModal, setShowSharingModal] = useState(false);
   const [isPublic, setIsPublic] = useState(false);
-  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
-  const [sharingPassword, setSharingPassword] = useState("");
   const [sharingError, setSharingError] = useState<string | null>(null);
   const [sharingSuccess, setSharingSuccess] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState("");
@@ -155,7 +148,6 @@ export default function CratePage() {
       setError(null);
       setCrateInfo(null);
       setCrateContent(null);
-      setPasswordRequired(false);
 
       try {
         // Get the auth token
@@ -169,19 +161,10 @@ export default function CratePage() {
         }
 
         const response = await fetch(`/api/crates/${crateId}`, { headers });
-        const data = await response.json(); // Always parse JSON first to check for passwordRequired
+        const data = await response.json();
 
-        if (response.status === 401 && data.passwordRequired) {
-          // Password protected crate, and user is not owner
-          // Ensure tags is always an array
-          const processedData = {
-            ...data,
-            tags: Array.isArray(data.tags) ? data.tags : [],
-          };
-          setCrateInfo(processedData); // Set basic info, including isPasswordProtected
-          setPasswordRequired(true);
-          setLoading(false);
-          return;
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch crate");
         }
 
         if (response.status === 403) {
@@ -285,11 +268,9 @@ export default function CratePage() {
 
     if (shouldFetchContent()) {
       setContentLoading(true);
-      // Use content endpoint with empty password for non-password protected crates
-      fetchCrateContent(passwordInput)
+      fetchCrateContent()
         .then((content) => {
           setCrateContent(content);
-          setPasswordRequired(false);
         })
         .catch((err) => {
           console.error("Error fetching crate content:", err);
@@ -297,10 +278,10 @@ export default function CratePage() {
         })
         .finally(() => setContentLoading(false));
     }
-  }, [crateInfo, passwordInput]);
+  }, [crateInfo]);
 
-  // Function to fetch crate content with password if needed
-  const fetchCrateContent = async (password?: string): Promise<string> => {
+  // Function to fetch crate content
+  const fetchCrateContent = async (): Promise<string> => {
     // Note: Auth token removed for editKey system
     const idToken = null;
 
@@ -317,36 +298,17 @@ export default function CratePage() {
     const response = await fetch(`/api/crates/${crateId}/content`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({}),
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        setPasswordRequired(true);
         throw new Error("Password required");
       }
       throw new Error("Failed to fetch crate content");
     }
 
     return response.text();
-  };
-
-  // Handle password submission
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordError(null);
-    setContentLoading(true);
-
-    fetchCrateContent(passwordInput)
-      .then((content) => {
-        setCrateContent(content);
-        setPasswordRequired(false);
-      })
-      .catch((err) => {
-        setPasswordError("Invalid password. Please try again.");
-        setCrateContent(null);
-      })
-      .finally(() => setContentLoading(false));
   };
 
   // Simplified time remaining calculation
@@ -544,12 +506,9 @@ export default function CratePage() {
 
     console.log("[DEBUG] Opening sharing modal with crate info:", {
       isPublic: crateInfo.isPublic,
-      isPasswordProtected: crateInfo.isPasswordProtected,
     });
 
     setIsPublic(crateInfo.isPublic);
-    setIsPasswordProtected(crateInfo.isPasswordProtected);
-    setSharingPassword("");
     setSharingError(null);
     setSharingSuccess(null);
     setShareUrl(`${window.location.origin}/crate/${crateId}`);
@@ -629,18 +588,7 @@ export default function CratePage() {
       // Prepare the request body
       const body: any = {
         public: isPublic,
-        passwordProtected: isPasswordProtected,
       };
-
-      // Include password if it's set and the crate is password protected
-      if (isPasswordProtected && sharingPassword) {
-        body.password = sharingPassword;
-      }
-
-      // If the password protection is turned off, remove the password
-      if (!isPasswordProtected) {
-        body.removePassword = true;
-      }
 
       const response = await fetch(`/api/crates/${crateId}/share`, {
         method: "POST",
@@ -660,7 +608,6 @@ export default function CratePage() {
       const updatedCrateInfo = {
         ...crateInfo,
         isPublic: data.isShared,
-        isPasswordProtected: data.passwordProtected,
       };
 
       console.log("[DEBUG] Updating crate info:", updatedCrateInfo);
@@ -1401,19 +1348,6 @@ export default function CratePage() {
     }
   };
 
-  // Password form for protected crates
-  const renderPasswordForm = () => {
-    return (
-      <PasswordPrompt
-        passwordInput={passwordInput}
-        setPasswordInput={setPasswordInput}
-        passwordError={passwordError}
-        contentLoading={contentLoading}
-        onSubmit={handlePasswordSubmit}
-      />
-    );
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
@@ -1426,10 +1360,6 @@ export default function CratePage() {
         </div>
       </div>
     );
-  }
-
-  if (passwordRequired && !crateContent) {
-    return renderPasswordForm();
   }
 
   if (error || !crateInfo) {
@@ -1516,10 +1446,6 @@ export default function CratePage() {
         sharingSuccess={sharingSuccess}
         isPublic={isPublic}
         setIsPublic={setIsPublic}
-        isPasswordProtected={isPasswordProtected}
-        setIsPasswordProtected={setIsPasswordProtected}
-        sharingPassword={sharingPassword}
-        setSharingPassword={setSharingPassword}
         shareUrl={shareUrl}
         linkCopied={linkCopied}
         setLinkCopied={setLinkCopied}

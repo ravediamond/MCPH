@@ -57,16 +57,6 @@ export async function GET(
       );
     }
 
-    if (crate.shared.passwordHash) {
-      return NextResponse.json(
-        {
-          error: "Password required to view this crate",
-          passwordRequired: true,
-        },
-        { status: 401 },
-      );
-    }
-
     // Prepare crate response (exclude sensitive data)
     const processTags = (tags: any): string[] => {
       if (Array.isArray(tags)) {
@@ -93,7 +83,6 @@ export async function GET(
       downloadCount: crate.downloadCount,
       viewCount: crate.viewCount || 0,
       isPublic: crate.shared?.public || false,
-      isPasswordProtected: Boolean(crate.shared.passwordHash),
       // isOwner field removed - using editKey system now
       metadata: crate.metadata,
       tags: processTags(crate.tags),
@@ -162,22 +151,6 @@ export async function POST(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
-    }
-
-    if (crate.shared.passwordHash) {
-      if (!password) {
-        return NextResponse.json(
-          { error: "This crate requires a password" },
-          { status: 401 },
-        );
-      }
-      const match = await bcrypt.compare(password, crate.shared.passwordHash);
-      if (!match) {
-        return NextResponse.json(
-          { error: "Invalid password" },
-          { status: 401 },
-        );
-      }
     }
 
     // Get crate content based on its category
@@ -393,13 +366,6 @@ export async function PATCH(
         if (typeof body.shared.public === "boolean") {
           updateData.shared.public = body.shared.public;
         }
-
-        // Handle password changes
-        if (body.password) {
-          updateData.shared.passwordHash = await bcrypt.hash(body.password, 10);
-        } else if (body.removePassword) {
-          updateData.shared.passwordHash = null;
-        }
       }
     }
 
@@ -416,7 +382,6 @@ export async function PATCH(
           metadata: crate.metadata,
           shared: {
             public: crate.shared.public,
-            hasPassword: !!crate.shared.passwordHash,
           },
         },
       });
@@ -439,7 +404,6 @@ export async function PATCH(
         metadata: updatedCrate.metadata,
         shared: {
           public: updatedCrate.shared.public,
-          hasPassword: !!updatedCrate.shared.passwordHash,
         },
       },
     });

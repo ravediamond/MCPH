@@ -18,13 +18,7 @@ export async function POST(
   try {
     // Handle params as a Promise in Next.js 15+
     const { id } = await context.params;
-    const {
-      password,
-      public: isPublic = true,
-      passwordProtected = false,
-      removePassword = false,
-      editKey,
-    } = await req.json();
+    const { public: isPublic = true, editKey } = await req.json();
 
     // Get crate metadata
     const crate = await getCrateMetadata(id);
@@ -47,12 +41,6 @@ export async function POST(
     const sharingSettings: any = {
       public: isPublic,
     };
-
-    if (passwordProtected && password && password.length > 0) {
-      sharingSettings.passwordHash = await bcrypt.hash(password, 10);
-    } else if (!passwordProtected || removePassword) {
-      sharingSettings.passwordHash = null;
-    }
 
     // Simplified for v1: No per-user sharing
     // Update shared with users if provided
@@ -84,7 +72,6 @@ export async function POST(
       id,
       isShared: isPublic,
       shareUrl,
-      passwordProtected: Boolean(sharingSettings.passwordHash),
       message: "Sharing settings updated successfully",
     });
   } catch (error) {

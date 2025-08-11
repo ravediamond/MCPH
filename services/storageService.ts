@@ -120,10 +120,6 @@ export async function uploadCrate(
       public: false,
     };
 
-    if (crateData.shared?.passwordHash) {
-      sharing.passwordHash = crateData.shared.passwordHash;
-    }
-
     // Create the complete crate metadata
     const completeCrate: Crate = {
       id: crateId,

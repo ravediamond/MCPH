@@ -692,14 +692,6 @@ export async function updateCrateSharing(
       ...sharingSettings,
     } as any;
 
-    // Handle password deletion properly
-    if (
-      sharingSettings.hasOwnProperty("passwordHash") &&
-      !sharingSettings.passwordHash
-    ) {
-      delete updatedSharing.passwordHash;
-    }
-
     const updateData: any = { shared: updatedSharing };
 
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);

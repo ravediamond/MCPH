@@ -40,7 +40,7 @@ export function registerCratesSearchTool(server: McpServer): void {
     {
       title: "Search Crates",
       description:
-        "Searches your crates using a hybrid approach combining embedding-based semantic search and text search. The search covers title, description, tags, and metadata fields. Results are merged and deduplicated for the most relevant matches.\n\n" +
+        "Searches your crates using text-based search. The search covers title, description, tags, and metadata fields.\n\n" +
         "SEARCH PARAMETERS:\n" +
         "• query: Search terms for content matching\n" +
         "• tags: Array of tags to filter by (optional)\n" +
@@ -60,15 +60,10 @@ export function registerCratesSearchTool(server: McpServer): void {
         "SEARCH TIPS for AI tools:\n" +
         "• Search by project: 'project:website-redesign' using tags parameter\n" +
         '• Combine tags: "project:chatbot type:code" or use tags parameter\n' +
-        "• Find by context: 'context:user-research'\n" +
-        "• Search workflow: 'status:final priority:high'\n" +
         "• Filter by category: use category parameter for specific content types\n\n" +
         "The search uses:\n" +
-        "• Vector embeddings (768-dimensional) for semantic understanding of metadata\n" +
         "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +
-        "• Structured tag filtering for precise organization-based searches\n" +
-        "• Results are ranked by relevance and deduplicated\n" +
-        "• Note: Content-based semantic search is available in the Pro version\n\n" +
+        "• Structured tag filtering for precise organization-based searches\n\n" +
         "AI usage examples:\n" +
         "• \"search my crates for 'report'\"\n" +
         '• "search my crates with tags ["project:website", "status:final"] for \'authentication\'"',
@@ -88,12 +83,7 @@ export function registerCratesSearchTool(server: McpServer): void {
       },
       extra?: any,
     ) => {
-      // Implementation of the enhanced search with structured tag filtering and tag hierarchy
-      // understanding for better context engineering.
-      //
-      // The key enhancements include:
-      // 1. Structured Tag Filtering: Use `tags` parameter for exact tag matching
-      // 2. Tag Hierarchy Understanding: Recognize and boost scores for conventional tag patterns
+      // Implementation of enhanced search with structured tag filtering
 
       // The ctxUser might be in extra.req.auth or extra.authInfo depending on flow
       let uid = "__nobody__"; // sentinel that never matches "" in DB
@@ -252,41 +242,12 @@ export function registerCratesSearchTool(server: McpServer): void {
         );
       }
 
-      // Weight results based on tag hierarchy and conventions
-      allCrates = allCrates.map((crate: any) => {
-        let score = 1.0; // Base score
-
-        // Normalize crate tags using our helper function
-        const normalizedCrateTags = normalizeTags(crate.tags);
-
-        // Weight tag matches higher when they follow conventions
-        if (normalizedCrateTags.length > 0) {
-          // Define patterns for structured tag conventions
-          // These are used to identify and boost scores for structured, well-organized tags
-          const conventionPatterns = [
-            /^project:/, // Project scope tags (e.g., project:website-redesign)
-            /^type:/, // Content type tags (e.g., type:code, type:document)
-            /^status:/, // Workflow status tags (e.g., status:final, status:draft)
-            /^priority:/, // Priority level tags (e.g., priority:high)
-            /^context:/, // Contextual tags (e.g., context:user-research)
-          ];
-
-          // Count matching convention patterns
-          const conventionMatches = normalizedCrateTags.filter((tag: string) =>
-            conventionPatterns.some((pattern) => pattern.test(tag)),
-          ).length;
-
-          // Boost score based on structured tags
-          // The more organized tags (following conventions) a crate has,
-          // the higher its relevance score will be
-          score += conventionMatches * 0.2; // 20% boost per convention tag
-        }
-
-        return { ...crate, _score: score };
+      // Sort results by title for consistent ordering
+      allCrates.sort((a: any, b: any) => {
+        const titleA = (a.title || "").toLowerCase();
+        const titleB = (b.title || "").toLowerCase();
+        return titleA.localeCompare(titleB);
       });
-
-      // Sort by score (descending)
-      allCrates.sort((a: any, b: any) => b._score - a._score);
 
       // Limit to topK results after in-memory filtering and scoring
       allCrates = allCrates.slice(0, topK);
@@ -323,7 +284,6 @@ export function registerCratesSearchTool(server: McpServer): void {
           contentType: mimeType, // Use safely extracted mimeType
           category: category, // Use safely extracted category
           expiresAt: data.expiresAt ? data.expiresAt.toISOString() : null, // Include actual expiration date if set
-          relevanceScore: _score || 1.0, // Include the relevance score
         };
       });
 
@@ -352,13 +312,9 @@ export function registerCratesSearchTool(server: McpServer): void {
                         `Owner: ${c.ownerId || "anonymous"}\n` +
                         `Category: ${c.category || "N/A"}\n` +
                         `Content Type: ${c.contentType || "N/A"}\n` +
-                        `Tags: ${c.tags && c.tags.length > 0 ? c.tags.join(", ") : "No tags"}\n` +
-                        `Relevance Score: ${c.relevanceScore?.toFixed(2) || "1.00"}\n`,
+                        `Tags: ${c.tags && c.tags.length > 0 ? c.tags.join(", ") : "No tags"}\n`,
                     )
-                    .join("\n---\n") +
-                  "\n\nAdvanced Search Tips:\n" +
-                  "• For precise filtering: search with tags=['project:website', 'status:final'] for 'feature'\n" +
-                  "• Tags like project:, type:, status:, priority: get higher relevance scores"
+                    .join("\n---\n")
                 : `No crates found matching "${query}"${tags?.length ? ` with tags [${tags.join(", ")}]` : ""}`,
           },
         ],

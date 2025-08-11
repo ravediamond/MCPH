@@ -72,28 +72,9 @@ export default function CratesPage() {
   const [actionSuccess, setActionSuccess] = useState<string | null>("");
   const [searchResults, setSearchResults] = useState<Crate[] | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [isAdvancedSearch, setIsAdvancedSearch] = useState(false);
-  const [advancedSearchFields, setAdvancedSearchFields] = useState({
-    fileName: "",
-    tags: "",
-    type: "",
-    project: "",
-    status: "",
-    priority: "",
-    context: "",
-  });
 
   // Modal states
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-
-  // --- Embedding-based search state ---
-  const [embeddingSearchResults, setEmbeddingSearchResults] = useState<
-    Crate[] | null
-  >(null);
-  const [embeddingSearchLoading, setEmbeddingSearchLoading] = useState(false);
-  const [embeddingSearchError, setEmbeddingSearchError] = useState<
-    string | null
-  >(null);
 
   // Function to fetch crates with pagination
   const fetchCrates = async (isLoadMore = false) => {
@@ -320,136 +301,15 @@ export default function CratesPage() {
     e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key === "Enter" && searchQuery.trim()) {
-      setSearchLoading(true);
-      setSearchResults(null);
-      setError(null);
-      try {
-        const res = await fetch("/api/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: searchQuery }),
-        });
-        if (!res.ok) throw new Error("Search failed");
-        const data = await res.json();
-
-        // Map Firestore search results to our application format
-        const results = (data.results || [])
-          .map((doc: any) => {
-            // We only need to handle the Firestore API response format
-            const fields = doc.fields || {};
-            return {
-              id: doc.name?.split("/")?.pop() || "",
-              fileName: fields.fileName?.stringValue || "",
-              title: fields.title?.stringValue || "",
-              description: fields.description?.stringValue || "",
-              contentType: fields.contentType?.stringValue || "",
-              size: fields.size?.integerValue
-                ? parseInt(fields.size.integerValue)
-                : 0,
-              uploadedAt: fields.uploadedAt?.timestampValue || "",
-              expiresAt: fields.expiresAt?.timestampValue || "",
-              downloadCount: fields.downloadCount?.integerValue
-                ? parseInt(fields.downloadCount.integerValue)
-                : 0,
-              metadata: fields.metadata?.mapValue?.fields
-                ? Object.fromEntries(
-                    Object.entries(fields.metadata.mapValue.fields).map(
-                      ([k, v]: any) => [k, v.stringValue],
-                    ),
-                  )
-                : undefined,
-            };
-          })
-          .filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
-
-        setSearchResults(results);
-      } catch (err: any) {
-        setError(err.message || "Search failed");
-        setSearchResults([]);
-      } finally {
-        setSearchLoading(false);
-      }
-    }
-  };
-
-  // Handle advanced search
-  const handleAdvancedSearch = async () => {
-    setSearchLoading(true);
-    setSearchResults(null);
-    setError(null);
-
-    // Build search query from advanced parameters
-    let query = "";
-    if (advancedSearchFields.fileName)
-      query += advancedSearchFields.fileName + " ";
-    if (advancedSearchFields.tags) query += advancedSearchFields.tags + " ";
-    if (advancedSearchFields.project)
-      query += advancedSearchFields.project + " ";
-    if (advancedSearchFields.type) query += advancedSearchFields.type + " ";
-    if (advancedSearchFields.status) query += advancedSearchFields.status + " ";
-    if (advancedSearchFields.priority)
-      query += advancedSearchFields.priority + " ";
-    if (advancedSearchFields.context)
-      query += advancedSearchFields.context + " ";
-
-    // Trim and ensure we have a query
-    query = query.trim();
-    if (!query) {
-      setSearchLoading(false);
-      setSearchResults(null);
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/search", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-      if (!res.ok) throw new Error("Search failed");
-      const data = await res.json();
-
-      // Map Firestore search results to our application format
-      const results = (data.results || [])
-        .map((doc: any) => {
-          // We only need to handle the Firestore API response format
-          const fields = doc.fields || {};
-          return {
-            id: doc.name?.split("/")?.pop() || "",
-            fileName: fields.fileName?.stringValue || "",
-            title: fields.title?.stringValue || "",
-            description: fields.description?.stringValue || "",
-            contentType: fields.contentType?.stringValue || "",
-            size: fields.size?.integerValue
-              ? parseInt(fields.size.integerValue)
-              : 0,
-            uploadedAt: fields.uploadedAt?.timestampValue || "",
-            expiresAt: fields.expiresAt?.timestampValue || "",
-            downloadCount: fields.downloadCount?.integerValue
-              ? parseInt(fields.downloadCount.integerValue)
-              : 0,
-            metadata: fields.metadata?.mapValue?.fields
-              ? Object.fromEntries(
-                  Object.entries(fields.metadata.mapValue.fields).map(
-                    ([k, v]: any) => [k, v.stringValue],
-                  ),
-                )
-              : undefined,
-            tags: fields.tags?.arrayValue?.values
-              ? fields.tags.arrayValue.values.map((v: any) => v.stringValue)
-              : [],
-          };
-        })
-        .filter((file: any) => file.id && file.fileName); // Filter out any invalid entries
-
+      // Simple client-side search
+      const query = searchQuery.toLowerCase();
+      const results = files.filter(
+        (file) =>
+          file.title?.toLowerCase().includes(query) ||
+          file.description?.toLowerCase().includes(query) ||
+          file.tags?.some((tag) => tag.toLowerCase().includes(query)),
+      );
       setSearchResults(results);
-      // Also update the simple search query to match
-      setSearchQuery(query);
-    } catch (err: any) {
-      setError(err.message || "Search failed");
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
     }
   };
 
@@ -616,16 +476,11 @@ export default function CratesPage() {
 
           {/* Search and filters container */}
           <div className="w-full">
-            {/* Search bar and toggle */}
+            {/* Search bar */}
             <SearchBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              isAdvancedSearch={isAdvancedSearch}
-              setIsAdvancedSearch={setIsAdvancedSearch}
-              advancedSearchFields={advancedSearchFields}
-              setAdvancedSearchFields={setAdvancedSearchFields}
               handleSearchKeyDown={handleSearchKeyDown}
-              handleAdvancedSearch={handleAdvancedSearch}
             />
 
             {/* View mode toggle and quick tag filters */}

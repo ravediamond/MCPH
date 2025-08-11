@@ -17,7 +17,7 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 
-type AccessLevel = "private" | "link-only" | "public" | "public-password";
+type AccessLevel = "private" | "link-only" | "public";
 
 interface CrateSharingModalProps {
   showSharingModal: boolean;
@@ -26,10 +26,6 @@ interface CrateSharingModalProps {
   sharingSuccess: string | null;
   isPublic: boolean;
   setIsPublic: (isPublic: boolean) => void;
-  isPasswordProtected: boolean;
-  setIsPasswordProtected: (isPasswordProtected: boolean) => void;
-  sharingPassword: string;
-  setSharingPassword: (password: string) => void;
   shareUrl: string;
   linkCopied: boolean;
   setLinkCopied: (copied: boolean) => void;
@@ -46,10 +42,6 @@ export default function CrateSharingModal({
   sharingSuccess,
   isPublic,
   setIsPublic,
-  isPasswordProtected,
-  setIsPasswordProtected,
-  sharingPassword,
-  setSharingPassword,
   shareUrl,
   linkCopied,
   setLinkCopied,
@@ -58,15 +50,13 @@ export default function CrateSharingModal({
   sharingLoading,
   crateTitle = "Untitled Crate",
 }: CrateSharingModalProps) {
-  const [showPassword, setShowPassword] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   // Determine current access level based on props
   const getCurrentAccessLevel = (): AccessLevel => {
     if (!isPublic) return "private";
-    if (isPublic && isPasswordProtected) return "public-password";
-    if (isPublic) return "link-only"; // Default to link-only for public without password
-    return "link-only";
+    if (isPublic) return "public";
+    return "private";
   };
 
   const [accessLevel, setAccessLevel] = useState<AccessLevel>(
@@ -80,47 +70,15 @@ export default function CrateSharingModal({
     switch (newLevel) {
       case "private":
         setIsPublic(false);
-        setIsPasswordProtected(false);
         break;
       case "link-only":
         setIsPublic(true);
-        setIsPasswordProtected(false);
         break;
       case "public":
         setIsPublic(true);
-        setIsPasswordProtected(false);
-        break;
-      case "public-password":
-        setIsPublic(true);
-        setIsPasswordProtected(true);
         break;
     }
   };
-
-  // Generate a secure password
-  const generateSecurePassword = () => {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    let password = "";
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setSharingPassword(password);
-  };
-
-  // Get password strength
-  const getPasswordStrength = (password: string) => {
-    if (!password) return { strength: 0, label: "No password", color: "gray" };
-    if (password.length < 6)
-      return { strength: 25, label: "Weak", color: "red" };
-    if (password.length < 8)
-      return { strength: 50, label: "Fair", color: "yellow" };
-    if (password.length < 12)
-      return { strength: 75, label: "Good", color: "blue" };
-    return { strength: 100, label: "Strong", color: "green" };
-  };
-
-  const passwordStrength = getPasswordStrength(sharingPassword);
 
   // Copy link with success toast
   const handleCopyLink = () => {
@@ -283,95 +241,8 @@ export default function CrateSharingModal({
                 </div>
               </div>
             </label>
-
-            {/* Public + Password */}
-            <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-              <input
-                type="radio"
-                name="access-level"
-                checked={accessLevel === "public-password"}
-                onChange={() => handleAccessLevelChange("public-password")}
-                className="mr-3 text-primary-600"
-              />
-              <div className="flex items-center flex-1">
-                <FaKey className="text-amber-500 mr-3" />
-                <div>
-                  <div className="font-medium text-gray-900">
-                    Public + Password
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Anyone with password
-                  </div>
-                </div>
-              </div>
-            </label>
           </div>
         </div>
-
-        {/* Password Configuration - only shown when public-password is selected */}
-        {accessLevel === "public-password" && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <h5 className="text-sm font-medium text-gray-900 mb-3">
-              Password Configuration
-            </h5>
-
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <div className="flex-1 relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={sharingPassword}
-                    onChange={(e) => setSharingPassword(e.target.value)}
-                    placeholder="Enter a secure password"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={generateSecurePassword}
-                  className="px-3 py-2 text-sm text-amber-700 bg-amber-100 border border-amber-300 rounded-md hover:bg-amber-200 transition-colors"
-                >
-                  Generate
-                </button>
-              </div>
-
-              {/* Password Strength Meter */}
-              {sharingPassword && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">
-                      Password strength
-                    </span>
-                    <span
-                      className={`text-xs font-medium text-${passwordStrength.color}-600`}
-                    >
-                      {passwordStrength.label}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 bg-${passwordStrength.color}-500`}
-                      style={{ width: `${passwordStrength.strength}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <p className="text-xs text-amber-700">
-                <FaInfoCircle className="inline mr-1" />
-                Users must enter this password once per browser.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Warning for private crates */}
         {accessLevel === "private" && (
@@ -465,10 +336,7 @@ export default function CrateSharingModal({
           </button>
           <button
             onClick={handleUpdateSharing}
-            disabled={
-              sharingLoading ||
-              (accessLevel === "public-password" && !sharingPassword)
-            }
+            disabled={sharingLoading}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors shadow-sm"
           >
             {sharingLoading ? (

@@ -124,29 +124,8 @@ export async function POST(req: NextRequest) {
       tags, // Add the parsed tags
     });
 
-    // --- VECTOR EMBEDDING GENERATION ---
-    let embedding: number[] | undefined = undefined;
-    try {
-      const metadataObj = crateData.metadata || {};
-      const metaString = Object.entries(metadataObj)
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(" ");
-      const concatText = [title, description, metaString]
-        .filter(Boolean)
-        .join(" ");
-      if (concatText.trim().length > 0) {
-        const { getEmbedding } = await import("@/lib/vertexAiEmbedding");
-        embedding = await getEmbedding(concatText);
-      }
-    } catch (e) {
-      console.error("Failed to generate embedding:", e);
-    }
-
-    // Store the crate metadata in Firestore, including embedding if available
-    await saveCrateMetadata({
-      ...crateData,
-      ...(embedding ? { embedding } : {}),
-    });
+    // Store the crate metadata in Firestore
+    await saveCrateMetadata(crateData);
 
     // Generate URLs
     const apiUrl = new URL(`/api/crates/${crateData.id}`, req.url).toString();

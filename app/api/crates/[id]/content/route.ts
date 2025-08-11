@@ -111,23 +111,6 @@ export async function GET(
       );
     }
 
-    if (crate.shared.passwordHash) {
-      const supplied = req.headers.get("x-crate-pass");
-      if (!supplied) {
-        return NextResponse.json(
-          { error: "Password required to view this crate" },
-          { status: 401 },
-        );
-      }
-      const match = await bcrypt.compare(supplied, crate.shared.passwordHash);
-      if (!match) {
-        return NextResponse.json(
-          { error: "Invalid password" },
-          { status: 401 },
-        );
-      }
-    }
-
     // Access check already performed above
 
     // Get crate content based on its category (for regular files)
@@ -215,22 +198,6 @@ export async function POST(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
-    }
-
-    if (crate.shared.passwordHash) {
-      if (!password) {
-        return NextResponse.json(
-          { error: "This crate requires a password" },
-          { status: 401 },
-        );
-      }
-      const match = await bcrypt.compare(password, crate.shared.passwordHash);
-      if (!match) {
-        return NextResponse.json(
-          { error: "Invalid password" },
-          { status: 401 },
-        );
-      }
     }
 
     // Get crate content based on its category (for regular files)
