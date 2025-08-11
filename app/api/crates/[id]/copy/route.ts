@@ -46,19 +46,12 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found." }, { status: 404 });
     }
 
-    // Check if the crate is already owned by the user
-    if (sourceCrate.ownerId === userId) {
-      return NextResponse.json(
-        { error: "This crate is already in your collection." },
-        { status: 400 },
-      );
-    }
+    // For editKey-based system, we can always copy public crates
 
     // Check if the crate is accessible to the user
     const isPublic = sourceCrate.shared?.public === true;
-    const isAnonymous = sourceCrate.ownerId === "anonymous";
 
-    if (!isPublic && !isAnonymous) {
+    if (!isPublic) {
       return NextResponse.json(
         { error: "You don't have permission to copy this crate." },
         { status: 403 },
@@ -68,11 +61,15 @@ export async function POST(
     // Get the crate content
     const { buffer, crate } = await getCrateContent(id);
 
+    // Generate new editKey for the copy
+    const { v4: uuidv4 } = require("uuid");
+    const newEditKey = uuidv4();
+
     // Prepare new crate data for the copy
     const newCrateData = {
       title: sourceCrate.title,
       description: sourceCrate.description,
-      ownerId: userId,
+      editKey: newEditKey,
       category: sourceCrate.category,
       tags: sourceCrate.tags,
       metadata: sourceCrate.metadata,

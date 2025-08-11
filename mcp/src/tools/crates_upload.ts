@@ -6,10 +6,9 @@ import {
   uploadCrate,
 } from "../../../services/storageService";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
-import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
-import { auth } from "../../../lib/firebaseAdmin";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Register the crates_upload tool with the server
@@ -159,54 +158,15 @@ export function registerCratesUploadTool(server: McpServer): void {
         effectiveFileName = `${baseName}${extension}`;
       }
 
-      // Create the partial crate data
-      // Get authentication info from extra (supplied by the SDK)
-      const req = extra?.req as AuthenticatedRequest | undefined;
-      const authInfo = extra?.authInfo;
+      // Create the partial crate data with edit key
+      const editKey = uuidv4(); // Generate unique edit key for this crate
 
-      // Require authentication - no anonymous uploads allowed
-      let ownerId = authInfo?.clientId ?? req?.user?.userId;
-
-      if (!ownerId || ownerId === "anonymous") {
-        throw new Error(
-          "Authentication required. Please provide valid API credentials to upload crates.",
-        );
-      }
-
-      // If using OAuth authentication (firebase_auth), get the user's email
-      if (
-        req?.user?.authMethod === "firebase_auth" &&
-        req?.user?.userId &&
-        req?.user?.userId !== "anonymous"
-      ) {
-        try {
-          const userRecord = await auth.getUser(req.user.userId);
-          if (userRecord.email) {
-            ownerId = userRecord.email;
-          }
-        } catch (error) {
-          console.warn(
-            `[crates_upload] Could not fetch user email for ${req.user.userId}:`,
-            error,
-          );
-          // Keep the original ownerId if we can't get the email
-        }
-      }
-
-      // Debug logging to verify authentication
-      console.log("[crates_upload] Authentication debug:", {
-        extraHasReq: !!extra?.req,
-        extraUserId: req?.user?.userId,
-        authMethod: req?.user?.authMethod,
-        authInfo: authInfo ? { clientId: authInfo.clientId } : undefined,
-        chosenOwnerId: ownerId,
-        clientName: req?.clientName || "unknown",
-      });
+      console.log("[crates_upload] Creating new crate with edit key");
 
       const partialCrate: Partial<Crate> = {
         title: title || effectiveFileName, // Use original title, or fallback to effectiveFileName
         description,
-        ownerId,
+        editKey, // Store edit key for modification access
         shared: {
           public: isPublic,
           ...(password
@@ -291,7 +251,12 @@ export function registerCratesUploadTool(server: McpServer): void {
         content: [
           {
             type: "text",
-            text: `Crate uploaded successfully. Crate ID: ${crate.id}`,
+            text: `Crate uploaded successfully. 
+            
+View link: /crate/${crate.id}
+Edit key: ${crate.editKey}
+
+Keep the edit key secure - it allows modifying this crate.`,
           },
         ],
         crate,

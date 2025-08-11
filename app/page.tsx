@@ -2,16 +2,13 @@
 
 import Link from "next/link";
 import { FaCheck } from "react-icons/fa";
-import { useAuthRedirect } from "../contexts/useAuthRedirect";
-import WaitingListModal from "../components/WaitingListModal";
+// Note: Auth-related imports removed for editKey system
 import { useState } from "react";
 
 export default function Home() {
-  // Redirect authenticated users to their dashboard if needed
-  useAuthRedirect({ whenAuthenticated: "/crates" });
+  // Note: Auth redirect removed for editKey system
 
-  // State for waiting list modal
-  const [waitingListModalOpen, setWaitingListModalOpen] = useState(false);
+  // Note: WaitingListModal removed for simplified system
 
   return (
     <div className="bg-gradient-to-b from-white to-beige-50 min-h-screen">
@@ -797,7 +794,9 @@ export default function Home() {
 
               <div className="text-center">
                 <button
-                  onClick={() => setWaitingListModalOpen(true)}
+                  onClick={() => {
+                    /* WaitingList removed */
+                  }}
                   className="inline-block w-full px-6 py-3 text-center font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                   Get Early Access
@@ -856,7 +855,9 @@ export default function Home() {
               </div>
             </div>
             <button
-              onClick={() => setWaitingListModalOpen(true)}
+              onClick={() => {
+                /* WaitingList removed */
+              }}
               className="inline-flex items-center px-8 py-4 text-lg font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-sm hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
             >
               🎯 Get Early Access Now
@@ -869,11 +870,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Waiting List Modal */}
-      <WaitingListModal
-        isOpen={waitingListModalOpen}
-        onClose={() => setWaitingListModalOpen(false)}
-      />
+      {/* WaitingListModal removed for simplified system */}
     </div>
   );
 }

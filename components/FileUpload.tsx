@@ -13,7 +13,6 @@ import {
   FaTags,
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
-import { useAuth } from "../contexts/AuthContext";
 import { CrateCategory } from "../shared/types/crate";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit
@@ -93,6 +92,7 @@ const EXTENSION_TO_CATEGORY: Record<string, CrateCategory> = {
 // Type definition update to include new Crate fields
 type UploadedCrate = {
   id: string;
+  editKey: string; // Edit key for modification
   fileName: string;
   title: string;
   description?: string;
@@ -114,7 +114,6 @@ export default function FileUpload({
   onUploadError,
 }: FileUploadProps) {
   // Get current user from auth context
-  const { user } = useAuth();
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
@@ -265,20 +264,7 @@ export default function FileUpload({
       let uploadResponse;
       let uploadedFileData;
 
-      // Get auth token if user is logged in
-      let authToken = null;
-      try {
-        if (user) {
-          authToken = await user.getIdToken();
-        } else {
-          // Handle not logged in case
-          toast.error("You need to be logged in to upload files");
-          setIsUploading(false);
-          return;
-        }
-      } catch (error) {
-        console.error("Error getting auth token:", error);
-      }
+      // No authentication required - anyone can upload
 
       // Always use direct-upload endpoint for all file types
       const formData = new FormData();
@@ -298,15 +284,10 @@ export default function FileUpload({
         formData.append("tags", JSON.stringify(tags));
       }
 
-      if (user) {
-        formData.append("userId", user.uid);
-      }
+      // No user ID needed for anonymous uploads
 
       uploadResponse = await fetch("/api/uploads/direct-upload", {
         method: "POST",
-        headers: {
-          ...(authToken && { Authorization: `Bearer ${authToken}` }),
-        },
         body: formData,
       });
 
@@ -328,6 +309,7 @@ export default function FileUpload({
 
       setUploadedFile({
         id: uploadedFileData.fileId,
+        editKey: uploadedFileData.editKey,
         fileName: file.name,
         title: title,
         description: description,
@@ -362,6 +344,7 @@ export default function FileUpload({
       if (onUploadSuccess) {
         onUploadSuccess({
           id: uploadedFileData.fileId,
+          editKey: uploadedFileData.editKey,
           fileName: file.name,
           title: title,
           description: description,
@@ -417,18 +400,7 @@ export default function FileUpload({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {!user ? (
-        // Show message if not authenticated
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-xl font-semibold mb-4 text-red-600">
-            Authentication Required
-          </h3>
-          <p className="text-gray-700 mb-4">
-            You need to be logged in to upload crates. Please sign in to
-            continue.
-          </p>
-        </div>
-      ) : uploadedFile ? (
+      {uploadedFile ? (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold text-green-600 flex items-center">
@@ -472,6 +444,44 @@ export default function FileUpload({
                 ))}
               </div>
             )}
+
+            {/* Edit Key Section */}
+            <div className="bg-red-50 border border-red-200 p-4 rounded-md mb-4">
+              <div className="flex items-center mb-2">
+                <span className="text-red-600 font-semibold">
+                  ⚠️ Important: Save Your Edit Key
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  readOnly
+                  value={uploadedFile.editKey}
+                  className="w-full bg-white py-2 px-3 pr-24 rounded-md text-sm border border-red-300 focus:outline-none focus:ring-2 focus:ring-red-400 font-mono"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                  aria-label="Edit key for crate modification"
+                />
+                <div className="absolute right-1 top-1">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard
+                        .writeText(uploadedFile.editKey)
+                        .then(() => {
+                          toast.success("Edit key copied!");
+                        });
+                    }}
+                    className="p-1.5 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                    title="Copy edit key"
+                  >
+                    <FaCopy />
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-red-600 mt-2">
+                Keep this edit key secure! You need it to modify or delete this
+                crate. We cannot recover it if lost.
+              </p>
+            </div>
 
             <div className="bg-beige-100 p-4 rounded-md">
               <div className="flex flex-wrap items-center justify-between mb-4">

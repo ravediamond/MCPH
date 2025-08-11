@@ -1,7 +1,7 @@
 "use client";
 
 import { CrateCategory, CrateSharing } from "@/shared/types/crate";
-import { useAuth } from "@/contexts/AuthContext";
+// Note: Auth import removed for editKey system
 
 // Type definitions for upload options
 export interface UploadOptions {
@@ -26,7 +26,9 @@ export interface UploadResult {
  * This provides a consistent upload logic to be shared between components
  */
 export const useUploadService = () => {
-  const { user, getIdToken } = useAuth();
+  // Note: Auth removed for editKey system
+  const user = null;
+  const getIdToken = () => null;
 
   /**
    * Upload a crate file with the specified options

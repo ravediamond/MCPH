@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { FileMetadata } from "../../services/storageService";
-import { useAuth } from "../../contexts/AuthContext";
+// Note: AuthContext import removed - using editKey system
 import Link from "next/link";
 import {
   FaFileAlt,
@@ -52,7 +52,9 @@ interface UserSharedCrates {
 }
 
 export default function CratesPage() {
-  const { user, loading: authLoading, signInWithGoogle } = useAuth();
+  // Note: Auth removed for editKey system
+  const user = null;
+  const authLoading = false;
   const [userQuota, setUserQuota] = useState<UserQuota | null>(null);
   const [userStorage, setUserStorage] = useState<UserStorage | null>(null);
   const [userSharedCrates, setUserSharedCrates] =
@@ -108,7 +110,9 @@ export default function CratesPage() {
       // Build URL with pagination parameters
       // Default page size of 20 items
       const pageSize = 20;
-      let url = `/api/user/${user.uid}/crates?limit=${pageSize}`;
+      // Note: In editKey system, we would need a different approach to list user crates
+      // This would require storing editKeys client-side or having a different API
+      let url = `/api/crates?limit=${pageSize}`; // This would need to be updated for editKey system
 
       // Add cursor-based pagination parameter if loading more
       if (isLoadMore && lastVisible) {
@@ -177,21 +181,15 @@ export default function CratesPage() {
   // Quota and storage info
   useEffect(() => {
     if (user) {
-      fetch(`/api/user/${user.uid}/quota`)
-        .then((res) => res.json())
-        .then((data) => {
-          setUserQuota(data.usage || null);
-          setUserStorage(data.storage || null);
-          setUserSharedCrates(data.sharedCrates || null);
-        })
-        .catch(() => {
-          setUserQuota(null);
-          setUserStorage(null);
-          setUserSharedCrates(null);
-        })
-        .finally(() => {
-          setQuotaLoading(false);
-        });
+      // Note: Quota API removed for editKey system
+      setUserQuota(null);
+      setUserStorage(null);
+      setUserSharedCrates(null);
+
+      // Remove the .catch() as well since we're not using promises
+      setUserStorage(null);
+      setUserSharedCrates(null);
+      setQuotaLoading(false);
     } else {
       setUserQuota(null);
       setUserStorage(null);
@@ -562,7 +560,9 @@ export default function CratesPage() {
           <h1 className="text-2xl font-medium mb-2">My crates</h1>
           <p className="text-gray-600 mb-6">Sign in to access your crates</p>
           <button
-            onClick={signInWithGoogle}
+            onClick={() => {
+              /* Auth removed */
+            }}
             className="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded transition-colors"
           >
             Sign in with Google

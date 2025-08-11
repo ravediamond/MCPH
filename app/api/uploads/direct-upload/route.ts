@@ -4,25 +4,17 @@ import {
   saveCrateMetadata,
   logEvent,
   incrementMetric,
-  getUserStorageUsage,
 } from "@/services/firebaseService";
 import { CrateCategory, CrateSharing } from "@/shared/types/crate";
-import { getUserFromRequest } from "@/lib/apiKeyAuth";
 import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * API route to handle direct file uploads
  */
 export async function POST(req: NextRequest) {
   try {
-    // Require authentication - no more anonymous uploads
-    const userInfo = await getUserFromRequest(req);
-    if (!userInfo?.uid) {
-      return NextResponse.json(
-        { error: "Authentication required. Please sign in to upload files." },
-        { status: 401 },
-      );
-    }
+    // No authentication required - allow anonymous uploads
 
     const formData = await req.formData();
 
@@ -46,15 +38,14 @@ export async function POST(req: NextRequest) {
     // Get additional form fields
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
-    const formUserId = formData.get("userId") as string;
     const fileTypeParam = formData.get("fileType") as string | null;
     const categoryParam = formData.get("category") as string | null;
 
     // If a category is explicitly provided, use it; otherwise, fall back to fileType or undefined
     const fileType = categoryParam || fileTypeParam || undefined;
 
-    // Use authenticated user ID
-    const userId = userInfo.uid;
+    // Generate edit key for this crate
+    const editKey = uuidv4();
 
     // New: Read sharing options from formData
     const isSharedStr = formData.get("isShared") as string | null;
@@ -77,21 +68,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
-    // Enforce per-user storage limit (500MB)
-    if (userId) {
-      const storage = await getUserStorageUsage(userId);
-      if (storage.remaining < file.size) {
-        return NextResponse.json(
-          {
-            error:
-              "Storage quota exceeded. You have " +
-              (storage.remaining / 1024 / 1024).toFixed(2) +
-              " MB remaining.",
-          },
-          { status: 403 },
-        );
-      }
-    }
+    // No storage limits for anonymous uploads
 
     // Convert File to Buffer for server-side processing
     const arrayBuffer = await file.arrayBuffer();
@@ -141,7 +118,7 @@ export async function POST(req: NextRequest) {
       title,
       description,
       category: fileType as CrateCategory,
-      ownerId: userId,
+      editKey,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
       tags, // Add the parsed tags
@@ -176,18 +153,14 @@ export async function POST(req: NextRequest) {
     const downloadUrl = new URL(`/crate/${crateData.id}`, req.url).toString();
 
     // Log the upload event
-    await logEvent(
-      "crate_upload",
-      crateData.id,
-      undefined,
-      userId ? { userId } : undefined,
-    );
+    await logEvent("crate_upload", crateData.id, undefined, {});
     await incrementMetric("crate_uploads");
 
     // Return the upload result
     return NextResponse.json({
       success: true,
       fileId: crateData.id,
+      editKey: crateData.editKey, // Include edit key for modification
       fileName: crateData.title,
       title: crateData.title,
       description: crateData.description,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadCrate } from "@/services/storageService";
-import { getUserFromRequest } from "@/lib/apiKeyAuth";
+// Note: getUserFromRequest import removed as auth is not needed for editKey system
 
 // Helper to get client IP
 function getClientIp(req: NextRequest): string {
@@ -13,14 +13,9 @@ function getClientIp(req: NextRequest): string {
 
 export async function POST(req: NextRequest) {
   try {
-    // Require authentication - no more anonymous uploads
-    const userInfo = await getUserFromRequest(req);
-    if (!userInfo?.uid) {
-      return NextResponse.json(
-        { error: "Authentication required. Please sign in to upload files." },
-        { status: 401 },
-      );
-    }
+    // Generate editKey for the uploaded file
+    const { v4: uuidv4 } = require("uuid");
+    const editKey = uuidv4();
     // Check if the request is multipart/form-data
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
@@ -127,8 +122,8 @@ export async function POST(req: NextRequest) {
       metadata,
       category: fileType ? (fileType as any) : undefined,
       tags: tags, // Add the parsed tags
-      // Use authenticated user ID
-      ownerId: userInfo.uid,
+      // Use editKey for access control
+      editKey: editKey,
       shared: { public: false }, // Private by default
     });
 
@@ -150,6 +145,7 @@ export async function POST(req: NextRequest) {
         uploadedAt: crateData.createdAt,
         // expiresAt removed as ttlDays is no longer supported
         downloadUrl: downloadUrl, // Add the crate page URL
+        editKey: crateData.editKey, // Return editKey so user can edit the crate
       },
       { status: 201 },
     );

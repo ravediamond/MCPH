@@ -2,7 +2,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { UnshareCrateParams } from "../config/schemas";
 import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
 import { FieldValue } from "firebase-admin/firestore";
-import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 
 /**
  * Register the crates_unshare tool with the server
@@ -14,12 +13,13 @@ export function registerCratesUnshareTool(server: McpServer): void {
       title: "Make Crate Private",
       description:
         "Makes a crate private by removing all sharing settings.\n\n" +
+        "REQUIRED: editKey parameter for authorization\n\n" +
         "AI usage example:\n" +
-        '• "make crate 12345 private"',
+        '• "make crate 12345 private with editKey xyz789"',
       inputSchema: UnshareCrateParams.shape,
     },
-    async (args: { id: string }, extra: any) => {
-      const { id } = args;
+    async (args: { id: string; editKey: string }, extra: any) => {
+      const { id, editKey } = args;
       const crateRef = db.collection(CRATES_COLLECTION).doc(id);
 
       // Get current crate to validate ownership
@@ -29,14 +29,12 @@ export function registerCratesUnshareTool(server: McpServer): void {
       }
 
       const crateData = crateDoc.data();
-      const req = extra?.req as AuthenticatedRequest | undefined;
-      const authInfo = extra?.authInfo;
 
-      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-      const userId = authInfo?.clientId ?? req?.user?.userId;
-
-      if (userId && crateData?.ownerId !== userId) {
-        throw new Error("You don't have permission to unshare this crate");
+      // Check if the provided edit key matches
+      if (crateData?.editKey !== editKey) {
+        throw new Error(
+          "Invalid edit key. You need the correct edit key to unshare this crate.",
+        );
       }
 
       // Update sharing settings to remove all sharing

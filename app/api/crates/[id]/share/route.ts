@@ -23,50 +23,8 @@ export async function POST(
       public: isPublic = true,
       passwordProtected = false,
       removePassword = false,
+      editKey,
     } = await req.json();
-
-    // Check authentication
-    const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-    let isAuthenticated = false;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-        isAuthenticated = true;
-      } catch (error) {
-        console.warn(`[DEBUG] Invalid authentication token:`, error);
-        return NextResponse.json(
-          { error: "Invalid authentication token" },
-          { status: 401 },
-        );
-      }
-    } else {
-      // Try to get authentication from cookies for browser-based requests
-      const cookies = req.cookies;
-      const sessionCookie = cookies.get("session");
-
-      if (sessionCookie && sessionCookie.value) {
-        try {
-          const decodedClaims = await auth.verifySessionCookie(
-            sessionCookie.value,
-          );
-          userId = decodedClaims.uid;
-          isAuthenticated = true;
-        } catch (error) {
-          console.warn(`[DEBUG] Invalid session cookie:`, error);
-        }
-      }
-
-      if (!isAuthenticated) {
-        return NextResponse.json(
-          { error: "Authentication required to update sharing settings" },
-          { status: 401 },
-        );
-      }
-    }
 
     // Get crate metadata
     const crate = await getCrateMetadata(id);
@@ -74,10 +32,13 @@ export async function POST(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Only the owner can update sharing settings
-    if (crate.ownerId !== userId) {
+    // Check editKey for sharing permission
+    if (!editKey || editKey !== crate.editKey) {
       return NextResponse.json(
-        { error: "You don't have permission to update this crate" },
+        {
+          error:
+            "You don't have permission to update this crate. Valid editKey required.",
+        },
         { status: 403 },
       );
     }
@@ -100,7 +61,7 @@ export async function POST(
     // }
 
     // Update sharing settings
-    const result = await updateCrateSharing(id, userId, sharingSettings);
+    const result = await updateCrateSharing(id, editKey, sharingSettings);
 
     if (!result.success) {
       return NextResponse.json(
@@ -111,7 +72,6 @@ export async function POST(
 
     // Log the sharing event
     await logEvent("crate_share_update", id, undefined, {
-      userId,
       isPublic,
     });
 

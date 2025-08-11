@@ -43,22 +43,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Extract authentication token if present
-    const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-      } catch (error) {
-        console.warn(
-          "Invalid authentication token, using anonymous user",
-          error,
-        );
-      }
-    }
+    // Generate editKey for the new crate
+    const { v4: uuidv4 } = require("uuid");
+    const editKey = uuidv4();
 
     // Get basic crate metadata
     const title = formData.get("title")?.toString() || file.name;
@@ -113,23 +100,7 @@ export async function POST(req: NextRequest) {
     //   ? sharedWithStr.split(",").map((uid) => uid.trim())
     //   : undefined;
 
-    // If the crate is public and the user is authenticated, check shared crates limit
-    if (isPublic && userId !== "anonymous") {
-      const { hasReachedSharedCratesLimit } = await import(
-        "@/services/firebaseService"
-      );
-      const limitReached = await hasReachedSharedCratesLimit(userId);
-
-      if (limitReached) {
-        return NextResponse.json(
-          {
-            error:
-              "Shared crates limit reached. You can share a maximum of 10 crates. Please delete some shared crates before sharing new ones.",
-          },
-          { status: 403 },
-        );
-      }
-    }
+    // Note: Shared crates limit checking removed for editKey-based system
 
     const sharing: CrateSharing = {
       public: isPublic,
@@ -168,7 +139,7 @@ export async function POST(req: NextRequest) {
       description,
       category,
       tags,
-      ownerId: userId,
+      editKey: editKey,
       shared: sharing,
       metadata,
     });
@@ -191,6 +162,7 @@ export async function POST(req: NextRequest) {
         size: crate.size,
         crateUrl,
         createdAt: crate.createdAt,
+        editKey: crate.editKey, // Return editKey so user can edit the crate
       },
       { status: 201 },
     );

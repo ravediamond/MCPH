@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import os from "os";
 
 function setupServiceAccountForVercel() {
   if (process.env.VERCEL_ENV) {
@@ -362,196 +361,10 @@ export async function getEvents(
   }
 }
 
-const API_KEYS_COLLECTION = "apiKeys";
-
-export interface ApiKeyRecord {
-  id: string;
-  userId: string;
-  hashedKey: string;
-  createdAt: Date;
-  lastUsedAt?: Date;
-  name?: string;
-}
-
-import * as crypto from "crypto";
-
-function hashApiKey(apiKey: string): string {
-  return crypto.createHash("sha256").update(apiKey).digest("hex");
-}
-
-export async function createApiKey(
-  userId: string,
-  name?: string,
-): Promise<{ apiKey: string; record: ApiKeyRecord }> {
-  const apiKey = crypto.randomBytes(32).toString("hex");
-  const hashedKey = hashApiKey(apiKey);
-  const id = crypto.randomUUID();
-  const record: ApiKeyRecord = {
-    id,
-    userId,
-    hashedKey,
-    createdAt: new Date(),
-    name,
-  };
-  await db.collection(API_KEYS_COLLECTION).doc(id).set(toFirestoreData(record));
-  return { apiKey, record };
-}
-
-export async function listApiKeys(userId: string): Promise<ApiKeyRecord[]> {
-  const snapshot = await db
-    .collection(API_KEYS_COLLECTION)
-    .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
-    .get();
-  return snapshot.docs.map(
-    (doc: any) => fromFirestoreData(doc.data()) as ApiKeyRecord,
-  );
-}
-
-export async function deleteApiKey(
-  userId: string,
-  keyId: string,
-): Promise<boolean> {
-  const docRef = db.collection(API_KEYS_COLLECTION).doc(keyId);
-  const doc = await docRef.get();
-  if (!doc.exists || doc.data()?.userId !== userId) return false;
-  await docRef.delete();
-  return true;
-}
-
-export async function findUserByApiKey(
-  apiKey: string,
-): Promise<ApiKeyRecord | null> {
-  const hashedKey = hashApiKey(apiKey);
-  const snapshot = await db
-    .collection(API_KEYS_COLLECTION)
-    .where("hashedKey", "==", hashedKey)
-    .limit(1)
-    .get();
-  if (snapshot.empty) {
-    return null;
-  }
-  const record = fromFirestoreData(snapshot.docs[0].data()) as ApiKeyRecord;
-  await snapshot.docs[0].ref.update({ lastUsedAt: new Date() });
-  return record;
-}
-
-const API_KEY_USAGE_COLLECTION = "apiKeyUsage";
-const API_KEY_TOOL_CALL_LIMIT = 1000;
-
-export async function incrementApiKeyToolUsage(
-  apiKeyId: string,
-): Promise<{ count: number; remaining: number }> {
-  const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}`; // e.g. 202505
-  const docId = `${apiKeyId}_${yearMonth}`;
-  const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
-  await docRef.set(
-    {
-      apiKeyId,
-      yearMonth,
-      count: FieldValue.increment(1),
-      updatedAt: new Date(),
-    },
-    { merge: true },
-  );
-  const doc = await docRef.get();
-  const count = doc.data()?.count || 0;
-  return { count, remaining: Math.max(0, API_KEY_TOOL_CALL_LIMIT - count) };
-}
-
-export async function getApiKeyToolUsage(
-  apiKeyId: string,
-): Promise<{ count: number; remaining: number }> {
-  const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}`;
-  const docId = `${apiKeyId}_${yearMonth}`;
-  const docRef = db.collection(API_KEY_USAGE_COLLECTION).doc(docId);
-  const doc = await docRef.get();
-  const count = doc.exists ? doc.data()?.count || 0 : 0;
-  return { count, remaining: Math.max(0, API_KEY_TOOL_CALL_LIMIT - count) };
-}
-
-const USER_USAGE_COLLECTION = "userUsage";
-const USER_TOOL_CALL_LIMIT = 1000;
 const USER_SHARED_CRATES_LIMIT = 10;
 
-export async function incrementUserToolUsage(
-  userId: string,
-): Promise<{ count: number; remaining: number }> {
-  const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}`;
-  const docId = `${userId}_${yearMonth}`;
-  const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
-  await docRef.set(
-    {
-      userId,
-      yearMonth,
-      count: FieldValue.increment(1),
-      updatedAt: new Date(),
-    },
-    { merge: true },
-  );
-  const doc = await docRef.get();
-  const count = doc.data()?.count || 0;
-  return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
-}
-
-export async function getUserToolUsage(
-  userId: string,
-): Promise<{ count: number; remaining: number }> {
-  const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(
-    2,
-    "0",
-  )}`;
-  const docId = `${userId}_${yearMonth}`;
-  const docRef = db.collection(USER_USAGE_COLLECTION).doc(docId);
-  const doc = await docRef.get();
-  const count = doc.exists ? doc.data()?.count || 0 : 0;
-  return { count, remaining: Math.max(0, USER_TOOL_CALL_LIMIT - count) };
-}
-
-export async function getUserStorageUsage(
-  userId: string,
-): Promise<{ used: number; limit: number; remaining: number }> {
-  const STORAGE_LIMIT = 500 * 1024 * 1024; // 500MB in bytes
-  try {
-    // For storage calculation, we need all crates, so we'll use a direct query
-    // instead of the paginated getUserCrates function
-    const querySnapshot = await db
-      .collection(CRATES_COLLECTION)
-      .where("ownerId", "==", userId)
-      .get();
-
-    if (querySnapshot.empty) {
-      return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
-    }
-
-    const used = querySnapshot.docs.reduce(
-      (sum, doc) => sum + (doc.data().size || 0),
-      0,
-    );
-
-    return {
-      used,
-      limit: STORAGE_LIMIT,
-      remaining: Math.max(0, STORAGE_LIMIT - used),
-    };
-  } catch (error) {
-    console.error(`Error calculating storage usage for user ${userId}:`, error);
-    return { used: 0, limit: STORAGE_LIMIT, remaining: STORAGE_LIMIT };
-  }
-}
+// Note: getUserStorageUsage removed as it was ownerId-based
+// In the editKey system, storage limits would be managed differently
 
 export async function saveCrateMetadata(crateData: Crate): Promise<boolean> {
   try {
@@ -744,7 +557,7 @@ export async function incrementCrateViewCount(
 
 export async function duplicateCrate(
   originalCrateId: string,
-  newOwnerId: string,
+  newEditKey: string,
 ): Promise<{ success: boolean; crateId?: string; error?: string }> {
   try {
     const originalCrate = await getCrateMetadata(originalCrateId);
@@ -762,7 +575,7 @@ export async function duplicateCrate(
     const duplicatedCrate: Crate = {
       ...originalCrate,
       id: newCrateId,
-      ownerId: newOwnerId,
+      editKey: newEditKey,
       createdAt: now,
       downloadCount: 0,
       viewCount: 0,
@@ -811,110 +624,8 @@ export async function deleteCrateMetadata(crateId: string): Promise<boolean> {
   }
 }
 
-export async function getUserCrates(
-  userId: string,
-  limit = 20,
-  startAfter?: string,
-): Promise<{ crates: Crate[]; lastCrateId: string | null; hasMore: boolean }> {
-  try {
-    // Start with the base query
-    let query = db
-      .collection(CRATES_COLLECTION)
-      .where("ownerId", "==", userId)
-      .orderBy("createdAt", "desc")
-      .limit(limit + 1); // Fetch one extra to check if there are more
-
-    // If we have a startAfter cursor, add it to the query
-    if (startAfter) {
-      try {
-        const startAfterDoc = await db
-          .collection(CRATES_COLLECTION)
-          .doc(startAfter)
-          .get();
-        if (startAfterDoc.exists) {
-          query = query.startAfter(startAfterDoc);
-        }
-      } catch (cursorError) {
-        console.error(`Error setting cursor for user ${userId}:`, cursorError);
-        // Continue without cursor if there was an error
-      }
-    }
-
-    const querySnapshot = await query.get();
-
-    if (querySnapshot.empty) {
-      return { crates: [], lastCrateId: null, hasMore: false };
-    }
-
-    // Check if we have more results
-    const hasMore = querySnapshot.docs.length > limit;
-    // Remove the extra document if we fetched more than the limit
-    const docsToProcess = hasMore
-      ? querySnapshot.docs.slice(0, limit)
-      : querySnapshot.docs;
-
-    const crates = docsToProcess.map((doc: QueryDocumentSnapshot) => {
-      const data = doc.data();
-
-      // Process tags to ensure they're always an array
-      if (data && data.tags !== undefined && !Array.isArray(data.tags)) {
-        if (data.tags) {
-          // If it exists but isn't an array, try to convert it
-          try {
-            if (typeof data.tags === "object" && data.tags !== null) {
-              // Convert object to array - get values from the object
-              data.tags = Object.values(data.tags);
-            } else if (typeof data.tags === "string") {
-              data.tags = [data.tags];
-            } else {
-              data.tags = [];
-            }
-          } catch (e) {
-            console.warn(
-              `[DEBUG] getUserCrates: Failed to convert tags for crate ${doc.id}:`,
-              e,
-            );
-            data.tags = [];
-          }
-        } else {
-          data.tags = [];
-        }
-      }
-
-      // Make sure description is a string
-      if (data && data.description !== undefined) {
-        // If description exists but isn't a string, convert it to string
-        if (typeof data.description !== "string") {
-          try {
-            data.description = String(data.description);
-          } catch (e) {
-            console.warn(
-              `[DEBUG] getUserCrates: Failed to convert description for crate ${doc.id}:`,
-              e,
-            );
-            data.description = "";
-          }
-        }
-      }
-
-      return fromFirestoreData(data) as Crate;
-    });
-
-    // Get the ID of the last document for pagination
-    const lastCrateId =
-      docsToProcess.length > 0
-        ? docsToProcess[docsToProcess.length - 1].id
-        : null;
-
-    return { crates, lastCrateId, hasMore };
-  } catch (error) {
-    console.error(
-      `Error getting crates for user ${userId} from Firestore:`,
-      error,
-    );
-    return { crates: [], lastCrateId: null, hasMore: false };
-  }
-}
+// Note: getUserCrates removed as it was ownerId-based
+// In the editKey system, users would track their crates differently
 
 export async function incrementDownloadCount(fileId: string): Promise<number> {
   try {
@@ -953,45 +664,14 @@ export async function incrementDownloadCount(fileId: string): Promise<number> {
   }
 }
 
-export async function getUserSharedCratesCount(
-  userId: string,
-): Promise<{ count: number; limit: number; remaining: number }> {
-  try {
-    const querySnapshot = await db
-      .collection(CRATES_COLLECTION)
-      .where("ownerId", "==", userId)
-      .where("shared.public", "==", true)
-      .get();
+// Note: getUserSharedCratesCount removed as it was ownerId-based
+// In the editKey system, shared crates limits would be managed differently
 
-    const count = querySnapshot.size;
-    return {
-      count,
-      limit: USER_SHARED_CRATES_LIMIT,
-      remaining: Math.max(0, USER_SHARED_CRATES_LIMIT - count),
-    };
-  } catch (error) {
-    console.error(
-      `Error getting shared crates count for user ${userId}:`,
-      error,
-    );
-    return {
-      count: 0,
-      limit: USER_SHARED_CRATES_LIMIT,
-      remaining: USER_SHARED_CRATES_LIMIT,
-    };
-  }
-}
-
-export async function hasReachedSharedCratesLimit(
-  userId: string,
-): Promise<boolean> {
-  const { remaining } = await getUserSharedCratesCount(userId);
-  return remaining <= 0;
-}
+// Note: hasReachedSharedCratesLimit removed as it was ownerId-based
 
 export async function updateCrateSharing(
   crateId: string,
-  userId: string,
+  editKey: string,
   sharingSettings: Partial<CrateSharing>,
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -1000,22 +680,11 @@ export async function updateCrateSharing(
       return { success: false, error: "Crate not found" };
     }
 
-    if (crate.ownerId !== userId) {
+    if (crate.editKey !== editKey) {
       return {
         success: false,
         error: "You don't have permission to update this crate",
       };
-    }
-
-    if (sharingSettings.public && !crate.shared.public) {
-      const reachedLimit = await hasReachedSharedCratesLimit(userId);
-      if (reachedLimit) {
-        return {
-          success: false,
-          error:
-            "Shared crates limit reached. You can share a maximum of 10 crates. Please delete some shared crates before sharing new ones.",
-        };
-      }
     }
 
     const updatedSharing = {
@@ -1040,94 +709,6 @@ export async function updateCrateSharing(
   } catch (error) {
     console.error("Error updating crate sharing settings:", error);
     return { success: false, error: "Failed to update crate sharing settings" };
-  }
-}
-
-// MCP Client Registration
-const MCP_CLIENTS_COLLECTION = "mcpClients";
-
-export interface McpClient {
-  id: string;
-  userId: string;
-  clientName: string;
-  authMethod: "api_key" | "firebase_auth";
-  registeredAt: Date;
-  lastSeenAt: Date;
-}
-
-/**
- * Register or update an MCP client
- */
-export async function registerMcpClient(
-  userId: string,
-  clientName: string,
-  authMethod: "api_key" | "firebase_auth",
-): Promise<McpClient> {
-  try {
-    const clientId = `${userId}_${clientName}`;
-    const now = new Date();
-
-    const existingClient = await getMcpClient(clientId);
-
-    const clientData: McpClient = {
-      id: clientId,
-      userId,
-      clientName,
-      authMethod,
-      registeredAt: existingClient?.registeredAt || now,
-      lastSeenAt: now,
-    };
-
-    await db
-      .collection(MCP_CLIENTS_COLLECTION)
-      .doc(clientId)
-      .set(toFirestoreData(clientData));
-
-    console.log(
-      `[registerMcpClient] Client ${clientName} registered for user ${userId} with ${authMethod}`,
-    );
-    return clientData;
-  } catch (error) {
-    console.error("Error registering MCP client:", error);
-    throw error;
-  }
-}
-
-/**
- * Get MCP client information
- */
-export async function getMcpClient(
-  clientId: string,
-): Promise<McpClient | null> {
-  try {
-    const doc = await db.collection(MCP_CLIENTS_COLLECTION).doc(clientId).get();
-    if (!doc.exists) {
-      return null;
-    }
-    return fromFirestoreData(doc.data()) as McpClient;
-  } catch (error) {
-    console.error("Error getting MCP client:", error);
-    return null;
-  }
-}
-
-/**
- * List all MCP clients for a user
- */
-export async function listUserMcpClients(userId: string): Promise<McpClient[]> {
-  try {
-    const querySnapshot = await db
-      .collection(MCP_CLIENTS_COLLECTION)
-      .where("userId", "==", userId)
-      .orderBy("lastSeenAt", "desc")
-      .get();
-
-    return querySnapshot.docs.map(
-      (doc) => fromFirestoreData(doc.data()) as McpClient,
-    );
-  } catch (error) {
-    console.error("Error listing user MCP clients:", error);
-    return [];
   }
 }
 

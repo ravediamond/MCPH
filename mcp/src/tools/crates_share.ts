@@ -4,7 +4,6 @@ import { db, CRATES_COLLECTION } from "../../../services/firebaseService";
 import admin from "firebase-admin";
 import bcrypt from "bcrypt";
 import { z } from "zod";
-import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 
 /**
  * Register the crates_share tool with the server
@@ -16,13 +15,14 @@ export function registerCratesShareTool(server: McpServer): void {
       title: "Share Crate",
       description:
         "Updates a crate's sharing settings (public/private, password protection). Makes crates accessible via direct links for collaboration.\n\n" +
+        "REQUIRED: editKey parameter for authorization\n\n" +
         "AI USAGE: Share organized project contexts or curated knowledge collections. Consider sharing entire 'project:name' tagged collections for team collaboration.\n\n" +
         "AI usage example:\n" +
-        '• "share crate 12345 publicly"',
+        '• "share crate 12345 publicly with editKey xyz789"',
       inputSchema: ShareCrateParams.shape,
     },
     async (args: z.infer<typeof ShareCrateParams>, extra: any) => {
-      const { id, password } = args;
+      const { id, editKey, password } = args;
       const crateRef = db.collection(CRATES_COLLECTION).doc(id);
 
       // Get current crate to validate ownership
@@ -32,14 +32,12 @@ export function registerCratesShareTool(server: McpServer): void {
       }
 
       const crateData = crateDoc.data();
-      const req = extra?.req as AuthenticatedRequest | undefined;
-      const authInfo = extra?.authInfo;
 
-      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-      const userId = authInfo?.clientId ?? req?.user?.userId;
-
-      if (userId && crateData?.ownerId !== userId) {
-        throw new Error("You don't have permission to share this crate");
+      // Check if the provided edit key matches
+      if (crateData?.editKey !== editKey) {
+        throw new Error(
+          "Invalid edit key. You need the correct edit key to share this crate.",
+        );
       }
 
       // Update sharing settings

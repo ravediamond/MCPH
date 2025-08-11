@@ -114,13 +114,10 @@ export async function uploadCrate(
       .join(" ")
       .toLowerCase();
 
-    // Determine if this is an anonymous upload
-    const isAnonymousUpload = crateData.ownerId === "anonymous";
-
     // Create default sharing config if not provided
-    // Make anonymous uploads public by default
+    // Make uploads private by default in the editKey system
     const sharing: CrateSharing = crateData.shared || {
-      public: isAnonymousUpload ? true : false,
+      public: false,
     };
 
     if (crateData.shared?.passwordHash) {
@@ -132,7 +129,7 @@ export async function uploadCrate(
       id: crateId,
       title: crateData.title || fileName,
       description: crateData.description,
-      ownerId: crateData.ownerId || "anonymous",
+      editKey: crateData.editKey || uuidv4(), // Ensure editKey is present
       createdAt: new Date(),
       mimeType: contentType,
       category: crateData.category || resolveCategory(fileName, contentType),
@@ -147,12 +144,7 @@ export async function uploadCrate(
       // No compression metadata - compression is disabled
     };
 
-    // Add expiration date for anonymous uploads (30 days from now)
-    if (completeCrate.ownerId === "anonymous") {
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
-      completeCrate.expiresAt = expiresAt;
-    }
+    // Note: Expiration logic removed for editKey-based system
 
     // Store metadata in Firestore
     await saveCrateMetadata(completeCrate);
@@ -470,20 +462,14 @@ export async function deleteCrate(
       return false;
     }
 
-    // Check if the user has permission to delete this crate
-    if (userId && crate.ownerId !== userId && crate.ownerId !== "anonymous") {
-      console.warn(
-        `User ${userId} attempted to delete crate ${crateId} owned by ${crate.ownerId}`,
-      );
-      return false;
-    }
+    // Note: Permission checking for deletion should be done at API level with editKey
 
     // Use the existing deleteFile function
     const result = await deleteFile(crateId);
 
-    // Log the deletion event with user info
+    // Log the deletion event
     if (result) {
-      await logEvent("crate_delete", crateId, undefined, { userId });
+      await logEvent("crate_delete", crateId);
     }
 
     return result;

@@ -5,18 +5,13 @@ import { useRouter } from "next/navigation";
 import FileUpload from "@/components/FileUpload";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
-import { useAuth } from "@/contexts/AuthContext";
+// Note: Auth import removed for editKey system
 
 export default function UploadPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    // Redirect to login if not authenticated (after auth state is loaded)
-    if (!loading && !user) {
-      router.push(`/login?next=/upload`);
-    }
-  }, [user, loading, router]);
+  // Note: Auth logic removed for editKey system
+  const user = null;
+  const loading = false;
 
   // Show loading state or redirect if not authenticated
   if (loading) {

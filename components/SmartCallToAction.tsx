@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { FaUpload, FaCopy, FaEye, FaHeart, FaStar } from "react-icons/fa";
-import { useAuth } from "@/contexts/AuthContext";
+// Note: Auth import removed for editKey system
 
 interface SmartCallToActionProps {
   crateId: string;
@@ -22,7 +22,8 @@ export default function SmartCallToAction({
   isPublic = false,
   onDuplicate,
 }: SmartCallToActionProps) {
-  const { user, signInWithGoogle } = useAuth();
+  // Note: Auth removed for editKey system
+  const user = null;
 
   if (!isPublic) return null;
 
@@ -54,7 +55,8 @@ export default function SmartCallToAction({
             <button
               onClick={async () => {
                 try {
-                  await signInWithGoogle();
+                  // Note: Auth removed for editKey system
+                  // await signInWithGoogle();
                   // After successful login, automatically trigger duplicate
                   setTimeout(() => onDuplicate?.(), 1000);
                 } catch (error) {

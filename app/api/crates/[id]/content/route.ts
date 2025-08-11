@@ -29,7 +29,7 @@ export async function GET(
     }
 
     console.log(
-      `[Content Route] Found crate: ${crate.title}, Owner: ${crate.ownerId}, Public: ${crate.shared.public}`,
+      `[Content Route] Found crate: ${crate.title}, Public: ${crate.shared.public}`,
     );
 
     // Enhanced logging for debugging auth issues
@@ -99,27 +99,19 @@ export async function GET(
       console.log(`[Content Route] Using anonymous access as fallback`);
     }
 
-    // Check access permissions
-    const isOwner = crate.ownerId === userId;
+    // Check access permissions - content is always readable if public or password matches
     const isPublic = crate.shared.public;
-    // Simplified for v1: No per-user sharing, only public/private
-    const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    console.log(
-      `[Content Route] Access check - isOwner: ${isOwner}, isPublic: ${isPublic}, isSharedWithUser: ${isSharedWithUser}`,
-    );
-    console.log(
-      `[Content Route] Current user ID: ${userId}, Crate owner ID: ${crate.ownerId}`,
-    );
+    console.log(`[Content Route] Access check - isPublic: ${isPublic}`);
 
-    if (!isOwner && !crate.shared.public) {
+    if (!crate.shared.public) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
     }
 
-    if (!isOwner && crate.shared.passwordHash) {
+    if (crate.shared.passwordHash) {
       const supplied = req.headers.get("x-crate-pass");
       if (!supplied) {
         return NextResponse.json(
@@ -136,15 +128,7 @@ export async function GET(
       }
     }
 
-    if (!isOwner && !isPublic && !isSharedWithUser) {
-      console.log(
-        `[Content Route] Permission denied. Not owner, not public, not shared with user.`,
-      );
-      return NextResponse.json(
-        { error: "You don't have permission to access this crate" },
-        { status: 403 },
-      );
-    }
+    // Access check already performed above
 
     // Get crate content based on its category (for regular files)
     const { buffer, crate: updatedCrate } = await getCrateContentForViewing(id);
@@ -224,19 +208,16 @@ export async function POST(
     }
 
     // Check access permissions
-    const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared.public;
-    // Simplified for v1: No per-user sharing, only public/private
-    const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    if (!isOwner && !isPublic) {
+    if (!isPublic) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
     }
 
-    if (!isOwner && crate.shared.passwordHash) {
+    if (crate.shared.passwordHash) {
       if (!password) {
         return NextResponse.json(
           { error: "This crate requires a password" },

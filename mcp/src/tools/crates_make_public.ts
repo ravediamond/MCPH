@@ -10,11 +10,12 @@ export function registerCratesMakePublicTool(server: McpServer): void {
     "crates_make_public",
     {
       title: "Make Crate Public",
-      description: "Deprecated alias for crates_share",
+      description:
+        "Deprecated alias for crates_share. REQUIRED: editKey parameter for authorization",
       inputSchema: ShareCrateParams.shape,
     },
     async (args: any, extra: any) => {
-      const { id } = args;
+      const { id, editKey } = args;
       // Instead of trying to get the crates_share tool directly,
       // we'll just create a new request to the crates_share functionality
       try {
@@ -34,14 +35,12 @@ export function registerCratesMakePublicTool(server: McpServer): void {
         }
 
         const crateData = crateDoc.data();
-        const req = extra?.req;
-        const authInfo = extra?.authInfo;
 
-        // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-        const userId = authInfo?.clientId ?? req?.user?.userId;
-
-        if (userId && crateData?.ownerId !== userId) {
-          throw new Error("You don't have permission to share this crate");
+        // Check if the provided edit key matches
+        if (crateData?.editKey !== editKey) {
+          throw new Error(
+            "Invalid edit key. You need the correct edit key to share this crate.",
+          );
         }
 
         // Update sharing settings

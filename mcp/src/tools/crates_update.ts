@@ -7,7 +7,6 @@ import {
 } from "../../../services/firebaseService";
 import { uploadCrate } from "../../../services/storageService";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
-import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
@@ -21,21 +20,24 @@ export function registerCratesUpdateTool(server: McpServer): void {
       title: "Update Crate",
       description:
         "Updates an existing crate's content, metadata, or organizational information. " +
+        "Requires the crate's edit key for authorization. " +
         "Allows users to iterate on content while preserving the crate ID, sharing settings, and creation timestamp.\n\n" +
+        "REQUIRED: editKey parameter for authorization\n\n" +
         "FEEDBACK TEMPLATES: For feedback crates, you can update metadata like 'isOpen' to open/close templates for responses.\n\n" +
         "Only the provided parameters will be updated; omitted parameters remain unchanged.\n\n" +
         "AI usage examples:\n" +
-        '• "update crate 12345 with new content"\n' +
-        "• \"change the title of crate 12345 to 'Final Report'\"\n" +
-        '• "add tags to crate 12345"\n' +
-        '• "close feedback template 12345" (set metadata.isOpen to false)\n' +
-        '• "reopen feedback template 12345" (set metadata.isOpen to true)\n' +
-        '• "update the description of my crate 12345"',
+        '• "update crate 12345 with new content and editKey xyz789"\n' +
+        "• \"change the title of crate 12345 to 'Final Report' with editKey xyz789\"\n" +
+        '• "add tags to crate 12345 with editKey xyz789"\n' +
+        '• "close feedback template 12345 with editKey xyz789" (set metadata.isOpen to false)\n' +
+        '• "reopen feedback template 12345 with editKey xyz789" (set metadata.isOpen to true)\n' +
+        '• "update the description of crate 12345 with editKey xyz789"',
       inputSchema: UpdateCrateParams.shape,
     },
     async (args: z.infer<typeof UpdateCrateParams>, extra: any) => {
       const {
         id,
+        editKey,
         title,
         description,
         data,
@@ -45,26 +47,6 @@ export function registerCratesUpdateTool(server: McpServer): void {
         tags,
         metadata,
       } = args;
-
-      // Get authentication info from extra (supplied by the SDK)
-      const req = extra?.req as AuthenticatedRequest | undefined;
-      const authInfo = extra?.authInfo;
-
-      // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-      const userId = authInfo?.clientId ?? req?.user?.userId;
-
-      // If no authenticated user, return error
-      if (!userId) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Authentication required to update a crate.",
-            },
-          ],
-          isError: true,
-        };
-      }
 
       try {
         // Get the original crate metadata
@@ -81,13 +63,13 @@ export function registerCratesUpdateTool(server: McpServer): void {
           };
         }
 
-        // Check if the user owns the crate
-        if (originalCrate.ownerId !== userId) {
+        // Check if the provided edit key matches
+        if (originalCrate.editKey !== editKey) {
           return {
             content: [
               {
                 type: "text",
-                text: "You don't have permission to update this crate.",
+                text: "Invalid edit key. You need the correct edit key to modify this crate.",
               },
             ],
             isError: true,
@@ -170,7 +152,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
             ...originalCrate,
             ...updateData,
             id: originalCrate.id, // Preserve the ID
-            ownerId: userId,
+            editKey: originalCrate.editKey, // Preserve the edit key
             shared: originalCrate.shared, // Preserve sharing settings
           };
 
@@ -182,7 +164,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
           );
 
           // Log the update event
-          await logEvent("crate_update", id, undefined, { userId });
+          await logEvent("crate_update", id, undefined, {});
 
           return {
             content: [
@@ -242,7 +224,7 @@ export function registerCratesUpdateTool(server: McpServer): void {
           const updatedCrate = await updateCrateMetadata(id, updateData);
 
           // Log the update event
-          await logEvent("crate_update", id, undefined, { userId });
+          await logEvent("crate_update", id, undefined, {});
 
           return {
             content: [

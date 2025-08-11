@@ -2,7 +2,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { DeleteCrateParams } from "../config/schemas";
 import { getCrateMetadata } from "../../../services/firebaseService";
 import { deleteCrate } from "../../../services/storageService";
-import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 
 /**
  * Register the crates_delete tool with the server
@@ -14,13 +13,14 @@ export function registerCratesDeleteTool(server: McpServer): void {
       title: "Delete Crate",
       description:
         "Permanently deletes a crate's data and metadata. Use with caution.\n\n" +
+        "REQUIRED: editKey parameter for authorization\n\n" +
         "AI USAGE: Clean up outdated project files, but consider updating tags (e.g., 'status:archived') instead of deletion to preserve project history.\n\n" +
         "AI usage example:\n" +
-        '• "delete crate 12345"',
+        '• "delete crate 12345 with editKey xyz789"',
       inputSchema: DeleteCrateParams.shape,
     },
-    async (args: { id: string }, extra: any) => {
-      const { id } = args;
+    async (args: { id: string; editKey: string }, extra: any) => {
+      const { id, editKey } = args;
 
       try {
         // Check if the crate exists first
@@ -29,19 +29,15 @@ export function registerCratesDeleteTool(server: McpServer): void {
           throw new Error("Crate not found");
         }
 
-        const req = extra?.req as AuthenticatedRequest | undefined;
-        const authInfo = extra?.authInfo;
-
-        // Prefer authInfo.clientId, fallback to req.user.userId for backward compatibility
-        const userId = authInfo?.clientId ?? req?.user?.userId;
-
-        // Check if the user has permission to delete this crate
-        if (userId && crate.ownerId !== userId) {
-          throw new Error("You don't have permission to delete this crate");
+        // Check if the provided edit key matches
+        if (crate.editKey !== editKey) {
+          throw new Error(
+            "Invalid edit key. You need the correct edit key to delete this crate.",
+          );
         }
 
         // Proceed with deletion without confirmation
-        const result = await deleteCrate(id, userId);
+        const result = await deleteCrate(id, undefined);
 
         if (!result) {
           throw new Error("Failed to delete crate");

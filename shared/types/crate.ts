@@ -18,10 +18,10 @@ export interface AccessHistoryEntry {
 }
 
 export interface Crate {
-  id: string; // Firestore doc ID (also GCS object key)
+  id: string; // Firestore doc ID (also GCS object key) - unguessable link
   title: string; // User-supplied title
   description?: string; // Optional longer description
-  ownerId: string; // UID of uploader
+  editKey: string; // UUID for edit access (replaces owner-based auth)
   createdAt: Date; // Timestamp when created
   mimeType: string; // e.g. "text/markdown", "image/png"
   category: CrateCategory; // One of the supported content categories

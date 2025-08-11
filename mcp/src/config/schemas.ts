@@ -49,15 +49,18 @@ export const UploadCrateParamsShape = UploadCrateBaseParams;
 
 export const ShareCrateParams = z.object({
   id: z.string(),
+  editKey: z.string(),
   password: z.string().optional(),
 });
 
 export const UnshareCrateParams = z.object({
   id: z.string(),
+  editKey: z.string(),
 });
 
 export const DeleteCrateParams = z.object({
   id: z.string(),
+  editKey: z.string(),
 });
 
 export const CopyCrateParams = z.object({
@@ -73,6 +76,7 @@ export const SearchParams = z.object({
 
 export const UpdateCrateParams = z.object({
   id: z.string(),
+  editKey: z.string(), // Required for edit access
   title: z.string().optional(),
   description: z.string().optional(),
   data: z.string().optional(), // base64-encoded if present

@@ -55,7 +55,7 @@ import CrateHeader from "../../../components/crate/CrateHeader";
 import CrateStats from "../../../components/crate/CrateStats";
 import CrateContentPreview from "../../../components/crate/CrateContentPreview";
 import { Crate, CrateCategory } from "../../../shared/types/crate";
-import { useAuth } from "../../../contexts/AuthContext"; // Import useAuth hook
+// Note: AuthContext import removed - using editKey system instead of user auth
 
 // Dynamic imports for markdown and code rendering
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -97,12 +97,9 @@ interface CrateResponse extends Omit<Partial<Crate>, "expiresAt"> {
 export default function CratePage() {
   const params = useParams();
   const crateId = params?.id as string;
-  const {
-    getIdToken,
-    loading: authLoading,
-    user,
-    signInWithGoogle,
-  } = useAuth(); // Get authentication loading state and user
+  // Note: Auth-related state removed for editKey system
+  const authLoading = false;
+  const user = null;
 
   const [crateInfo, setCrateInfo] = useState<CrateResponse | null>(null);
   const [crateContent, setCrateContent] = useState<string | null>(null);
@@ -162,7 +159,8 @@ export default function CratePage() {
 
       try {
         // Get the auth token
-        const idToken = await getIdToken();
+        // Note: Auth token removed for editKey system
+        const idToken = null;
 
         // Include the auth token in the request headers
         const headers: HeadersInit = {};
@@ -303,8 +301,8 @@ export default function CratePage() {
 
   // Function to fetch crate content with password if needed
   const fetchCrateContent = async (password?: string): Promise<string> => {
-    // Get the auth token
-    const idToken = await getIdToken();
+    // Note: Auth token removed for editKey system
+    const idToken = null;
 
     // Include the auth token in the request headers
     const headers: HeadersInit = {
@@ -497,7 +495,8 @@ export default function CratePage() {
     setEditError(null);
 
     try {
-      const idToken = await getIdToken();
+      // Note: Auth token removed for editKey system
+      const idToken = null;
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
@@ -567,7 +566,8 @@ export default function CratePage() {
 
     try {
       // Get the auth token
-      const idToken = await getIdToken();
+      // Note: Auth token removed for editKey system
+      const idToken = null;
 
       // Include the auth token in the request headers
       const headers: HeadersInit = {
@@ -614,7 +614,8 @@ export default function CratePage() {
 
     try {
       // Get the auth token
-      const idToken = await getIdToken();
+      // Note: Auth token removed for editKey system
+      const idToken = null;
 
       // Include the auth token in the request headers
       const headers: HeadersInit = {
@@ -701,7 +702,8 @@ export default function CratePage() {
     setDeleteError(null);
     try {
       // Get the auth token
-      const idToken = await getIdToken();
+      // Note: Auth token removed for editKey system
+      const idToken = null;
 
       // Include the auth token in the request headers
       const headers: HeadersInit = {
@@ -866,7 +868,8 @@ export default function CratePage() {
     setDuplicateSuccess(null);
 
     try {
-      const idToken = await getIdToken();
+      // Note: Auth token removed for editKey system
+      const idToken = null;
       if (!idToken) {
         throw new Error("Authentication failed");
       }
@@ -1444,7 +1447,9 @@ export default function CratePage() {
           {error?.includes("permission") && (
             <div className="mb-4">
               <button
-                onClick={() => signInWithGoogle()}
+                onClick={() => {
+                  /* Auth removed */
+                }}
                 className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
               >
                 Sign in to access your crate
@@ -1552,7 +1557,9 @@ export default function CratePage() {
           handleViewContent={handleViewContent}
           handleOpenSharingModal={handleOpenSharingModal}
           handleDelete={handleDelete}
-          signInWithGoogle={signInWithGoogle}
+          signInWithGoogle={() => {
+            /* Auth removed */
+          }}
           handleCopyLink={handleCopyLink}
           linkCopied={linkCopied}
           getCrateIcon={getCrateIcon}

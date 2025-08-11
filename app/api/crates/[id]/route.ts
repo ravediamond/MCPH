@@ -48,32 +48,22 @@ export async function GET(
     }
 
     // Check if user has access to this crate
-    const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared?.public || false;
-    // Simplified for v1: No per-user sharing, only public/private
-    const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    if (!isOwner && !isPublic) {
+    if (!isPublic) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
     }
 
-    if (!isOwner && crate.shared.passwordHash) {
+    if (crate.shared.passwordHash) {
       return NextResponse.json(
         {
           error: "Password required to view this crate",
           passwordRequired: true,
         },
         { status: 401 },
-      );
-    }
-
-    if (!isOwner && !isPublic && !isSharedWithUser) {
-      return NextResponse.json(
-        { error: "You don't have permission to access this crate" },
-        { status: 403 },
       );
     }
 
@@ -104,7 +94,7 @@ export async function GET(
       viewCount: crate.viewCount || 0,
       isPublic: crate.shared?.public || false,
       isPasswordProtected: Boolean(crate.shared.passwordHash),
-      isOwner,
+      // isOwner field removed - using editKey system now
       metadata: crate.metadata,
       tags: processTags(crate.tags),
     };
@@ -165,19 +155,16 @@ export async function POST(
     }
 
     // Check access permissions
-    const isOwner = crate.ownerId === userId;
     const isPublic = crate.shared?.public || false;
-    // Simplified for v1: No per-user sharing, only public/private
-    const isSharedWithUser = false; // Removed sharedWith array in v1
 
-    if (!isOwner && !isPublic) {
+    if (!isPublic) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
       );
     }
 
-    if (!isOwner && crate.shared.passwordHash) {
+    if (crate.shared.passwordHash) {
       if (!password) {
         return NextResponse.json(
           { error: "This crate requires a password" },
@@ -228,56 +215,17 @@ export async function DELETE(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check authentication
-    const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-    let isAuthenticated = false;
+    // Parse request body to get editKey
+    const body = await req.json();
+    const { editKey } = body;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-        isAuthenticated = true;
-      } catch (error) {
-        console.warn(`[DEBUG] Invalid authentication token:`, error);
-        return NextResponse.json(
-          { error: "Invalid authentication token" },
-          { status: 401 },
-        );
-      }
-    } else {
-      // Try to get authentication from cookies for browser-based requests
-      const cookies = req.cookies;
-      const sessionCookie = cookies.get("session");
-
-      if (sessionCookie && sessionCookie.value) {
-        try {
-          const decodedClaims = await auth.verifySessionCookie(
-            sessionCookie.value,
-          );
-          userId = decodedClaims.uid;
-          isAuthenticated = true;
-        } catch (error) {
-          console.warn(`[DEBUG] Invalid session cookie:`, error);
-        }
-      }
-
-      if (!isAuthenticated) {
-        console.log(
-          `[DEBUG] No valid authentication found. Unauthorized deletion attempt.`,
-        );
-        return NextResponse.json(
-          { error: "Authentication required to delete a crate" },
-          { status: 401 },
-        );
-      }
-    }
-
-    // Only the owner can delete the crate
-    if (crate.ownerId !== userId) {
+    // Check editKey for delete permission
+    if (!editKey || editKey !== crate.editKey) {
       return NextResponse.json(
-        { error: "You don't have permission to delete this crate" },
+        {
+          error:
+            "You don't have permission to delete this crate. Valid editKey required.",
+        },
         { status: 403 },
       );
     }
@@ -294,7 +242,7 @@ export async function DELETE(
     }
 
     // Log the deletion event
-    await logEvent("crate_delete", id, undefined, { userId });
+    await logEvent("crate_delete", id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -322,41 +270,20 @@ export async function PUT(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check authentication
-    const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-    let isAuthenticated = false;
+    // Parse the request body
+    const body = await req.json();
+    const { editKey } = body;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-        isAuthenticated = true;
-      } catch (error) {
-        console.warn(`[DEBUG] Invalid authentication token:`, error);
-        return NextResponse.json(
-          { error: "Invalid authentication token" },
-          { status: 401 },
-        );
-      }
-    } else {
+    // Check editKey for update permission
+    if (!editKey || editKey !== crate.editKey) {
       return NextResponse.json(
-        { error: "Authentication required to update a crate" },
-        { status: 401 },
-      );
-    }
-
-    // Only the owner can update the crate
-    if (crate.ownerId !== userId) {
-      return NextResponse.json(
-        { error: "You don't have permission to update this crate" },
+        {
+          error:
+            "You don't have permission to update this crate. Valid editKey required.",
+        },
         { status: 403 },
       );
     }
-
-    // Parse the request body
-    const body = await req.json();
     const updateData: Partial<typeof crate> = {};
 
     // Fields that can be updated
@@ -393,7 +320,7 @@ export async function PUT(
     const updatedCrate = await updateCrateMetadata(id, updateData);
 
     // Log the update event
-    await logEvent("crate_update", id, undefined, { userId });
+    await logEvent("crate_update", id);
 
     // Return success response
     return NextResponse.json({
@@ -425,62 +352,20 @@ export async function PATCH(
       return NextResponse.json({ error: "Crate not found" }, { status: 404 });
     }
 
-    // Check authentication
-    const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-    let isAuthenticated = false;
+    // Parse the request body
+    const body = await req.json();
+    const { editKey } = body;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-        isAuthenticated = true;
-      } catch (error) {
-        console.warn(`[DEBUG] Invalid authentication token:`, error);
-        return NextResponse.json(
-          { error: "Invalid authentication token" },
-          { status: 401 },
-        );
-      }
-    } else {
-      // Try to get authentication from cookies for browser-based requests
-      const cookies = req.cookies;
-      const sessionCookie = cookies.get("session");
-
-      if (sessionCookie && sessionCookie.value) {
-        try {
-          const decodedClaims = await auth.verifySessionCookie(
-            sessionCookie.value,
-          );
-          userId = decodedClaims.uid;
-          isAuthenticated = true;
-        } catch (error) {
-          console.warn(`[DEBUG] Invalid session cookie:`, error);
-        }
-      }
-
-      if (!isAuthenticated) {
-        console.log(
-          `[DEBUG] No valid authentication found. Unauthorized update attempt.`,
-        );
-        return NextResponse.json(
-          { error: "Authentication required to update a crate" },
-          { status: 401 },
-        );
-      }
-    }
-
-    // Only the owner can update the crate
-    if (crate.ownerId !== userId) {
+    // Check editKey for update permission
+    if (!editKey || editKey !== crate.editKey) {
       return NextResponse.json(
-        { error: "You don't have permission to update this crate" },
+        {
+          error:
+            "You don't have permission to update this crate. Valid editKey required.",
+        },
         { status: 403 },
       );
     }
-
-    // Parse the request body
-    const body = await req.json();
     const updateData: Partial<typeof crate> = {};
 
     // Fields that can be updated
@@ -541,7 +426,7 @@ export async function PATCH(
     const updatedCrate = await updateCrateMetadata(id, updateData);
 
     // Log the update event
-    await logEvent("crate_update", id, undefined, { userId });
+    await logEvent("crate_update", id);
 
     // Return the updated crate data
     return NextResponse.json({
