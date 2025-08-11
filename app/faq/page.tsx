@@ -33,13 +33,13 @@ const faqItems: FAQItem[] = [
     id: "free-account-limits",
     question: "What are the limits for free accounts?",
     answer:
-      "Free accounts include: up to 10MB file size, 500MB total storage, 10 shared crates maximum, 5 feedback templates maximum, permanent storage (no expiration), password protection for sensitive content, AES-256 encryption, and secure HTTPS access.",
+      "Free accounts include: up to 10MB file size, 500MB total storage, 10 shared crates maximum, permanent storage (no expiration), password protection for sensitive content, AES-256 encryption, and secure HTTPS access.",
   },
   {
     id: "supported-file-types",
     question: "What types of content can I save?",
     answer:
-      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), Recipe (AI task instructions), and Polls (created via AI tools only).",
+      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), and Recipe (AI task instructions).",
   },
   {
     id: "content-security",

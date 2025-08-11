@@ -17,17 +17,10 @@ interface SharedCratesInfo {
   remaining: number;
 }
 
-interface FeedbackTemplatesInfo {
-  count: number;
-  limit: number;
-  remaining: number;
-}
-
 interface UsagePillsProps {
   userQuota: QuotaInfo | null;
   userStorage: StorageInfo | null;
   userSharedCrates: SharedCratesInfo | null;
-  userFeedbackTemplates: FeedbackTemplatesInfo | null;
   quotaLoading: boolean;
   formatFileSize: (bytes: number) => string;
 }
@@ -38,7 +31,6 @@ interface UsageModalProps {
   userQuota: QuotaInfo | null;
   userStorage: StorageInfo | null;
   userSharedCrates: SharedCratesInfo | null;
-  userFeedbackTemplates: FeedbackTemplatesInfo | null;
   formatFileSize: (bytes: number) => string;
 }
 
@@ -48,7 +40,6 @@ const UsageModal: React.FC<UsageModalProps> = ({
   userQuota,
   userStorage,
   userSharedCrates,
-  userFeedbackTemplates,
   formatFileSize,
 }) => {
   if (!isOpen) return null;
@@ -136,33 +127,6 @@ const UsageModal: React.FC<UsageModalProps> = ({
               </div>
             </div>
           )}
-
-          {/* Feedback Templates */}
-          {userFeedbackTemplates && (
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Feedback Templates</span>
-                <span>
-                  {userFeedbackTemplates.count}/{userFeedbackTemplates.limit}
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-orange-600 h-2 rounded-full"
-                  style={{
-                    width: `${(userFeedbackTemplates.count / userFeedbackTemplates.limit) * 100}%`,
-                  }}
-                ></div>
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                {(
-                  (userFeedbackTemplates.count / userFeedbackTemplates.limit) *
-                  100
-                ).toFixed(1)}
-                % used
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="mt-6 flex justify-end">
@@ -182,7 +146,6 @@ const UsagePills: React.FC<UsagePillsProps> = ({
   userQuota,
   userStorage,
   userSharedCrates,
-  userFeedbackTemplates,
   quotaLoading,
   formatFileSize,
 }) => {
@@ -270,7 +233,6 @@ const UsagePills: React.FC<UsagePillsProps> = ({
         userQuota={userQuota}
         userStorage={userStorage}
         userSharedCrates={userSharedCrates}
-        userFeedbackTemplates={userFeedbackTemplates}
         formatFileSize={formatFileSize}
       />
     </>

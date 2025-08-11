@@ -10,9 +10,6 @@ import { registerCratesUnshareTool } from "./crates_unshare";
 import { registerCratesDeleteTool } from "./crates_delete";
 import { registerCratesCopyTool } from "./crates_copy";
 import { registerCratesUpdateTool } from "./crates_update";
-import { registerFeedbackTemplateCreateTool } from "./feedback_template_create";
-import { registerFeedbackSubmitTool } from "./feedback_submit";
-import { registerFeedbackResponsesGetTool } from "./feedback_responses_get";
 import { registerCratesShareSocialTool } from "./crates_share_social";
 
 /**
@@ -30,8 +27,5 @@ export function registerAllTools(server: McpServer): void {
   registerCratesDeleteTool(server);
   registerCratesCopyTool(server);
   registerCratesUpdateTool(server);
-  registerFeedbackTemplateCreateTool(server);
-  registerFeedbackSubmitTool(server);
-  registerFeedbackResponsesGetTool(server);
   registerCratesShareSocialTool(server);
 }

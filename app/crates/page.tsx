@@ -34,7 +34,6 @@ import CrateTag from "../../components/home/CrateTag";
 import CratesList from "../../components/home/CratesList";
 import { Crate } from "@/app/types/crate";
 import UploadModal from "../../components/modals/UploadModal";
-import FeedbackModal from "../../components/modals/FeedbackModal";
 
 interface UserQuota {
   remaining: number;
@@ -52,20 +51,12 @@ interface UserSharedCrates {
   remaining: number;
 }
 
-interface UserFeedbackTemplates {
-  count: number;
-  limit: number;
-  remaining: number;
-}
-
 export default function CratesPage() {
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [userQuota, setUserQuota] = useState<UserQuota | null>(null);
   const [userStorage, setUserStorage] = useState<UserStorage | null>(null);
   const [userSharedCrates, setUserSharedCrates] =
     useState<UserSharedCrates | null>(null);
-  const [userFeedbackTemplates, setUserFeedbackTemplates] =
-    useState<UserFeedbackTemplates | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(true);
   const [files, setFiles] = useState<Crate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +83,6 @@ export default function CratesPage() {
 
   // Modal states
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   // --- Embedding-based search state ---
   const [embeddingSearchResults, setEmbeddingSearchResults] = useState<
@@ -193,13 +183,11 @@ export default function CratesPage() {
           setUserQuota(data.usage || null);
           setUserStorage(data.storage || null);
           setUserSharedCrates(data.sharedCrates || null);
-          setUserFeedbackTemplates(data.feedbackTemplates || null);
         })
         .catch(() => {
           setUserQuota(null);
           setUserStorage(null);
           setUserSharedCrates(null);
-          setUserFeedbackTemplates(null);
         })
         .finally(() => {
           setQuotaLoading(false);
@@ -208,7 +196,6 @@ export default function CratesPage() {
       setUserQuota(null);
       setUserStorage(null);
       setUserSharedCrates(null);
-      setUserFeedbackTemplates(null);
     }
   }, [user]);
 
@@ -604,13 +591,6 @@ export default function CratesPage() {
 
             {/* Secondary actions */}
             <div className="flex space-x-3">
-              <button
-                onClick={() => setFeedbackModalOpen(true)}
-                className="flex items-center px-3 py-2 bg-transparent border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors"
-              >
-                <FaComments className="mr-2" />
-                Create Feedback
-              </button>
               <Link
                 href="/api-keys"
                 className="flex items-center px-3 py-2 bg-transparent border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
@@ -628,7 +608,6 @@ export default function CratesPage() {
                 userQuota={userQuota}
                 userStorage={userStorage}
                 userSharedCrates={userSharedCrates}
-                userFeedbackTemplates={userFeedbackTemplates}
                 quotaLoading={quotaLoading}
                 formatFileSize={formatFileSize}
               />
@@ -714,17 +693,6 @@ export default function CratesPage() {
           // Refresh crates list
           fetchCrates();
         }}
-      />
-
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
-        onSuccess={(data) => {
-          setActionSuccess("Feedback template created successfully!");
-          setTimeout(() => setActionSuccess(null), 3000);
-        }}
-        feedbackTemplatesQuota={userFeedbackTemplates}
       />
     </div>
   );

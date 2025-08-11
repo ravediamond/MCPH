@@ -3,7 +3,6 @@ import {
   getUserToolUsage,
   getUserStorageUsage,
   getUserSharedCratesCount,
-  getUserFeedbackTemplatesCount,
 } from "@/services/firebaseService";
 
 export async function GET(
@@ -15,6 +14,5 @@ export async function GET(
   const usage = await getUserToolUsage(userId);
   const storage = await getUserStorageUsage(userId);
   const sharedCrates = await getUserSharedCratesCount(userId);
-  const feedbackTemplates = await getUserFeedbackTemplatesCount(userId);
-  return NextResponse.json({ usage, storage, sharedCrates, feedbackTemplates });
+  return NextResponse.json({ usage, storage, sharedCrates });
 }

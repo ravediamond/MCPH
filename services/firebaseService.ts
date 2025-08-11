@@ -171,16 +171,12 @@ if (!getApps().length) {
 const CRATES_COLLECTION = "crates";
 const METRICS_COLLECTION = "metrics";
 const EVENTS_COLLECTION = "events";
-const FEEDBACK_TEMPLATES_COLLECTION = "feedbackTemplates";
-const FEEDBACK_RESPONSES_COLLECTION = "feedbackResponses";
 const CRATE_ACCESS_COLLECTION = "crateAccess";
 
 export {
   CRATES_COLLECTION,
   METRICS_COLLECTION,
   EVENTS_COLLECTION,
-  FEEDBACK_TEMPLATES_COLLECTION,
-  FEEDBACK_RESPONSES_COLLECTION,
   CRATE_ACCESS_COLLECTION,
   db,
 };
@@ -485,7 +481,6 @@ export async function getApiKeyToolUsage(
 const USER_USAGE_COLLECTION = "userUsage";
 const USER_TOOL_CALL_LIMIT = 1000;
 const USER_SHARED_CRATES_LIMIT = 10;
-const USER_FEEDBACK_TEMPLATES_LIMIT = 5;
 
 export async function incrementUserToolUsage(
   userId: string,
@@ -994,41 +989,6 @@ export async function hasReachedSharedCratesLimit(
   return remaining <= 0;
 }
 
-export async function getUserFeedbackTemplatesCount(
-  userId: string,
-): Promise<{ count: number; limit: number; remaining: number }> {
-  try {
-    const querySnapshot = await db
-      .collection(FEEDBACK_TEMPLATES_COLLECTION)
-      .where("ownerId", "==", userId)
-      .get();
-
-    const count = querySnapshot.size;
-    return {
-      count,
-      limit: USER_FEEDBACK_TEMPLATES_LIMIT,
-      remaining: Math.max(0, USER_FEEDBACK_TEMPLATES_LIMIT - count),
-    };
-  } catch (error) {
-    console.error(
-      `Error getting feedback templates count for user ${userId}:`,
-      error,
-    );
-    return {
-      count: 0,
-      limit: USER_FEEDBACK_TEMPLATES_LIMIT,
-      remaining: USER_FEEDBACK_TEMPLATES_LIMIT,
-    };
-  }
-}
-
-export async function hasReachedFeedbackTemplatesLimit(
-  userId: string,
-): Promise<boolean> {
-  const { remaining } = await getUserFeedbackTemplatesCount(userId);
-  return remaining <= 0;
-}
-
 export async function updateCrateSharing(
   crateId: string,
   userId: string,
@@ -1075,22 +1035,6 @@ export async function updateCrateSharing(
 
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     await docRef.update(updateData);
-
-    // For feedback crates, also update the feedback template record
-    if (crate.category === "poll") {
-      const templateUpdateData: any = {};
-
-      if (sharingSettings.hasOwnProperty("public")) {
-        templateUpdateData.isPublic = sharingSettings.public;
-      }
-
-      if (Object.keys(templateUpdateData).length > 0) {
-        const templateRef = db
-          .collection(FEEDBACK_TEMPLATES_COLLECTION)
-          .doc(crateId);
-        await templateRef.update(templateUpdateData);
-      }
-    }
 
     return { success: true };
   } catch (error) {

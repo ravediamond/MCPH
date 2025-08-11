@@ -283,7 +283,6 @@ export default function CratePage() {
         case CrateCategory.DATA:
         case CrateCategory.DATA:
         case CrateCategory.TEXT:
-        case CrateCategory.POLL:
           return true;
         default:
           return false;
@@ -844,8 +843,6 @@ export default function CratePage() {
         return <FaFileCode className="text-orange-500" />;
       case CrateCategory.DATA:
         return <FaFileCode className="text-green-500" />;
-      case CrateCategory.POLL:
-        return <FaComments className="text-purple-600" />;
       case CrateCategory.TEXT:
       default:
         // Fallback to mime type checking for legacy or unknown types
@@ -865,8 +862,6 @@ export default function CratePage() {
     if (!category) return "Unknown";
 
     switch (category) {
-      case CrateCategory.POLL:
-        return "Feedback";
       case CrateCategory.TEXT:
         return "Text";
       case CrateCategory.CODE:
@@ -1484,131 +1479,6 @@ export default function CratePage() {
             <EnhancedSyntaxHighlighter language={getLanguage()} title="YAML">
               {crateContent}
             </EnhancedSyntaxHighlighter>
-          </div>
-        );
-
-      case CrateCategory.POLL:
-        // For feedback templates, show the template structure and fields
-        let feedbackData;
-        try {
-          feedbackData = crateContent ? JSON.parse(crateContent) : null;
-        } catch (e) {
-          feedbackData = null;
-        }
-
-        if (!feedbackData) {
-          return (
-            <div className="p-4 text-gray-600 text-center">
-              Unable to load feedback template data.
-            </div>
-          );
-        }
-
-        return (
-          <div className="p-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Feedback Template Preview
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                {feedbackData.description || "No description provided"}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Status:</span>
-                  <span
-                    className={`ml-2 px-2 py-1 rounded text-xs ${
-                      feedbackData.isOpen
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {feedbackData.isOpen ? "Open" : "Closed"}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Visibility:</span>
-                  <span className="ml-2 text-gray-600">
-                    {feedbackData.isPublic ? "Public" : "Private"}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Fields:</span>
-                  <span className="ml-2 text-gray-600">
-                    {feedbackData.fields?.length || 0}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Responses:</span>
-                  <span className="ml-2 text-gray-600">
-                    {feedbackData.submissionCount || 0}
-                  </span>
-                </div>
-              </div>
-
-              {feedbackData.fields && feedbackData.fields.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-800 mb-3">
-                    Form Fields:
-                  </h4>
-                  <div className="space-y-3">
-                    {feedbackData.fields.map((field: any, index: number) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 p-3 rounded border"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-medium text-gray-800">
-                            {field.label}
-                          </span>
-                          <div className="flex gap-2">
-                            <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                              {field.type}
-                            </span>
-                            {field.required && (
-                              <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
-                                Required
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Key:{" "}
-                          <code className="bg-gray-200 px-1 rounded">
-                            {field.key}
-                          </code>
-                        </div>
-                        {field.options && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            Options: {field.options.join(", ")}
-                          </div>
-                        )}
-                        {field.placeholder && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            Placeholder: "{field.placeholder}"
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {feedbackData.linkedCrates &&
-                feedbackData.linkedCrates.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-800 mb-2">
-                      Linked Crates:
-                    </h4>
-                    <div className="text-sm text-gray-600">
-                      {feedbackData.linkedCrates.join(", ")}
-                    </div>
-                  </div>
-                )}
-            </div>
           </div>
         );
 

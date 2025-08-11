@@ -175,7 +175,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images,
-                  Code, Data, and Polls
+                  Code, and Data
                 </li>
               </ul>
 
