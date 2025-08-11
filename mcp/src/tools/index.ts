@@ -10,7 +10,6 @@ import { registerCratesUnshareTool } from "./crates_unshare";
 import { registerCratesDeleteTool } from "./crates_delete";
 import { registerCratesCopyTool } from "./crates_copy";
 import { registerCratesUpdateTool } from "./crates_update";
-import { registerCratesShareSocialTool } from "./crates_share_social";
 
 /**
  * Register all tools with the provided MCP server
@@ -27,5 +26,4 @@ export function registerAllTools(server: McpServer): void {
   registerCratesDeleteTool(server);
   registerCratesCopyTool(server);
   registerCratesUpdateTool(server);
-  registerCratesShareSocialTool(server);
 }

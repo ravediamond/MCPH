@@ -6,12 +6,6 @@ import {
   FaShareAlt,
   FaInfoCircle,
   FaCopy,
-  FaTwitter,
-  FaReddit,
-  FaLinkedin,
-  FaDiscord,
-  FaTelegram,
-  FaEnvelope,
   FaLink,
   FaLock,
   FaGlobe,
@@ -40,12 +34,6 @@ interface CrateSharingModalProps {
   linkCopied: boolean;
   setLinkCopied: (copied: boolean) => void;
   crateId: string;
-  socialLinkCopied: boolean;
-  setSocialLinkCopied: (copied: boolean) => void;
-  socialShareMessage: string;
-  setSocialShareMessage: (message: string) => void;
-  handleSocialShare: (platform: string) => void;
-  handleCopySocialLink: () => void;
   handleUpdateSharing: () => void;
   sharingLoading: boolean;
   crateTitle?: string;
@@ -66,12 +54,6 @@ export default function CrateSharingModal({
   linkCopied,
   setLinkCopied,
   crateId,
-  socialLinkCopied,
-  setSocialLinkCopied,
-  socialShareMessage,
-  setSocialShareMessage,
-  handleSocialShare,
-  handleCopySocialLink,
   handleUpdateSharing,
   sharingLoading,
   crateTitle = "Untitled Crate",
@@ -441,8 +423,8 @@ export default function CrateSharingModal({
                 onClick={() => {
                   const markdown = `[![Views](https://mcph.io/api/crates/${crateId}/badge)](https://mcph.io/crate/${crateId})`;
                   navigator.clipboard.writeText(markdown);
-                  setSocialLinkCopied(true);
-                  setTimeout(() => setSocialLinkCopied(false), 2000);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
                 }}
                 className="flex items-center justify-center px-3 py-2 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
               >
@@ -454,8 +436,8 @@ export default function CrateSharingModal({
                 onClick={() => {
                   const html = `<a href="https://mcph.io/crate/${crateId}"><img src="https://mcph.io/api/crates/${crateId}/badge" alt="Views"></a>`;
                   navigator.clipboard.writeText(html);
-                  setSocialLinkCopied(true);
-                  setTimeout(() => setSocialLinkCopied(false), 2000);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
                 }}
                 className="flex items-center justify-center px-3 py-2 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
               >
@@ -470,84 +452,6 @@ export default function CrateSharingModal({
                 <input type="checkbox" className="mr-2" />
                 Track referrals (adds UTM parameters)
               </label>
-            </div>
-          </div>
-        )}
-
-        {/* Social Sharing Section - Only shown when not private */}
-        {accessLevel !== "private" && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">
-              Share on Social Media
-            </h4>
-
-            {/* Auto-generated message */}
-            <div className="mb-4 p-3 bg-white border border-gray-300 rounded-md">
-              <p className="text-sm text-gray-700">
-                Check out this MCPH crate: <strong>{crateTitle}</strong>
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {shareUrl.replace(
-                  /^https?:\/\/localhost:\d+/,
-                  "https://mcph.io",
-                )}
-              </p>
-            </div>
-
-            {/* Channel-specific copy buttons */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  const twitterText = `Check out this MCPH crate: ${crateTitle} ${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
-                  navigator.clipboard.writeText(twitterText);
-                  handleSocialShare("twitter");
-                }}
-                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-500 hover:text-blue-600 hover:border-blue-300"
-                title="Copy Twitter format"
-              >
-                <FaTwitter className="mr-2" />
-                <span className="text-sm font-medium">Twitter</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const linkedinText = `Check out this MCPH crate: ${crateTitle}\n${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
-                  navigator.clipboard.writeText(linkedinText);
-                  handleSocialShare("linkedin");
-                }}
-                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-blue-50 text-blue-700 hover:text-blue-800 hover:border-blue-300"
-                title="Copy LinkedIn format"
-              >
-                <FaLinkedin className="mr-2" />
-                <span className="text-sm font-medium">LinkedIn</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const redditText = `**${crateTitle}**\n\n${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")}`;
-                  navigator.clipboard.writeText(redditText);
-                  handleSocialShare("reddit");
-                }}
-                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-orange-50 text-orange-500 hover:text-orange-600 hover:border-orange-300"
-                title="Copy Reddit format"
-              >
-                <FaReddit className="mr-2" />
-                <span className="text-sm font-medium">Reddit</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  const markdownText = `[${crateTitle}](${shareUrl.replace(/^https?:\/\/localhost:\d+/, "https://mcph.io")})`;
-                  navigator.clipboard.writeText(markdownText);
-                  setSocialLinkCopied(true);
-                  setTimeout(() => setSocialLinkCopied(false), 2000);
-                }}
-                className="flex items-center justify-center px-3 py-2 border border-gray-200 rounded-lg transition-all hover:bg-purple-50 text-purple-500 hover:text-purple-600 hover:border-purple-300"
-                title="Copy Markdown format"
-              >
-                <FaLink className="mr-2" />
-                <span className="text-sm font-medium">Markdown</span>
-              </button>
             </div>
           </div>
         )}
