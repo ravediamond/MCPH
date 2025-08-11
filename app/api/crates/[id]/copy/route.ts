@@ -71,7 +71,6 @@ export async function POST(
       description: sourceCrate.description,
       editKey: newEditKey,
       category: sourceCrate.category,
-      tags: sourceCrate.tags,
       metadata: sourceCrate.metadata,
       shared: {
         public: false, // Make the copy private by default

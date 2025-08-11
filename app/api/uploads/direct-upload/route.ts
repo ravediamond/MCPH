@@ -121,7 +121,6 @@ export async function POST(req: NextRequest) {
       editKey,
       metadata,
       shared: sharingOptions, // Pass the constructed sharingOptions
-      tags, // Add the parsed tags
     });
 
     // Store the crate metadata in Firestore
@@ -148,7 +147,6 @@ export async function POST(req: NextRequest) {
       size: crateData.size,
       apiUrl,
       downloadUrl,
-      tags: crateData.tags, // Include tags in the response
       uploadedAt:
         crateData.createdAt instanceof Date
           ? crateData.createdAt.toISOString()

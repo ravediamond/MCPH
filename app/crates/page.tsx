@@ -30,7 +30,6 @@ import Card from "../../components/ui/Card";
 import DeleteModal from "../../components/home/DeleteModal";
 import UsagePills from "../../components/home/UsagePills";
 import SearchBar from "../../components/home/SearchBar";
-import CrateTag from "../../components/home/CrateTag";
 import CratesList from "../../components/home/CratesList";
 import { Crate } from "@/app/types/crate";
 import UploadModal from "../../components/modals/UploadModal";
@@ -306,8 +305,7 @@ export default function CratesPage() {
       const results = files.filter(
         (file) =>
           file.title?.toLowerCase().includes(query) ||
-          file.description?.toLowerCase().includes(query) ||
-          file.tags?.some((tag) => tag.toLowerCase().includes(query)),
+          file.description?.toLowerCase().includes(query),
       );
       setSearchResults(results);
     }
@@ -326,80 +324,12 @@ export default function CratesPage() {
   const groupedByProject = React.useMemo(() => {
     const files = filteredFiles || [];
     const groups: Record<string, Crate[]> = {
-      "No Project": [],
+      "All Crates": files.map(crateToFileMetadata),
     };
-
-    files.forEach((file) => {
-      let assigned = false;
-
-      // Check if file has tags and look for project tags
-      if (file.tags && file.tags.length > 0) {
-        for (const tag of file.tags) {
-          if (tag.startsWith("project:")) {
-            const projectName = tag.substring(8); // Remove "project:" prefix
-            if (!groups[projectName]) {
-              groups[projectName] = [];
-            }
-            groups[projectName].push(crateToFileMetadata(file));
-            assigned = true;
-            break;
-          }
-        }
-      }
-
-      // If no project tag found, add to "No Project" group
-      if (!assigned) {
-        groups["No Project"].push(crateToFileMetadata(file));
-      }
-    });
-
-    // Remove empty groups
-    Object.keys(groups).forEach((key) => {
-      if (groups[key].length === 0) {
-        delete groups[key];
-      }
-    });
 
     return groups;
   }, [filteredFiles]);
 
-  // Function to add a tag to a crate
-  const addTag = async (crateId: string, tag: string) => {
-    try {
-      const response = await fetch(`/api/crate/${crateId}/tags`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tag }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add tag");
-      }
-
-      // Update the file in our local state
-      setFiles((prevFiles) =>
-        prevFiles.map((file) => {
-          if (file.id === crateId) {
-            // Add the tag if it doesn't exist already
-            const tags = file.tags || [];
-            if (!tags.includes(tag)) {
-              return {
-                ...file,
-                tags: [...tags, tag],
-              };
-            }
-          }
-          return file;
-        }),
-      );
-
-      setActionSuccess(`Added tag: ${tag}`);
-      setTimeout(() => setActionSuccess(null), 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add tag");
-      setTimeout(() => setError(null), 3000);
-    }
-  };
 
   if (authLoading) {
     return (

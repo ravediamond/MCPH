@@ -128,8 +128,6 @@ export default function CratePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [editTags, setEditTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
@@ -420,8 +418,6 @@ export default function CratePage() {
     if (!crateInfo) return;
     setEditTitle(crateInfo.title || "");
     setEditDescription(crateInfo.description || "");
-    setEditTags(crateInfo.tags || []);
-    setNewTag("");
     setEditError(null);
     setEditSuccess(null);
     setIsEditing(true);
@@ -431,24 +427,10 @@ export default function CratePage() {
     setIsEditing(false);
     setEditTitle("");
     setEditDescription("");
-    setEditTags([]);
-    setNewTag("");
     setEditError(null);
     setEditSuccess(null);
   };
 
-  const handleAddTag = () => {
-    if (!newTag.trim() || editTags.includes(newTag.trim())) {
-      setNewTag("");
-      return;
-    }
-    setEditTags([...editTags, newTag.trim()]);
-    setNewTag("");
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setEditTags(editTags.filter((tag) => tag !== tagToRemove));
-  };
 
   const handleSaveEdit = async () => {
     if (!crateInfo) return;
@@ -473,7 +455,6 @@ export default function CratePage() {
         body: JSON.stringify({
           title: editTitle.trim(),
           description: editDescription.trim(),
-          tags: editTags,
         }),
       });
 
@@ -487,7 +468,6 @@ export default function CratePage() {
         ...crateInfo,
         title: editTitle.trim(),
         description: editDescription.trim(),
-        tags: editTags,
       });
 
       setEditSuccess("Crate updated successfully!");
@@ -899,128 +879,6 @@ export default function CratePage() {
     );
   };
 
-  // Format tag display - similar to home page tag formatting
-  const formatTagDisplay = (tag: string, fullDisplay = true) => {
-    if (!tag.includes(":")) return tag;
-
-    const [type, value] = tag.split(":");
-
-    return fullDisplay ? `${type}: ${value}` : value;
-  };
-
-  // Get tag style based on tag prefix
-  const getTagStyle = (tag: string) => {
-    if (tag.startsWith("project:")) {
-      return "bg-purple-100 text-purple-800";
-    } else if (tag.startsWith("status:")) {
-      return "bg-blue-100 text-blue-800";
-    } else if (tag.startsWith("priority:")) {
-      return "bg-red-100 text-red-800";
-    } else if (tag.startsWith("tag:")) {
-      return "bg-gray-100 text-gray-800";
-    }
-    return "bg-gray-100 text-gray-800";
-  };
-
-  // Render tags for the crate
-  const renderTags = (tags?: string[] | any) => {
-    if (isEditing) {
-      return (
-        <div className="mb-4 border border-blue-200 p-3 rounded">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
-            Tags ({editTags.length})
-          </h3>
-
-          {/* Existing tags */}
-          <div className="flex flex-wrap gap-2 mb-3">
-            {editTags.map((tag, index) => (
-              <span
-                key={index}
-                className={`inline-flex items-center ${getTagStyle(tag)} text-sm px-3 py-1.5 rounded-full shadow-sm`}
-              >
-                {formatTagDisplay(tag)}
-                <button
-                  onClick={() => handleRemoveTag(tag)}
-                  className="ml-2 text-xs hover:text-red-500"
-                  title="Remove tag"
-                >
-                  <FaTimes size={10} />
-                </button>
-              </span>
-            ))}
-          </div>
-
-          {/* Add new tag */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleAddTag()}
-              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Add a tag (e.g., project:myapp, status:draft)"
-            />
-            <button
-              onClick={handleAddTag}
-              className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title="Add tag"
-            >
-              <FaPlus size={12} />
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    // Process tags to ensure we have a usable array (non-editing mode)
-    let processedTags: string[] = [];
-
-    if (Array.isArray(tags)) {
-      processedTags = tags;
-    } else if (typeof tags === "object" && tags !== null) {
-      // Handle case where tags is an object - convert to array of values
-      processedTags = Object.values(tags);
-    } else if (typeof tags === "string") {
-      processedTags = [tags];
-    }
-
-    // Check if processed tags exists and has items
-    if (processedTags.length === 0) {
-      return null;
-    }
-
-    return (
-      <div className="mb-6 bg-gray-50 border border-gray-200 p-4 rounded-lg">
-        <div className="flex items-center mb-3">
-          <svg
-            className="w-4 h-4 mr-2 text-gray-600"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <h3 className="text-sm font-semibold text-gray-700">
-            Tags ({processedTags.length})
-          </h3>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {processedTags.map((tag, index) => (
-            <span
-              key={index}
-              className={`inline-flex items-center ${getTagStyle(tag)} text-sm px-3 py-2 rounded-full shadow-sm font-medium border`}
-              title={tag}
-            >
-              {formatTagDisplay(tag)}
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
 
   // Render metadata for the crate
   const renderMetadata = (metadata?: Record<string, string>) => {
@@ -1492,7 +1350,6 @@ export default function CratePage() {
           formatBytes={formatBytes}
           formatCategoryForDisplay={formatCategoryForDisplay}
           formatDate={formatDate}
-          renderTags={renderTags}
           renderMetadata={renderMetadata}
           crateId={crateId}
           crateContent={crateContent}

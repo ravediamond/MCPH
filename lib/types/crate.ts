@@ -8,7 +8,6 @@ export enum CrateCategory {
 
 export interface CrateSharing {
   public: boolean;
-  passwordHash?: string | null;
 }
 
 export interface Crate {
@@ -21,8 +20,7 @@ export interface Crate {
   category: CrateCategory; // One of the supported content categories
   gcsPath: string; // GCS object path (e.g. "crates/{id}")
   shared: CrateSharing; // Access control information
-  tags?: string[]; // Optional user tags
-  searchField?: string; // title + tags + description (for hybrid search)
+  searchField?: string; // title + description (for search)
   size: number; // File size in bytes
   downloadCount: number; // Number of times the crate was downloaded
   viewCount?: number; // Number of times the crate was viewed

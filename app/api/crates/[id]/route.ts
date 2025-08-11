@@ -58,18 +58,6 @@ export async function GET(
     }
 
     // Prepare crate response (exclude sensitive data)
-    const processTags = (tags: any): string[] => {
-      if (Array.isArray(tags)) {
-        return tags;
-      } else if (typeof tags === "object" && tags !== null) {
-        // Handle case where tags is an object - convert to array of values
-        return Object.values(tags);
-      } else if (typeof tags === "string") {
-        return [tags];
-      } else {
-        return [];
-      }
-    };
 
     const crateResponse = {
       id: crate.id,
@@ -85,7 +73,6 @@ export async function GET(
       isPublic: crate.shared?.public || false,
       // isOwner field removed - using editKey system now
       metadata: crate.metadata,
-      tags: processTags(crate.tags),
     };
 
     return NextResponse.json(crateResponse);
@@ -271,11 +258,6 @@ export async function PUT(
           : body.description;
     }
 
-    if (body.tags !== undefined && Array.isArray(body.tags)) {
-      updateData.tags = body.tags.filter(
-        (tag: any) => typeof tag === "string" && tag.trim().length > 0,
-      );
-    }
 
     if (body.metadata !== undefined && typeof body.metadata === "object") {
       updateData.metadata = body.metadata;
@@ -350,9 +332,6 @@ export async function PATCH(
       updateData.description = body.description;
     }
 
-    if (body.tags !== undefined && Array.isArray(body.tags)) {
-      updateData.tags = body.tags;
-    }
 
     if (body.metadata !== undefined && typeof body.metadata === "object") {
       updateData.metadata = body.metadata;
@@ -378,7 +357,6 @@ export async function PATCH(
           id: crate.id,
           title: crate.title,
           description: crate.description,
-          tags: crate.tags,
           metadata: crate.metadata,
           shared: {
             public: crate.shared.public,
@@ -400,7 +378,6 @@ export async function PATCH(
         id: updatedCrate.id,
         title: updatedCrate.title,
         description: updatedCrate.description,
-        tags: updatedCrate.tags,
         metadata: updatedCrate.metadata,
         shared: {
           public: updatedCrate.shared.public,

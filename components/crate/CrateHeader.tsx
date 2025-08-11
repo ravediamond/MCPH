@@ -58,7 +58,6 @@ interface CrateHeaderProps {
   formatBytes: (bytes: number) => string;
   formatCategoryForDisplay: (category: CrateCategory) => string;
   formatDate: (date: string) => string;
-  renderTags: (tags: string[]) => React.ReactNode;
   renderMetadata: (metadata: any) => React.ReactNode;
   crateId: string;
   crateContent?: string | null;
@@ -98,7 +97,6 @@ export default function CrateHeader({
   formatBytes,
   formatCategoryForDisplay,
   formatDate,
-  renderTags,
   renderMetadata,
   crateId,
   crateContent,
@@ -351,8 +349,6 @@ export default function CrateHeader({
           </div>
         )}
 
-        {/* Tags */}
-        {renderTags(crateInfo.tags)}
 
         {/* Metadata display */}
         {renderMetadata(crateInfo.metadata)}

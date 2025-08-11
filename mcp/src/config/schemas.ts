@@ -30,7 +30,6 @@ const UploadCrateBaseParams = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   category: z.nativeEnum(CrateCategory).optional(),
-  tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
   isPublic: z.boolean().optional().default(false),
 });
@@ -60,7 +59,6 @@ export const CopyCrateParams = z.object({
 
 export const SearchParams = z.object({
   query: z.string(),
-  tags: z.array(z.string()).optional(),
   category: z.nativeEnum(CrateCategory).optional(),
   limit: z.number().int().min(1).max(50).optional().default(10),
 });
@@ -74,7 +72,6 @@ export const UpdateCrateParams = z.object({
   fileName: z.string().optional(),
   contentType: z.string().optional(),
   category: z.nativeEnum(CrateCategory).optional(),
-  tags: z.array(z.string()).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
 });
 
@@ -95,7 +92,6 @@ export const CreateFeedbackTemplateParams = z.object({
   description: z.string().optional(),
   fields: z.array(FeedbackFieldSchema).min(1),
   isPublic: z.boolean().optional().default(false),
-  tags: z.array(z.string()).optional(),
   linkedCrates: z.array(z.string()).optional(),
 });
 

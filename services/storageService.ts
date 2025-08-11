@@ -101,13 +101,9 @@ export async function uploadCrate(
           .join(" ")
       : "";
 
-    const tagsString = Array.isArray(crateData.tags)
-      ? crateData.tags.join(" ")
-      : "";
     const searchField = [
       crateData.title || fileName,
       crateData.description || "",
-      tagsString,
       metaString,
     ]
       .filter(Boolean)
@@ -131,7 +127,6 @@ export async function uploadCrate(
       category: crateData.category || resolveCategory(fileName, contentType),
       gcsPath: gcsPath,
       shared: sharing,
-      tags: crateData.tags || [], // Ensure tags is an array, not undefined
       searchField,
       size: fileSize,
       downloadCount: 0,

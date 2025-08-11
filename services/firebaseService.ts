@@ -451,8 +451,7 @@ export async function getCrateMetadata(crateId: string): Promise<Crate | null> {
 
     const processedData = fromFirestoreData(data) as Crate;
     console.log(
-      `[DEBUG] Firebase getCrateMetadata: Processed crate data with tags:`,
-      processedData.tags,
+      `[DEBUG] Firebase getCrateMetadata: Processed crate data`,
     );
 
     // Add access history to the response

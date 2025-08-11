@@ -23,7 +23,6 @@ import {
   FaEllipsisV,
 } from "react-icons/fa";
 import Card from "../ui/Card";
-import CrateTag from "./CrateTag";
 import { Crate, CrateCategory } from "@/app/types/crate";
 
 interface CrateCardProps {
@@ -51,7 +50,6 @@ const CrateCard: React.FC<CrateCardProps> = ({
   isSearchResult = false,
   crateToFileMetadata,
 }) => {
-  const [showAllTags, setShowAllTags] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const duplicateCrate = () => {
@@ -63,37 +61,6 @@ const CrateCard: React.FC<CrateCardProps> = ({
     window.location.href = `/crate/${file.id}`;
   };
 
-  const renderTags = (tags: string[], maxVisible: number = 3) => {
-    if (!tags || tags.length === 0) return null;
-
-    const visibleTags = showAllTags ? tags : tags.slice(0, maxVisible);
-    const hiddenCount = tags.length - maxVisible;
-
-    return (
-      <div className="flex flex-wrap gap-1">
-        {visibleTags.map((tag: string, index: number) => (
-          <CrateTag key={index} tag={tag} onClick={setSearchQuery} />
-        ))}
-        {!showAllTags && hiddenCount > 0 && (
-          <button
-            onClick={() => setShowAllTags(true)}
-            className="inline-flex items-center px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full transition-colors"
-          >
-            <FaPlus className="mr-1" size={8} />
-            {hiddenCount} more
-          </button>
-        )}
-        {showAllTags && tags.length > maxVisible && (
-          <button
-            onClick={() => setShowAllTags(false)}
-            className="inline-flex items-center px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-full transition-colors"
-          >
-            Show less
-          </button>
-        )}
-      </div>
-    );
-  };
   // For search results, we use a more compact layout
   if (isSearchResult) {
     return (
@@ -148,12 +115,6 @@ const CrateCard: React.FC<CrateCardProps> = ({
                 </div>
               </div>
 
-              {/* Tags - if available - enhanced styling with expandable */}
-              {file.tags && file.tags.length > 0 && (
-                <div className="mt-2 border-t border-gray-100 pt-1">
-                  {renderTags(file.tags, 2)}
-                </div>
-              )}
 
               {/* Shared status indicator */}
               <div className="mt-1 text-xs">
@@ -444,13 +405,6 @@ const CrateCard: React.FC<CrateCardProps> = ({
           </div>
         </div>
 
-        {/* Tags - if available - enhanced styling with expandable */}
-        {file.tags && file.tags.length > 0 && (
-          <div className="mb-3 bg-gray-50 p-2 rounded border border-gray-100">
-            <div className="text-xs text-gray-600 mb-2 font-medium">Tags:</div>
-            {renderTags(file.tags, 3)}
-          </div>
-        )}
 
         {/* Sharing Status - Enhanced visibility */}
         <div className="flex items-center justify-between text-xs mb-3">
@@ -490,23 +444,6 @@ const CrateCard: React.FC<CrateCardProps> = ({
               </span>
             )}
 
-            {file.shared?.passwordHash && (
-              <span className="inline-flex items-center bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                <svg
-                  className="w-3 h-3 mr-1"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z"
-                    clipRule="evenodd"
-                  ></path>
-                </svg>
-                Password
-              </span>
-            )}
           </div>
 
           {/* View count badge */}

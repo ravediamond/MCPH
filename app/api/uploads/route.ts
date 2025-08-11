@@ -121,7 +121,6 @@ export async function POST(req: NextRequest) {
       // ttlDays removed as it's no longer supported
       metadata,
       category: fileType ? (fileType as any) : undefined,
-      tags: tags, // Add the parsed tags
       // Use editKey for access control
       editKey: editKey,
       shared: { public: false }, // Private by default

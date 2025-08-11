@@ -19,7 +19,7 @@ export function registerCratesUploadTool(server: McpServer): void {
     {
       title: "Upload Crate",
       description:
-        "Uploads a new crate with content, metadata, and organizational tags. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
+        "Uploads a new crate with content and metadata. Small text content is uploaded directly; large/binary files return a pre-signed URL.\n\n" +
         "REQUIRED PARAMETERS:\n" +
         "• data: The content to upload (text/base64)\n" +
         "• title: Title for the crate\n" +
@@ -28,14 +28,8 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• fileName: File name (auto-generated if not provided)\n" +
         "• category: Content category (see ecosystem categories below)\n" +
         "• description: Description of the content\n" +
-        '• tags: ARRAY of strings (not a single string!) - e.g. ["project:website", "type:requirements"]\n' +
         "• metadata: Key-value pairs for additional info\n" +
         "• isPublic: Make crate publicly accessible (default: false)\n" +
-        "TAGGING BEST PRACTICES:\n" +
-        '• Use project tags: ["project:website-redesign", "project:chatbot-v2"]\n' +
-        '• Add type tags: ["type:requirements", "type:code", "type:data"]\n' +
-        '• Include context tags: ["context:user-research", "context:specs"]\n' +
-        '• Add workflow tags: ["status:draft", "priority:high"]\n\n' +
         "SIMPLE CATEGORIES:\n" +
         "• recipe: 🧾 AI task instructions (step-by-step workflows for AI agents)\n" +
         "• text: 📝 Any written content (notes, docs, markdown)\n" +
@@ -49,12 +43,8 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• Data: application/yaml, text/yaml, text/x-yaml, text/csv\n" +
         "• Images: image/png, image/jpeg, image/jpg, image/gif, image/webp, image/svg+xml\n" +
         "• Binary: application/octet-stream, binary/octet-stream\n\n" +
-        "IMPORTANT: tags must be an ARRAY, not a string!\n" +
-        'Correct: tags: ["project:ecommerce", "type:requirements"]\n' +
-        'Wrong: tags: "project:ecommerce, type:requirements"\n\n' +
         "AI usage examples:\n" +
         '• Upload markdown: {"data": "# Hello", "title": "Doc", "contentType": "text/markdown"}\n' +
-        '• Upload with tags: {"data": "content", "title": "My Doc", "contentType": "text/plain", "tags": ["project:web"]}\n' +
         '• Upload JSON: {"data": "{\\"key\\": \\"value\\"}", "title": "Config", "contentType": "application/json"}',
       inputSchema: UploadCrateParamsShape.shape,
     },
@@ -80,7 +70,6 @@ export function registerCratesUploadTool(server: McpServer): void {
         title, // Original title from args
         description,
         category, // Original category from args
-        tags,
         metadata,
         isPublic,
       } = validationResult.data;
@@ -170,10 +159,6 @@ export function registerCratesUploadTool(server: McpServer): void {
         },
       };
 
-      // Only add tags if they exist and are a non-empty array
-      if (tags && Array.isArray(tags) && tags.length > 0) {
-        partialCrate.tags = tags;
-      }
 
       // Only add metadata if it exists
       if (metadata && Object.keys(metadata).length > 0) {
@@ -227,8 +212,7 @@ export function registerCratesUploadTool(server: McpServer): void {
             .map(([k, v]) => `${k}: ${v}`)
             .join(" ")
         : "";
-      const tagsString = Array.isArray(tags) ? tags.join(" ") : "";
-      const searchText = [title, description, tagsString, metaString]
+      const searchText = [title, description, metaString]
         .filter(Boolean)
         .join(" ");
 

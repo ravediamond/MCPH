@@ -138,7 +138,6 @@ export async function POST(req: NextRequest) {
       title,
       description,
       category,
-      tags,
       editKey: editKey,
       shared: sharing,
       metadata,
