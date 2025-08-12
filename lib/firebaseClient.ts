@@ -2,6 +2,8 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getAuth,
   GoogleAuthProvider,
+  OAuthProvider,
+  SAMLAuthProvider,
   signInWithPopup,
   signOut,
 } from "firebase/auth";
@@ -26,6 +28,32 @@ if (!getApps().length) {
 
 const auth = getAuth(app);
 const firestore = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
 
-export { auth, firestore, googleProvider, signInWithPopup, signOut };
+// Configure auth providers
+const googleProvider = new GoogleAuthProvider();
+googleProvider.addScope("email");
+googleProvider.addScope("profile");
+
+const microsoftProvider = new OAuthProvider("microsoft.com");
+microsoftProvider.addScope("email");
+microsoftProvider.addScope("profile");
+
+const githubProvider = new OAuthProvider("github.com");
+githubProvider.addScope("user:email");
+
+// SAML provider for enterprise - configure provider ID as needed
+const createSAMLProvider = (providerId: string) => {
+  const samlProvider = new SAMLAuthProvider(providerId);
+  return samlProvider;
+};
+
+export {
+  auth,
+  firestore,
+  googleProvider,
+  microsoftProvider,
+  githubProvider,
+  createSAMLProvider,
+  signInWithPopup,
+  signOut,
+};

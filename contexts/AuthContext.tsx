@@ -11,6 +11,9 @@ import { User, onAuthStateChanged, ParsedToken } from "firebase/auth";
 import {
   auth,
   googleProvider,
+  microsoftProvider,
+  githubProvider,
+  createSAMLProvider,
   signInWithPopup,
   signOut as firebaseSignOut,
 } from "../lib/firebaseClient";
@@ -21,6 +24,9 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
+  signInWithMicrosoft: () => Promise<void>;
+  signInWithGithub: () => Promise<void>;
+  signInWithSAML: (providerId: string) => Promise<void>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
 }
@@ -97,6 +103,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const signInWithMicrosoft = async () => {
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, microsoftProvider);
+      // onAuthStateChanged will handle setting the user and the redirect
+    } catch (error) {
+      console.error("Error signing in with Microsoft: ", error);
+      setLoading(false);
+    }
+  };
+
+  const signInWithGithub = async () => {
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, githubProvider);
+      // onAuthStateChanged will handle setting the user and the redirect
+    } catch (error) {
+      console.error("Error signing in with GitHub: ", error);
+      setLoading(false);
+    }
+  };
+
+  const signInWithSAML = async (providerId: string) => {
+    setLoading(true);
+    try {
+      const samlProvider = createSAMLProvider(providerId);
+      await signInWithPopup(auth, samlProvider);
+      // onAuthStateChanged will handle setting the user and the redirect
+    } catch (error) {
+      console.error("Error signing in with SAML: ", error);
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     setLoading(true);
     try {
@@ -124,7 +164,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAdmin, signInWithGoogle, signOut, getIdToken }}
+      value={{
+        user,
+        loading,
+        isAdmin,
+        signInWithGoogle,
+        signInWithMicrosoft,
+        signInWithGithub,
+        signInWithSAML,
+        signOut,
+        getIdToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

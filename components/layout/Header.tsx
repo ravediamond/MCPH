@@ -10,7 +10,10 @@ import {
   FaUpload,
   FaHome,
   FaCommentDots,
+  FaMicrosoft,
+  FaGithub,
 } from "react-icons/fa";
+import { FaGoogle } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -20,6 +23,8 @@ export default function Header() {
     user,
     isAdmin,
     signInWithGoogle,
+    signInWithMicrosoft,
+    signInWithGithub,
     signOut: firebaseSignOut,
   } = useAuth();
   const pathname = usePathname();
@@ -34,6 +39,28 @@ export default function Header() {
       setIsMenuOpen(false);
     } catch (error) {
       console.error("Header: Error signing in with Google: ", error);
+    }
+  };
+
+  const handleMicrosoftSignIn = async () => {
+    try {
+      console.log("Header: Attempting Microsoft Sign-In...");
+      await signInWithMicrosoft();
+      console.log("Header: Microsoft Sign-In successful trigger");
+      setIsMenuOpen(false);
+    } catch (error) {
+      console.error("Header: Error signing in with Microsoft: ", error);
+    }
+  };
+
+  const handleGithubSignIn = async () => {
+    try {
+      console.log("Header: Attempting GitHub Sign-In...");
+      await signInWithGithub();
+      console.log("Header: GitHub Sign-In successful trigger");
+      setIsMenuOpen(false);
+    } catch (error) {
+      console.error("Header: Error signing in with GitHub: ", error);
     }
   };
 
@@ -115,12 +142,29 @@ export default function Header() {
                 </button>
               </div>
             ) : (
-              <button
-                onClick={handleGoogleSignIn}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Login with Google
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <FaGoogle className="mr-2 h-4 w-4" />
+                  Google
+                </button>
+                <button
+                  onClick={handleMicrosoftSignIn}
+                  className="px-3 py-2 text-sm font-medium text-white bg-blue-800 rounded-md hover:bg-blue-900 flex items-center"
+                >
+                  <FaMicrosoft className="mr-2 h-4 w-4" />
+                  Microsoft
+                </button>
+                <button
+                  onClick={handleGithubSignIn}
+                  className="px-3 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-900 flex items-center"
+                >
+                  <FaGithub className="mr-2 h-4 w-4" />
+                  GitHub
+                </button>
+              </div>
             )}
           </nav>
 
@@ -220,12 +264,29 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                  >
-                    Login with Google
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleGoogleSignIn}
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center justify-center"
+                    >
+                      <FaGoogle className="mr-2 h-4 w-4" />
+                      Login with Google
+                    </button>
+                    <button
+                      onClick={handleMicrosoftSignIn}
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded-md hover:bg-blue-900 flex items-center justify-center"
+                    >
+                      <FaMicrosoft className="mr-2 h-4 w-4" />
+                      Login with Microsoft
+                    </button>
+                    <button
+                      onClick={handleGithubSignIn}
+                      className="w-full px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-900 flex items-center justify-center"
+                    >
+                      <FaGithub className="mr-2 h-4 w-4" />
+                      Login with GitHub
+                    </button>
+                  </div>
                 )}
               </div>
             </nav>
