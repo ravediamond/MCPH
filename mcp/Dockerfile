@@ -4,23 +4,21 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files - run from project root context
 COPY mcp/package*.json ./mcp/
 
 # Install dependencies with dev dependencies but skip scripts
+WORKDIR /app/mcp
 RUN npm ci --ignore-scripts
 
 # Copy source files
-COPY mcp/tsconfig.json ./mcp/
-COPY mcp/src ./mcp/src
-COPY lib ./lib
-COPY services ./services
-COPY shared ./shared
+COPY mcp/tsconfig.json ./
+COPY mcp/src ./src
+COPY lib ../lib
+COPY services ../services
+COPY shared ../shared
 
 # Build the application
-WORKDIR /app/mcp
-RUN npm ci --ignore-scripts
 RUN npm run build
 
 # Create production image

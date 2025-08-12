@@ -6,17 +6,10 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ["mcph.io", "www.mcph.io"],
-    // We don't need unoptimized with Vercel
-    // unoptimized: true,
+    unoptimized: false,
   },
-  // We don't need output: 'export' with Vercel
-  // output: 'export',
-
-  // We don't need a distDir with Vercel
-  // distDir: 'out',
-
-  // Vercel handles API routes, so no need for trailing slashes
-  // trailingSlash: true,
+  // Enable standalone output for Docker deployment
+  output: "standalone",
 
   // Exclude the MCP directory from the Next.js build
   pageExtensions: ["tsx", "ts", "jsx", "js"],

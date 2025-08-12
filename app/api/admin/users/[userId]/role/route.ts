@@ -24,7 +24,9 @@ export async function GET(
     }
 
     const decodedToken = await auth.verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
+    const { role: adminRole } = parseCustomClaims(
+      decodedToken.customClaims || {},
+    );
 
     // Check if admin has permission to view roles
     if (adminRole < Role.ADMIN) {
@@ -69,7 +71,9 @@ export async function PUT(
     }
 
     const decodedToken = await auth.verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
+    const { role: adminRole } = parseCustomClaims(
+      decodedToken.customClaims || {},
+    );
 
     const { role: newRole } = await request.json();
 
@@ -143,10 +147,12 @@ export async function DELETE(
     }
 
     const decodedToken = await auth.verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
+    const { role: adminRole } = parseCustomClaims(
+      decodedToken.customClaims || {},
+    );
 
     const resolvedParams = await params;
-    
+
     // Get current user role to check permissions
     const currentUserRole = await getUserRole(resolvedParams.userId);
     if (!currentUserRole) {

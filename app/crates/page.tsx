@@ -706,7 +706,6 @@ export default function CratesPage() {
           fetchCrates();
         }}
       />
-
     </div>
   );
 }

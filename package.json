@@ -17,7 +17,13 @@
     "dev:mcp": "cd mcp && npm run dev",
     "build:mcp": "cd mcp && npm run build",
     "start:mcp": "cd mcp && npm run start",
-    "cleanup": "./cleanup-js-files.sh"
+    "cleanup": "./cleanup-js-files.sh",
+    "docker:build": "docker build -t mcph-webapp .",
+    "docker:run": "docker run -p 3000:3000 mcph-webapp",
+    "docker:build:mcp": "docker build -t mcph-mcp -f mcp/Dockerfile .",
+    "docker:run:mcp": "docker run -p 8080:8080 mcph-mcp",
+    "gcp:deploy": "gcloud run deploy mcph-webapp --source .",
+    "gcp:deploy:mcp": "cd mcp && gcloud run deploy mcph-mcp --source ."
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
