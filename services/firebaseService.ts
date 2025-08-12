@@ -31,11 +31,15 @@ import {
   FieldValue,
   QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
+import { getAuth, Auth } from "firebase-admin/auth";
 import { v4 as uuidv4 } from "uuid";
 import { Crate, CrateSharing, AccessHistoryEntry } from "../shared/types/crate";
+import { Role, UserRole, FirebaseCustomClaims } from "../lib/types/rbac";
+import { createCustomClaims, canAssignRole } from "../lib/rbac";
 
 let firebaseApp: App | undefined;
 let db: Firestore;
+let auth: Auth;
 
 if (!getApps().length) {
   try {
@@ -133,7 +137,8 @@ if (!getApps().length) {
     }
 
     db = getFirestore(firebaseApp);
-    console.log("Firestore instance obtained.");
+    auth = getAuth(firebaseApp);
+    console.log("Firestore and Auth instances obtained.");
 
     db.settings({
       ignoreUndefinedProperties: true,
@@ -148,6 +153,7 @@ if (!getApps().length) {
 } else {
   firebaseApp = getApp();
   db = getFirestore(firebaseApp);
+  auth = getAuth(firebaseApp);
 
   try {
     db.settings({
@@ -1325,4 +1331,202 @@ export async function getCrateAccessStats(crateId: string): Promise<{
       month: { views: 0, downloads: 0 },
     };
   }
+}
+
+// ===========================
+// RBAC Functions
+// ===========================
+
+/**
+ * Assign a role to a user
+ */
+export async function assignUserRole(
+  userId: string,
+  role: Role,
+  assignedBy: string,
+  assignerRole: Role,
+): Promise<boolean> {
+  try {
+    // Check if assigner can assign this role
+    if (!canAssignRole(assignerRole, role)) {
+      console.error(`User ${assignedBy} cannot assign role ${role}`);
+      return false;
+    }
+
+    // Create custom claims for the role
+    const customClaims = createCustomClaims(role);
+
+    // Set the custom claims in Firebase Auth
+    await auth.setCustomUserClaims(userId, customClaims);
+
+    // Store role information in Firestore
+    const userRole: UserRole = {
+      userId,
+      role,
+      assignedBy,
+      assignedAt: new Date(),
+      isActive: true,
+    };
+
+    await db.collection("userRoles").doc(userId).set(userRole);
+
+    console.log(`Role ${role} assigned to user ${userId} by ${assignedBy}`);
+    return true;
+  } catch (error) {
+    console.error(`Error assigning role to user ${userId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * Get user role information
+ */
+export async function getUserRole(userId: string): Promise<UserRole | null> {
+  try {
+    const userRoleDoc = await db.collection("userRoles").doc(userId).get();
+
+    if (userRoleDoc.exists) {
+      return userRoleDoc.data() as UserRole;
+    }
+
+    // If no role document exists, check for legacy admin claim
+    const userRecord = await auth.getUser(userId);
+    if (userRecord.customClaims?.admin) {
+      // Create a role document for legacy admin users
+      const userRole: UserRole = {
+        userId,
+        role: Role.ADMIN,
+        assignedBy: "system",
+        assignedAt: new Date(),
+        isActive: true,
+      };
+
+      await db.collection("userRoles").doc(userId).set(userRole);
+      return userRole;
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error getting user role for ${userId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Remove role from user (set to USER role)
+ */
+export async function removeUserRole(
+  userId: string,
+  removedBy: string,
+  removerRole: Role,
+): Promise<boolean> {
+  try {
+    const currentRole = await getUserRole(userId);
+
+    if (!currentRole) {
+      console.log(`No role to remove for user ${userId}`);
+      return true;
+    }
+
+    // Check if remover can remove this role
+    if (!canAssignRole(removerRole, currentRole.role)) {
+      console.error(`User ${removedBy} cannot remove role ${currentRole.role}`);
+      return false;
+    }
+
+    // Set user back to basic USER role
+    const customClaims = createCustomClaims(Role.USER);
+    await auth.setCustomUserClaims(userId, customClaims);
+
+    // Update role document
+    await db.collection("userRoles").doc(userId).update({
+      role: Role.USER,
+      assignedBy: removedBy,
+      assignedAt: new Date(),
+      isActive: true,
+    });
+
+    console.log(`Role removed from user ${userId} by ${removedBy}`);
+    return true;
+  } catch (error) {
+    console.error(`Error removing role from user ${userId}:`, error);
+    return false;
+  }
+}
+
+/**
+ * List all users with their roles (admin function)
+ */
+export async function listUsersWithRoles(
+  requesterRole: Role,
+  limit: number = 100,
+): Promise<UserRole[]> {
+  try {
+    // Only admins can list users
+    if (requesterRole < Role.ADMIN) {
+      console.error("Insufficient permissions to list users");
+      return [];
+    }
+
+    const userRolesSnapshot = await db
+      .collection("userRoles")
+      .where("isActive", "==", true)
+      .limit(limit)
+      .get();
+
+    return userRolesSnapshot.docs.map((doc) => doc.data() as UserRole);
+  } catch (error) {
+    console.error("Error listing users with roles:", error);
+    return [];
+  }
+}
+
+/**
+ * Update user custom claims (called during token refresh)
+ */
+export async function updateUserClaims(userId: string): Promise<void> {
+  try {
+    const userRole = await getUserRole(userId);
+    const role = userRole?.role || Role.USER;
+    const customClaims = createCustomClaims(role);
+
+    await auth.setCustomUserClaims(userId, customClaims);
+    console.log(`Custom claims updated for user ${userId} with role ${role}`);
+  } catch (error) {
+    console.error(`Error updating claims for user ${userId}:`, error);
+  }
+}
+
+/**
+ * Bulk role assignment (super admin only)
+ */
+export async function bulkAssignRoles(
+  assignments: { userId: string; role: Role }[],
+  assignedBy: string,
+  assignerRole: Role,
+): Promise<{ successful: number; failed: number }> {
+  if (assignerRole !== Role.SUPER_ADMIN) {
+    console.error("Bulk role assignment requires SUPER_ADMIN role");
+    return { successful: 0, failed: assignments.length };
+  }
+
+  let successful = 0;
+  let failed = 0;
+
+  for (const assignment of assignments) {
+    const success = await assignUserRole(
+      assignment.userId,
+      assignment.role,
+      assignedBy,
+      assignerRole,
+    );
+
+    if (success) {
+      successful++;
+    } else {
+      failed++;
+    }
+  }
+
+  return { successful, failed };
 }

@@ -8,6 +8,8 @@ import React, {
   ReactNode,
 } from "react";
 import { User, onAuthStateChanged, ParsedToken } from "firebase/auth";
+import { Role, Permission, FirebaseCustomClaims } from "../lib/types/rbac";
+import { parseCustomClaims, hasPermission } from "../lib/rbac";
 import {
   auth,
   googleProvider,
@@ -23,12 +25,22 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
+  role: Role;
+  permissions: Permission[];
   signInWithGoogle: () => Promise<void>;
   signInWithMicrosoft: () => Promise<void>;
   signInWithGithub: () => Promise<void>;
   signInWithSAML: (providerId: string) => Promise<void>;
   signOut: () => Promise<void>;
   getIdToken: () => Promise<string | null>;
+  hasPermission: (
+    permission: Permission,
+    context?: { resourceOwnerId?: string },
+  ) => boolean;
+  canAccessResource: (
+    resourceOwnerId: string,
+    permission: Permission,
+  ) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,6 +50,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false); // Add isAdmin state
+  const [role, setRole] = useState<Role>(Role.USER);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter(); // Initialize useRouter
 
@@ -48,17 +62,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (currentUser) {
         try {
           const idTokenResult = await currentUser.getIdTokenResult();
-          setIsAdmin(!!idTokenResult.claims.admin); // Check for admin claim
+
+          // Parse custom claims for RBAC
+          const { role: userRole, permissions: userPermissions } =
+            parseCustomClaims(idTokenResult.claims as FirebaseCustomClaims);
+
+          setRole(userRole);
+          setPermissions(userPermissions);
+          setIsAdmin(userRole >= Role.ADMIN); // Update admin check to use role hierarchy
 
           // Store the Firebase ID token in a cookie
           const idToken = await currentUser.getIdToken();
           document.cookie = `session=${idToken}; path=/; max-age=3600; SameSite=Strict`;
+
+          console.log(`User authenticated with role: ${userRole}`);
         } catch (error) {
           console.error("Error getting ID token result: ", error);
           setIsAdmin(false);
+          setRole(Role.USER);
+          setPermissions([]);
         }
       } else {
         setIsAdmin(false);
+        setRole(Role.USER);
+        setPermissions([]);
         // Clear the session cookie when signed out
         document.cookie =
           "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -162,18 +189,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return null;
   };
 
+  // RBAC permission check functions
+  const checkPermission = (
+    permission: Permission,
+    context?: { resourceOwnerId?: string },
+  ): boolean => {
+    return hasPermission(role, permission, {
+      userId: user?.uid,
+      resourceOwnerId: context?.resourceOwnerId,
+    });
+  };
+
+  const checkResourceAccess = (
+    resourceOwnerId: string,
+    permission: Permission,
+  ): boolean => {
+    return hasPermission(role, permission, {
+      userId: user?.uid,
+      resourceOwnerId,
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
         isAdmin,
+        role,
+        permissions,
         signInWithGoogle,
         signInWithMicrosoft,
         signInWithGithub,
         signInWithSAML,
         signOut,
         getIdToken,
+        hasPermission: checkPermission,
+        canAccessResource: checkResourceAccess,
       }}
     >
       {children}

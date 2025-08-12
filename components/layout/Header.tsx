@@ -16,16 +16,20 @@ import {
 import { FaGoogle } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { RoleBadge } from "@/components/rbac";
+import { Permission } from "@/lib/types/rbac";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
     user,
     isAdmin,
+    role,
     signInWithGoogle,
     signInWithMicrosoft,
     signInWithGithub,
     signOut: firebaseSignOut,
+    hasPermission,
   } = useAuth();
   const pathname = usePathname();
 
@@ -121,19 +125,24 @@ export default function Header() {
             {/* Auth Buttons Desktop */}
             {user ? (
               <div className="flex items-center space-x-4">
-                <Link
-                  href={isAdmin ? "/admin/dashboard" : "/crates"}
-                  className="flex items-center text-gray-700 hover:text-gray-900"
-                >
-                  <FaUserCircle className="mr-2 h-5 w-5" />
-                  <span>
-                    {isAdmin
-                      ? "Admin"
-                      : user.displayName
+                <div className="flex items-center space-x-2">
+                  <Link
+                    href={
+                      hasPermission(Permission.ADMIN_SYSTEM_READ)
+                        ? "/admin/dashboard"
+                        : "/crates"
+                    }
+                    className="flex items-center text-gray-700 hover:text-gray-900"
+                  >
+                    <FaUserCircle className="mr-2 h-5 w-5" />
+                    <span>
+                      {user.displayName
                         ? user.displayName.split(" ")[0]
                         : "Account"}
-                  </span>
-                </Link>
+                    </span>
+                  </Link>
+                  <RoleBadge role={role} className="ml-2" />
+                </div>
                 <button
                   onClick={handleSignOut}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
@@ -242,20 +251,25 @@ export default function Header() {
               <div className="px-4 py-2">
                 {user ? (
                   <div className="flex flex-col space-y-2">
-                    <Link
-                      href={isAdmin ? "/admin/dashboard" : "/home"}
-                      className="flex items-center text-gray-700 hover:text-gray-900 py-1"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <FaUserCircle className="mr-2 h-5 w-5" />
-                      <span>
-                        {isAdmin
-                          ? "Admin"
-                          : user.displayName
+                    <div className="flex items-center justify-between py-1">
+                      <Link
+                        href={
+                          hasPermission(Permission.ADMIN_SYSTEM_READ)
+                            ? "/admin/dashboard"
+                            : "/crates"
+                        }
+                        className="flex items-center text-gray-700 hover:text-gray-900"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <FaUserCircle className="mr-2 h-5 w-5" />
+                        <span>
+                          {user.displayName
                             ? user.displayName.split(" ")[0]
                             : "Account"}
-                      </span>
-                    </Link>
+                        </span>
+                      </Link>
+                      <RoleBadge role={role} />
+                    </div>
                     <button
                       onClick={handleSignOut}
                       className="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
