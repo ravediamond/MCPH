@@ -19,6 +19,8 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from "../lib/firebaseClient";
+import { auditAuthEvent } from "../services/auditService";
+import { AuditEventType } from "../shared/types/crate";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -76,6 +78,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           document.cookie = `session=${idToken}; path=/; max-age=3600; SameSite=Strict`;
 
           console.log(`User authenticated with role: ${userRole}`);
+
+          // Audit successful login
+          await auditAuthEvent(
+            AuditEventType.LOGIN,
+            {
+              userId: currentUser.uid,
+              userEmail: currentUser.email || undefined,
+              userRole: userRole,
+            },
+            true,
+          );
         } catch (error) {
           console.error("Error getting ID token result: ", error);
           setIsAdmin(false);
@@ -167,6 +180,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signOut = async () => {
     setLoading(true);
     try {
+      // Audit logout before signing out
+      if (user) {
+        await auditAuthEvent(
+          AuditEventType.LOGOUT,
+          {
+            userId: user.uid,
+            userEmail: user.email || undefined,
+            userRole: role,
+          },
+          true,
+        );
+      }
+
       await firebaseSignOut(auth);
       setIsAdmin(false); // Reset isAdmin on sign out
       // onAuthStateChanged will handle setting the user to null

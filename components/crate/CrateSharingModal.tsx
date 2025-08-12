@@ -262,7 +262,6 @@ export default function CrateSharingModal({
               </div>
             </label>
 
-
             {/* Public + Password */}
             <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
               <input
@@ -351,9 +350,6 @@ export default function CrateSharingModal({
             </div>
           </div>
         )}
-
-
-
 
         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
           <button

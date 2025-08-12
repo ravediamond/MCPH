@@ -3,6 +3,8 @@ import { DeleteCrateParams } from "../config/schemas";
 import { getCrateMetadata } from "../../../services/firebaseService";
 import { deleteCrate } from "../../../services/storageService";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
+import { auditMcpEvent, auditCrateEvent } from "../../../services/auditService";
+import { AuditEventType } from "../../../shared/types/crate";
 
 /**
  * Register the crates_delete tool with the server
@@ -46,6 +48,36 @@ export function registerCratesDeleteTool(server: McpServer): void {
         if (!result) {
           throw new Error("Failed to delete crate");
         }
+
+        // Audit the MCP tool call and crate deletion
+        const auditContext = {
+          userId,
+          mcpTool: "crates_delete",
+          mcpClientId: req?.clientName || "unknown",
+          apiKeyId: req?.user?.apiKeyId,
+          ipAddress: req?.ip,
+          userAgent: req?.get?.("User-Agent"),
+          requestId: req?.requestId,
+        };
+
+        await auditMcpEvent(AuditEventType.MCP_TOOL_CALLED, auditContext, {
+          toolName: "crates_delete",
+          crateId: id,
+          crateTitle: crate.title,
+        });
+
+        await auditCrateEvent(
+          AuditEventType.CRATE_DELETED,
+          crate.id,
+          crate.title,
+          auditContext,
+          {
+            size: crate.size,
+            category: crate.category,
+            wasPublic: crate.shared.public,
+            hadPassword: !!crate.shared.passwordHash,
+          },
+        );
 
         return {
           content: [

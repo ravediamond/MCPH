@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
         { error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       console.warn(`Invalid authentication token:`, error);
       return NextResponse.json(
         { error: "Invalid authentication token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -46,33 +46,33 @@ export async function POST(req: NextRequest) {
     const db = getFirestore();
 
     // Search only user's own files and files shared with them
-    
+
     // Get user's crates first to determine accessible files
     const cratesRef = db.collection("crates");
     const userCratesQuery = cratesRef.where("ownerId", "==", userId);
     const userCratesSnapshot = await userCratesQuery.get();
-    
+
     const accessibleCrateIds = new Set<string>();
-    
+
     // Add user's own crates
-    userCratesSnapshot.docs.forEach(doc => {
+    userCratesSnapshot.docs.forEach((doc) => {
       accessibleCrateIds.add(doc.id);
     });
-    
+
     // TODO: Add shared crates once team-based sharing is implemented
     // For now, only search within user's own files
-    
+
     if (accessibleCrateIds.size === 0) {
       return NextResponse.json({
         results: [],
-        message: "No accessible content to search"
+        message: "No accessible content to search",
       });
     }
-    
+
     // Search within accessible crates only
     const filesRef = db.collection("files");
     const crateIdArray = Array.from(accessibleCrateIds);
-    
+
     // 1. Vector search (restricted to user's crates)
     const vectorQuery = filesRef
       .where("crateId", "in", crateIdArray.slice(0, 10)) // Firestore limit
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         limit: topK,
         distanceMeasure: "DOT_PRODUCT",
       });
-    
+
     let vectorResults: any[] = [];
     try {
       const vectorSnapshot = await vectorQuery.get();
@@ -89,9 +89,12 @@ export async function POST(req: NextRequest) {
         ...doc.data(),
       }));
     } catch (error) {
-      console.warn("Vector search failed, falling back to text search only:", error);
+      console.warn(
+        "Vector search failed, falling back to text search only:",
+        error,
+      );
     }
-    
+
     // 2. Classical search (restricted to user's crates)
     const textQuery = query.toLowerCase();
     const classicalSnapshot = await filesRef
@@ -100,12 +103,12 @@ export async function POST(req: NextRequest) {
       .where("searchText", "<=", textQuery + "\uf8ff")
       .limit(topK)
       .get();
-    
+
     const classicalResults = classicalSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-    
+
     // Merge and deduplicate by id
     const allResultsMap = new Map();
     for (const a of vectorResults) allResultsMap.set(a.id, a);

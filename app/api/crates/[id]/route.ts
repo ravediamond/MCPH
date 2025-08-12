@@ -3,6 +3,8 @@ import { logEvent, updateCrateMetadata } from "@/services/firebaseService";
 import { getCrateContent } from "@/services/storageService";
 import { getCrateMetadata } from "@/lib/services";
 import { auth } from "@/lib/firebaseAdmin";
+import { auditCrateEvent } from "@/services/auditService";
+import { AuditEventType } from "@/shared/types/crate";
 import bcrypt from "bcrypt";
 
 /**
@@ -34,7 +36,7 @@ export async function GET(
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
         { error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -47,7 +49,7 @@ export async function GET(
       console.warn(`Invalid authentication token:`, error);
       return NextResponse.json(
         { error: "Invalid authentication token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -73,7 +75,7 @@ export async function GET(
       );
     }
 
-    if (!isOwner && !isPublic && !isSharedWithUser) {
+    if (!isOwner && !hasSharedAccess) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },
@@ -111,6 +113,28 @@ export async function GET(
       metadata: crate.metadata,
       tags: processTags(crate.tags),
     };
+
+    // Audit the crate view
+    await auditCrateEvent(
+      AuditEventType.CRATE_VIEWED,
+      crate.id,
+      crate.title,
+      {
+        userId,
+        ipAddress:
+          req.headers.get("x-forwarded-for") ||
+          req.headers.get("x-real-ip") ||
+          "unknown",
+        userAgent: req.headers.get("user-agent") || "unknown",
+        resourceOwner: crate.ownerId,
+      },
+      {
+        accessType: isOwner ? "owner" : "public",
+        mimeType: crate.mimeType,
+        category: crate.category,
+        size: crate.size,
+      },
+    );
 
     return NextResponse.json(crateResponse);
   } catch (error) {

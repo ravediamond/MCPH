@@ -127,7 +127,6 @@ export default function CratePage() {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
 
-
   // Editing state variables
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -449,7 +448,6 @@ export default function CratePage() {
         return converted;
     }
   };
-
 
   // Editing functions
   const handleEditStart = () => {
@@ -1713,7 +1711,6 @@ export default function CratePage() {
           formatDate={formatDate}
           getCrateIcon={getCrateIcon}
         />
-
 
         {/* Footer Navigation */}
         <div className="flex justify-between items-center text-sm mt-4 px-1">

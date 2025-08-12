@@ -24,15 +24,15 @@ export default function AboutPage() {
             Enterprise AI Artifact Management
           </h2>
           <p className="text-slate-600 mb-4">
-            Our platform provides enterprise-grade infrastructure for managing 
-            AI-generated artifacts within your organization. Built with security, 
-            compliance, and scalability as core principles, we enable teams to 
-            collaborate effectively while maintaining full control over sensitive 
-            AI-generated content.
+            Our platform provides enterprise-grade infrastructure for managing
+            AI-generated artifacts within your organization. Built with
+            security, compliance, and scalability as core principles, we enable
+            teams to collaborate effectively while maintaining full control over
+            sensitive AI-generated content.
           </p>
           <p className="text-slate-600 mb-6">
-            Whether your team is generating reports, code, analysis, or other 
-            AI artifacts, our platform ensures secure storage, controlled access, 
+            Whether your team is generating reports, code, analysis, or other AI
+            artifacts, our platform ensures secure storage, controlled access,
             and comprehensive audit trails that meet enterprise requirements.
           </p>
 
@@ -70,31 +70,37 @@ export default function AboutPage() {
             Compliance and Governance
           </h2>
           <p className="text-slate-600 mb-4">
-            Built for organizations with strict compliance requirements, our 
-            platform provides the governance tools and audit capabilities 
-            needed for regulated industries.
+            Built for organizations with strict compliance requirements, our
+            platform provides the governance tools and audit capabilities needed
+            for regulated industries.
           </p>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
             <div>
-              <h4 className="font-semibold text-slate-800 mb-2">Data Residency</h4>
+              <h4 className="font-semibold text-slate-800 mb-2">
+                Data Residency
+              </h4>
               <p className="text-slate-600 text-sm">
-                Control where your data is stored with configurable data 
+                Control where your data is stored with configurable data
                 residency options.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-800 mb-2">Retention Policies</h4>
+              <h4 className="font-semibold text-slate-800 mb-2">
+                Retention Policies
+              </h4>
               <p className="text-slate-600 text-sm">
-                Automated data lifecycle management with configurable 
-                retention and deletion policies.
+                Automated data lifecycle management with configurable retention
+                and deletion policies.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-800 mb-2">Audit Trails</h4>
+              <h4 className="font-semibold text-slate-800 mb-2">
+                Audit Trails
+              </h4>
               <p className="text-slate-600 text-sm">
-                Complete activity logging with tamper-proof audit trails 
-                for compliance reporting.
+                Complete activity logging with tamper-proof audit trails for
+                compliance reporting.
               </p>
             </div>
           </div>
@@ -105,11 +111,11 @@ export default function AboutPage() {
             Integration and APIs
           </h2>
           <p className="text-slate-600 mb-4">
-            Seamlessly integrate with your existing enterprise systems and 
-            AI workflows through our comprehensive API suite and standard 
-            protocol support.
+            Seamlessly integrate with your existing enterprise systems and AI
+            workflows through our comprehensive API suite and standard protocol
+            support.
           </p>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-semibold text-slate-800 mb-2">
@@ -146,7 +152,7 @@ export default function AboutPage() {
               Ready to Get Started?
             </h2>
             <p className="text-slate-600 mb-4">
-              Contact our enterprise team to discuss your organization's 
+              Contact our enterprise team to discuss your organization's
               requirements and schedule a demonstration.
             </p>
             <Link

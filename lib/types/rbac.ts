@@ -24,6 +24,10 @@ export enum Permission {
   ADMIN_SYSTEM_UPDATE = "admin:system:update",
   ADMIN_ANALYTICS_READ = "admin:analytics:read",
 
+  // Audit permissions
+  VIEW_AUDIT_LOGS = "audit:logs:read",
+  EXPORT_AUDIT_LOGS = "audit:logs:export",
+
   // API Key permissions
   API_KEY_CREATE = "api_key:create",
   API_KEY_READ_OWN = "api_key:read:own",
@@ -54,52 +58,78 @@ export enum Role {
   SYSTEM = "system",
 }
 
+// Define role permissions after the enums are declared
+const USER_PERMISSIONS: Permission[] = [
+  Permission.USER_READ_PROFILE,
+  Permission.USER_UPDATE_PROFILE,
+  Permission.CRATE_CREATE,
+  Permission.CRATE_READ_OWN,
+  Permission.CRATE_UPDATE_OWN,
+  Permission.CRATE_DELETE_OWN,
+  Permission.CRATE_SHARE_OWN,
+  Permission.API_KEY_CREATE,
+  Permission.API_KEY_READ_OWN,
+  Permission.API_KEY_DELETE_OWN,
+];
+
 // Role permissions mapping
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
-  [Role.USER]: [
-    Permission.USER_READ_PROFILE,
-    Permission.USER_UPDATE_PROFILE,
-    Permission.CRATE_CREATE,
-    Permission.CRATE_READ_OWN,
-    Permission.CRATE_UPDATE_OWN,
-    Permission.CRATE_DELETE_OWN,
-    Permission.CRATE_SHARE_OWN,
-    Permission.API_KEY_CREATE,
-    Permission.API_KEY_READ_OWN,
-    Permission.API_KEY_DELETE_OWN,
-  ],
+  [Role.USER]: USER_PERMISSIONS,
 
   [Role.PREMIUM_USER]: [
-    ...ROLE_PERMISSIONS[Role.USER],
+    ...USER_PERMISSIONS,
     // Premium users get same permissions as regular users for now
     // Can be extended with premium features later
   ],
 
   [Role.MODERATOR]: [
-    ...ROLE_PERMISSIONS[Role.USER],
+    ...USER_PERMISSIONS,
     Permission.CRATE_READ_ANY,
     Permission.MODERATION_CONTENT_REVIEW,
     Permission.MODERATION_CONTENT_REMOVE,
   ],
 
   [Role.SENIOR_MODERATOR]: [
-    ...ROLE_PERMISSIONS[Role.MODERATOR],
+    ...USER_PERMISSIONS,
+    Permission.CRATE_READ_ANY,
+    Permission.MODERATION_CONTENT_REVIEW,
+    Permission.MODERATION_CONTENT_REMOVE,
     Permission.MODERATION_USER_SUSPEND,
     Permission.CRATE_UPDATE_ANY,
   ],
 
   [Role.ADMIN]: [
-    ...ROLE_PERMISSIONS[Role.SENIOR_MODERATOR],
+    ...USER_PERMISSIONS,
+    Permission.CRATE_READ_ANY,
+    Permission.MODERATION_CONTENT_REVIEW,
+    Permission.MODERATION_CONTENT_REMOVE,
+    Permission.MODERATION_USER_SUSPEND,
+    Permission.CRATE_UPDATE_ANY,
     Permission.ADMIN_USERS_READ,
     Permission.ADMIN_USERS_UPDATE,
     Permission.ADMIN_SYSTEM_READ,
     Permission.ADMIN_ANALYTICS_READ,
+    Permission.VIEW_AUDIT_LOGS,
+    Permission.EXPORT_AUDIT_LOGS,
     Permission.API_KEY_READ_ANY,
     Permission.CRATE_DELETE_ANY,
   ],
 
   [Role.SUPER_ADMIN]: [
-    ...ROLE_PERMISSIONS[Role.ADMIN],
+    ...USER_PERMISSIONS,
+    Permission.CRATE_READ_ANY,
+    Permission.MODERATION_CONTENT_REVIEW,
+    Permission.MODERATION_CONTENT_REMOVE,
+    Permission.MODERATION_USER_SUSPEND,
+    Permission.CRATE_UPDATE_ANY,
+    Permission.ADMIN_USERS_READ,
+    Permission.ADMIN_USERS_UPDATE,
+    Permission.ADMIN_SYSTEM_READ,
+    Permission.ADMIN_ANALYTICS_READ,
+    Permission.VIEW_AUDIT_LOGS,
+    Permission.EXPORT_AUDIT_LOGS,
+    Permission.API_KEY_READ_ANY,
+    Permission.CRATE_DELETE_ANY,
     Permission.ADMIN_USERS_DELETE,
     Permission.ADMIN_SYSTEM_UPDATE,
     Permission.API_KEY_DELETE_ANY,

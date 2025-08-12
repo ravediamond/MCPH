@@ -71,9 +71,7 @@ export default function TermsPage() {
               any time via the dashboard or API; deletion is permanent after 30
               days in cold backup.
             </li>
-            <li>
-              File size and storage limits per organizational policy
-            </li>
+            <li>File size and storage limits per organizational policy</li>
             <li>Rate limits to prevent abuse</li>
           </ul>
 

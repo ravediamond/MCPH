@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { verifyIdToken } from "@/lib/firebaseAdmin";
+import { auth } from "@/lib/firebaseAdmin";
 import { Role } from "@/lib/types/rbac";
 import { parseCustomClaims, canAssignRole } from "@/lib/rbac";
 import {
@@ -8,6 +8,8 @@ import {
   getUserRole,
   removeUserRole,
 } from "@/services/firebaseService";
+import { auditAdminEvent } from "@/services/auditService";
+import { AuditEventType } from "@/shared/types/crate";
 
 // GET /api/admin/users/[userId]/role - Get user role
 export async function GET(
@@ -15,13 +17,14 @@ export async function GET(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const sessionCookie = cookies().get("session")?.value;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("session")?.value;
     if (!sessionCookie) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decodedToken = await verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken);
+    const decodedToken = await auth.verifyIdToken(sessionCookie);
+    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
 
     // Check if admin has permission to view roles
     if (adminRole < Role.ADMIN) {
@@ -58,13 +61,14 @@ export async function PUT(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const sessionCookie = cookies().get("session")?.value;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("session")?.value;
     if (!sessionCookie) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decodedToken = await verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken);
+    const decodedToken = await auth.verifyIdToken(sessionCookie);
+    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
 
     const { role: newRole } = await request.json();
 
@@ -94,6 +98,26 @@ export async function PUT(
       );
     }
 
+    // Audit the role assignment
+    await auditAdminEvent(
+      AuditEventType.USER_ROLE_ASSIGNED,
+      params.userId,
+      {
+        userId: decodedToken.uid,
+        userEmail: decodedToken.email,
+        userRole: adminRole,
+        ipAddress:
+          request.headers.get("x-forwarded-for") ||
+          request.headers.get("x-real-ip") ||
+          "unknown",
+        userAgent: request.headers.get("user-agent") || "unknown",
+      },
+      {
+        assignedRole: newRole,
+        previousRole: "unknown", // Could be enhanced by fetching previous role
+      },
+    );
+
     return NextResponse.json({ success: true, role: newRole });
   } catch (error) {
     console.error("Error assigning user role:", error);
@@ -110,13 +134,14 @@ export async function DELETE(
   { params }: { params: { userId: string } },
 ) {
   try {
-    const sessionCookie = cookies().get("session")?.value;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("session")?.value;
     if (!sessionCookie) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const decodedToken = await verifyIdToken(sessionCookie);
-    const { role: adminRole } = parseCustomClaims(decodedToken);
+    const decodedToken = await auth.verifyIdToken(sessionCookie);
+    const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
 
     // Get current user role to check permissions
     const currentUserRole = await getUserRole(params.userId);
@@ -147,6 +172,26 @@ export async function DELETE(
         { status: 500 },
       );
     }
+
+    // Audit the role removal
+    await auditAdminEvent(
+      AuditEventType.USER_ROLE_REMOVED,
+      params.userId,
+      {
+        userId: decodedToken.uid,
+        userEmail: decodedToken.email,
+        userRole: adminRole,
+        ipAddress:
+          request.headers.get("x-forwarded-for") ||
+          request.headers.get("x-real-ip") ||
+          "unknown",
+        userAgent: request.headers.get("user-agent") || "unknown",
+      },
+      {
+        removedRole: currentUserRole.role,
+        newRole: Role.USER,
+      },
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

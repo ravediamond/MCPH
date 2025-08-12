@@ -95,7 +95,8 @@ export default function FAQPage() {
                 Frequently Asked Questions
               </h1>
               <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-                Common questions about our Enterprise AI Artifact Management Platform
+                Common questions about our Enterprise AI Artifact Management
+                Platform
               </p>
             </div>
           </div>
@@ -141,8 +142,8 @@ export default function FAQPage() {
                 Need Additional Support?
               </h2>
               <p className="text-slate-600 mb-4">
-                Contact our enterprise support team for implementation assistance, 
-                custom configuration, or technical questions.
+                Contact our enterprise support team for implementation
+                assistance, custom configuration, or technical questions.
               </p>
               <Link
                 href="/contact"

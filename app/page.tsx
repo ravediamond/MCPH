@@ -17,8 +17,8 @@ export default function Home() {
               Enterprise AI Artifact Management Platform
             </h1>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
-              Securely store, manage, and collaborate on AI-generated artifacts 
-              within your organization. Built for enterprise teams that need 
+              Securely store, manage, and collaborate on AI-generated artifacts
+              within your organization. Built for enterprise teams that need
               compliance, auditability, and controlled access.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -47,7 +47,7 @@ export default function Home() {
                 Enterprise Security
               </h3>
               <p className="text-slate-600">
-                Role-based access controls, audit logging, and compliance-ready 
+                Role-based access controls, audit logging, and compliance-ready
                 data management for regulated environments.
               </p>
             </div>
@@ -60,7 +60,7 @@ export default function Home() {
                 Team Collaboration
               </h3>
               <p className="text-slate-600">
-                Controlled sharing within your organization with granular 
+                Controlled sharing within your organization with granular
                 permissions and version tracking for all artifacts.
               </p>
             </div>
@@ -73,7 +73,7 @@ export default function Home() {
                 AI Integration
               </h3>
               <p className="text-slate-600">
-                Seamlessly integrate with your existing AI workflows and 
+                Seamlessly integrate with your existing AI workflows and
                 enterprise systems through secure APIs and connectors.
               </p>
             </div>
@@ -89,7 +89,7 @@ export default function Home() {
               Built for Enterprise Requirements
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Meet your organization's security, compliance, and governance 
+              Meet your organization's security, compliance, and governance
               needs while enabling productive AI collaboration.
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function Home() {
                 Request Enterprise Access
               </h4>
               <p className="text-slate-600 mb-6">
-                Contact our enterprise team to discuss deployment options, 
+                Contact our enterprise team to discuss deployment options,
                 security requirements, and custom integration needs.
               </p>
               <Link

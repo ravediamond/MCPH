@@ -21,7 +21,7 @@ export async function POST(
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
         { error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function POST(
       console.warn(`Invalid authentication token:`, error);
       return NextResponse.json(
         { error: "Invalid authentication token" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 

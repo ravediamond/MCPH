@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
             <p className="text-gray-600 text-sm">
-              Enterprise AI Artifact Management Platform — Secure storage and 
+              Enterprise AI Artifact Management Platform — Secure storage and
               collaboration for AI-generated content.
             </p>
           </div>
@@ -49,7 +49,8 @@ export default function Footer() {
 
         <div className="mt-4 pt-4 border-t border-gray-200 flex justify-center">
           <p className="text-gray-500 text-xs">
-            &copy; {new Date().getFullYear()} Enterprise AI Platform. All rights reserved.
+            &copy; {new Date().getFullYear()} Enterprise AI Platform. All rights
+            reserved.
           </p>
         </div>
       </div>

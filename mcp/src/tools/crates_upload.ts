@@ -5,9 +5,14 @@ import {
   generateUploadUrl,
   uploadCrate,
 } from "../../../services/storageService";
-import { Crate, CrateCategory } from "../../../shared/types/crate";
+import {
+  Crate,
+  CrateCategory,
+  AuditEventType,
+} from "../../../shared/types/crate";
 import { AuthenticatedRequest } from "../../../lib/apiKeyAuth";
 import { auth } from "../../../lib/firebaseAdmin";
+import { auditMcpEvent, auditCrateEvent } from "../../../services/auditService";
 import bcrypt from "bcrypt";
 import { z } from "zod";
 
@@ -285,6 +290,43 @@ export function registerCratesUploadTool(server: McpServer): void {
         effectiveFileName,
         contentType,
         partialCrate,
+      );
+
+      // Audit the MCP tool call and crate creation
+      const auditContext = {
+        userId: ownerId,
+        mcpTool: "crates_upload",
+        mcpClientId: req?.clientName || "unknown",
+        apiKeyId: req?.user?.apiKeyId,
+        ipAddress: req?.ip,
+        userAgent: req?.get?.("User-Agent"),
+        requestId: req?.requestId,
+      };
+
+      await auditMcpEvent(AuditEventType.MCP_TOOL_CALLED, auditContext, {
+        toolName: "crates_upload",
+        fileName: effectiveFileName,
+        contentType,
+        category,
+        isPublic,
+        hasPassword: !!password,
+        dataSize: buffer.length,
+      });
+
+      await auditCrateEvent(
+        AuditEventType.CRATE_CREATED,
+        crate.id,
+        crate.title,
+        auditContext,
+        {
+          fileName: effectiveFileName,
+          contentType,
+          category,
+          size: crate.size,
+          isPublic: crate.shared.public,
+          hasPassword: !!crate.shared.passwordHash,
+          tags: crate.tags,
+        },
       );
 
       return {
