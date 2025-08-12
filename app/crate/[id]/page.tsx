@@ -120,6 +120,7 @@ export default function CratePage() {
   const [sharingError, setSharingError] = useState<string | null>(null);
   const [sharingSuccess, setSharingSuccess] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState("");
+  const [socialShareMessage, setSocialShareMessage] = useState("");
   const [sharingLoading, setSharingLoading] = useState(false);
 
   // New copy-related state variables

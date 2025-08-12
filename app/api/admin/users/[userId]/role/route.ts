@@ -14,7 +14,7 @@ import { AuditEventType } from "@/shared/types/crate";
 // GET /api/admin/users/[userId]/role - Get user role
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const cookieStore = await cookies();
@@ -34,7 +34,8 @@ export async function GET(
       );
     }
 
-    const userRole = await getUserRole(params.userId);
+    const resolvedParams = await params;
+    const userRole = await getUserRole(resolvedParams.userId);
 
     if (!userRole) {
       return NextResponse.json({
@@ -58,7 +59,7 @@ export async function GET(
 // PUT /api/admin/users/[userId]/role - Assign role to user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const cookieStore = await cookies();
@@ -84,8 +85,9 @@ export async function PUT(
       );
     }
 
+    const resolvedParams = await params;
     const success = await assignUserRole(
-      params.userId,
+      resolvedParams.userId,
       newRole,
       decodedToken.uid,
       adminRole,
@@ -101,7 +103,7 @@ export async function PUT(
     // Audit the role assignment
     await auditAdminEvent(
       AuditEventType.USER_ROLE_ASSIGNED,
-      params.userId,
+      resolvedParams.userId,
       {
         userId: decodedToken.uid,
         userEmail: decodedToken.email,
@@ -131,7 +133,7 @@ export async function PUT(
 // DELETE /api/admin/users/[userId]/role - Remove role from user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { userId: string } },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const cookieStore = await cookies();
@@ -143,8 +145,10 @@ export async function DELETE(
     const decodedToken = await auth.verifyIdToken(sessionCookie);
     const { role: adminRole } = parseCustomClaims(decodedToken.customClaims || {});
 
+    const resolvedParams = await params;
+    
     // Get current user role to check permissions
-    const currentUserRole = await getUserRole(params.userId);
+    const currentUserRole = await getUserRole(resolvedParams.userId);
     if (!currentUserRole) {
       return NextResponse.json(
         { error: "User has no role to remove" },
@@ -161,7 +165,7 @@ export async function DELETE(
     }
 
     const success = await removeUserRole(
-      params.userId,
+      resolvedParams.userId,
       decodedToken.uid,
       adminRole,
     );
@@ -176,7 +180,7 @@ export async function DELETE(
     // Audit the role removal
     await auditAdminEvent(
       AuditEventType.USER_ROLE_REMOVED,
-      params.userId,
+      resolvedParams.userId,
       {
         userId: decodedToken.uid,
         userEmail: decodedToken.email,

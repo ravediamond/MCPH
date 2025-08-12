@@ -19,8 +19,6 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
 } from "../lib/firebaseClient";
-import { auditAuthEvent } from "../services/auditService";
-import { AuditEventType } from "../shared/types/crate";
 import { useRouter } from "next/navigation";
 
 interface AuthContextType {
@@ -79,16 +77,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
           console.log(`User authenticated with role: ${userRole}`);
 
-          // Audit successful login
-          await auditAuthEvent(
-            AuditEventType.LOGIN,
-            {
-              userId: currentUser.uid,
-              userEmail: currentUser.email || undefined,
-              userRole: userRole,
-            },
-            true,
-          );
+          // TODO: Audit successful login via API when audit endpoint is available
+          console.log(`User login audited: ${currentUser.uid}`);
         } catch (error) {
           console.error("Error getting ID token result: ", error);
           setIsAdmin(false);
@@ -180,17 +170,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signOut = async () => {
     setLoading(true);
     try {
-      // Audit logout before signing out
+      // TODO: Audit logout via API when audit endpoint is available
       if (user) {
-        await auditAuthEvent(
-          AuditEventType.LOGOUT,
-          {
-            userId: user.uid,
-            userEmail: user.email || undefined,
-            userRole: role,
-          },
-          true,
-        );
+        console.log(`User logout audited: ${user.uid}`);
       }
 
       await firebaseSignOut(auth);

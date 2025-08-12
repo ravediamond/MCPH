@@ -34,7 +34,6 @@ import CrateTag from "../../components/home/CrateTag";
 import CratesList from "../../components/home/CratesList";
 import { Crate } from "@/app/types/crate";
 import UploadModal from "../../components/modals/UploadModal";
-import FeedbackModal from "../../components/modals/FeedbackModal";
 
 interface UserQuota {
   remaining: number;
@@ -92,7 +91,6 @@ export default function CratesPage() {
 
   // Modal states
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
 
   // --- Embedding-based search state ---
   const [embeddingSearchResults, setEmbeddingSearchResults] = useState<
@@ -604,13 +602,6 @@ export default function CratesPage() {
 
             {/* Secondary actions */}
             <div className="flex space-x-3">
-              <button
-                onClick={() => setFeedbackModalOpen(true)}
-                className="flex items-center px-3 py-2 bg-transparent border border-blue-500 text-blue-500 rounded-md hover:bg-blue-50 transition-colors"
-              >
-                <FaComments className="mr-2" />
-                Create Feedback
-              </button>
               <Link
                 href="/api-keys"
                 className="flex items-center px-3 py-2 bg-transparent border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
@@ -716,16 +707,6 @@ export default function CratesPage() {
         }}
       />
 
-      {/* Feedback Modal */}
-      <FeedbackModal
-        isOpen={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
-        onSuccess={(data) => {
-          setActionSuccess("Feedback template created successfully!");
-          setTimeout(() => setActionSuccess(null), 3000);
-        }}
-        feedbackTemplatesQuota={userFeedbackTemplates}
-      />
     </div>
   );
 }
