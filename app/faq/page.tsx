@@ -12,58 +12,52 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
-    id: "chatgpt-pro-requirement",
-    question: "Do I need ChatGPT Pro to use MCPH with ChatGPT?",
+    id: "platform-overview",
+    question: "What is the Enterprise AI Artifact Management Platform?",
     answer:
-      "Yes, MCPH custom connectors require ChatGPT Pro or higher plans (Pro, Team, Enterprise, or Edu workspaces). This is because custom connectors that follow the Model Context Protocol (MCP) are only available for ChatGPT Pro and higher tiers. Claude users can access MCPH without any subscription requirements.",
+      "Our platform provides secure storage, management, and collaboration capabilities for AI-generated artifacts within enterprise environments. It enables teams to organize, share, and maintain compliance for all AI-created content with enterprise-grade security and audit controls.",
   },
   {
-    id: "what-is-mcph",
-    question: "What is MCPH?",
+    id: "security-compliance",
+    question: "What security and compliance features are included?",
     answer:
-      "MCPH (Model Context Protocol Hub) is an AI artifact storage and sharing platform that lets you save and share anything from your AI chats with permanent links. One click in Claude or ChatGPT Pro+ creates a shareable link that works everywhere.",
+      "The platform includes AES-256 encryption, role-based access controls, comprehensive audit logging, SSO/SAML integration, and compliance reporting. All data is stored in enterprise-grade cloud infrastructure with proper backup and disaster recovery procedures.",
   },
   {
-    id: "how-sharing-works",
-    question: "How does sharing work?",
+    id: "team-collaboration",
+    question: "How does team collaboration work?",
     answer:
-      "When you make a crate public, we generate a permanent link that anyone can access without needing to sign up or log in. You can share this link via email, social media, or any other platform. The recipient just clicks the link to view your content.",
+      "Team members can securely share artifacts within the organization using role-based permissions. Content can be shared via secure links with access controls, password protection, and expiration policies as defined by your enterprise security policies.",
   },
   {
-    id: "free-account-limits",
-    question: "What are the limits for free accounts?",
+    id: "supported-content-types",
+    question: "What types of AI artifacts can be stored?",
     answer:
-      "Free accounts include: up to 10MB file size, 500MB total storage, 10 shared crates maximum, 5 feedback templates maximum, permanent storage (no expiration), password protection for sensitive content, AES-256 encryption, and secure HTTPS access.",
+      "The platform supports all AI-generated content types including text documents, code files, data analysis results, reports, images, charts, structured data (JSON, CSV), and other file formats up to your organization's configured size limits.",
   },
   {
-    id: "supported-file-types",
-    question: "What types of content can I save?",
+    id: "access-controls",
+    question: "How are access permissions managed?",
     answer:
-      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), Recipe (AI task instructions), and Polls (created via AI tools only).",
+      "Access is managed through role-based permissions integrated with your organization's identity provider. Administrators can define user roles, team access levels, and content sharing policies that align with your enterprise security requirements.",
   },
   {
-    id: "content-security",
-    question: "How secure is my content?",
+    id: "api-integration",
+    question: "How does the platform integrate with existing AI tools?",
     answer:
-      "All content is encrypted using AES-256 encryption and transmitted over HTTPS. You can add password protection to sensitive content for an extra layer of security. We use Google Cloud Storage for reliable, enterprise-grade file storage.",
+      "The platform provides enterprise APIs and supports Model Context Protocol (MCP) for seamless integration with AI tools like Claude and ChatGPT. Integration is configured through your organization's API management system with proper authentication and rate limiting.",
   },
   {
-    id: "mcp-setup",
-    question: "How do I set up MCP with my AI tool?",
+    id: "data-retention",
+    question: "What are the data retention and lifecycle policies?",
     answer:
-      "First, create a free account at mcph.io and generate an API key. Then configure your AI tool to use our MCP endpoint: https://api.mcph.io/mcp with your API key. The specific setup steps vary by tool, but most have a dedicated section for MCP server configuration.",
+      "Data retention is configurable according to your organization's policies. Content can be set to expire automatically, archived to cold storage, or maintained indefinitely. All retention actions are logged for compliance auditing.",
   },
   {
-    id: "content-expiration",
-    question: "Do my files expire?",
+    id: "audit-logging",
+    question: "What audit and monitoring capabilities are available?",
     answer:
-      "Content uploaded by authenticated users is stored permanently and never expires (until you delete it). However, download links generated for sharing expire after 24 hours for security reasons. The actual content remains accessible through the public sharing link.",
-  },
-  {
-    id: "claude-ai-connection",
-    question: "How do I connect MCPH to Claude AI?",
-    answer:
-      "To connect MCPH to Claude AI, go to https://claude.ai/settings/connectors and add a custom connector. Set the name to 'MCPH' and use the MCP endpoint URL: https://api.mcph.io/mcp. You'll need your MCPH API key which you can generate from your account settings.",
+      "Comprehensive audit logs track all user actions, content access, sharing activities, and system events. Logs can be exported to your SIEM system and include detailed timestamps, user identification, and action descriptions for compliance reporting.",
   },
 ];
 
@@ -75,89 +69,87 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-slate-50 min-h-screen">
       <div className="py-8 px-4 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Breadcrumb navigation */}
           <nav className="mb-8">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-slate-600">
               <Link
                 href="/"
-                className="inline-flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-primary-600 transition-all duration-200 hover:shadow-sm"
+                className="inline-flex items-center px-3 py-2 text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-800 transition-all duration-200 hover:shadow-sm"
               >
                 <Home className="w-4 h-4 mr-2" />
                 Home
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="inline-flex items-center px-3 py-2 text-gray-600 bg-gray-100 rounded-lg font-medium">
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <span className="inline-flex items-center px-3 py-2 text-slate-600 bg-slate-100 rounded-lg font-medium">
                 FAQ
               </span>
             </div>
           </nav>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              <h1 className="text-4xl font-bold text-slate-900 mb-4 leading-tight">
                 Frequently Asked Questions
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
-                Everything you need to know about MCPH
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                Common questions about our Enterprise AI Artifact Management Platform
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="space-y-4">
-              {faqItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
+          <div className="space-y-4">
+            {faqItems.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden"
+              >
+                <button
+                  onClick={() => toggleItem(item.id)}
+                  className="w-full px-6 py-4 text-left hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200"
                 >
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-900 pr-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-slate-900 pr-4">
                       {item.question}
                     </h3>
-                    {expandedItem === item.id ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    )}
-                  </button>
-                  {expandedItem === item.id && (
-                    <div className="px-6 py-4 bg-white border-t border-gray-200">
-                      <p className="text-gray-700 leading-relaxed">
-                        {item.answer}
-                      </p>
+                    <div className="flex-shrink-0">
+                      {expandedItem === item.id ? (
+                        <ChevronUp className="w-5 h-5 text-slate-500" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-slate-500" />
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  </div>
+                </button>
 
-            <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                Still have questions?
-              </h3>
-              <p className="text-blue-800 mb-4">
-                Can't find what you're looking for? We're here to help!
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/docs"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  View Documentation
-                </Link>
-                <Link
-                  href="/feedback/create"
-                  className="inline-flex items-center px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                >
-                  Contact Support
-                </Link>
+                {expandedItem === item.id && (
+                  <div className="px-6 pb-4 border-t border-slate-100">
+                    <p className="text-slate-700 leading-relaxed pt-4">
+                      {item.answer}
+                    </p>
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="bg-slate-100 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                Need Additional Support?
+              </h2>
+              <p className="text-slate-600 mb-4">
+                Contact our enterprise support team for implementation assistance, 
+                custom configuration, or technical questions.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-slate-800 hover:bg-slate-900 transition-colors duration-200"
+              >
+                Contact Support
+              </Link>
             </div>
           </div>
         </div>

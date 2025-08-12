@@ -29,31 +29,34 @@ export async function GET(
       );
     }
 
-    // Check access permissions
+    // Require authentication - no anonymous access
     const authHeader = req.headers.get("authorization");
-    let userId = "anonymous";
-    let isAuthenticated = false;
-
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7);
-      try {
-        const decodedToken = await auth.verifyIdToken(token);
-        userId = decodedToken.uid;
-        isAuthenticated = true;
-      } catch (error) {
-        console.warn(`Invalid authentication token:`, error);
-      }
-    } else {
-      console.log(`No valid Bearer token found. Using anonymous access.`);
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
     }
 
-    // Check if user has access to this crate
-    const isOwner = crate.ownerId === userId;
-    const isPublic = crate.shared?.public || false;
-    // Simplified for v1: No per-user sharing, only public/private
-    const isSharedWithUser = false; // Removed sharedWith array in v1
+    const token = authHeader.substring(7);
+    let userId: string;
+    try {
+      const decodedToken = await auth.verifyIdToken(token);
+      userId = decodedToken.uid;
+    } catch (error) {
+      console.warn(`Invalid authentication token:`, error);
+      return NextResponse.json(
+        { error: "Invalid authentication token" },
+        { status: 401 }
+      );
+    }
 
-    if (!isOwner && !isPublic) {
+    // Check if user has access to this crate - only owner or shared access
+    const isOwner = crate.ownerId === userId;
+    const hasSharedAccess = crate.shared?.public || false; // Will be replaced with team-based access
+    // TODO: Implement proper team-based access control
+
+    if (!isOwner && !hasSharedAccess) {
       return NextResponse.json(
         { error: "You don't have permission to access this crate" },
         { status: 403 },

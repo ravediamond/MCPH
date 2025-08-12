@@ -68,7 +68,7 @@ export function registerCratesSearchTool(server: McpServer): void {
         "• Text-based search on the searchField (a combination of title, description, tags, and metadata)\n" +
         "• Structured tag filtering for precise organization-based searches\n" +
         "• Results are ranked by relevance and deduplicated\n" +
-        "• Note: Content-based semantic search is available in the Pro version\n\n" +
+        "• Full-text semantic search across all accessible artifacts\n\n" +
         "AI usage examples:\n" +
         "• \"search my crates for 'report'\"\n" +
         '• "search my crates with tags ["project:website", "status:final"] for \'authentication\'"',

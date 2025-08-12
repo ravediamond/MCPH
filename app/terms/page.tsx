@@ -72,7 +72,7 @@ export default function TermsPage() {
               days in cold backup.
             </li>
             <li>
-              Maximum file size limit of 10MB per upload for free accounts
+              File size and storage limits per organizational policy
             </li>
             <li>Rate limits to prevent abuse</li>
           </ul>

@@ -19,23 +19,23 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata = {
   metadataBase: new URL("https://mcph.io"),
-  title: "MCPH | Secure, Simple Crate Sharing",
+  title: "Enterprise AI Artifact Management Platform",
   description:
-    "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage. Authentication required to upload; anyone can view shared links.",
+    "Enterprise-grade platform for managing, storing, and collaborating on AI-generated artifacts within your organization. Built with security, compliance, and scalability as core principles.",
   keywords: [
-    "crate sharing",
-    "permanent storage",
-    "secure crate transfer",
-    "crate upload",
-    "AI artifacts",
+    "enterprise AI management",
+    "artifact storage",
+    "team collaboration",
+    "compliance",
+    "AI governance",
   ],
-  authors: [{ name: "MCPH Team" }],
+  authors: [{ name: "Enterprise AI Platform Team" }],
   openGraph: {
-    title: "MCPH | Secure, Simple Crate Sharing",
+    title: "Enterprise AI Artifact Management Platform",
     description:
-      "MCPH – AI artifact storage & sharing system. Package, store, and share your AI-generated content in crates with permanent storage. Authentication required to upload; anyone can view shared links.",
+      "Enterprise-grade platform for managing, storing, and collaborating on AI-generated artifacts within your organization. Built with security, compliance, and scalability as core principles.",
     url: "https://mcph.io",
-    siteName: "MCPH",
+    siteName: "Enterprise AI Platform",
     images: [
       {
         url: "/icon-transparent.png",
@@ -49,7 +49,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "MCPH | Secure, Simple Crate Sharing",
+    title: "Enterprise AI Artifact Management Platform",
     description:
       "Upload and share crates that automatically expire. No account required.",
     images: ["/icon-transparent.png"],
