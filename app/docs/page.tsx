@@ -10,13 +10,14 @@ export default function DocsPage() {
 
   // Navigation items
   const navItems = [
-    { id: "what-is-mcph", title: "What is MCPH?" },
-    { id: "ai-assistants", title: "Using with AI Assistants" },
-    { id: "features", title: "Features" },
+    { id: "platform-overview", title: "Platform Overview" },
+    { id: "enterprise-features", title: "Enterprise Features" },
+    { id: "security-compliance", title: "Security & Compliance" },
     { id: "getting-started", title: "Getting Started" },
-    { id: "mcp-tools", title: "Available MCP Tools" },
-    { id: "mcp-endpoint", title: "How MCP Endpoint Works" },
-    { id: "learn-more", title: "Learn More" },
+    { id: "api-integration", title: "API Integration" },
+    { id: "deployment-options", title: "Deployment Options" },
+    { id: "admin-management", title: "Administration" },
+    { id: "support-resources", title: "Support & Resources" },
   ];
 
   // Smooth scroll to section
@@ -127,120 +128,162 @@ export default function DocsPage() {
               </div>
             </nav>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-sm border border-blue-200 p-8 mb-8">
               <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  MCPH Documentation
+                <h1 className="text-4xl font-bold text-slate-900 mb-4 leading-tight">
+                  Enterprise AI Artifact Management
                 </h1>
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  Save and share anything from your AI chats with permanent
-                  links
+                <p className="text-xl text-slate-600 leading-relaxed">
+                  Comprehensive documentation for deploying and managing your enterprise AI artifact platform
                 </p>
+                <div className="mt-6 flex justify-center space-x-4 text-sm">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">SOC 2 Certified</span>
+                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full font-medium">GDPR Compliant</span>
+                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full font-medium">Enterprise Ready</span>
+                </div>
               </div>
             </div>
 
             <div
-              id="what-is-mcph"
+              id="platform-overview"
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6"
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
-                What is MCPH?
+                Platform Overview
               </h2>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                <b>MCPH</b> (Model Context Protocol Hub) is an AI artifact
-                storage and sharing platform that lets you save and share
-                anything from your AI chats with permanent links. One click in
-                Claude or ChatGPT creates a shareable link that works
-                everywhere.
+                The <b>Enterprise AI Artifact Management Platform</b> is a secure, scalable solution designed for organizations that need to manage, govern, and collaborate on AI-generated content at scale. Built with enterprise requirements in mind, it provides comprehensive security, compliance, and administrative controls.
               </p>
-              <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-                Key benefits:
-              </p>
-              <ul className="list-disc pl-6 text-gray-700 space-y-3 mb-6 leading-relaxed">
-                <li>
-                  <b>Never lose AI creations</b> - Everything saved permanently
-                  and searchable
-                </li>
-                <li>
-                  <b>Share with one link</b> - No login required for viewers to
-                  access content
-                </li>
-                <li>
-                  <b>Works in Claude & ChatGPT Pro+</b> - Direct integration
-                  with your favorite AI tools
-                </li>
-                <li>
-                  <b>Simple access model</b> - Upload requires login, viewing
-                  doesn't
-                </li>
-                <li>
-                  <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images,
-                  Code, Data, and Polls
-                </li>
-              </ul>
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Core Capabilities</h3>
+                  <ul className="space-y-3 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">•</span>
+                      <span><b>Secure AI Content Storage</b> - Enterprise-grade storage with encryption at rest and in transit</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">•</span>
+                      <span><b>Role-Based Access Control</b> - Granular permissions aligned with your organizational structure</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">•</span>
+                      <span><b>Comprehensive Audit Trails</b> - Complete visibility into all platform activities for compliance</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">•</span>
+                      <span><b>Multi-AI Tool Integration</b> - Native support for Claude, GPT, Gemini, and custom LLMs</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Enterprise Benefits</h3>
+                  <ul className="space-y-3 text-gray-700">
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">✓</span>
+                      <span><b>Regulatory Compliance</b> - SOC 2, GDPR, HIPAA, and industry-specific requirements</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">✓</span>
+                      <span><b>Data Sovereignty</b> - Choose your data residency and maintain full control</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">✓</span>
+                      <span><b>Enterprise SSO</b> - Seamless integration with your identity provider</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">✓</span>
+                      <span><b>24/7 Enterprise Support</b> - Dedicated support team and account management</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
 
-              {/* Why crate? call-out box */}
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
                 <h3 className="text-lg font-bold text-blue-800 mb-3 flex items-center">
-                  <span className="bg-blue-100 p-2 rounded-lg mr-3">✨</span>
-                  How It Works
+                  <span className="bg-blue-100 p-2 rounded-lg mr-3">🏢</span>
+                  Enterprise Deployment Process
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl mb-2">🔑</div>
+                    <div className="text-2xl mb-2">🔒</div>
                     <h4 className="font-semibold text-gray-800 mb-1">
-                      1. Sign in with Google
+                      1. Security Assessment
                     </h4>
                     <p className="text-sm text-gray-600">
-                      Quick setup - no passwords to remember
+                      Complete security review and compliance validation
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">⚙️</div>
+                    <h4 className="font-semibold text-gray-800 mb-1">
+                      2. Environment Setup
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      Configure your dedicated instance with your requirements
                     </p>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl mb-2">🔌</div>
                     <h4 className="font-semibold text-gray-800 mb-1">
-                      2. Connect to AI tools
+                      3. Integration
                     </h4>
                     <p className="text-sm text-gray-600">
-                      Works with Claude, ChatGPT Pro+, and others
+                      Connect to your SSO, AI tools, and existing systems
                     </p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl mb-2">💫</div>
+                    <div className="text-2xl mb-2">🚀</div>
                     <h4 className="font-semibold text-gray-800 mb-1">
-                      3. Save & share anything
+                      4. Go Live
                     </h4>
                     <p className="text-sm text-gray-600">
-                      One command creates shareable links instantly
+                      Deploy to your organization with full training and support
                     </p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-gray-600">
-                MCPH is built on the{" "}
-                <a
-                  href="https://github.com/cloudflare/agents/tree/main/examples/mcp"
-                  className="text-blue-500 hover:underline"
-                >
-                  Model Context Protocol (MCP)
-                </a>
-                , which enables AI models to maintain and share context across
-                interactions.
-              </p>
+              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                <h4 className="font-semibold text-gray-800 mb-3">Technical Foundation</h4>
+                <p className="text-gray-600 mb-3">
+                  Built on the{" "}
+                  <a
+                    href="https://github.com/cloudflare/agents/tree/main/examples/mcp"
+                    className="text-blue-500 hover:underline font-medium"
+                  >
+                    Model Context Protocol (MCP)
+                  </a>
+                  , providing standardized AI tool integration and enterprise-grade scalability.
+                </p>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-700">Architecture:</span>
+                    <p className="text-gray-600">Microservices, API-first design</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Infrastructure:</span>
+                    <p className="text-gray-600">Cloud-native, auto-scaling</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Security:</span>
+                    <p className="text-gray-600">Zero-trust, end-to-end encryption</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div
-              id="ai-assistants"
+              id="enterprise-features"
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6"
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
-                Using MCPH with AI Assistants
+                Enterprise Features
               </h2>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                MCPH tools integrate with AI assistants like Claude and ChatGPT
-                to provide seamless file management through natural
-                conversation. You can manage your files without learning
-                commands or APIs—just speak naturally about what you want to do.
+                Our enterprise platform provides advanced capabilities designed for large organizations,
+                including sophisticated governance controls, enterprise-grade security, and comprehensive
+                administrative tools that scale with your business needs.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

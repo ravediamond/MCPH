@@ -117,6 +117,12 @@ export default function Header() {
               Documentation
             </Link>
             <Link
+              href="/security"
+              className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/security") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
+            >
+              Security
+            </Link>
+            <Link
               href="/faq"
               className={`text-gray-700 hover:text-gray-900 font-medium ${isActive("/faq") ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
             >
@@ -238,7 +244,14 @@ export default function Header() {
                 className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/docs") ? "bg-gray-100 text-gray-900" : ""}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                API Docs
+                Documentation
+              </Link>
+              <Link
+                href="/security"
+                className={`text-gray-700 hover:text-gray-900 px-4 py-2 ${isActive("/security") ? "bg-gray-100 text-gray-900" : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Security
               </Link>
               <Link
                 href="/faq"

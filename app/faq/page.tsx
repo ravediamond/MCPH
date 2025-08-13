@@ -136,21 +136,36 @@ export default function FAQPage() {
             ))}
           </div>
 
-          <div className="mt-12 text-center">
-            <div className="bg-slate-100 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">
-                Need Additional Support?
-              </h2>
-              <p className="text-slate-600 mb-4">
-                Contact our enterprise support team for implementation
-                assistance, custom configuration, or technical questions.
-              </p>
-              <Link
-                href="/contact"
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-slate-800 hover:bg-slate-900 transition-colors duration-200"
-              >
-                Contact Support
-              </Link>
+          <div className="mt-12">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
+                <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                  📞 Enterprise Sales
+                </h2>
+                <p className="text-slate-600 mb-4">
+                  Ready to deploy? Our enterprise team will help you evaluate requirements, plan your deployment, and provide custom pricing.
+                </p>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-semibold rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+                >
+                  Contact Sales Team
+                </Link>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                <h2 className="text-xl font-semibold text-slate-900 mb-3">
+                  ⚙️ Technical Support
+                </h2>
+                <p className="text-slate-600 mb-4">
+                  Need implementation assistance or have technical questions? Our enterprise support team is available 24/7 with guaranteed response times.
+                </p>
+                <Link
+                  href="/support"
+                  className="inline-flex items-center px-6 py-3 border-2 border-green-600 text-base font-semibold rounded-lg text-green-700 bg-white hover:bg-green-50 transition-all duration-200"
+                >
+                  Get Technical Support
+                </Link>
+              </div>
             </div>
           </div>
         </div>
