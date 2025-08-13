@@ -23,7 +23,10 @@
     "docker:build:mcp": "docker build -t mcph-mcp -f mcp/Dockerfile .",
     "docker:run:mcp": "docker run -p 8080:8080 mcph-mcp",
     "gcp:deploy": "gcloud run deploy mcph-webapp --source .",
-    "gcp:deploy:mcp": "cd mcp && gcloud run deploy mcph-mcp --source ."
+    "gcp:deploy:mcp": "cd mcp && gcloud run deploy mcph-mcp --source .",
+    "deploy": "./deploy.sh",
+    "deploy:local": "docker-compose up -d --build",
+    "deploy:stop": "docker-compose down"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
