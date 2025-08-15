@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Script to initialize Firebase Firestore collections
+# Script to initialize Firebase Firestore collections for MCP Storage Hub
 
-echo "Firebase Firestore Initialization Script"
-echo "---------------------------------------"
-echo "This script will initialize the basic collections in your Firebase Firestore database."
+echo "Firebase Firestore Initialization Script for MCP Storage Hub"
+echo "-----------------------------------------------------------"
+echo "This script will initialize the storage collections and indexes in your Firebase Firestore database."
+echo "It sets up collections for AI artifact storage, tagging, search, and user management."
 echo "It uses environment variables from .env.local for configuration."
 echo ""
 
@@ -210,12 +211,6 @@ gcloud firestore indexes composite create \
   --query-scope=COLLECTION \
   --field-config="vector-config={\"dimension\":\"768\",\"flat\":{}}",field-path=embedding
 
-echo "--- Creating composite index for feedback (status + timestamp) ---"
-gcloud firestore indexes composite create \
-  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="feedback" \
-  --field-config="field-path=status,order=ASCENDING" \
-  --field-config="field-path=timestamp,order=DESCENDING"
 
 echo "--- Creating composite index for waitingList (createdAt) ---"
 gcloud firestore indexes composite create \
@@ -223,27 +218,6 @@ gcloud firestore indexes composite create \
   --collection-group="waitingList" \
   --field-config="field-path=createdAt,order=DESCENDING"
 
-# Add feedback template indexes
-echo "--- Creating composite index for feedbackTemplates (ownerId + createdAt) ---"
-gcloud firestore indexes composite create \
-  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="feedbackTemplates" \
-  --field-config="field-path=ownerId,order=ASCENDING" \
-  --field-config="field-path=createdAt,order=DESCENDING"
-
-echo "--- Creating composite index for feedbackTemplates (isPublic + createdAt) ---"
-gcloud firestore indexes composite create \
-  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="feedbackTemplates" \
-  --field-config="field-path=isPublic,order=ASCENDING" \
-  --field-config="field-path=createdAt,order=DESCENDING"
-
-echo "--- Creating composite index for feedbackResponses (templateId + submittedAt) ---"
-gcloud firestore indexes composite create \
-  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
-  --collection-group="feedbackResponses" \
-  --field-config="field-path=templateId,order=ASCENDING" \
-  --field-config="field-path=submittedAt,order=DESCENDING"
 
 # Add indexes for crateAccess collection (for real usage statistics)
 echo "--- Creating composite index for crateAccess (crateId + date) ---"
@@ -271,18 +245,48 @@ gcloud firestore indexes composite create \
   --field-config="field-path=category,order=ASCENDING" \
   --field-config="field-path=createdAt,order=DESCENDING"
 
+# Add indexes for MCP client tracking
+echo "--- Creating composite index for mcpClients (userId + lastSeenAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="mcpClients" \
+  --field-config="field-path=userId,order=ASCENDING" \
+  --field-config="field-path=lastSeenAt,order=DESCENDING"
+
+# Add indexes for user usage tracking
+echo "--- Creating composite index for userUsage (userId + yearMonth) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="userUsage" \
+  --field-config="field-path=userId,order=ASCENDING" \
+  --field-config="field-path=yearMonth,order=DESCENDING"
+
+# Add index for crate content type filtering
+echo "--- Creating composite index for crates by content type (ownerId + contentType + createdAt) ---"
+gcloud firestore indexes composite create \
+  --project="${NEXT_PUBLIC_FIREBASE_PROJECT_ID}" \
+  --collection-group="crates" \
+  --field-config="field-path=ownerId,order=ASCENDING" \
+  --field-config="field-path=contentType,order=ASCENDING" \
+  --field-config="field-path=createdAt,order=DESCENDING"
+
 echo "---------------------------------------"
 echo "Firebase Firestore initialization script finished."
 echo "Review the output above for any errors."
 echo ""
 echo "Your Firestore database should now have these collections initialized:"
-echo "- crates: For storing crates with embeddings for vector search"
+echo "- crates: For storing AI artifacts with embeddings for vector search"
 echo "- metrics: For tracking usage statistics"
 echo "- events: For application event logs"
 echo "- apiKeys: For API key management"
-echo "- feedback: For storing user feedback submissions"
 echo "- waitingList: For Pro version waiting list subscribers"
-echo "- feedbackTemplates: For storing feedback form templates"
-echo "- feedbackResponses: For storing feedback responses"
 echo "- crateAccess: For storing daily access statistics (views and downloads)"
+echo "- mcpClients: For tracking MCP client registrations"
+echo "- userUsage: For tracking user tool usage limits"
+echo ""
+echo "Key features enabled:"
+echo "- Advanced tagging and search with composite indexes"
+echo "- Vector search with embeddings for content similarity"
+echo "- Discoverable public gallery for shared crates"
+echo "- Usage tracking and rate limiting"
 echo ""

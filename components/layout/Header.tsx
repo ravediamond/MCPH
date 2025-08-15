@@ -3,14 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  FaBars,
-  FaTimes,
-  FaUserCircle,
-  FaUpload,
-  FaHome,
-  FaCommentDots,
-} from "react-icons/fa";
+import { FaBars, FaTimes, FaUserCircle, FaHome } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -24,7 +17,7 @@ export default function Header() {
   } = useAuth();
   const pathname = usePathname();
 
-  const getHomeLink = () => (user ? "/crates" : "/");
+  const getHomeLink = () => "/";
 
   const handleGoogleSignIn = async () => {
     try {
@@ -49,8 +42,8 @@ export default function Header() {
   };
 
   const isActive = (path: string) => pathname === path;
-  // Also check if we're on the home page (either / or /crates)
-  const isHomePage = pathname === "/" || pathname === "/crates";
+  // Also check if we're on the home page
+  const isHomePage = pathname === "/";
 
   return (
     <header className="bg-stone-50 border-b border-gray-200 sticky top-0 z-10 shadow-sm">
@@ -67,14 +60,14 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            {/* Only show Home and Upload when authenticated */}
+            {/* Only show Home when authenticated */}
             {user && (
               <>
                 <Link
                   href={getHomeLink()}
                   className={`text-gray-700 hover:text-gray-900 font-medium flex items-center ${isHomePage ? "text-gray-900 border-b-2 border-primary-500" : ""}`}
                 >
-                  <FaHome className="mr-1 h-4 w-4" /> Crates
+                  <FaHome className="mr-1 h-4 w-4" /> Home
                 </Link>
               </>
             )}
@@ -95,7 +88,7 @@ export default function Header() {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link
-                  href={isAdmin ? "/admin/dashboard" : "/crates"}
+                  href={isAdmin ? "/admin/dashboard" : "/"}
                   className="flex items-center text-gray-700 hover:text-gray-900"
                 >
                   <FaUserCircle className="mr-2 h-5 w-5" />
@@ -153,7 +146,7 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-gray-200 bg-stone-50 animate-fadeIn">
             <nav className="flex flex-col space-y-3">
-              {/* Only show Home and Upload when authenticated */}
+              {/* Only show Home when authenticated */}
               {user && (
                 <>
                   <Link
@@ -162,20 +155,6 @@ export default function Header() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <FaHome className="mr-2 h-4 w-4" /> Home
-                  </Link>
-                  <Link
-                    href="/upload"
-                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${isActive("/upload") ? "bg-gray-100 text-gray-900" : ""}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FaUpload className="mr-2 h-4 w-4" /> Upload
-                  </Link>
-                  <Link
-                    href="/feedback/manage"
-                    className={`text-gray-700 hover:text-gray-900 px-4 py-2 flex items-center ${pathname.startsWith("/feedback") ? "bg-gray-100 text-gray-900" : ""}`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <FaCommentDots className="mr-2 h-4 w-4" /> Feedback
                   </Link>
                 </>
               )}

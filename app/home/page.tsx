@@ -7,8 +7,8 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to /crates since /home is now /crates
-    router.replace("/crates");
+    // Redirect to main page
+    router.replace("/");
   }, [router]);
 
   return (

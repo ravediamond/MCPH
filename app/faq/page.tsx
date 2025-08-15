@@ -12,152 +12,159 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
-    id: "chatgpt-pro-requirement",
-    question: "Do I need ChatGPT Pro to use MCPH with ChatGPT?",
+    id: "what-is-mcp-feedback-hub",
+    question: "What is MCP Feedback Hub?",
     answer:
-      "Yes, MCPH custom connectors require ChatGPT Pro or higher plans (Pro, Team, Enterprise, or Edu workspaces). This is because custom connectors that follow the Model Context Protocol (MCP) are only available for ChatGPT Pro and higher tiers. Claude users can access MCPH without any subscription requirements.",
+      "MCP Feedback Hub is a platform for creating and managing feedback templates using the Model Context Protocol. It allows you to design custom feedback forms, collect responses, and analyze user feedback through a simple interface that integrates with AI tools.",
   },
   {
-    id: "what-is-mcph",
-    question: "What is MCPH?",
+    id: "getting-started",
+    question: "How do I get started?",
     answer:
-      "MCPH (Model Context Protocol Hub) is an AI artifact storage and sharing platform that lets you save and share anything from your AI chats with permanent links. One click in Claude or ChatGPT Pro+ creates a shareable link that works everywhere.",
+      "Simply sign in with your Google account, create your first feedback template by defining custom fields and validation rules, then share the template to start collecting responses. The platform includes built-in analytics to help you understand the feedback you receive.",
   },
   {
-    id: "how-sharing-works",
-    question: "How does sharing work?",
+    id: "template-limits",
+    question: "How many feedback templates can I create?",
     answer:
-      "When you make a crate public, we generate a permanent link that anyone can access without needing to sign up or log in. You can share this link via email or any other platform. The recipient just clicks the link to view your content.",
+      "Free accounts can create up to 5 feedback templates. Each template can have unlimited custom fields and can collect unlimited responses. Templates are stored permanently and can be shared publicly or kept private.",
   },
   {
-    id: "free-account-limits",
-    question: "What are the limits for free accounts?",
+    id: "field-types",
+    question: "What types of fields can I add to templates?",
     answer:
-      "Free accounts include: up to 10MB file size, 500MB total storage, 10 shared crates maximum, 5 feedback templates maximum, permanent storage (no expiration), password protection for sensitive content, AES-256 encryption, and secure HTTPS access.",
+      "You can add various field types including text inputs, number inputs, boolean (yes/no), single select dropdown, multi-select checkboxes, and rating scales. Each field supports custom validation rules, required/optional settings, and help text.",
   },
   {
-    id: "supported-file-types",
-    question: "What types of content can I save?",
+    id: "mcp-tools",
+    question: "What MCP tools are available?",
     answer:
-      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), and Recipe (AI task instructions).",
+      "The platform provides three main MCP tools: feedback_template_create (create new templates), feedback_submit (submit responses to templates), and feedback_responses_get (retrieve and analyze responses). These tools integrate seamlessly with AI applications.",
   },
   {
-    id: "content-security",
-    question: "How secure is my content?",
+    id: "response-analytics",
+    question: "How can I analyze feedback responses?",
     answer:
-      "All content is encrypted using AES-256 encryption and transmitted over HTTPS. You can add password protection to sensitive content for an extra layer of security. We use Google Cloud Storage for reliable, enterprise-grade file storage.",
+      "The platform includes built-in analytics to view all responses to your templates. You can see response rates, analyze patterns in feedback, and export data for further analysis. All responses are stored securely and can be accessed at any time.",
   },
   {
-    id: "mcp-setup",
-    question: "How do I set up MCP with my AI tool?",
+    id: "sharing-templates",
+    question: "How do I share my feedback templates?",
     answer:
-      "First, create a free account at mcph.io and generate an API key. Then configure your AI tool to use our MCP endpoint: https://api.mcph.io/mcp with your API key. The specific setup steps vary by tool, but most have a dedicated section for MCP server configuration.",
+      "Templates can be shared publicly or kept private. Public templates generate a shareable link that anyone can access to submit feedback. Private templates are only accessible to you and can be used for internal feedback collection.",
   },
   {
-    id: "content-expiration",
-    question: "Do my files expire?",
+    id: "security",
+    question: "How secure is my feedback data?",
     answer:
-      "Content uploaded by authenticated users is stored permanently and never expires (until you delete it). However, download links generated for sharing expire after 24 hours for security reasons. The actual content remains accessible through the public sharing link.",
+      "All feedback data is stored securely using enterprise-grade encryption. Templates and responses are transmitted over HTTPS, and access is controlled through authentication. You maintain full control over your templates and collected feedback.",
   },
   {
-    id: "claude-ai-connection",
-    question: "How do I connect MCPH to Claude AI?",
+    id: "ai-integration",
+    question: "Which AI tools work with MCP Feedback Hub?",
     answer:
-      "To connect MCPH to Claude AI, go to https://claude.ai/settings/connectors and add a custom connector. Set the name to 'MCPH' and use the MCP endpoint URL: https://api.mcph.io/mcp. You'll need your MCPH API key which you can generate from your account settings.",
+      "The platform is built on the Model Context Protocol and works with any MCP-compatible AI assistant. This includes Claude and other AI tools that support MCP. Integration allows you to create and manage templates directly through natural language conversations.",
+  },
+  {
+    id: "api-access",
+    question: "Is there API access available?",
+    answer:
+      "Yes, the platform provides MCP-based API access for creating templates, submitting responses, and retrieving analytics. API keys can be generated from your account settings, and there are rate limits to ensure fair usage across all users.",
   },
 ];
 
 export default function FAQPage() {
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [openItems, setOpenItems] = useState<string[]>([]);
 
   const toggleItem = (id: string) => {
-    setExpandedItem(expandedItem === id ? null : id);
+    setOpenItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
   };
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="py-8 px-4 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Breadcrumb navigation */}
-          <nav className="mb-8">
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link
-                href="/"
-                className="inline-flex items-center px-3 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-primary-600 transition-all duration-200 hover:shadow-sm"
-              >
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </Link>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="inline-flex items-center px-3 py-2 text-gray-600 bg-gray-100 rounded-lg font-medium">
-                FAQ
-              </span>
-            </div>
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="flex items-center hover:text-gray-900">
+              <Home className="w-4 h-4" />
+            </Link>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-gray-900 font-medium">FAQ</span>
           </nav>
+        </div>
+      </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-            <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                Frequently Asked Questions
-              </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
-                Everything you need to know about MCPH
-              </p>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Frequently Asked Questions
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Everything you need to know about MCP Feedback Hub
+          </p>
+        </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="space-y-4">
-              {faqItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="w-full px-6 py-4 text-left bg-gray-50 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-between"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-900 pr-4">
-                      {item.question}
-                    </h3>
-                    {expandedItem === item.id ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    )}
-                  </button>
-                  {expandedItem === item.id && (
-                    <div className="px-6 py-4 bg-white border-t border-gray-200">
-                      <p className="text-gray-700 leading-relaxed">
-                        {item.answer}
-                      </p>
-                    </div>
-                  )}
+        {/* FAQ Items */}
+        <div className="space-y-4">
+          {faqItems.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200"
+            >
+              <button
+                onClick={() => toggleItem(item.id)}
+                className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset rounded-lg"
+              >
+                <span className="font-medium text-gray-900 pr-4">
+                  {item.question}
+                </span>
+                {openItems.includes(item.id) ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                )}
+              </button>
+
+              {openItems.includes(item.id) && (
+                <div className="px-6 pb-4">
+                  <div className="border-t border-gray-100 pt-4">
+                    <p className="text-gray-700 leading-relaxed">
+                      {item.answer}
+                    </p>
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
+          ))}
+        </div>
 
-            <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                Still have questions?
-              </h3>
-              <p className="text-blue-800 mb-4">
-                Can't find what you're looking for? We're here to help!
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/docs"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                >
-                  View Documentation
-                </Link>
-                <Link
-                  href="/feedback/create"
-                  className="inline-flex items-center px-4 py-2 bg-white text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors duration-200"
-                >
-                  Contact Support
-                </Link>
-              </div>
+        {/* Contact Section */}
+        <div className="mt-16 text-center">
+          <div className="bg-blue-50 rounded-2xl p-8 border border-blue-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Still have questions?
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Can't find what you're looking for? We're here to help.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/docs"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                View Documentation
+              </Link>
+              <Link
+                href="/feedback/create"
+                className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-medium rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                Send Feedback
+              </Link>
             </div>
           </div>
         </div>

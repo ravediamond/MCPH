@@ -6,10 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface AdminStats {
-  totalCrates?: number;
   totalUsers?: number;
-  totalDownloads?: number;
-  totalViews?: number;
   totalMcpCalls?: number;
   totalWaitingList?: number;
 }
@@ -43,23 +40,12 @@ const AdminDashboardPage: React.FC = () => {
 
           const headers = { Authorization: `Bearer ${token}` };
 
-          const [
-            cratesResponse,
-            usersResponse,
-            mcpCallsResponse,
-            waitingListResponse,
-          ] = await Promise.all([
-            fetch("/api/admin/stats/crates", { headers }),
-            fetch("/api/admin/stats/users", { headers }),
-            fetch("/api/admin/stats/mcp-calls", { headers }),
-            fetch("/api/admin/waiting-list", { headers }),
-          ]);
-
-          if (!cratesResponse.ok) {
-            const errorData = await cratesResponse.json();
-            throw new Error(errorData.error || "Failed to fetch crate stats");
-          }
-          const cratesData = await cratesResponse.json();
+          const [usersResponse, mcpCallsResponse, waitingListResponse] =
+            await Promise.all([
+              fetch("/api/admin/stats/users", { headers }),
+              fetch("/api/admin/stats/mcp-calls", { headers }),
+              fetch("/api/admin/waiting-list", { headers }),
+            ]);
 
           if (!usersResponse.ok) {
             const errorData = await usersResponse.json();
@@ -78,10 +64,7 @@ const AdminDashboardPage: React.FC = () => {
           }
 
           setStats({
-            totalCrates: cratesData.count,
             totalUsers: usersData.count,
-            totalDownloads: cratesData.totalDownloads || 0,
-            totalViews: cratesData.totalViews || 0,
             totalMcpCalls: mcpCallsData.totalCalls || 0,
             totalWaitingList: waitingListData.waitingList?.length || 0,
           });
@@ -126,17 +109,6 @@ const AdminDashboardPage: React.FC = () => {
           <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-semibold mb-4">Platform Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5 border-l-4 border-blue-500">
-                <h3 className="text-gray-600 text-sm font-medium mb-1">
-                  Total Crates
-                </h3>
-                <p className="text-3xl font-bold text-blue-700">
-                  {stats.totalCrates?.toLocaleString() ?? "N/A"}
-                </p>
-                <div className="mt-2 text-xs text-gray-600">
-                  All crates uploaded to the platform
-                </div>
-              </div>
               <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-5 border-l-4 border-green-500">
                 <h3 className="text-gray-600 text-sm font-medium mb-1">
                   Total Users
@@ -189,12 +161,6 @@ const AdminDashboardPage: React.FC = () => {
                     {stats.totalUsers?.toLocaleString() ?? "N/A"}
                   </div>
                 </div>
-                <div className="mb-4 md:mb-0">
-                  <div className="text-sm text-gray-600">Content Created</div>
-                  <div className="text-2xl font-bold">
-                    {stats.totalCrates?.toLocaleString() ?? "N/A"} crates
-                  </div>
-                </div>
                 <div>
                   <div className="text-sm text-gray-600">API Usage</div>
                   <div className="text-2xl font-bold">
@@ -220,36 +186,6 @@ const AdminDashboardPage: React.FC = () => {
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     Lifetime API usage
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Crate Statistics</h2>
-
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-5">
-              <h3 className="text-lg font-medium text-gray-800 mb-4">
-                Crate Overview
-              </h3>
-              <div className="flex flex-col md:flex-row md:justify-between">
-                <div>
-                  <div className="text-sm text-gray-600">Total Crates</div>
-                  <div className="text-2xl font-bold">
-                    {stats.totalCrates?.toLocaleString() ?? "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">Total Downloads</div>
-                  <div className="text-2xl font-bold">
-                    {stats.totalDownloads?.toLocaleString() ?? "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">Total Views</div>
-                  <div className="text-2xl font-bold">
-                    {stats.totalViews?.toLocaleString() ?? "N/A"}
                   </div>
                 </div>
               </div>

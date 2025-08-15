@@ -6,40 +6,14 @@ interface QuotaInfo {
   remaining: number;
 }
 
-interface StorageInfo {
-  used: number;
-  limit: number;
-  remaining: number;
-}
-
-interface SharedCratesInfo {
-  count: number;
-  limit: number;
-  remaining: number;
-}
-
-interface FeedbackTemplatesInfo {
-  count: number;
-  limit: number;
-  remaining: number;
-}
-
 interface APIQuotaInfoProps {
   userQuota: QuotaInfo | null;
-  userStorage: StorageInfo | null;
-  userSharedCrates: SharedCratesInfo | null;
-  userFeedbackTemplates: FeedbackTemplatesInfo | null;
   quotaLoading: boolean;
-  formatFileSize: (bytes: number) => string;
 }
 
 const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
   userQuota,
-  userStorage,
-  userSharedCrates,
-  userFeedbackTemplates,
   quotaLoading,
-  formatFileSize,
 }) => {
   return (
     <div className="mb-4">
@@ -65,70 +39,6 @@ const APIQuotaInfo: React.FC<APIQuotaInfoProps> = ({
         </div>
       ) : (
         <div className="text-gray-500 text-sm">No quota information found.</div>
-      )}
-
-      {userStorage && (
-        <div className="text-sm text-gray-700 mt-1">
-          Storage used:{" "}
-          <span className="font-semibold">
-            {formatFileSize(userStorage.used)}
-          </span>{" "}
-          /{" "}
-          <span className="font-semibold">
-            {formatFileSize(userStorage.limit)}
-          </span>
-          <span className="ml-2">
-            ({((userStorage.used / userStorage.limit) * 100).toFixed(1)}% used,{" "}
-            {formatFileSize(userStorage.remaining)} left)
-          </span>
-        </div>
-      )}
-
-      {userSharedCrates && (
-        <div className="text-sm text-gray-700 mt-1">
-          Shared crates:{" "}
-          <span
-            className={
-              userSharedCrates.remaining === 0
-                ? "text-red-600 font-semibold"
-                : "font-semibold"
-            }
-          >
-            {userSharedCrates.count}
-          </span>{" "}
-          / <span className="font-semibold">{userSharedCrates.limit}</span>
-          <span className="ml-2">
-            (
-            {((userSharedCrates.count / userSharedCrates.limit) * 100).toFixed(
-              1,
-            )}
-            % used, {userSharedCrates.remaining} left)
-          </span>
-        </div>
-      )}
-
-      {userFeedbackTemplates && (
-        <div className="text-sm text-gray-700 mt-1">
-          Feedback templates:{" "}
-          <span
-            className={
-              userFeedbackTemplates.remaining === 0
-                ? "text-red-600 font-semibold"
-                : "font-semibold"
-            }
-          >
-            {userFeedbackTemplates.count}
-          </span>{" "}
-          / <span className="font-semibold">{userFeedbackTemplates.limit}</span>
-          <span className="ml-2">
-            (
-            {(
-              (userFeedbackTemplates.count / userFeedbackTemplates.limit) *
-              100
-            ).toFixed(1)}
-            % used, {userFeedbackTemplates.remaining} left)
-          </span>
-        </div>
       )}
 
       {/* Create API Key Button */}
