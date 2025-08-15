@@ -25,7 +25,6 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Simple Categories**: Organize content across 5 intuitive categories: Recipe, Text, Images, Code, and Data
 - **Security Features**: Private by default with optional password protection (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
-- **Social Sharing**: Share your crates across social platforms with smart markdown formatting for Twitter, Reddit, LinkedIn, Discord, Telegram, and Email
 - **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
 
 ## 🗂️ Simple Categories

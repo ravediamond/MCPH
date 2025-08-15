@@ -115,17 +115,3 @@ export const GetFeedbackResponsesParams = z.object({
   limit: z.number().int().min(1).max(100).optional(),
   startAfter: z.string().optional(),
 });
-
-export const SocialShareParams = z.object({
-  crateId: z.string(),
-  platform: z.enum([
-    "twitter",
-    "reddit",
-    "linkedin",
-    "discord",
-    "telegram",
-    "email",
-    "all",
-  ]),
-  customMessage: z.string().optional(),
-});

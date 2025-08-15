@@ -27,7 +27,7 @@ const faqItems: FAQItem[] = [
     id: "how-sharing-works",
     question: "How does sharing work?",
     answer:
-      "When you make a crate public, we generate a permanent link that anyone can access without needing to sign up or log in. You can share this link via email, social media, or any other platform. The recipient just clicks the link to view your content.",
+      "When you make a crate public, we generate a permanent link that anyone can access without needing to sign up or log in. You can share this link via email or any other platform. The recipient just clicks the link to view your content.",
   },
   {
     id: "free-account-limits",

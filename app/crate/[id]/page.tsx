@@ -31,11 +31,6 @@ import {
   FaTasks,
   FaTable,
   FaComments,
-  FaTwitter,
-  FaReddit,
-  FaLinkedin,
-  FaDiscord,
-  FaTelegram,
   FaEnvelope,
   FaLink,
   FaEdit,
@@ -133,10 +128,6 @@ export default function CratePage() {
   const [copyLoading, setCopyLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
-
-  // Social sharing state variables
-  const [socialShareMessage, setSocialShareMessage] = useState("");
-  const [socialLinkCopied, setSocialLinkCopied] = useState(false);
 
   // Editing state variables
   const [isEditing, setIsEditing] = useState(false);
@@ -409,140 +400,6 @@ export default function CratePage() {
       });
   };
 
-  // Convert markdown to platform-specific formats
-  const convertMarkdownForPlatform = (
-    markdown: string,
-    platform: string,
-  ): string => {
-    if (!markdown) return markdown;
-
-    let converted = markdown;
-
-    switch (platform) {
-      case "discord":
-      case "reddit":
-        // These platforms support markdown natively, so keep it as-is
-        return converted;
-
-      case "telegram":
-        // Telegram supports basic markdown but with different syntax
-        converted = converted
-          // Bold: **text** or __text__ -> *text*
-          .replace(/\*\*(.*?)\*\*/g, "*$1*")
-          .replace(/__(.*?)__/g, "*$1*")
-          // Italic: *text* or _text_ -> _text_
-          .replace(/(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)/g, "_$1_");
-        // Code: `text` -> `text` (same)
-        // Links: [text](url) -> [text](url) (same)
-        return converted;
-
-      case "twitter":
-      case "linkedin":
-      case "email":
-      default:
-        // Convert markdown to plain text for platforms that don't support it
-        converted = converted
-          // Remove bold/italic formatting but keep the text
-          .replace(/\*\*(.*?)\*\*/g, "$1") // **bold** -> bold
-          .replace(/__(.*?)__/g, "$1") // __bold__ -> bold
-          .replace(/\*(.*?)\*/g, "$1") // *italic* -> italic
-          .replace(/_(.*?)_/g, "$1") // _italic_ -> italic
-          // Convert links to just the URL or "text (url)" format
-          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)") // [text](url) -> text (url)
-          // Remove code formatting
-          .replace(/`([^`]+)`/g, "$1") // `code` -> code
-          // Remove headers
-          .replace(/^#+\s*/gm, ""); // # Header -> Header
-        return converted;
-    }
-  };
-
-  // Social sharing functions
-  const generateShareUrl = (platform: string, customMessage?: string) => {
-    const currentUrl = `${window.location.origin}/crate/${crateId}`;
-    const rawMessage =
-      customMessage ||
-      socialShareMessage ||
-      `Check out this AI artifact: ${crateInfo?.title} - ${currentUrl}`;
-
-    // Convert markdown based on platform
-    const message = convertMarkdownForPlatform(rawMessage, platform);
-    const encodedMessage = encodeURIComponent(message);
-    const encodedUrl = encodeURIComponent(currentUrl);
-    const encodedTitle = encodeURIComponent(
-      crateInfo?.title || `Crate ${crateId}`,
-    );
-
-    switch (platform) {
-      case "twitter":
-        return `https://twitter.com/intent/tweet?text=${encodedMessage}`;
-      case "reddit":
-        // For Reddit, use text post format with title and body
-        const redditTitle = encodeURIComponent(
-          crateInfo?.title || `Check out this AI artifact`,
-        );
-        const redditBody = encodeURIComponent(
-          `${message}\n\nLink: ${currentUrl}`,
-        );
-        return `https://www.reddit.com/submit?selftext=true&title=${redditTitle}&selftext=${redditBody}`;
-      case "linkedin":
-        // LinkedIn doesn't accept custom text via URL, so just share the URL
-        // The user will need to add their custom message manually in LinkedIn
-        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-      case "discord":
-        return null; // Discord doesn't have a direct share URL
-      case "telegram":
-        return `https://t.me/share/url?url=${encodedUrl}&text=${encodedMessage}`;
-      case "email":
-        return `mailto:?subject=${encodedTitle}&body=${encodedMessage}`;
-      default:
-        return null;
-    }
-  };
-
-  const handleSocialShare = (platform: string) => {
-    const customMessage = socialShareMessage.trim() || undefined;
-    const shareUrl = generateShareUrl(platform, customMessage);
-
-    if (platform === "discord") {
-      // For Discord, copy the markdown-formatted message to clipboard
-      const rawMessage =
-        customMessage ||
-        `Check out this AI artifact: **${crateInfo?.title}** - ${window.location.origin}/crate/${crateId}`;
-      const formattedMessage = convertMarkdownForPlatform(rawMessage, platform);
-      navigator.clipboard.writeText(formattedMessage);
-      setSocialLinkCopied(true);
-      setTimeout(() => setSocialLinkCopied(false), 2000);
-    } else if (platform === "linkedin") {
-      // For LinkedIn, open the share dialog and show a message about adding custom text
-      if (shareUrl) {
-        window.open(shareUrl, "_blank", "noopener,noreferrer");
-        // Show a brief message about manually adding the custom text
-        if (customMessage) {
-          // Copy the message to clipboard for easy pasting
-          navigator.clipboard.writeText(
-            convertMarkdownForPlatform(customMessage, platform),
-          );
-          setSocialLinkCopied(true);
-          setTimeout(() => setSocialLinkCopied(false), 3000);
-        }
-      }
-    } else if (shareUrl) {
-      window.open(shareUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
-  const handleCopySocialLink = async () => {
-    try {
-      const currentUrl = `${window.location.origin}/crate/${crateId}`;
-      await navigator.clipboard.writeText(currentUrl);
-      setSocialLinkCopied(true);
-      setTimeout(() => setSocialLinkCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy link:", err);
-    }
-  };
-
   // Editing functions
   const handleEditStart = () => {
     if (!crateInfo) return;
@@ -642,9 +499,6 @@ export default function CratePage() {
     setSharingError(null);
     setSharingSuccess(null);
     setShareUrl(`${window.location.origin}/crate/${crateId}`);
-    setSocialShareMessage(
-      `Check out this AI artifact: ${crateInfo.title} - ${window.location.origin}/crate/${crateId}`,
-    );
     setShowSharingModal(true);
   };
 
@@ -1610,12 +1464,6 @@ export default function CratePage() {
         linkCopied={linkCopied}
         setLinkCopied={setLinkCopied}
         crateId={crateId}
-        socialLinkCopied={socialLinkCopied}
-        setSocialLinkCopied={setSocialLinkCopied}
-        socialShareMessage={socialShareMessage}
-        setSocialShareMessage={setSocialShareMessage}
-        handleSocialShare={handleSocialShare}
-        handleCopySocialLink={handleCopySocialLink}
         handleUpdateSharing={handleUpdateSharing}
         sharingLoading={sharingLoading}
         crateTitle={crateInfo?.title || "Untitled Crate"}
