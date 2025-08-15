@@ -4,7 +4,6 @@ export enum CrateCategory {
   IMAGE = "image",
   CODE = "code",
   DATA = "data",
-  POLL = "poll",
 }
 
 export interface CrateSharing {

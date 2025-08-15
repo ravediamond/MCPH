@@ -43,8 +43,7 @@ export function registerCratesUploadTool(server: McpServer): void {
         "• text: 📝 Any written content (notes, docs, markdown)\n" +
         "• image: 🖼️ Pictures, charts, diagrams\n" +
         "• code: 💻 Scripts and programming (JS, Python, HTML, CSS)\n" +
-        "• data: 📊 Spreadsheets, JSONs, CSVs\n" +
-        "• poll: 🎯 Interactive polls\n\n" +
+        "• data: 📊 Spreadsheets, JSONs, CSVs\n\n" +
         "ALLOWED CONTENT TYPES:\n" +
         "• Text: text/plain, text/markdown, text/csv, text/html\n" +
         "• Code: text/javascript, text/typescript, text/python, application/json\n" +
@@ -119,9 +118,6 @@ export function registerCratesUploadTool(server: McpServer): void {
               extension = ".js";
               break;
             case CrateCategory.DATA:
-              extension = ".json";
-              break;
-            case CrateCategory.POLL:
               extension = ".json";
               break;
             default:

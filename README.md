@@ -22,16 +22,15 @@ MCPH is an AI artifact storage and sharing system that lets you package your AI-
 - **Seamless Share Links**: Share your AI artifacts with a single, universal link that works for both humans and AI systems
 - **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
 - **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
-- **Simple Categories**: Organize content across 6 intuitive categories: Recipe, Text, Images, Code, Data, and Polls
+- **Simple Categories**: Organize content across 5 intuitive categories: Recipe, Text, Images, Code, and Data
 - **Security Features**: Private by default with optional password protection (authenticated users' crates have no expiration)
 - **Enhanced Content Preview**: Better visualization and interaction with different content types
-- **Poll Collection System**: Create custom poll templates with various field types (text, rating, select, etc.) to collect structured responses on your projects
 - **Social Sharing**: Share your crates across social platforms with smart markdown formatting for Twitter, Reddit, LinkedIn, Discord, Telegram, and Email
 - **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
 
 ## 🗂️ Simple Categories
 
-MCPH organizes content into 6 intuitive categories that cover all use cases:
+MCPH organizes content into 5 intuitive categories that cover all use cases:
 
 ### **🧾 Recipe** - AI Task Instructions
 
@@ -54,10 +53,6 @@ Code snippets, scripts, functions, HTML, CSS, JavaScript, Python, and any progra
 ### **📊 Data** - Spreadsheets, JSONs, CSVs
 
 CSVs, JSON files, YAML, Excel files, databases, datasets, and structured data.
-
-### **🎯 Polls** - Interactive Polls
-
-Poll forms, surveys, interactive forms, and data collection templates.
 
 **Benefits of Simplified Categories:**
 
@@ -164,21 +159,7 @@ Switch between projects instantly with full context. Each project has its own "b
 
 **Real Example:** "Switch to the e-commerce project" → AI immediately knows to use Next.js, Stripe APIs, and your custom auth flow.
 
-### 5. Dynamic Poll Collection System 📊
-
-Build smart surveys that adapt based on responses, with AI analyzing poll data in real-time.
-
-**Implementation Steps:**
-
-1. **Create poll template**: Rating + select + text fields
-2. **Share form link**: Send to users or embed in your app
-3. **Collect responses**: All data stored in your account
-4. **AI analyzes**: "What patterns do you see in user responses?"
-5. **Iterate**: Update product based on insights
-
-**Real Example:** Create a bug report form that AI monitors. When similar bugs are reported, AI can suggest known fixes or escalate critical issues.
-
-### 6. Knowledge Graph Builder 🕸️
+### 5. Knowledge Graph Builder 🕸️
 
 Connect ideas, research, and insights into a searchable knowledge network that reveals hidden patterns.
 
@@ -257,9 +238,9 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
 - **crates_list**: List and discover your stored crates
   - **Input**: `{ limit?: number, startAfter?: string, category?: string }`
   - **Output**: `{ crates: [ { id, title, description, category, tags, shared, ... }, ... ], lastCrateId, hasMore }`
-  - **Features**: Pagination support, category filtering (including 'poll' templates), tag-based organization
+  - **Features**: Pagination support, category filtering, tag-based organization
   - **Permissions**: Requires authentication; shows only user's crates
-  - **AI Usage**: "List my crates", "Show my poll templates", "Find my recent uploads"
+  - **AI Usage**: "List my crates", "Find my recent uploads"
 
 - **crates_get**: Retrieve and display crate contents
   - **Input**: `{ id: string, password?: string }`
@@ -334,47 +315,11 @@ MCPH provides a comprehensive set of powerful tools that enable you to manage yo
   - **Features**:
     - Semantic search with vector embeddings for metadata understanding
     - Tag-based filtering with hierarchical support (`project:webapp`, `type:docs`)
-    - Category filtering (including poll templates: `category: 'poll'`)
+    - Category filtering
     - Relevance scoring and intelligent ranking
     - Full-text search across titles, descriptions, and tags
   - **Permissions**: Searches only user's crates; requires authentication
-  - **AI Usage**: "Find my React components", "Search for project documentation", "Find poll templates about mobile apps"
-
-### Poll Collection System
-
-- **poll_template_create**: Build custom poll forms with validation
-  - **Input**: `{ title: string, description?: string, fields: Array<FieldConfig>, isPublic?: boolean, tags?: string[], linkedCrates?: string[] }`
-  - **Output**: `{ success: true, template: PollTemplate, content: [...] }`
-  - **Features**:
-    - 6 field types: text, number, boolean, select, multiselect, rating
-    - Custom validation rules, required/optional fields, dropdown options
-    - Automatic storage as both poll template AND crate (category: 'poll')
-    - Tag-based organization, public/private templates, linked crate references
-  - **Limits**: 5 templates per user (Free), 50 templates (Pro)
-  - **AI Usage**: "Create poll form for product reviews", "Build survey with rating and text fields"
-
-- **poll_submit**: Submit responses to poll templates with validation
-  - **Input**: `{ templateId: string, responses: Record<string, any>, metadata?: Record<string, any> }`
-  - **Output**: `{ success: true, response: PollResponse, content: [...] }`
-  - **Features**:
-    - Field-specific validation (type checking, required fields, option validation)
-    - Support for all field types with proper formatting
-    - User submissions with metadata tracking
-    - Real-time validation with helpful error messages
-  - **Permissions**: Anyone can submit to open public templates
-  - **AI Usage**: "Submit response to template abc123", "Fill out the product survey"
-
-- **poll_responses_get**: Analyze poll data with comprehensive analytics
-  - **Input**: `{ templateId: string, limit?: number, startAfter?: string }`
-  - **Output**: `{ success: true, template: TemplateInfo, responses: [...], statistics: {...}, pagination: {...}, content: [...] }`
-  - **Features**:
-    - Complete response analytics: averages, distributions, response rates
-    - Field-specific statistics (ratings, selections, text analysis)
-    - User identification with email/name display (when available)
-    - Pagination support for large datasets, export-ready format
-    - Comprehensive insights for data-driven decisions
-  - **Permissions**: Only template owners can access response data
-  - **AI Usage**: "Show responses for my poll template", "Analyze survey results", "Get poll analytics"
+  - **AI Usage**: "Find my React components", "Search for project documentation"
 
 ## How the MCP Endpoint Works
 
@@ -410,7 +355,6 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 - **Managing Files**: "Show me my files", "Save this document", "Delete that old file"
 - **Sharing Content**: "Make this public", "Give me a shareable link", "Make this private again"
 - **Viewing Content**: "Show me that document", "What's in that file?"
-- **Collecting Poll Data**: "Create a poll form for my product", "Show me responses to my survey", "Close this poll template"
 
 ### Key Benefits
 
@@ -419,7 +363,6 @@ MCPH tools integrate with AI assistants like Claude and ChatGPT to provide seaml
 - **Smart search** - AI finds files using keywords and context
 - **Instant sharing** - generate public links with simple requests
 - **Cross-session continuity** - reference files from previous conversations
-- **Poll collection** - create structured forms and collect responses with analytics
 
 ### Getting Started with AI Assistants
 

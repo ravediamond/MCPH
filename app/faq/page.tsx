@@ -39,7 +39,7 @@ const faqItems: FAQItem[] = [
     id: "supported-file-types",
     question: "What types of content can I save?",
     answer:
-      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), Recipe (AI task instructions), and Polls (created via AI tools only).",
+      "MCPH supports a complete AI workflow ecosystem: Text (any written content), Images (pictures, charts, diagrams), Code (scripts and programming), Data (spreadsheets, JSONs, CSVs), and Recipe (AI task instructions).",
   },
   {
     id: "content-security",

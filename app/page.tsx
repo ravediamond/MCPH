@@ -428,20 +428,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Create Quick Polls */}
-            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="flex items-center mb-4">
-                <span className="text-2xl mr-3">📊</span>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Create Quick Polls
-                </h3>
-              </div>
-              <p className="text-gray-600 leading-relaxed">
-                Get feedback from your audience with simple, shareable forms
-                that work everywhere.
-              </p>
-            </div>
-
             {/* Team Collaboration */}
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 hover:shadow-md hover:border-orange-200 transition-all duration-300">
               <div className="flex items-center mb-4">
@@ -519,20 +505,6 @@ export default function Home() {
               <div className="text-2xl mb-3">🧾</div>
               <p className="font-medium text-gray-800">Recipe</p>
               <p className="text-xs text-gray-500 mt-1">AI task instructions</p>
-            </div>
-          </div>
-
-          {/* Special AI-only category */}
-          <div className="max-w-md mx-auto">
-            <div className="bg-gradient-to-r from-orange-50 to-blue-50 p-5 rounded-xl text-center border-2 border-dashed border-orange-200">
-              <div className="text-2xl mb-3">🎯</div>
-              <p className="font-medium text-gray-800">Polls</p>
-              <p className="text-xs text-gray-500 mt-1">
-                Created via AI tools only
-              </p>
-              <p className="text-xs text-orange-600 mt-2 font-medium">
-                Ask Claude: "Create a poll about..."
-              </p>
             </div>
           </div>
         </div>

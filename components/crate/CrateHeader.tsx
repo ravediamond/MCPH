@@ -221,12 +221,6 @@ export default function CrateHeader({
               <span className="inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
                 {(() => {
                   switch (crateInfo.category) {
-                    case CrateCategory.POLL:
-                      return (
-                        <>
-                          <FaComments className="mr-1" size={12} /> Feedback
-                        </>
-                      );
                     case CrateCategory.TEXT:
                       return (
                         <>
@@ -480,22 +474,11 @@ export default function CrateHeader({
 
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-              {crateInfo.category === CrateCategory.POLL
-                ? "Responses"
-                : "Downloads"}
+              Downloads
             </div>
             <div className="font-semibold text-gray-900 flex items-center">
-              {crateInfo.category === CrateCategory.POLL ? (
-                <>
-                  <FaChartBar className="mr-2 text-purple-600" size={16} />
-                  {crateInfo.metadata?.submissionCount || 0}
-                </>
-              ) : (
-                <>
-                  <FaDownload className="mr-2 text-blue-600" size={16} />
-                  {crateInfo.downloadCount}
-                </>
-              )}
+              <FaDownload className="mr-2 text-blue-600" size={16} />
+              {crateInfo.downloadCount}
             </div>
           </div>
 
@@ -546,72 +529,48 @@ export default function CrateHeader({
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
           {/* Primary Actions */}
-          {crateInfo.category === CrateCategory.POLL ? (
-            // Feedback template specific actions
-            <>
-              {!crateInfo.isOwner && (
-                <Link
-                  href={`/feedback/submit/${crateId}`}
-                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  <FaFileDownload className="mr-2 text-lg" />
-                  <span>Submit Feedback</span>
-                </Link>
-              )}
-              {crateInfo.isOwner && (
-                <Link
-                  href={`/feedback/responses/${crateId}`}
-                  className="flex items-center justify-center px-6 py-3 bg-green-500 text-white text-base font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-3 focus:ring-green-300 focus:ring-offset-2 transition-all duration-200 border border-green-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  <FaChartBar className="mr-2 text-lg" />
-                  <span>View Responses</span>
-                </Link>
-              )}
-            </>
-          ) : (
-            // Regular content - Copy to My MCPH is now PRIMARY
-            <>
-              {/* Copy to My MCPH - PRIMARY ACTION for non-owners */}
-              {!crateInfo.isOwner && user && (
-                <button
-                  onClick={handleCopyCrate}
-                  disabled={copyLoading}
-                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
-                >
-                  <FaCopy className="mr-2 text-lg" />
-                  <span>{copyLoading ? "Copying..." : "Copy to My MCPH"}</span>
-                </button>
-              )}
-
-              {/* Sign in to Copy - PRIMARY ACTION for non-signed-in users */}
-              {!crateInfo.isOwner && !user && (
-                <button
-                  onClick={async () => {
-                    try {
-                      await signInWithGoogle();
-                      // After successful login, automatically copy
-                      setTimeout(() => handleCopyCrate(), 1000);
-                    } catch (error) {
-                      console.error("Error signing in:", error);
-                    }
-                  }}
-                  className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  <FaCopy className="mr-2 text-lg" />
-                  <span>Copy to My MCPH</span>
-                </button>
-              )}
-
-              {/* Download - now SECONDARY action */}
+          {/* Regular content - Copy to My MCPH is now PRIMARY */}
+          <>
+            {/* Copy to My MCPH - PRIMARY ACTION for non-owners */}
+            {!crateInfo.isOwner && user && (
               <button
-                onClick={handleDownload}
-                className="flex items-center justify-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-all duration-200 border border-gray-300 shadow-sm"
+                onClick={handleCopyCrate}
+                disabled={copyLoading}
+                className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-md"
               >
-                <FaDownload className="mr-2" />
-                <span>Download</span>
+                <FaCopy className="mr-2 text-lg" />
+                <span>{copyLoading ? "Copying..." : "Copy to My MCPH"}</span>
               </button>
-            </>
-          )}
+            )}
+
+            {/* Sign in to Copy - PRIMARY ACTION for non-signed-in users */}
+            {!crateInfo.isOwner && !user && (
+              <button
+                onClick={async () => {
+                  try {
+                    await signInWithGoogle();
+                    // After successful login, automatically copy
+                    setTimeout(() => handleCopyCrate(), 1000);
+                  } catch (error) {
+                    console.error("Error signing in:", error);
+                  }
+                }}
+                className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white text-base font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-3 focus:ring-blue-300 focus:ring-offset-2 transition-all duration-200 border border-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                <FaCopy className="mr-2 text-lg" />
+                <span>Copy to My MCPH</span>
+              </button>
+            )}
+
+            {/* Download - now SECONDARY action */}
+            <button
+              onClick={handleDownload}
+              className="flex items-center justify-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-all duration-200 border border-gray-300 shadow-sm"
+            >
+              <FaDownload className="mr-2" />
+              <span>Download</span>
+            </button>
+          </>
 
           {/* Secondary Actions */}
 

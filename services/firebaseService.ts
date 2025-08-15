@@ -1076,22 +1076,6 @@ export async function updateCrateSharing(
     const docRef = db.collection(CRATES_COLLECTION).doc(crateId);
     await docRef.update(updateData);
 
-    // For feedback crates, also update the feedback template record
-    if (crate.category === "poll") {
-      const templateUpdateData: any = {};
-
-      if (sharingSettings.hasOwnProperty("public")) {
-        templateUpdateData.isPublic = sharingSettings.public;
-      }
-
-      if (Object.keys(templateUpdateData).length > 0) {
-        const templateRef = db
-          .collection(FEEDBACK_TEMPLATES_COLLECTION)
-          .doc(crateId);
-        await templateRef.update(templateUpdateData);
-      }
-    }
-
     return { success: true };
   } catch (error) {
     console.error("Error updating crate sharing settings:", error);

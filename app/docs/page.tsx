@@ -175,7 +175,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <b>Complete AI workflow ecosystem</b> - Recipe, Text, Images,
-                  Code, Data, and Polls
+                  Code, and Data
                 </li>
               </ul>
 
@@ -777,12 +777,11 @@ export default function DocsPage() {
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         <strong>Features:</strong> Pagination support, category
-                        filtering (including 'poll' templates), tag-based
-                        organization
+                        filtering, tag-based organization
                       </p>
                       <p className="text-xs text-blue-600 mt-1">
                         <strong>AI Usage:</strong> "List my crates", "Show my
-                        poll templates", "Find my recent uploads"
+                        recent uploads"
                       </p>
                     </div>
 
@@ -993,10 +992,7 @@ export default function DocsPage() {
                           Tag-based filtering with hierarchical support
                           (project:webapp, type:docs)
                         </li>
-                        <li>
-                          Category filtering (including poll templates:
-                          category: 'poll')
-                        </li>
+                        <li>Category filtering</li>
                         <li>Relevance scoring and intelligent ranking</li>
                         <li>
                           Full-text search across titles, descriptions, and tags
@@ -1005,8 +1001,7 @@ export default function DocsPage() {
                     </div>
                     <p className="text-xs text-blue-600 mt-2">
                       <strong>AI Usage:</strong> "Find my React components",
-                      "Search for project documentation", "Find poll templates
-                      about mobile apps"
+                      "Search for project documentation"
                     </p>
                     <div className="bg-white p-2 rounded border border-gray-200 mt-2">
                       <p className="text-xs font-semibold text-gray-700">
@@ -1022,123 +1017,6 @@ export default function DocsPage() {
                           receive relevance boosting
                         </li>
                       </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Poll Collection System Section */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-gray-800 mb-3">
-                    Poll Collection System
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="border-l-4 border-orange-500 pl-3">
-                      <h4 className="font-medium text-gray-700">
-                        poll_template_create
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Build custom poll forms with validation
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-gray-500">
-                          <strong>Features:</strong>
-                        </p>
-                        <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
-                          <li>
-                            6 field types: text, number, boolean, select,
-                            multiselect, rating
-                          </li>
-                          <li>
-                            Custom validation rules, required/optional fields,
-                            dropdown options
-                          </li>
-                          <li>
-                            Automatic storage as both poll template AND crate
-                            (category: 'poll')
-                          </li>
-                          <li>
-                            Tag-based organization, public/private templates,
-                            linked crate references
-                          </li>
-                        </ul>
-                        <p className="text-xs text-gray-500 mt-1">
-                          <strong>Limits:</strong> 5 templates per user (Free),
-                          50 templates (Pro)
-                        </p>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-2">
-                        <strong>AI Usage:</strong> "Create poll form for product
-                        reviews", "Build survey with rating and text fields"
-                      </p>
-                    </div>
-
-                    <div className="border-l-4 border-orange-500 pl-3">
-                      <h4 className="font-medium text-gray-700">poll_submit</h4>
-                      <p className="text-sm text-gray-600">
-                        Submit responses to poll templates with validation
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-gray-500">
-                          <strong>Features:</strong>
-                        </p>
-                        <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
-                          <li>
-                            Field-specific validation (type checking, required
-                            fields, option validation)
-                          </li>
-                          <li>
-                            Support for all field types with proper formatting
-                          </li>
-                          <li>User submissions with metadata tracking</li>
-                          <li>
-                            Real-time validation with helpful error messages
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-2">
-                        <strong>AI Usage:</strong> "Submit response to template
-                        abc123", "Fill out the product survey"
-                      </p>
-                    </div>
-
-                    <div className="border-l-4 border-orange-500 pl-3">
-                      <h4 className="font-medium text-gray-700">
-                        poll_responses_get
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Analyze poll data with comprehensive analytics
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        <p className="text-xs text-gray-500">
-                          <strong>Features:</strong>
-                        </p>
-                        <ul className="text-xs text-gray-500 list-disc list-inside ml-2 space-y-1">
-                          <li>
-                            Complete response analytics: averages,
-                            distributions, response rates
-                          </li>
-                          <li>
-                            Field-specific statistics (ratings, selections, text
-                            analysis)
-                          </li>
-                          <li>
-                            User identification with email/name display (when
-                            available)
-                          </li>
-                          <li>
-                            Pagination support for large datasets, export-ready
-                            format
-                          </li>
-                          <li>
-                            Comprehensive insights for data-driven decisions
-                          </li>
-                        </ul>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-2">
-                        <strong>AI Usage:</strong> "Show responses for my poll
-                        template", "Analyze survey results", "Get poll
-                        analytics"
-                      </p>
                     </div>
                   </div>
                 </div>
