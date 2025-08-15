@@ -7,25 +7,25 @@
 [![Website](https://img.shields.io/website?url=https%3A//mcph.io)](https://mcph.io)
 [![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://github.com/modelcontextprotocol/specification)
 
-# MCPH: Model Context Protocol (MCP) Hub
+# MCPH: Model Context Protocol (MCP) Storage Hub
 
-## 🗜️ MCPH — AI Artifact Storage & Sharing System
+## 🗜️ MCPH — AI Artifact Storage & Organization System
 
 ![MCPH Demo](https://mcph.io/assets/demo.gif)
 
-MCPH is an AI artifact storage and sharing system that lets you package your AI-generated content in crates. It provides permanent storage for your artifacts. It works with ChatGPT, Claude, and other AI tools that support the Model Context Protocol (MCP).
+MCPH is an AI artifact storage and organization system that lets you store, tag, and search your AI-generated content in secure crates. It provides permanent storage with powerful organization capabilities including advanced tagging, semantic search, and content categorization. It works with ChatGPT, Claude, and other AI tools that support the Model Context Protocol (MCP).
 
 ## Features at a Glance
 
-- **Context Engineering Hub**: Store your AI context like company style guides and brand voice as separate artifacts
-- **Persistent Artifact Storage**: Never lose an AI-generated artifact again with powerful organization and retrieval
-- **Seamless Share Links**: Share your AI artifacts with a single, universal link that works for both humans and AI systems
-- **Multi-Agent Relay**: All AI tools—Claude, ChatGPT, Gemini—can write and access the same artifacts
-- **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for direct integration with AI systems
-- **Simple Categories**: Organize content across 5 intuitive categories: Recipe, Text, Images, Code, and Data
-- **Security Features**: Private by default with optional password protection (authenticated users' crates have no expiration)
-- **Enhanced Content Preview**: Better visualization and interaction with different content types
-- **Inline Editing**: Edit crate metadata (title, description, tags) directly from the crate page with permission-based access control
+- **Smart Storage System**: Store your AI artifacts with automatic organization and metadata extraction
+- **Advanced Tagging**: Organize content with intelligent tagging system for instant retrieval
+- **Semantic Search**: Find content using natural language queries with vector-based similarity matching
+- **Content Categories**: Organize across 5 intuitive categories: Recipe, Text, Images, Code, and Data
+- **Cross-Tool Access**: All AI tools—Claude, ChatGPT, Gemini—can store and access the same artifacts
+- **Native MCP Integration**: Built on the Model Context Protocol (MCP) standard for seamless AI integration
+- **Secure Sharing**: Private by default with granular sharing controls and optional password protection
+- **Persistent Storage**: Authenticated users get permanent storage with no expiration
+- **Rich Content Support**: Enhanced preview and interaction for all content types with inline editing
 
 ## 🗂️ Simple Categories
 
@@ -104,20 +104,20 @@ MCPH uses a simple, intuitive access model that balances security with convenien
 - **For professionals**: Share with clients who don't need accounts
 - **For viral content**: Public links work anywhere without barriers
 
-## 🚀 6 Power Use Cases for MCPH
+## 🚀 6 Power Use Cases for MCPH Storage Hub
 
-### 1. Persistent AI Memory System 🧠
+### 1. Persistent AI Knowledge Base 🧠
 
-Transform AI into a learning partner that remembers everything across sessions. Build a searchable knowledge base that grows smarter over time.
+Transform AI into a learning partner with perfect memory. Build a searchable knowledge base that grows smarter with advanced tagging and semantic search.
 
 **Implementation Steps:**
 
-1. **Upload project contexts**: "Save our coding standards as a crate"
-2. **Tag systematically**: `project:webapp`, `type:guidelines`, `team:frontend`
-3. **Search & retrieve**: "Find our React component patterns"
-4. **AI remembers**: "Apply our coding standards to this new component"
+1. **Store contexts systematically**: "Save our coding standards as a crate"
+2. **Tag hierarchically**: `project:webapp`, `type:guidelines`, `team:frontend`
+3. **Search semantically**: "Find our React component patterns" (finds related content even without exact keywords)
+4. **AI accesses instantly**: "Apply our coding standards to this new component"
 
-**Real Example:** Store your API error handling patterns once, and every AI session can reference them: "How do we handle auth errors in our system?"
+**Real Example:** Store your API error handling patterns once with tags like `api:error-handling`, `lang:typescript`. AI can find and apply them instantly across any session: "How do we handle auth errors in our system?"
 
 ### 2. Living Documentation That Updates Itself 📚
 
@@ -158,19 +158,19 @@ Switch between projects instantly with full context. Each project has its own "b
 
 **Real Example:** "Switch to the e-commerce project" → AI immediately knows to use Next.js, Stripe APIs, and your custom auth flow.
 
-### 5. Knowledge Graph Builder 🕸️
+### 5. Smart Knowledge Discovery Engine 🕸️
 
-Connect ideas, research, and insights into a searchable knowledge network that reveals hidden patterns.
+Connect ideas, research, and insights using advanced tagging and semantic search to reveal hidden patterns in your stored content.
 
 **Implementation Steps:**
 
-1. **Store insights**: Tag with topics, dates, projects, connections
-2. **Build over time**: Each crate adds to your knowledge graph
-3. **Discover patterns**: "What connects my AI and education research?"
-4. **Share discoveries**: One link to entire research threads
+1. **Store with rich metadata**: Tag with topics, dates, projects, connections
+2. **Build knowledge network**: Each crate adds to your searchable graph
+3. **Discover connections**: "What relates to my AI and education research?" (semantic search finds conceptual links)
+4. **Surface insights**: Vector search reveals similar content you'd forgotten about
 5. **AI synthesizes**: "Summarize my thinking evolution on AI ethics"
 
-**Real Example:** Research competitive products → store findings in tagged crates → AI reveals market gaps you hadn't noticed.
+**Real Example:** Research competitive products → store findings with tags like `research:competitive`, `market:saas`, `feature:auth` → semantic search reveals patterns and gaps across all your research automatically.
 
 ## Development
 

@@ -1,39 +1,39 @@
-# MCP Server
+# MCP Storage Hub Server
 
-This is the Model Context Protocol server for MCPH, an AI artifact storage and sharing system. It provides the MCP API endpoints that allow AI models to interact with the MCPH services for storing, sharing, and managing artifacts in crates. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have no expiration.
+This is the Model Context Protocol server for MCPH Storage Hub, an AI artifact storage and organization system. It provides MCP API endpoints that allow AI models to store, organize, search, and manage artifacts in crates with advanced tagging and semantic search capabilities. Anonymous uploads automatically expire after 30 days, while authenticated user uploads have permanent storage.
 
-## What is MCPH?
+## What is MCPH Storage Hub?
 
-MCPH is an artifact storage and sharing system for AI tools—store, share, and manage artifacts in crates with one command. This MCP server implementation enables AI tools like ChatGPT and Claude to directly package and share content via simple API calls. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads automatically expire after 30 days, while content from authenticated users is stored indefinitely.
+MCPH Storage Hub is an AI artifact storage and organization system that lets you store, tag, and search your AI-generated content. This MCP server enables AI tools like ChatGPT and Claude to directly store and organize content with intelligent tagging, semantic search, and content categorization. MCPH supports multiple content types including markdown, code, images, JSON, YAML, text, and binary files. Anonymous uploads expire after 30 days, while authenticated users get permanent storage with advanced organization features.
 
 ## Example Prompts
 
-Here are three working example prompts to get you started with MCPH:
+Here are example prompts showcasing MCPH Storage Hub's organization and search capabilities:
 
-### 1. Upload and Share a Project File
+### 1. Store with Smart Tagging
 
 ```
-I want to upload my React component code to share with my team. Here's the component:
+I want to upload my React component code and organize it properly. Here's the component:
 
 [paste your React component code here]
 
-Please upload this as a crate with the title "UserProfile Component" and tag it as "project:frontend" and "status:review-ready".
+Please store this as a crate with the title "UserProfile Component" and tag it with "project:frontend", "component:user", and "status:review-ready" so I can find it easily later.
 ```
 
-### 2. Search and Retrieve Team Resources
+### 2. Semantic Search for Related Content
 
 ```
-I'm looking for any markdown documentation files related to our API project. Search for crates tagged with "project:api" that contain documentation or guides.
+I'm working on user authentication. Search for any crates related to authentication, login, or user management - even if they don't have those exact words in the title.
 ```
 
-### 3. Create a Password-Protected Code Snippet
+### 3. Organize by Categories and Tags
 
 ```
-I need to share a database configuration file with my teammate, but it contains sensitive information. Please upload this configuration file and make it password-protected with the password "team2024":
+I have a database configuration file that needs secure storage. Please upload this configuration file with password protection:
 
 [paste your config file here]
 
-Title it "Database Config - Production" and tag it as "project:backend" and "status:sensitive".
+Title it "Database Config - Production", categorize it as "Data", and tag it with "env:production", "type:config", and "security:sensitive" for easy filtering.
 ```
 
 ## Core MCP Tools
@@ -61,15 +61,16 @@ Title it "Database Config - Production" and tag it as "project:backend" and "sta
   - Note: Default expiration is 24 hours for the download link
   - Note: Will return an error if the crate has expired
 
-- **crates_search**: Search for crates with advanced filtering.
-  - Input: `{ query: string, tags?: string[], limit?: number }`
-  - Output: List of matching crates with relevance scores
+- **crates_search**: Advanced semantic search with intelligent filtering.
+  - Input: `{ query: string, tags?: string[], category?: string, limit?: number }`
+  - Output: List of matching crates with relevance scores and search insights
   - Features:
-    - Text search across title, description, tags, and metadata fields (not crate content)
-    - Vector embeddings for semantic understanding of metadata
-    - Structured tag filtering (e.g., `tags: ["project:website", "status:final"]`)
-    - Tag hierarchy understanding with relevance boosting for conventional tags
-    - Note: Content-based semantic search is available in the Pro version
+    - **Semantic Search**: Vector embeddings understand meaning, not just keywords
+    - **Smart Tag Filtering**: Hierarchical tag support (e.g., `project:webapp`, `env:production`)
+    - **Category Filtering**: Search within specific content categories
+    - **Relevance Scoring**: Results ranked by semantic similarity and tag matching
+    - **Natural Language**: "Find authentication code" matches auth-related content
+    - **Cross-Content Discovery**: Finds related content you didn't know you had
   - Permissions: Requires authentication
 
 ### Creating & Managing Crates

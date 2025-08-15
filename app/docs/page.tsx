@@ -10,9 +10,9 @@ export default function DocsPage() {
 
   // Navigation items
   const navItems = [
-    { id: "what-is-mcp-feedback-hub", title: "What is MCP Feedback Hub?" },
+    { id: "what-is-mcp-storage-hub", title: "What is MCP Storage Hub?" },
     { id: "getting-started", title: "Getting Started" },
-    { id: "creating-templates", title: "Creating Feedback Templates" },
+    { id: "organizing-content", title: "Organizing & Tagging Content" },
     { id: "mcp-tools", title: "Available MCP Tools" },
     { id: "ai-assistants", title: "Using with AI Assistants" },
     { id: "api-reference", title: "API Reference" },
@@ -129,28 +129,28 @@ export default function DocsPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
               <div className="text-center">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  MCP Feedback Hub Documentation
+                  MCP Storage Hub Documentation
                 </h1>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                  Create and manage structured feedback templates for AI
-                  assistants
+                  Store, organize, and search your AI artifacts with advanced
+                  tagging and semantic search
                 </p>
               </div>
             </div>
 
             <div
-              id="what-is-mcp-feedback-hub"
+              id="what-is-mcp-storage-hub"
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6"
             >
               <h2 className="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4 leading-tight">
-                What is MCP Feedback Hub?
+                What is MCP Storage Hub?
               </h2>
               <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                <b>MCP Feedback Hub</b> is a specialized platform for creating
-                and managing structured feedback templates that can be used with
-                AI assistants. It helps teams standardize their feedback
-                processes and collect consistent, actionable input through
-                intelligent templates.
+                <b>MCP Storage Hub</b> is an AI artifact storage and
+                organization platform that lets you store, tag, and search your
+                AI-generated content. It provides intelligent organization
+                capabilities with advanced tagging, semantic search, and content
+                categorization through intelligent templates.
               </p>
               <p className="text-lg text-gray-700 mb-4 leading-relaxed">
                 Key benefits:

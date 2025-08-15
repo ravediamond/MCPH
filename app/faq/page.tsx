@@ -12,64 +12,64 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
-    id: "what-is-mcp-feedback-hub",
-    question: "What is MCP Feedback Hub?",
+    id: "what-is-mcp-storage-hub",
+    question: "What is MCP Storage Hub?",
     answer:
-      "MCP Feedback Hub is a platform for creating and managing feedback templates using the Model Context Protocol. It allows you to design custom feedback forms, collect responses, and analyze user feedback through a simple interface that integrates with AI tools.",
+      "MCP Storage Hub is an AI artifact storage and organization system using the Model Context Protocol. It lets you store, tag, and search your AI-generated content with advanced semantic search capabilities. Store documents, code, images, and data with intelligent organization features.",
   },
   {
     id: "getting-started",
     question: "How do I get started?",
     answer:
-      "Simply sign in with your Google account, create your first feedback template by defining custom fields and validation rules, then share the template to start collecting responses. The platform includes built-in analytics to help you understand the feedback you receive.",
+      "Simply sign in with your Google account and start storing your AI artifacts. Use natural language with your AI assistant to upload content: 'Store this code as a crate with tags project:webapp and status:production'. The system automatically organizes and indexes your content for easy retrieval.",
   },
   {
-    id: "template-limits",
-    question: "How many feedback templates can I create?",
+    id: "storage-limits",
+    question: "How much can I store?",
     answer:
-      "Free accounts can create up to 5 feedback templates. Each template can have unlimited custom fields and can collect unlimited responses. Templates are stored permanently and can be shared publicly or kept private.",
+      "Authenticated users get unlimited permanent storage for their artifacts. Content is organized in crates with no limits on the number of crates you can create. Anonymous uploads expire after 30 days, while authenticated user content is stored indefinitely.",
   },
   {
-    id: "field-types",
-    question: "What types of fields can I add to templates?",
+    id: "content-types",
+    question: "What types of content can I store?",
     answer:
-      "You can add various field types including text inputs, number inputs, boolean (yes/no), single select dropdown, multi-select checkboxes, and rating scales. Each field supports custom validation rules, required/optional settings, and help text.",
+      "You can store any type of content including markdown, code files, images, JSON, YAML, CSV, and binary files. Content is automatically categorized into 5 types: Recipe (task instructions), Text, Images, Code, and Data for easy organization.",
   },
   {
     id: "mcp-tools",
     question: "What MCP tools are available?",
     answer:
-      "The platform provides three main MCP tools: feedback_template_create (create new templates), feedback_submit (submit responses to templates), and feedback_responses_get (retrieve and analyze responses). These tools integrate seamlessly with AI applications.",
+      "The platform provides comprehensive storage tools: crates_upload (store content), crates_list (browse your crates), crates_get (retrieve content), crates_search (semantic search), crates_share (sharing controls), and crates_update (modify content). These integrate seamlessly with AI applications.",
   },
   {
-    id: "response-analytics",
-    question: "How can I analyze feedback responses?",
+    id: "search-capabilities",
+    question: "How does the search system work?",
     answer:
-      "The platform includes built-in analytics to view all responses to your templates. You can see response rates, analyze patterns in feedback, and export data for further analysis. All responses are stored securely and can be accessed at any time.",
+      "The platform uses advanced semantic search with vector embeddings to understand content meaning, not just keywords. Search by tags, categories, or natural language queries. For example, 'find authentication code' will match auth-related content even without exact keyword matches.",
   },
   {
-    id: "sharing-templates",
-    question: "How do I share my feedback templates?",
+    id: "tagging-system",
+    question: "How does the tagging system work?",
     answer:
-      "Templates can be shared publicly or kept private. Public templates generate a shareable link that anyone can access to submit feedback. Private templates are only accessible to you and can be used for internal feedback collection.",
+      "Use hierarchical tags like 'project:webapp', 'env:production', or 'type:config' to organize content. Tags enable powerful filtering and discovery. The system supports smart tag suggestions and can find related content based on tag patterns.",
   },
   {
     id: "security",
-    question: "How secure is my feedback data?",
+    question: "How secure is my stored data?",
     answer:
-      "All feedback data is stored securely using enterprise-grade encryption. Templates and responses are transmitted over HTTPS, and access is controlled through authentication. You maintain full control over your templates and collected feedback.",
+      "All data is stored securely using enterprise-grade encryption. Content is transmitted over HTTPS and access is controlled through authentication. You maintain full control over your artifacts with granular sharing permissions and optional password protection.",
   },
   {
     id: "ai-integration",
-    question: "Which AI tools work with MCP Feedback Hub?",
+    question: "Which AI tools work with MCP Storage Hub?",
     answer:
-      "The platform is built on the Model Context Protocol and works with any MCP-compatible AI assistant. This includes Claude and other AI tools that support MCP. Integration allows you to create and manage templates directly through natural language conversations.",
+      "The platform is built on the Model Context Protocol and works with any MCP-compatible AI assistant including Claude, ChatGPT, and others. Integration allows you to store, organize, and retrieve content directly through natural language conversations.",
   },
   {
     id: "api-access",
     question: "Is there API access available?",
     answer:
-      "Yes, the platform provides MCP-based API access for creating templates, submitting responses, and retrieving analytics. API keys can be generated from your account settings, and there are rate limits to ensure fair usage across all users.",
+      "Yes, the platform provides comprehensive MCP-based API access for storing, organizing, searching, and sharing content. API keys can be generated from your account settings with rate limits to ensure fair usage across all users.",
   },
 ];
 
@@ -105,7 +105,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Everything you need to know about MCP Feedback Hub
+            Everything you need to know about MCP Storage Hub
           </p>
         </div>
 
@@ -160,10 +160,10 @@ export default function FAQPage() {
                 View Documentation
               </Link>
               <Link
-                href="/feedback/create"
+                href="/api-keys"
                 className="inline-flex items-center px-6 py-3 bg-white text-blue-600 font-medium rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
               >
-                Send Feedback
+                Get API Key
               </Link>
             </div>
           </div>

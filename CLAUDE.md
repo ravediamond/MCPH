@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MCPH (Model Context Protocol Hub) is a full-stack application that provides AI artifact storage and sharing. It consists of:
+MCPH (Model Context Protocol Storage Hub) is a full-stack application that provides AI artifact storage, organization, and intelligent search. It consists of:
 
 1. **Next.js Frontend** - React-based web interface with TypeScript
 2. **MCP Server** - Express-based API server implementing Model Context Protocol
